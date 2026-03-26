@@ -4,6 +4,34 @@
 
 ---
 
+## [2026-03-26] 开始任务：v1.1.5 - Agent 多样性增强
+
+**执行者**：Claude Code
+**基于版本**：v1.1.4
+**任务文档**：`docs/iterations/v1.1.5_agent_diversity_enhancement.md`
+
+**当前项目生命周期**：v1.1.x MVP 阶段 - Agent 质量优化
+
+**本次修复目标**：
+1. LLM2 temperature=0.7（使输出更发散）
+2. description 长度 15-50 字
+3. communication_style 要求多样化
+
+**当前进度**：
+- ✅ LLM2 temperature=0.7
+- ✅ description 长度约束
+- ⏳ Phase 3 差异化温度
+- ⏳ Agent 质量分析模块
+
+**预计变更文件**：
+- 修改：`src/phase1_entity_extraction.py`
+- 新增：`src/agent_quality_analyzer.py`
+- 修改：`src/phase3_tick_simulation.py`
+
+**状态**：🚧 进行中
+
+---
+
 ## [2026-03-26] 完成任务：v1.1.4 - 实体分类与LLM1/2/3协作架构
 
 **执行者**：Claude Code
