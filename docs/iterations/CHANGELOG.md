@@ -4,6 +4,26 @@
 
 ---
 
+## v1.1.5 - 2026-03-26（已完成）
+
+**主题**：Agent 多样性增强与发言差异化
+
+### 新增
+- [src] 新增 `agent_quality_analyzer.py` Agent 质量分析模块
+
+### 修改
+- [Phase 1] LLM2 temperature=0.7（输出更发散）
+- [Phase 1] description 长度约束 15-50 字
+- [Phase 1] communication_style 要求多样化
+- [Phase 3] 事件实体使用 temperature=0.3（输出更稳定）
+- [Phase 3] 意见传播者使用 temperature=0.8（输出更多样化）
+
+### 功能
+- ✅ Agent 质量分析工具：立场分布、描述多样性、风格多样性、逻辑一致性
+- ✅ Phase 3 差异化温度配置
+
+---
+
 ## v1.1.4 - 2026-03-26（已完成）
 
 **主题**：实体分类与LLM1/2/3协作架构
