@@ -5,9 +5,20 @@
 Why: 集中管理配置便于修改，避免硬编码。
 """
 
+import sys
+import os
+
+# Windows 环境下设置 UTF-8 编码
+if sys.platform == "win32":
+    os.environ["PYTHONIOENCODING"] = "utf-8"
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
 from pathlib import Path
 from dotenv import load_dotenv
-import os
 
 # 加载 .env 文件
 load_dotenv()
@@ -117,14 +128,14 @@ MAX_TICKS = 10
 CONVERGENCE_THRESHOLD = 0.05
 
 # 每个 Agent 每轮最多读取的发言数
-MAX_POSTS_PER_TICK = 5
+MAX_POSTS_PER_TICK = 3
 
 # =============================================================================
 # Phase 4 参数: 报告生成
 # =============================================================================
 
 # 报告生成使用的历史 tick 数
-REPORT_LOOKBACK_TICKS = 5
+REPORT_LOOKBACK_TICKS = 10
 
 # =============================================================================
 # ChromaDB 配置

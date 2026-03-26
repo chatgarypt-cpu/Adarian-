@@ -175,6 +175,9 @@ LLM3_SYSTEM_PROMPT = """你是一位严格的格式校验专家。你的任务�
 7. opinion_spreaders 的 estimated_percentage 之和 ≈ 100（允许 ±5 的误差）
 8. 至少包含一个 stance_score < 3.0 和一个 > 7.0 的群体
 9. event_entities 至少要有 1 个实体
+10. relations 字段是可选的，允许存在也可以不存在（不要对 relations 字段报错）
+
+【重要】不要对 relations 字段报错，该字段是可选的。
 
 【输出格式】
 如果通过：
@@ -281,11 +284,25 @@ def llm2_generate_entities(
         response_model=None,  # LLM2 返回自由 JSON
     )
 
-    # 解析 JSON
-    if isinstance(result, str):
-        entities_data = json.loads(result)
-    else:
-        entities_data = result
+    # 解析 JSON，增加错误处理
+    try:
+        if isinstance(result, str):
+            # 尝试提取 JSON 部分
+            result = result.strip()
+            # 处理可能的 markdown 代码块
+            if result.startswith("```json"):
+                result = result[7:]
+            elif result.startswith("```"):
+                result = result[3:]
+            if result.endswith("```"):
+                result = result[:-3]
+            result = result.strip()
+            entities_data = json.loads(result)
+        else:
+            entities_data = result
+    except (json.JSONDecodeError, Exception) as e:
+        # JSON 解析失败，抛出错误让上层重试
+        raise ValueError(f"LLM2 返回内容无法解析为 JSON: {e}\n原始内容: {result[:200] if result else '空'}")
 
     event_entities_count = len(entities_data.get('event_entities', []))
     opinion_spreaders_count = len(entities_data.get('opinion_spreaders', []))
@@ -320,11 +337,30 @@ def llm3_validate(json_content: Dict[str, Any]) -> Dict[str, Any]:
         response_model=None,  # LLM3 返回自由 JSON
     )
 
-    # 解析 JSON
-    if isinstance(result, str):
-        validation = json.loads(result)
-    else:
-        validation = result
+    # 解析 JSON，增加错误处理
+    try:
+        if isinstance(result, str):
+            # 尝试提取 JSON 部分
+            result = result.strip()
+            # 处理可能的 markdown 代码块
+            if result.startswith("```json"):
+                result = result[7:]
+            elif result.startswith("```"):
+                result = result[3:]
+            if result.endswith("```"):
+                result = result[:-3]
+            result = result.strip()
+            validation = json.loads(result)
+        else:
+            validation = result
+    except json.JSONDecodeError as e:
+        # JSON 解析失败，视为校验不通过
+        console.print(f"  [yellow]⚠[/yellow] LLM3 返回格式错误，视为校验失败")
+        return {
+            "pass": False,
+            "message": "LLM 返回内容无法解析为 JSON",
+            "errors": [f"JSON 解析错误: {str(e)}"]
+        }
 
     if validation.get("pass"):
         console.print(f"  [green]✓[/green] {validation.get('message', '校验通过')}")
