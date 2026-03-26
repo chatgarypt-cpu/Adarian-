@@ -614,15 +614,14 @@ class SimulationEngine:
                     completed=tick,
                 )
 
-                # 检查收敛
-                if tick > 1:
-                    prev_metrics = self.tick_logs[-2].global_metrics
-                    curr_metrics = tick_log.global_metrics
-                    delta = abs(curr_metrics.polarization_index - prev_metrics.polarization_index)
-
-                    if delta < config.CONVERGENCE_THRESHOLD:
-                        console.print(f"\n[yellow]检测到收敛，停止模拟（Tick {tick}）[/yellow]")
-                        break
+                # TODO: 收敛检测暂时禁用，跑满 10 轮
+                # if tick > 1:
+                #     prev_metrics = self.tick_logs[-2].global_metrics
+                #     curr_metrics = tick_log.global_metrics
+                #     delta = abs(curr_metrics.polarization_index - prev_metrics.polarization_index)
+                #     if delta < config.CONVERGENCE_THRESHOLD:
+                #         console.print(f"\n[yellow]检测到收敛，停止模拟（Tick {tick}）[/yellow]")
+                #         break
 
         return self.tick_logs
 
