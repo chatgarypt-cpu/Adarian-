@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PreCommit": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"D:/项目开发/研一/adarian/adarian mvp\" && python -m py_compile main.py src/*.py 2>&1 || echo \"语法检查失败\"",
+            "timeout": 30,
+            "statusMessage": "检查 Python 语法..."
+          }
+        ]
+      }
+    ]
+  }
+}
