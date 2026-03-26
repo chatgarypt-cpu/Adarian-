@@ -189,7 +189,13 @@ class SimulationEngine:
         # 事件实体发言记录（Tick 0）
         self.event_entity_posts: Dict[int, str] = {}  # agent_id -> comment
 
-        # LLM 客户端
+        # LLM 客户端（差异化温度）
+        from src.llm_client import LLMClient
+        # 事件实体：温度 0.3，输出更稳定
+        self.llm_event_entity = LLMClient(temperature=0.3)
+        # 传播者：温度 0.8，输出更多样化
+        self.llm_spreader = LLMClient(temperature=0.8)
+        # 默认客户端（保持兼容）
         self.llm = get_llm_client()
 
         # 建立 entity -> agent_id 的映射
@@ -238,7 +244,8 @@ class SimulationEngine:
             )
 
             try:
-                response = self.llm.generate(
+                # 事件实体使用低温度客户端（输出更稳定）
+                response = self.llm_event_entity.generate(
                     system=system_prompt,
                     user="请发布你的声明。",
                     response_model=None,
@@ -371,7 +378,8 @@ class SimulationEngine:
         )
 
         try:
-            response = self.llm.generate(
+            # 传播者使用高温度客户端（输出更多样化）
+            response = self.llm_spreader.generate(
                 system=system_prompt,
                 user=user_prompt,
                 response_model=None,
