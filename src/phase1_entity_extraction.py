@@ -117,12 +117,12 @@ LLM2_SYSTEM_PROMPT = """你是一位资深的事件分析专家。你的任务�
     {{
       "group_name": "群体名称",
       "related_event_entity": "关联的事件实体名称（必须在 event_entities 中存在）",
-      "description": "50字以内的人设描述",
+      "description": "15-50字的人设描述，要简洁有特色",
       "stance_score": 1.0到10.0之间的浮点数（1=强烈支持，10=强烈批评）,
       "susceptibility": 0.0到1.0之间的浮点数,
       "confirmation_bias_level": "none | weak | strong",
       "estimated_percentage": 0到100之间的整数（所有群体之和=100）,
-      "communication_style": "该群体的典型说话风格",
+      "communication_style": "该群体的典型说话风格，要多样化",
       "entity_category": "opinion_spreader"
     }}
   ],
@@ -260,7 +260,9 @@ def llm2_generate_entities(
     Returns:
         包含 event_entities, opinion_spreaders, relations 的字典
     """
-    llm = get_llm_client()
+    # LLM2 使用较高的 temperature 使输出更发散
+    from src.llm_client import LLMClient
+    llm = LLMClient(temperature=0.7)
 
     user_prompt = LLM2_USER_PROMPT.format(
         seed_text=seed_text,
