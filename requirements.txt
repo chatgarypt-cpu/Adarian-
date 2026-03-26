@@ -1,0 +1,15 @@
+# Adarian MVP 依赖
+
+# Python 版本要求
+Python >= 3.10
+
+# 核心依赖
+openai>=1.0.0           # LLM API 统一调用 (兼容 DeepSeek/Zhipu/Qwen)
+pydantic>=2.0.0         # 数据校验与 LLM 结构化输出
+chromadb>=0.4.0         # 纯本地向量数据库
+networkx>=3.0           # 社交拓扑图生成
+
+# 辅助工具
+rich>=13.0.0            # 终端美化输出（进度条、表格）
+python-dotenv>=1.0.0     # 环境变量管理（API Key）
+tiktoken>=0.5.0         # Token 计算（成本控制）
