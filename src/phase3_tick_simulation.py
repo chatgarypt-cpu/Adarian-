@@ -234,6 +234,49 @@ class SimulationEngine:
             if not entity:
                 continue
 
+            # v1.1.6: 检查 can_speak
+            if not entity.can_speak:
+                # can_speak=false：不生成发言，标记为被讨论
+                reason = entity.original_statement or "（该实体不可发言）"
+                self.event_entity_posts[node.id] = reason
+                self.agent_comments[node.id].append(reason)
+
+                entry = AgentEntry(
+                    agent_id=node.id,
+                    group_name=node.group_name,
+                    saw_posts_from=[],
+                    previous_stance=5.0,
+                    current_stance=5.0,
+                    stance_delta=0.0,
+                    comment=reason,
+                    reasoning="实体不可发言",
+                )
+                entries.append(entry)
+                console.print(f"  [dim]○[/dim] {node.group_name}: {reason}")
+                continue
+
+            # v1.1.6: 优先使用 original_statement
+            if entity.original_statement:
+                # 有原始发言，直接使用
+                comment = entity.original_statement
+                reasoning = "原始发言（从种子材料提取）"
+                self.event_entity_posts[node.id] = comment
+                self.agent_comments[node.id].append(comment)
+
+                entry = AgentEntry(
+                    agent_id=node.id,
+                    group_name=node.group_name,
+                    saw_posts_from=[],
+                    previous_stance=5.0,
+                    current_stance=5.0,
+                    stance_delta=0.0,
+                    comment=comment,
+                    reasoning=reasoning,
+                )
+                entries.append(entry)
+                console.print(f"  [green]✓[/green] {node.group_name}: {comment[:30]}... [dim](原始发言)[/dim]")
+                continue
+
             # 构建 Prompt
             system_prompt = EVENT_ENTITY_POST_SYSTEM_PROMPT.format(
                 entity_name=entity.name,
