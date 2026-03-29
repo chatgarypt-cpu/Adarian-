@@ -139,6 +139,7 @@ LLM2_SYSTEM_PROMPT = """你是一位资深的事件分析专家。你的任务�
 
 【can_speak 判断规则】
 - 机构/组织（organization）：默认 can_speak = true
+- 群体/团体（group）：默认 can_speak = true（群体通常有官方账号或发言人）
 - 个人（individual）：
   * 已故 → can_speak = false
   * 匿名（如当事人、受害者、佚名）→ can_speak = false
