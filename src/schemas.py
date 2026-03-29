@@ -56,6 +56,11 @@ class Entity(BaseModel):
         default=None,
         description="从种子材料提取的原始发言（带引号的直接引语），无原始发言则为 None"
     )
+    # v1.1.6 新增
+    can_speak_reason: Optional[str] = Field(
+        default=None,
+        description="当 can_speak=false 时，说明不可发言的原因（如：已故、匿名、被禁言等）"
+    )
 
 
 class OpinionSpreader(BaseModel):

@@ -394,6 +394,10 @@ def generate_markdown_report(phase4_output: Phase4Output, extraction_output: Ent
     """
     spreader_count = len(extraction_output.opinion_spreaders)
 
+    # v1.1.6: Split entities into speaking and discussed
+    speaking_entities = [e for e in extraction_output.event_entities if e.can_speak]
+    discussed_entities = [e for e in extraction_output.event_entities if not e.can_speak]
+
     lines = [
         "# 舆情演化洞察报告",
         "",
@@ -409,12 +413,27 @@ def generate_markdown_report(phase4_output: Phase4Output, extraction_output: Ent
         "",
         "## 二、利益相关方图谱",
         "",
-        "### 事件实体（直接参与者）",
+        "### 发言实体（{}个）".format(len(speaking_entities)),
         "",
+        "| 实体 | 角色 | Tick 0 发言 |",
+        "|------|------|------------|",
     ]
 
-    for entity in extraction_output.event_entities:
-        lines.append(f"- **{entity.name}** ({entity.type}): {entity.role}")
+    for entity in speaking_entities:
+        statement = entity.original_statement if entity.original_statement else "（无原始发言）"
+        lines.append(f"| {entity.name} | {entity.role} | {statement} |")
+
+    lines.extend([
+        "",
+        "### 被讨论实体（{}个）".format(len(discussed_entities)),
+        "",
+        "| 实体 | 角色 | 说明 |",
+        "|------|------|------|",
+    ])
+
+    for entity in discussed_entities:
+        reason = entity.can_speak_reason if entity.can_speak_reason else "不可发言"
+        lines.append(f"| {entity.name} | {entity.role} | {reason} |")
 
     lines.extend([
         "",
