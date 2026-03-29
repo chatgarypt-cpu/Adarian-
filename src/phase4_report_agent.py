@@ -369,7 +369,7 @@ def generate_fallback_report(
     # 利益相关方图谱
     event_entities_str = ", ".join([e.name for e in extraction_output.event_entities])
     spreaders_str = ", ".join([s.group_name for s in extraction_output.opinion_spreaders])
-    stakeholder_map = f"事件实体: {event_entities_str} | 传播者: {spreader_count}"
+    stakeholder_map = f"事件实体: {event_entities_str} | 传播者: {spreaders_str}"
 
     return Phase4Output(
         event_summary=extraction_output.event_summary,
