@@ -199,8 +199,9 @@ LLM3_SYSTEM_PROMPT = """你是一位严格的格式校验专家。你的任务�
 - 检查种子材料中是否有"已故"、"去世"、"死亡"、"离世"、"身亡"等关键词
   * 如果有，检查对应实体的 can_speak 是否为 false
   * 如果 can_speak 为 true 而实体已故，报错："XXX 已故，can_speak 应为 false"
-- 检查是否有"匿名"、"佚名"、"当事人"、"受害者"、"网友"等匿名表述
+- 检查是否有"匿名"、"佚名"、"网友"等匿名表述
   * 如果有，检查对应实体的 can_speak 是否为 false
+  * 注意："当事人"、"受害者"等主体可以正常发言（can_speak 可以为 true）
 
 【original_statement 合理性校验】
 - 如果 original_statement 不为 null，检查种子材料中是否确实有该发言
@@ -222,6 +223,10 @@ LLM3_SYSTEM_PROMPT = """你是一位严格的格式校验专家。你的任务�
 
 LLM3_USER_PROMPT = """请校验以下 JSON：
 
+【种子材料】
+{seed_text}
+
+【待校验 JSON】
 {json_content}
 """
 
@@ -342,19 +347,23 @@ def llm2_generate_entities(
 # LLM3: 格式校验
 # =============================================================================
 
-def llm3_validate(json_content: Dict[str, Any]) -> Dict[str, Any]:
+def llm3_validate(json_content: Dict[str, Any], seed_text: str) -> Dict[str, Any]:
     """
     LLM3: 格式校验
 
     Args:
         json_content: 要校验的 JSON 数据
+        seed_text: 种子文本内容（用于校验 can_speak 和 original_statement）
 
     Returns:
         校验结果 {"pass": bool, "message": str, "errors": List[str]}
     """
     llm = get_llm_client()
 
-    user_prompt = LLM3_USER_PROMPT.format(json_content=json.dumps(json_content, ensure_ascii=False))
+    user_prompt = LLM3_USER_PROMPT.format(
+        seed_text=seed_text,
+        json_content=json.dumps(json_content, ensure_ascii=False)
+    )
 
     console.print("[bold cyan]LLM3:[/bold cyan] 正在校验格式...")
 
@@ -446,7 +455,7 @@ def extract_entities_with_validation(seed_text: str) -> EntityExtractionOutput:
         )
 
         # LLM3 校验
-        validation = llm3_validate(entities_data)
+        validation = llm3_validate(entities_data, seed_text)
 
         if validation["pass"]:
             # 通过校验，构建输出
@@ -488,7 +497,7 @@ def extract_entities_with_validation(seed_text: str) -> EntityExtractionOutput:
                 event_summary=event_summary,
                 error_feedback=error_feedback
             )
-            validation = llm3_validate(entities_data)
+            validation = llm3_validate(entities_data, seed_text)
             if validation["pass"]:
                 break
 
