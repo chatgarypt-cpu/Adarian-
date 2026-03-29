@@ -50,6 +50,13 @@ class Entity(BaseModel):
         default="event_entity", description="固定为 event_entity"
     )
 
+    # v1.1.6 新增
+    can_speak: bool = Field(..., description="是否可以发言：true=可以，false=不可（如已故/匿名）")
+    original_statement: Optional[str] = Field(
+        default=None,
+        description="从种子材料提取的原始发言（带引号的直接引语），无原始发言则为 None"
+    )
+
 
 class OpinionSpreader(BaseModel):
     """
