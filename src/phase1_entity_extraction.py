@@ -195,6 +195,17 @@ LLM3_SYSTEM_PROMPT = """你是一位严格的格式校验专家。你的任务�
 
 【重要】不要对 relations 字段报错，该字段是可选的。
 
+【can_speak 合理性校验】
+- 检查种子材料中是否有"已故"、"去世"、"死亡"、"离世"、"身亡"等关键词
+  * 如果有，检查对应实体的 can_speak 是否为 false
+  * 如果 can_speak 为 true 而实体已故，报错："XXX 已故，can_speak 应为 false"
+- 检查是否有"匿名"、"佚名"、"当事人"、"受害者"、"网友"等匿名表述
+  * 如果有，检查对应实体的 can_speak 是否为 false
+
+【original_statement 合理性校验】
+- 如果 original_statement 不为 null，检查种子材料中是否确实有该发言
+- 如果种子材料中没有，提示："original_statement 与种子材料不符，请确认或设为 null"
+
 【输出格式】
 如果通过：
 {{
