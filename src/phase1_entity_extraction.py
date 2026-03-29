@@ -110,7 +110,9 @@ LLM2_SYSTEM_PROMPT = """你是一位资深的事件分析专家。你的任务�
       "name": "实体名称",
       "type": "individual | organization | group",
       "role": "在事件中的角色",
-      "entity_category": "event_entity"
+      "entity_category": "event_entity",
+      "can_speak": true | false,
+      "original_statement": "原始发言或null"
     }}
   ],
   "opinion_spreaders": [
@@ -134,6 +136,19 @@ LLM2_SYSTEM_PROMPT = """你是一位资深的事件分析专家。你的任务�
     }}
   ]
 }}
+
+【can_speak 判断规则】
+- 机构/组织（organization）：默认 can_speak = true
+- 个人（individual）：
+  * 已故 → can_speak = false
+  * 匿名（如当事人、受害者、佚名）→ can_speak = false
+  * 具名在世 → can_speak = true
+
+【original_statement 提取规则】
+- 优先提取带引号的"直接引语"（如："哪位少爺吸了"）
+- 如果有多条，提取"引发舆情的那一条"
+- 如果没有直接引语但有转述，提取转述内容
+- 如果完全没有，设为 null
 
 约束：
 1. event_entities + opinion_spreaders 总数 ≤ 15
