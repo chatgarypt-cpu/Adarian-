@@ -4,6 +4,137 @@
 
 ---
 
+## v1.1.9 (2026-03-30)
+
+### Bug Fix
+- **数据源修复**：最终报告立场变化数据从 tick_log[1] 和 tick_log[-1] 读取，而非 tick_log[0]（事件实体）和 tick_log[-1]。修复了意见传播实体立场变化始终为 0 的问题。
+
+### Feature
+- **susceptibility 简单接入**：susceptibility 字段接入 stance 变化约束逻辑，高 susceptibility agent 可获得更大的变化幅度（通过 SUSCEPTIBILITY_MODULATION_FACTOR 调制）
+- **tick_log 扩展**：AgentEntry 新增 `susceptibility` 和 `change_reason` 字段，便于后续分析
+
+### 配置
+- 新增 `SUSCEPTIBILITY_MODULATION_FACTOR = 0.5` 参数
+
+---
+
+## v1.1.8 - 2026-03-29（已完成）
+
+**主题**：报告 Agent 优化 - 增强报告可读性和洞察深度
+
+### 新增
+- [Phase 4] 新增 `build_full_report_context` 函数 - 构建完整报告上下文数据
+- [Phase 4] 新增模块级变量 `_llm_generated_markdown` - 存储 LLM 生成的 Markdown
+
+### 修改
+- [Phase 4] 重构 `REPORT_SYSTEM_PROMPT` - 新的 Markdown 报告结构和生成指令
+- [Phase 4] 重构 `generate_report_with_llm` - 直接生成 Markdown 格式报告
+- [Phase 4] 修改 `parse_llm_report_response` - 适配新的 Markdown 响应格式
+- [Phase 4] 修改 `save_markdown_report` - 使用 LLM 生成的 Markdown 内容
+
+### 功能
+- ✅ 报告结构重构（10 个章节：概要 → 实体 → Tick0发言 → 拐点 → 演化 → 立场变化 → 极化轨迹 → 洞察 → 态势 → 风险）
+- ✅ 增加 Tick 0 事件实体发言展示
+- ✅ 增加关键拐点识别（极化变化 > 0.05 或立场偏移 > 1.5）
+- ✅ 增加 Tick 1-N 意见演化展示（首尾对比）
+- ✅ 增加最终立场变化表格
+- ✅ 增加极化演化轨迹可视化
+- ✅ 增加关键洞察生成（3-6 条核心发现）
+- ✅ 增加舆论态势判断（四维度分析）
+
+**详细文档**：[v1.1.8_report_agent_enhanced.md](./v1.1.8_report_agent_enhanced.md)
+**完成时间**：2026-03-29
+
+---
+
+## v1.1.8 - 2026-03-29（已完成）
+
+**主题**：报告 Agent 优化 - 增强报告可读性和洞察深度
+
+### 新增
+- [Phase 4] 新增 `build_full_report_context` 函数 - 构建完整报告上下文数据
+- [Phase 4] 新增模块级变量 `_llm_generated_markdown` - 存储 LLM 生成的 Markdown
+
+### 修改
+- [Phase 4] 重构 `REPORT_SYSTEM_PROMPT` - 新的 Markdown 报告结构和生成指令
+- [Phase 4] 重构 `generate_report_with_llm` - 直接生成 Markdown 格式报告
+- [Phase 4] 修改 `parse_llm_report_response` - 适配新的 Markdown 响应格式
+- [Phase 4] 修改 `save_markdown_report` - 使用 LLM 生成的 Markdown 内容
+
+### 功能
+- ✅ 报告结构重构（10 个章节：概要 → 实体 → Tick0发言 → 拐点 → 演化 → 立场变化 → 极化轨迹 → 洞察 → 态势 → 风险）
+- ✅ 增加 Tick 0 事件实体发言展示
+- ✅ 增加关键拐点识别（极化变化 > 0.05 或立场偏移 > 1.5）
+- ✅ 增加 Tick 1-N 意见演化展示（首尾对比）
+- ✅ 增加最终立场变化表格
+- ✅ 增加极化演化轨迹可视化
+- ✅ 增加关键洞察生成（3-6 条核心发现）
+- ✅ 增加舆论态势判断（四维度分析）
+
+**详细文档**：[v1.1.8_report_agent_enhanced.md](./v1.1.8_report_agent_enhanced.md)
+**完成时间**：2026-03-29
+
+---
+
+## v1.1.7 - 2026-03-29（已完成）
+
+**主题**：意见传播者群体生成优化 - 修复强制立场分布问题
+
+### 新增
+- [schemas.py] 新增 `group_distribution_strategy` 字段（normal/minimal_supporters/no_supporters）
+- [schemas.py] 新增 `has_official_response` 字段（官方是否回应）
+- [schemas.py] 新增 `official_admits_fault` 字段（官方是否承认错误）
+
+### 修改
+- [Phase 1] LLM1 Prompt 增加群体分布策略判断逻辑
+- [Phase 1] LLM2 Prompt 根据策略调整群体生成规则（no_supporters 时不生成支持者）
+- [Phase 1] LLM3 Prompt 增加群体分布合理性校验
+- [Phase 1] `llm1_set_parameters` 返回新增的策略字段
+- [Phase 1] `llm2_generate_entities` 增加 `group_distribution_strategy` 参数
+- [Phase 1] `llm3_validate` 增加 `group_distribution_strategy` 参数
+- [Phase 1] `extract_entities_with_validation` 传递策略参数到各函数
+- [Phase 3] `SimulationEngine` 增加 `group_distribution_strategy` 属性
+- [Phase 3] `generate_opinion_spreader_post` 增加舆论压力提示
+- [Phase 3] `apply_stance_constraint` 增加舆论压力机制（minimal_supporters 策略下）
+
+### 功能
+- ✅ 高烈度负面事件（鼠头、胖猫）不再生成不真实的"校方支持者"、"譚竹支持者"
+- ✅ LLM1 自动判断群体分布策略
+- ✅ LLM3 校验群体分布是否符合策略
+- ✅ minimal_supporters 策略下支持者立场会受舆论压力影响略微下降
+
+**详细文档**：[v1.1.7_opinion_spreader_distribution_fix.md](./v1.1.7_opinion_spreader_distribution_fix.md)
+**完成时间**：2026-03-29
+
+---
+
+## v1.1.6 - 2026-03-29（已完成）
+
+**主题**：事件实体发言逻辑修复 - 禁止已故/匿名实体发言，提取原始发言
+
+### 新增
+- [schemas.py] 新增 `can_speak: bool` 字段 - 是否可以发言（无默认值）
+- [schemas.py] 新增 `original_statement: Optional[str]` 字段 - 原始发言（从种子材料提取）
+
+### 修改
+- [Phase 1] LLM2 Prompt 增加 `can_speak` 和 `original_statement` 字段说明
+- [Phase 1] LLM3 Prompt 增加 `can_speak` 合理性校验规则
+- [Phase 3] `run_tick_0()` 增加 `can_speak` 检查
+- [Phase 3] `run_tick_0()` 优先使用 `original_statement`
+- [Phase 3] `EVENT_ENTITY_POST_SYSTEM_PROMPT` 增加"禁止事后声明"指令
+- [Phase 4] 报告生成区分"发言实体"和"被讨论实体"
+
+### 功能
+- ✅ 已故/匿名实体（如胖猫、当事学生）不再在 Tick 0 发言
+- ✅ 从种子材料中提取原始发言（如"哪位少爺吸了"）
+- ✅ Tick 0 优先使用原始发言，不调用 LLM 生成
+- ✅ 报告中区分"发言实体"和"被讨论实体"
+
+**详细文档**：[v1.1.6_entity_speak_logic_fix.md](./v1.1.6_entity_speak_logic_fix.md)
+**完成时间**：2026-03-29
+
+---
+
 ## v1.1.5 - 2026-03-26（已完成）
 
 **主题**：Agent 多样性增强与发言差异化
