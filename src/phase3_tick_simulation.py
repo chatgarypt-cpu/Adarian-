@@ -123,6 +123,8 @@ AGENT_POST_SYSTEM_PROMPT = """你是一个社交媒体用户，你的人设如�
 
 {confirmation_bias_prompt}
 
+{opinion_pressure_prompt}
+
 你必须严格按照以下 JSON 格式输出：
 {{
   "comment": "你的评论（50字以内，必须提及或暗示关联实体**{related_entity}**，符合你的说话风格）",
@@ -147,6 +149,8 @@ AGENT_POST_USER_PROMPT = """【事件背景】
 
 {stance_meaning}
 
+{opinion_pressure_situation}
+
 请根据你的人设，发表你的看法。
 """
 
@@ -163,6 +167,9 @@ class SimulationEngine:
     修改于：v1.1.4
     - Tick 0：事件实体发言
     - Tick 1+：意见传播实体发言
+
+    修改于：v1.1.7
+    - 新增 group_distribution_strategy，用于舆论压力机制
     """
 
     def __init__(
@@ -175,6 +182,8 @@ class SimulationEngine:
         self.phase2_output = phase2_output
         self.seed_text = seed_text
         self.event_summary = extraction_output.event_summary
+        # v1.1.7 新增：群体分布策略
+        self.group_distribution_strategy = getattr(extraction_output, 'group_distribution_strategy', 'normal')
 
         # 构建 NetworkX 图
         self.G = nx.DiGraph()
@@ -363,7 +372,7 @@ class SimulationEngine:
 
         return comments[:max_posts]
 
-    def generate_opinion_spreader_post(self, agent: GraphNode) -> Tuple[str, float, str]:
+    def generate_opinion_spreader_post(self, agent: GraphNode) -> Tuple[str, float, str, str]:
         """为意见传播实体生成发言
 
         Args:
@@ -408,6 +417,29 @@ class SimulationEngine:
         confirmation_bias = agent.confirmation_bias_level
         confirmation_bias_prompt = CONFIRMATION_BIAS_PROMPTS.get(confirmation_bias, CONFIRMATION_BIAS_PROMPTS["none"])
 
+        # v1.1.7 新增：舆论压力提示（只在 minimal_supporters 策略下启用）
+        opinion_pressure_prompt = ""
+        opinion_pressure_situation = ""
+        if self.group_distribution_strategy == "minimal_supporters":
+            # 计算当前全局平均立场
+            mean_stance = sum(self.agent_stances.values()) / len(self.agent_stances)
+            if mean_stance < 4.0:
+                overall_sentiment = "批评主导"
+                opinion_pressure_situation = f"""【舆论压力提示】（v1.1.7）
+当前舆论整体倾向：{overall_sentiment}（平均立场 {mean_stance:.1f}）
+- 舆论整体批评，而你立场较高（{stance:.1f}），你可能感受到孤立和压力
+- 在这种舆论环境下，你的立场可能会略微下降"""
+            elif mean_stance > 6.0:
+                overall_sentiment = "支持主导"
+                opinion_pressure_situation = f"""【舆论压力提示】（v1.1.7）
+当前舆论整体倾向：{overall_sentiment}（平均立场 {mean_stance:.1f}）
+- 舆论整体支持，而你立场较低（{stance:.1f}），你可能更加坚定
+- 在这种舆论环境下，你的立场可能会略微上升"""
+            else:
+                opinion_pressure_situation = ""
+        else:
+            opinion_pressure_situation = ""
+
         # 构建 prompt
         system_prompt = AGENT_POST_SYSTEM_PROMPT.format(
             group_name=agent.group_name,
@@ -416,6 +448,7 @@ class SimulationEngine:
             communication_style=spreader.communication_style if spreader else "",
             stance_semantics=STANCE_SEMANTICS,
             confirmation_bias_prompt=confirmation_bias_prompt,
+            opinion_pressure_prompt=opinion_pressure_prompt,
         )
 
         user_prompt = AGENT_POST_USER_PROMPT.format(
@@ -424,6 +457,7 @@ class SimulationEngine:
             event_entity_post=event_entity_post,
             followed_agents_comments=followed_text,
             stance_meaning=stance_meaning,
+            opinion_pressure_situation=opinion_pressure_situation,
         )
 
         try:
@@ -438,44 +472,77 @@ class SimulationEngine:
             comment, proposed_stance, reasoning = self._parse_agent_response(response)
 
             # 应用 stance 变化硬性约束
-            final_stance = self.apply_stance_constraint(
+            final_stance, change_reason = self.apply_stance_constraint(
                 previous_stance=self.agent_stances[agent.id],
                 proposed_stance=proposed_stance,
                 confirmation_bias_level=confirmation_bias,
+                susceptibility=agent.susceptibility,
+                group_distribution_strategy=self.group_distribution_strategy,
+                mean_stance=sum(self.agent_stances.values()) / len(self.agent_stances),
             )
 
-            return comment, final_stance, reasoning
+            return comment, final_stance, reasoning, change_reason
 
         except Exception as e:
             console.print(f"  [yellow]警告：[/yellow] Agent {agent.id} 生成发言失败: {e}")
-            return "（无评论）", self.agent_stances[agent.id], "生成失败"
+            return "（无评论）", self.agent_stances[agent.id], "生成失败", "exception"
 
     def apply_stance_constraint(
         self,
         previous_stance: float,
         proposed_stance: float,
         confirmation_bias_level: str,
-    ) -> float:
-        """在代码层面强制约束 stance 变化幅度
+        susceptibility: float,
+        group_distribution_strategy: str = "normal",
+        mean_stance: float = 5.0,
+    ) -> Tuple[float, str]:
+        """在代码层面强制约束 stance 变化幅度，接入 susceptibility 调制
 
         Args:
             previous_stance: 上一轮立场分
             proposed_stance: LLM 提出的新立场分
             confirmation_bias_level: 确认偏差级别
+            susceptibility: 该 agent 的易感性（0.0-1.0）
+            group_distribution_strategy: 群体分布策略
+            mean_stance: 全局平均立场
 
         Returns:
-            约束后的新立场分
+            (final_stance, change_reason) tuple
+            change_reason: "within_effective_delta" | "bounded_by_susceptibility"
         """
-        max_change = STANCE_CHANGE_LIMITS.get(confirmation_bias_level, 1.0)
+        # 1. 基础变化上限
+        base_delta_map = {
+            "strong": 0.3,
+            "weak": 1.0,
+            "none": 2.0
+        }
+        base_delta = base_delta_map.get(confirmation_bias_level, 1.0)
+
+        # 2. susceptibility 调制：高 susceptibility → 更大变化幅度
+        # modulation = 1 + 0.5 × (susceptibility - 0.5)
+        # susceptibility=1.0 时，modulation = 1.25（变化幅度+25%）
+        # susceptibility=0.0 时，modulation = 0.75（变化幅度-25%）
+        susceptibility_modulation = 1 + config.SUSCEPTIBILITY_MODULATION_FACTOR * (susceptibility - 0.5)
+        effective_delta = base_delta * susceptibility_modulation
+
+        # 3. v1.1.7 新增：舆论压力机制（minimal_supporters 策略下）
+        if group_distribution_strategy == "minimal_supporters":
+            if mean_stance < 4.0 and previous_stance >= 7.0:
+                effective_delta = effective_delta * 1.2  # 增加 20% 的变化幅度
+
+        # 4. 限制变化幅度
         delta = proposed_stance - previous_stance
 
-        if abs(delta) > max_change:
-            clipped_delta = max_change if delta > 0 else -max_change
-            final_stance = previous_stance + clipped_delta
-        else:
+        if abs(delta) <= effective_delta:
             final_stance = proposed_stance
+            change_reason = "within_effective_delta"
+        else:
+            clipped_delta = effective_delta if delta > 0 else -effective_delta
+            final_stance = previous_stance + clipped_delta
+            change_reason = "bounded_by_susceptibility"
 
-        return round(max(1.0, min(10.0, final_stance)), 2)
+        final_stance = round(max(1.0, min(10.0, final_stance)), 2)
+        return final_stance, change_reason
 
     def _parse_event_entity_response(self, response: str) -> Tuple[str, str]:
         """解析事件实体发言响应
@@ -587,7 +654,7 @@ class SimulationEngine:
             previous_stance = self.agent_stances[node.id]
 
             # 生成发言
-            comment, new_stance, reasoning = self.generate_opinion_spreader_post(node)
+            comment, new_stance, reasoning, change_reason = self.generate_opinion_spreader_post(node)
 
             # 更新立场
             self.agent_stances[node.id] = new_stance
@@ -603,6 +670,8 @@ class SimulationEngine:
                 previous_stance=previous_stance,
                 current_stance=new_stance,
                 stance_delta=round(new_stance - previous_stance, 2),
+                susceptibility=node.susceptibility,  # 新增 v1.1.9
+                change_reason=change_reason,  # 新增 v1.1.9
                 comment=comment,
                 reasoning=reasoning,
             )
