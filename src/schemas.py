@@ -142,6 +142,11 @@ class EntityExtractionOutput(BaseModel):
     修改于：v1.1.4
     - 从 core_entities 改为 event_entities + opinion_spreaders 双列结构
     - 新增 event_intensity 字段
+
+    修改于：v1.1.7
+    - 新增 group_distribution_strategy 字段（normal/minimal_supporters/no_supporters）
+    - 新增 has_official_response 字段（官方是否回应）
+    - 新增 official_admits_fault 字段（官方是否承认错误）
     """
     event_summary: str = Field(..., description="事件摘要")
     event_temperature: float = Field(
@@ -162,6 +167,20 @@ class EntityExtractionOutput(BaseModel):
         ..., description="意见传播实体列表（评论事件）"
     )
     relations: List[Relation] = Field(..., description="实体关系列表")
+
+    # v1.1.7 新增：群体分布策略
+    group_distribution_strategy: Literal["normal", "minimal_supporters", "no_supporters"] = Field(
+        default="normal",
+        description="群体分布策略：normal=正常生成支持者，minimal_supporters=极少数支持者，no_supporters=不生成支持者"
+    )
+    has_official_response: bool = Field(
+        default=False,
+        description="官方是否回应了事件"
+    )
+    official_admits_fault: bool = Field(
+        default=False,
+        description="官方是否承认错误/道歉"
+    )
 
     @field_validator('event_temperature', 'event_intensity')
     @classmethod
@@ -366,6 +385,8 @@ class AgentEntry(BaseModel):
     previous_stance: float = Field(..., ge=1.0, le=10.0, description="上一轮立场分")
     current_stance: float = Field(..., ge=1.0, le=10.0, description="本轮立场分")
     stance_delta: float = Field(..., description="立场变化量，绝对值表示变化程度")
+    susceptibility: float = Field(..., ge=0.0, le=1.0, description="该 agent 的易感性（新增 v1.1.9）")
+    change_reason: str = Field(..., description="立场变化原因：within_effective_delta | bounded_by_susceptibility（新增 v1.1.9）")
     comment: str = Field(..., max_length=200, description="发表的评论内容")
     reasoning: str = Field(..., max_length=100, description="立场理由")
 
