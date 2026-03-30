@@ -122,13 +122,17 @@ CORE_NODE_RATIO = 0.2
 # =============================================================================
 
 # 最大模拟轮数
-MAX_TICKS = 10
+MAX_TICKS = 5
 
 # 收敛阈值 (当极化指数变化小于此值时停止)
 CONVERGENCE_THRESHOLD = 0.05
 
 # 每个 Agent 每轮最多读取的发言数
 MAX_POSTS_PER_TICK = 3
+
+# susceptibility 调制系数（v1.1.9 新增）
+# 高 susceptibility（>0.7）的 agent 变化幅度可增加 50%
+SUSCEPTIBILITY_MODULATION_FACTOR = 0.5
 
 # =============================================================================
 # Phase 4 参数: 报告生成
