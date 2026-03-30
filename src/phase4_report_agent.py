@@ -3,24 +3,22 @@ Phase 4: 宏观洞察生成器
 ---
 根据 Phase 3 的模拟结果，生成舆情演化洞察报告。
 
-v1.1.4 变化：
-- 使用 EntityExtractionOutput 替代 Phase1Output
-- 事件实体和意见传播者的分布信息
+v1.1.8 变化：
+- 重构报告结构（概要 → 实体 → 拐点 → 演化 → 洞察 → 风险）
+- 增加 Tick 0 发言展示
+- 增加关键拐点识别（极化变化 > 0.05 或立场偏移 > 1.5）
+- 增加 Tick 1-N 演化展示
+- 增加最终立场变化表格
+- 增加极化演化轨迹
+- 增加关键洞察生成（3-6 条）
+- 增加舆论态势判断
 
-输出内容包括：
-1. 事件概述
-2. 利益相关方图谱
-3. 情绪演化轨迹表
-4. 拐点分析
-5. 风险评估
-6. x(t) 序列（用于后续 AD/SEIR 模块）
-
-修改于：v1.1.4
+修改于：v1.1.8
 """
 
 import json
 from pathlib import Path
-from typing import List
+from typing import List, Dict, Any
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
@@ -40,79 +38,142 @@ console = Console()
 
 REPORT_SYSTEM_PROMPT = """你是一位资深的社会舆情分析师。你的任务是根据舆情模拟数据，生成一份专业的舆情洞察报告。
 
-你必须严格按照以下 JSON 格式输出：
-{{
-  "risk_level": "low/medium/high/critical",
-  "risk_assessment": "风险评估说明（100字以内）",
-  "stakeholder_map": "利益相关方图谱说明（150字以内）",
-  "inflection_points": [
-    {{
-      "tick": 轮次号,
-      "agent_id": 引发拐点的agent编号,
-      "group_name": "群体名称",
-      "pivotal_comment": "关键发言摘要",
-      "impact_description": "影响说明"
-    }}
-  ]
-}}
+报告面向决策者，需要结论先行，每个章节使用 emoji 提升可读性。
 
-注意：
-1. risk_level 必须选择: low, medium, high, critical 之一
-2. inflection_points 应识别 1-3 个关键拐点
-3. 风险评估应基于 x(t) 走势和极化指数
+【报告结构】
+1. 📊 事件概要 - 一句话总结 + 核心指标
+2. 🗺️ 实体图谱 - 事件实体和意见传播者列表
+3. 🎬 Tick 0 · 事件实体发言 - 展示事件实体初始发言
+4. 🔥 关键拐点 - 识别 1-2 个最关键的拐点
+5. 📈 Tick 1-N · 意见演化 - 首尾 Tick 代表性发言对比
+6. 📊 最终立场变化 - 各群体 Tick 0 → Tick N 的立场变化
+7. 📉 极化演化轨迹 - 文字版极化指数可视化
+8. 💡 关键洞察 - 3-6 条核心发现
+9. 🎯 舆论态势判断 - 整体极化、矛盾焦点、演化趋势、风险提示
+10. ⚠️ 风险评估 - 具体风险点和建议
+
+【拐点识别标准】
+- 极化指数变化 > 0.05（绝对值）
+- 或某个群体立场偏移 > 1.5（绝对值）
+
+【立场变化趋势符号】
+- 变化 < -1.0：↓↓
+- 变化 -1.0 ~ -0.5：↓
+- 变化 -0.5 ~ +0.5：→
+- 变化 +0.5 ~ +1.0：↑
+- 变化 > +1.0：↑↑
+- 变化 > +2.0：↑↑↑
+
+【关键洞察要求】
+- 每条 30-50 字
+- 包含现象描述 + 数据支撑
+- 按重要性排序
+
+【舆论态势判断维度】
+- 整体极化：<0.3 温和，0.3-0.5 中等，>0.5 高对立
+- 矛盾焦点：识别对立双方的核心争议点
+- 演化趋势：描述立场变化的主要方向
+- 风险提示：根据批评者立场和比例给出预警
+
+输出格式：直接输出完整 Markdown 报告，500-800 行。
 """
 
-REPORT_USER_PROMPT = """请分析以下舆情模拟数据，生成报告：
 
-事件摘要：{event_summary}
-事件类型：{event_type}
-事件温度：{temperature}（0-1，1=最热）
-事件烈度：{intensity}（0-1，1=最强）
-
-情绪演化数据：
-{emotion_table}
-
-实体分布：
-- 事件实体（直接参与者）：{event_entity_count} 个
-- 意见传播者（评论者）：{spreader_count} 个
-
-请输出完整的报告 JSON。
-"""
-
-
-def build_emotion_table(tick_logs: List[TickLog]) -> str:
-    """构建情绪演化表格文本
+def build_full_report_context(
+    extraction_output: EntityExtractionOutput,
+    tick_logs: List[TickLog],
+    x_t_sequence: List[float],
+) -> str:
+    """构建完整的报告上下文数据
 
     Args:
+        extraction_output: 实体提取结果
         tick_logs: TickLog 列表
+        x_t_sequence: x(t) 序列
 
     Returns:
-        格式化表格字符串
+        格式化的上下文字符串
     """
-    lines = ["Tick | x(t)均值 | 标准差 | 极化指数 | 关键事件"]
-    lines.append("-" * 70)
+    lines = []
 
-    prev_mean = None
+    # 1. 事件概要
+    lines.append("【事件概要】")
+    lines.append(f"事件摘要：{extraction_output.event_summary}")
+    lines.append(f"事件类型：{extraction_output.event_type}")
+    lines.append(f"事件温度：{extraction_output.event_temperature:.2f}（0-1，1=最热）")
+    lines.append(f"事件烈度：{extraction_output.event_intensity:.2f}（0-1，1=最强）")
+    lines.append(f"群体分布策略：{getattr(extraction_output, 'group_distribution_strategy', 'normal')}")
+
+    # 2. 实体图谱
+    lines.append("\n【实体图谱】")
+    lines.append(f"事件实体（直接参与者）：{len(extraction_output.event_entities)} 个")
+    for entity in extraction_output.event_entities:
+        lines.append(f"  - {entity.name}（{entity.type}）: {entity.role} | can_speak={entity.can_speak}")
+        if entity.original_statement:
+            lines.append(f"    原始发言：{entity.original_statement[:50]}...")
+
+    lines.append(f"\n意见传播者（评论者）：{len(extraction_output.opinion_spreaders)} 个")
+    for spreader in extraction_output.opinion_spreaders:
+        lines.append(f"  - {spreader.group_name}")
+        lines.append(f"    关联实体：{spreader.related_event_entity}，立场：{spreader.stance_score}，偏差：{spreader.confirmation_bias_level}，占比：{spreader.estimated_percentage}%")
+
+    # 3. Tick 0 发言
+    lines.append("\n【Tick 0 事件实体发言】")
+    tick_0_log = tick_logs[0] if tick_logs else None
+    if tick_0_log:
+        for entry in tick_0_log.entries:
+            if entry.comment:
+                lines.append(f"  [{entry.group_name}]: {entry.comment[:80]}...")
+
+    # 4. 情绪演化数据
+    lines.append("\n【情绪演化数据】")
+    lines.append("Tick | x(t)均值 | 标准差 | 极化指数 | 关键变化")
+    lines.append("-" * 70)
+    prev_pol = None
     for log in tick_logs:
         if not log.entries:
             continue
-
-        # 找出本轮最关键的发言
-        max_delta_entry = max(log.entries, key=lambda e: abs(e.stance_delta))
-        key_event = f"#{max_delta_entry.agent_id}: {max_delta_entry.comment[:20]}..."
-
-        mean = log.global_metrics.mean_stance
-        std = log.global_metrics.std_stance
+        max_entry = max(log.entries, key=lambda e: abs(e.stance_delta))
         pol = log.global_metrics.polarization_index
+        pol_change = ""
+        if prev_pol is not None:
+            pol_change = f"({pol - prev_pol:+.2f})"
+        lines.append(f"{log.tick:4d} | {log.global_metrics.mean_stance:5.2f} | {log.global_metrics.std_stance:5.2f} | {pol:5.2f} {pol_change:8s} | #{max_entry.agent_id} {max_entry.group_name[:10]}: {max_entry.stance_delta:+.1f}")
+        prev_pol = pol
 
-        # 标记均值变化
-        change = ""
-        if prev_mean is not None:
-            delta = mean - prev_mean
-            change = f"({delta:+.1f})"
-        prev_mean = mean
+    # 5. 极化演化轨迹
+    lines.append("\n【极化演化轨迹】")
+    pol_sequence = [f"{log.global_metrics.polarization_index:.2f}" for log in tick_logs if log.entries]
+    lines.append(" → ".join(pol_sequence))
+    if len(pol_sequence) >= 2:
+        first_pol = float(pol_sequence[0])
+        last_pol = float(pol_sequence[-1])
+        change_pct = (last_pol - first_pol) / first_pol * 100 if first_pol > 0 else 0
+        direction = "下降" if change_pct < 0 else "上升"
+        lines.append(f"极化指数从 {pol_sequence[0]} 变化到 {pol_sequence[-1]}，{direction} {abs(change_pct):.0f}%")
 
-        lines.append(f"{log.tick:4d} | {mean:5.2f} {change:6s} | {std:5.2f} | {pol:6.2f} | {key_event}")
+    # 6. 立场变化数据（用于洞察生成）
+    # v1.1.9 修复：从 tick_log[1]（意见传播者初始）而非 tick_log[0]（事件实体）读取初始立场
+    lines.append("\n【立场变化详情】")
+    if tick_logs and len(tick_logs) >= 2:
+        # tick_log[0] 是事件实体发言，用 tick_log[1] 作为意见传播者初始立场
+        tick_1_entries = {e.agent_id: e for e in tick_logs[1].entries}
+        tick_n_entries = {e.agent_id: e for e in tick_logs[-1].entries}
+        for agent_id in tick_n_entries:
+            if agent_id in tick_1_entries:
+                initial = tick_1_entries[agent_id].current_stance
+                final = tick_n_entries[agent_id].current_stance
+                delta = final - initial
+                group = tick_n_entries[agent_id].group_name
+                lines.append(f"  {group}: {initial:.1f} → {final:.1f} ({delta:+.1f})")
+    elif tick_logs and len(tick_logs) == 1:
+        # 只有一个 tick 的边缘情况，用 tick_log[0] 的数据
+        tick_0_entries = {e.agent_id: e for e in tick_logs[0].entries}
+        for entry in tick_0_entries:
+            lines.append(f"  {entry.group_name}: {entry.current_stance:.1f}（无变化，单 tick 数据）")
+
+    # 7. x(t) 序列
+    lines.append(f"\n【x(t) 序列】：{' → '.join([f'{x:.2f}' for x in x_t_sequence])}")
 
     return "\n".join(lines)
 
@@ -219,12 +280,18 @@ def assess_risk(x_t_sequence: List[float], tick_logs: List[TickLog]) -> tuple:
         return RiskLevel.LOW, f"舆情平稳，x(t)={final_x:.1f}，风险较低"
 
 
+# 模块级变量，用于存储 LLM 生成的 Markdown 报告
+_llm_generated_markdown: str = ""
+
+
 def generate_report_with_llm(
     extraction_output: EntityExtractionOutput,
     tick_logs: List[TickLog],
     x_t_sequence: List[float],
 ) -> Phase4Output:
     """使用 LLM 生成报告
+
+    v1.1.8: 直接生成 Markdown 格式报告
 
     Args:
         extraction_output: 实体提取结果
@@ -234,20 +301,18 @@ def generate_report_with_llm(
     Returns:
         Phase4Output 对象
     """
+    global _llm_generated_markdown
+
     llm = get_llm_client()
 
-    # 构建 prompt
-    emotion_table = build_emotion_table(tick_logs)
+    # 构建完整上下文
+    report_context = build_full_report_context(extraction_output, tick_logs, x_t_sequence)
 
-    user_prompt = REPORT_USER_PROMPT.format(
-        event_summary=extraction_output.event_summary,
-        event_type=extraction_output.event_type,
-        temperature=extraction_output.event_temperature,
-        intensity=extraction_output.event_intensity,
-        emotion_table=emotion_table,
-        event_entity_count=len(extraction_output.event_entities),
-        spreader_count=len(extraction_output.opinion_spreaders),
-    )
+    user_prompt = f"""请根据以下数据生成舆情洞察报告：
+
+{report_context}
+
+请生成完整的 Markdown 格式报告。报告应面向决策者，结论先行，包含所有章节（概要、实体图谱、Tick 0发言、关键拐点、意见演化、立场变化、极化轨迹、关键洞察、舆论态势、风险评估）。"""
 
     console.print("[cyan]正在调用 LLM 生成报告...[/cyan]")
 
@@ -257,8 +322,13 @@ def generate_report_with_llm(
         response_model=None,
     )
 
-    # 解析响应
-    return parse_llm_report_response(response, extraction_output, tick_logs, x_t_sequence)
+    # 保存 LLM 生成的 Markdown
+    _llm_generated_markdown = response
+
+    # 解析响应并构建 Phase4Output
+    phase4_output = parse_llm_report_response(response, extraction_output, tick_logs, x_t_sequence)
+
+    return phase4_output
 
 
 def parse_llm_report_response(
@@ -269,6 +339,8 @@ def parse_llm_report_response(
 ) -> Phase4Output:
     """解析 LLM 报告响应
 
+    v1.1.8: LLM 直接生成 Markdown，解析失败时使用 fallback
+
     Args:
         response: LLM 返回的原始字符串
         extraction_output: 实体提取结果
@@ -278,55 +350,45 @@ def parse_llm_report_response(
     Returns:
         Phase4Output 对象
     """
-    import re
-
-    # 提取 JSON
-    json_match = re.search(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', response, re.DOTALL)
-
-    if not json_match:
-        console.print("[yellow]警告：[/yellow] 无法解析 LLM 报告，使用自动分析")
+    # 检查响应是否有效
+    if not response or len(response) < 100:
+        console.print("[yellow]警告：[/yellow] LLM 报告过短，使用自动分析")
         return generate_fallback_report(extraction_output, tick_logs, x_t_sequence)
 
-    try:
-        data = json.loads(json_match.group())
-
-        # 构建情绪轨迹
-        emotion_trajectory = [
-            EmotionTrajectory(
-                tick=log.tick,
-                mean_stance=log.global_metrics.mean_stance,
-                std_stance=log.global_metrics.std_stance,
-                polarization_index=log.global_metrics.polarization_index,
-                key_event=f"Agent #{max(log.entries, key=lambda e: abs(e.stance_delta)).agent_id} 发言",
-            )
-            for log in tick_logs if log.entries
-        ]
-
-        # 识别拐点
-        from src.phase3_tick_simulation import load_phase2_output
-        phase2_output = load_phase2_output()
-        inflection_points = identify_inflection_points(tick_logs, phase2_output)
-
-        # 风险评估
-        risk_level_str = data.get("risk_level", "medium")
-        try:
-            risk_level = RiskLevel(risk_level_str)
-        except ValueError:
-            risk_level = RiskLevel.MEDIUM
-
-        return Phase4Output(
-            event_summary=data.get("event_summary", extraction_output.event_summary),
-            stakeholder_map=data.get("stakeholder_map", ""),
-            emotion_trajectory=emotion_trajectory,
-            inflection_points=inflection_points,
-            risk_level=risk_level,
-            risk_assessment=data.get("risk_assessment", ""),
-            x_t_sequence=x_t_sequence,
+    # 构建情绪轨迹
+    emotion_trajectory = [
+        EmotionTrajectory(
+            tick=log.tick,
+            mean_stance=log.global_metrics.mean_stance,
+            std_stance=log.global_metrics.std_stance,
+            polarization_index=log.global_metrics.polarization_index,
+            key_event=f"Agent #{max(log.entries, key=lambda e: abs(e.stance_delta)).agent_id} 发言",
         )
+        for log in tick_logs if log.entries
+    ]
 
-    except (json.JSONDecodeError, ValueError) as e:
-        console.print(f"[yellow]警告：[/yellow] 解析报告失败: {e}，使用自动分析")
-        return generate_fallback_report(extraction_output, tick_logs, x_t_sequence)
+    # 识别拐点
+    from src.phase3_tick_simulation import load_phase2_output
+    phase2_output = load_phase2_output()
+    inflection_points = identify_inflection_points(tick_logs, phase2_output)
+
+    # 风险评估
+    risk_level, risk_assessment = assess_risk(x_t_sequence, tick_logs)
+
+    # 利益相关方图谱
+    event_entities_str = ", ".join([e.name for e in extraction_output.event_entities])
+    spreaders_str = ", ".join([s.group_name for s in extraction_output.opinion_spreaders])
+    stakeholder_map = f"事件实体: {event_entities_str} | 传播者: {spreaders_str}"
+
+    return Phase4Output(
+        event_summary=extraction_output.event_summary,
+        stakeholder_map=stakeholder_map,
+        emotion_trajectory=emotion_trajectory,
+        inflection_points=inflection_points,
+        risk_level=risk_level,
+        risk_assessment=risk_assessment,
+        x_t_sequence=x_t_sequence,
+    )
 
 
 def generate_fallback_report(
@@ -513,7 +575,14 @@ def save_markdown_report(phase4_output: Phase4Output, extraction_output: EntityE
         phase4_output: Phase4 输出
         extraction_output: 实体提取结果
     """
-    md_content = generate_markdown_report(phase4_output, extraction_output)
+    global _llm_generated_markdown
+
+    # 如果有 LLM 生成的 Markdown（长度 > 100），直接使用
+    if _llm_generated_markdown and len(_llm_generated_markdown) > 100:
+        md_content = _llm_generated_markdown
+    else:
+        # 否则生成默认格式
+        md_content = generate_markdown_report(phase4_output, extraction_output)
 
     md_path = config.FINAL_REPORT_PATH.with_suffix(".md")
     with open(md_path, "w", encoding="utf-8") as f:
