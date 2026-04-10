@@ -4,6 +4,144 @@
 
 ---
 
+## [2026-04-02] 完成任务：v1.1.11 - IPC 框架 Phase 1 重构
+
+**执行者**：Claude Code
+**基于版本**：v1.1.10
+**任务文档**：`docs/iterations/v1.1.11_ipc_phase1_redesign.md`
+
+**本次修复目标**：
+1. 拆分 event_temperature → event_scale + event_controversy
+2. 引入 IPC 框架：I（强度）、P（方向）、C（一致性）
+3. 废除 confirmation_bias_level
+4. 合并 group_distribution_strategy 进 event_controversy
+
+**实际变更文件**：
+- ✅ 修改：`src/schemas.py` - event_temperature/intensity → event_scale/controversy, stance_score → I+P, 新增 C/stance_score 兼容属性
+- ✅ 修改：`src/phase1_entity_extraction.py` - Analyzer/Generator/Validator Prompt 重写，移除 confirmation_bias_level
+- ✅ 修改：`main.py` - event_temperature/intensity 引用更新
+- ✅ 修改：`src/phase4_report_agent.py` - event_temperature/intensity 引用更新
+
+**端到端验收结果**：
+- ✅ `python main.py seeds/test1.txt` 运行成功
+- ✅ Phase 1 输出包含 event_scale, event_controversy, I, P 字段
+- ✅ Phase 2/3/4 正常工作（通过 stance_score 兼容属性）
+- ✅ 输出文件已同步到 BaiduSyncdisk
+- ✅ 极化从 I/P 分布自然涌现
+
+**状态**：✅ 已完成
+
+---
+
+## [2026-03-31] 完成任务：v1.1.10 - stance修正与LLM角色重命名
+
+**执行者**：Claude Code
+**基于版本**：v1.1.9
+**任务文档**：`docs/iterations/v1.1.10_stance_and_naming_fix.md`
+
+**本次修复目标**：
+1. stance_score 描述修正（删除dev_spec中的矛盾警告文字，修正schemas.py描述）
+2. LLM1/2/3 重命名为 Analyzer/Generator/Validator
+
+**实际变更文件**：
+- ✅ 修改：`src/schemas.py` - stance_score description 修正
+- ✅ 修改：`src/phase1_entity_extraction.py` - 函数和Prompt常量重命名
+- ✅ 修改：`src/__init__.py` - 模块说明注释更新
+- ✅ 修改：`main.py` - 注释和打印输出更新
+- ✅ 修改：`README.md` - 文档引用更新
+- ✅ 修改：`CLAUDE.md` - 开发规范引用更新
+- ✅ 修改：`docs/dev_spec.md` - 全部LLM1/2/3引用替换
+- ✅ 新增：`docs/iterations/v1.1.10_stance_and_naming_fix.md` - 迭代文档
+
+**验收结果**：
+- ✅ Python导入验证通过（analyzer_set_parameters, generator_create_entities, validator_check_format）
+- ✅ stance_score描述验证通过（1.0-3.0=强烈批评，4.0-6.0=中立观望，7.0-10.0=强烈支持）
+- ✅ 所有LLM1/2/3引用已替换为Analyzer/Generator/Validator
+
+**状态**：✅ 已完成
+
+---
+
+## [2026-03-30] 完成任务：v1.1.9 - 数据修复与susceptibility接入
+
+**执行者**：Claude Code
+**基于版本**：v1.1.8
+**任务文档**：`docs/iterations/v1.1.9_data_fix_and_susceptibility.md`
+
+**当前项目生命周期**：v1.1.x MVP 阶段 - 数据质量优化
+
+**本次修复目标**：
+1. 最终报告立场变化数据从tick_log[1]和tick_log[-1]读取
+2. susceptibility字段接入stance变化约束逻辑
+
+**实际变更文件**：
+- ✅ 修改：`src/phase4_report_agent.py` - 数据源切换
+- ✅ 修改：`src/phase3_tick_simulation.py` - susceptibility接入
+- ✅ 修改：`src/config.py` - 新增SUSCEPTIBILITY_MODULATION_FACTOR参数
+
+**验收结果**：
+- ✅ tick_log[1]和tick_log[-1]数据正确读取
+- ✅ susceptibility调制逻辑生效
+
+**状态**：✅ 已完成
+
+---
+
+## [2026-03-29] 完成任务：v1.1.8 - 报告 Agent 优化
+
+**执行者**：Claude Code
+**基于版本**：v1.1.7
+**任务文档**：`docs/iterations/v1.1.8_report_agent_enhanced.md`
+
+**当前项目生命周期**：v1.1.x MVP 阶段 - 报告质量优化
+
+**本次修复目标**：
+1. 重构报告结构（概要 → 实体 → 拐点 → 演化 → 洞察 → 风险）
+2. 增加 Tick 0 发言展示
+3. 增加关键拐点识别（极化变化 > 0.05 或立场偏移 > 1.5）
+4. 增加 Tick 1-N 演化展示
+5. 增加最终立场变化表格
+6. 增加极化演化轨迹
+7. 增加关键洞察生成（3-6 条）
+8. 增加舆论态势判断
+
+**实际变更文件**：
+- ✅ 修改：`src/phase4_report_agent.py` - 重构报告生成逻辑（REPORT_SYSTEM_PROMPT、build_full_report_context 等）
+
+**验收结果**：
+- ✅ 报告包含所有新增章节（10个章节）
+- ✅ test1/test3 重新运行，生成新版报告
+- ⚠️ 报告长度约 117 行（文档要求 500-800 行，LLM 自动调整）
+- ✅ 新报告可读性明显提升
+- ✅ 决策者能在 3 分钟内抓住核心信息
+
+**状态**：✅ 已完成
+
+---
+
+## [2026-03-29] 完成任务：v1.1.7 - 意见传播者群体生成优化
+
+**执行者**：Claude Code
+**基于版本**：v1.1.6
+**任务文档**：`docs/iterations/v1.1.7_opinion_spreader_distribution_fix.md`
+
+**当前项目生命周期**：v1.1.x MVP 阶段 - Agent 质量优化
+
+**本次修复目标**：
+1. LLM1 判断 group_distribution_strategy（normal / minimal_supporters / no_supporters）
+2. LLM2 根据策略生成群体（no_supporters 时不生成支持者）
+3. LLM3 校验群体分布合理性
+4. Phase3 增加"舆论压力"机制
+
+**实际变更文件**：
+- ✅ 修改：`src/schemas.py` - 新增 group_distribution_strategy, has_official_response, official_admits_fault 字段
+- ✅ 修改：`src/phase1_entity_extraction.py` - LLM1/2/3 Prompt 修改及函数参数更新
+- ✅ 修改：`src/phase3_tick_simulation.py` - 增加舆论压力机制
+
+**状态**：✅ 已完成
+
+---
+
 ## [2026-03-26] 完成任务：v1.1.5 - Agent 多样性增强
 
 **执行者**：Claude Code

@@ -11,6 +11,9 @@ Why: 保证模块间数据流的可靠性，所有 LLM 输出必须经过校验�
 - v1.1.3: GraphNode 增加 confirmation_bias_level 字段，EdgeType 增加跨圈层边类型
 - v1.1.4: 实体分类：新增 EntityCategory 枚举、OpinionSpreader 模型，
          EntityExtractionOutput 改为 event_entities + opinion_spreaders 双列结构
+- v1.1.11: IPC 框架重构：event_temperature/intensity → event_scale/controversy，
+         stance_score → I + P，废除 confirmation_bias_level
+- v1.1.12: Agent 人设增强：OpinionSpreader 新增 6 字段，GraphNode 透传
 """
 
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -29,7 +32,7 @@ class EntityCategory(str, Enum):
 
 
 # =============================================================================
-# Phase 1: 实体提取（v1.1.4 重构：LLM1/2/3 协作）
+# Phase 1: 实体提取（v1.1.4 重构，v1.1.10 更名为 Analyzer/Generator/Validator）
 # =============================================================================
 
 class Entity(BaseModel):
@@ -67,25 +70,32 @@ class OpinionSpreader(BaseModel):
     """
     意见传播实体（Opinion Spreader）
 
-    不直接参与事件，但会传播意见。基于事件温度和烈度生成。
+    不直接参与事件，但会传播意见。基于 event_scale 和 event_controversy 生成。
 
     新增于：v1.1.4
+    修改于：v1.1.11 - IPC 框架
+    - stance_score → I + P
+    - 废除 confirmation_bias_level
+    修改于：v1.1.12 - Agent 人设增强
+    - 新增 6 个字段：persona_name, age_range, occupation, personality, motivation, typical_phrases
     """
     group_name: str = Field(..., description="群体名称，如'花西子死忠粉'、'理性消费者'")
     related_event_entity: str = Field(
         ..., description="关联的事件实体名称（必须在 event_entities 中存在）"
     )
     description: str = Field(..., max_length=100, description="50字以内的人设描述")
-    stance_score: float = Field(
-        ..., ge=1.0, le=10.0,
-        description="初始立场分。1=强烈支持，10=强烈批评"
+    I: float = Field(
+        ...,
+        ge=1.0, le=10.0,
+        description="立场强度(Intensity)：1.0-3.0=极易动摇，4.0-6.0=中等坚定，7.0-10.0=极度坚定"
+    )
+    P: int = Field(
+        ...,
+        description="立场方向(Position)：+1=支持/维护，-1=反对/批评"
     )
     susceptibility: float = Field(
         ..., ge=0.0, le=1.0,
         description="易感性。越高越容易被他人发言影响"
-    )
-    confirmation_bias_level: Literal["none", "weak", "strong"] = Field(
-        ..., description="确认偏差强度：none=无偏差，weak=弱偏差，strong=强偏差"
     )
     estimated_percentage: int = Field(
         ..., ge=0, le=100,
@@ -99,11 +109,46 @@ class OpinionSpreader(BaseModel):
         default="opinion_spreader", description="固定为 opinion_spreader"
     )
 
-    @field_validator('stance_score')
+    # === v1.1.12 新增字段 ===
+    persona_name: str = Field(
+        ...,
+        description="群体典型代表的名字，如：小美、老张、陈老师"
+    )
+    age_range: str = Field(
+        ...,
+        description="年龄段，如：18-24、25-34、35-45、45-60"
+    )
+    occupation: str = Field(
+        ...,
+        description="职业或身份，如：大学生、美妆博主、全职妈妈、退休教师、程序员"
+    )
+    personality: str = Field(
+        ...,
+        description="性格特征，如：冲动易怒、冷静理性、感性共情、较真执拗、随大流"
+    )
+    motivation: str = Field(
+        ...,
+        description="发言的核心动机，如：维护消费者权益、追求性价比、支持国货、追求真相"
+    )
+    typical_phrases: List[str] = Field(
+        ...,
+        description="2-3个口头禅或常用表达",
+        min_length=2,
+        max_length=3
+    )
+
+    @field_validator('I')
     @classmethod
-    def validate_stance_score(cls, v):
+    def validate_I(cls, v):
         if not 1.0 <= v <= 10.0:
-            raise ValueError('stance_score must be between 1.0 and 10.0')
+            raise ValueError('I must be between 1.0 and 10.0')
+        return v
+
+    @field_validator('P')
+    @classmethod
+    def validate_P(cls, v):
+        if v not in (+1, -1):
+            raise ValueError('P must be +1 or -1')
         return v
 
     @field_validator('susceptibility')
@@ -120,6 +165,29 @@ class OpinionSpreader(BaseModel):
             raise ValueError('estimated_percentage must be between 0 and 100')
         return v
 
+    @property
+    def C(self) -> float:
+        """C = P × (I/10)，系统固定推导"""
+        return self.P * (self.I / 10)
+
+    @property
+    def stance_score(self) -> float:
+        """兼容属性：将 I/P 映射回 1-10 分数"""
+        if self.P == +1:
+            return self.I
+        else:
+            return 11 - self.I
+
+    @property
+    def confirmation_bias_level(self) -> str:
+        """兼容属性：从 I 推导 confirmation_bias_level"""
+        if self.I >= 7:
+            return "strong"
+        elif self.I >= 4:
+            return "weak"
+        else:
+            return "none"
+
 
 class Relation(BaseModel):
     """
@@ -134,28 +202,31 @@ class EntityExtractionOutput(BaseModel):
     """
     Phase 1 输出：实体提取结果（v1.1.4 重构）
 
-    采用 LLM1/2/3 协作架构：
-    - LLM1：设置 event_temperature + event_intensity
-    - LLM2：提取事件实体 + 生成意见传播者
-    - LLM3：格式校验，失败则 LLM2 重试
+    采用 Analyzer/Generator/Validator 协作架构：
+    - Analyzer：设置 event_scale + event_controversy
+    - Generator：提取事件实体 + 生成意见传播者
+    - Validator：格式校验，失败则 Generator 重试
 
     修改于：v1.1.4
     - 从 core_entities 改为 event_entities + opinion_spreaders 双列结构
-    - 新增 event_intensity 字段
 
     修改于：v1.1.7
-    - 新增 group_distribution_strategy 字段（normal/minimal_supporters/no_supporters）
-    - 新增 has_official_response 字段（官方是否回应）
-    - 新增 official_admits_fault 字段（官方是否承认错误）
+    - 历史版本曾引入群体分布策略相关字段，后续已废除
+
+    修改于：v1.1.10
+    - LLM1/2/3 → Analyzer/Generator/Validator
+
+    修改于：v1.1.11
+    - event_temperature/event_intensity → event_scale/event_controversy
     """
     event_summary: str = Field(..., description="事件摘要")
-    event_temperature: float = Field(
+    event_scale: float = Field(
         ..., ge=0.0, le=1.0,
-        description="事件热度参数：0.0=冷门事件，1.0=全网热议"
+        description="事件规模参数：0.0=个人事件，1.0=全社会事件"
     )
-    event_intensity: float = Field(
+    event_controversy: float = Field(
         ..., ge=0.0, le=1.0,
-        description="事件烈度参数：0.0=极低，1.0=极高"
+        description="事件争议性：0.0=事实清晰，1.0=高度对立"
     )
     event_type: str = Field(
         ..., description="事件类型（如：产品质量危机、校园冲突、政策争议）"
@@ -168,25 +239,11 @@ class EntityExtractionOutput(BaseModel):
     )
     relations: List[Relation] = Field(..., description="实体关系列表")
 
-    # v1.1.7 新增：群体分布策略
-    group_distribution_strategy: Literal["normal", "minimal_supporters", "no_supporters"] = Field(
-        default="normal",
-        description="群体分布策略：normal=正常生成支持者，minimal_supporters=极少数支持者，no_supporters=不生成支持者"
-    )
-    has_official_response: bool = Field(
-        default=False,
-        description="官方是否回应了事件"
-    )
-    official_admits_fault: bool = Field(
-        default=False,
-        description="官方是否承认错误/道歉"
-    )
-
-    @field_validator('event_temperature', 'event_intensity')
+    @field_validator('event_scale', 'event_controversy')
     @classmethod
     def validate_ratios(cls, v):
         if not 0.0 <= v <= 1.0:
-            raise ValueError(f'event_temperature/event_intensity 必须在 0.0-1.0 之间，当前为 {v}')
+            raise ValueError(f'event_scale/event_controversy 必须在 0.0-1.0 之间，当前为 {v}')
         return v
 
     @model_validator(mode='after')
@@ -212,15 +269,79 @@ class EntityExtractionOutput(BaseModel):
         return self
 
     @model_validator(mode='after')
-    def validate_extreme_stances(self):
-        """验证至少有一个 stance_score < 3.0 和一个 > 7.0"""
-        has_low = any(s.stance_score < 3.0 for s in self.opinion_spreaders)
-        has_high = any(s.stance_score > 7.0 for s in self.opinion_spreaders)
-        if not (has_low and has_high):
+    def validate_bipolar_P(self):
+        """验证至少有一个 P=+1 和一个 P=-1（确保双向对立）"""
+        has_support = any(s.P == +1 for s in self.opinion_spreaders)
+        has_oppose = any(s.P == -1 for s in self.opinion_spreaders)
+        if not (has_support and has_oppose):
             raise ValueError(
-                'opinion_spreaders 必须至少包含一个 stance_score < 3.0 和一个 > 7.0 的群体'
+                'opinion_spreaders 必须至少包含一个 P=+1（支持）和一个 P=-1（反对）的群体'
             )
         return self
+
+
+class EntityExtractionResult(BaseModel):
+    """Phase 1 事实层输出。"""
+    event_summary: str = Field(..., description="事件摘要")
+    event_scale: float = Field(
+        ..., ge=0.0, le=1.0,
+        description="事件规模参数：0.0=个人事件，1.0=全社会事件"
+    )
+    event_controversy: float = Field(
+        ..., ge=0.0, le=1.0,
+        description="事件争议性：0.0=事实清晰，1.0=高度对立"
+    )
+    event_type: str = Field(..., description="事件类型")
+    event_entities: List[Entity] = Field(
+        ..., min_length=1, description="事件实体列表（直接参与事件）"
+    )
+    relations: List[Relation] = Field(default_factory=list, description="实体关系列表")
+
+
+class GroupPlanItem(BaseModel):
+    """Phase 1 结构层输出项。"""
+    group_name: str = Field(..., description="群体名称")
+    related_event_entity: str = Field(..., description="关联的事件实体名称")
+    description: str = Field(..., max_length=100, description="骨架描述")
+    I: float = Field(..., ge=1.0, le=10.0, description="立场强度")
+    susceptibility: float = Field(..., ge=0.0, le=1.0, description="易感性")
+    raw_weight: float = Field(..., gt=0.0, description="原始权重，用于后续归一化为百分比")
+    entity_category: Literal["opinion_spreader"] = Field(
+        default="opinion_spreader", description="固定为 opinion_spreader"
+    )
+
+
+class GroupPlanResult(BaseModel):
+    """Phase 1 结构层输出。"""
+    opinion_spreaders: List[GroupPlanItem] = Field(
+        default_factory=list,
+        description="意见传播者列表"
+    )
+
+
+class PersonaProfile(BaseModel):
+    """Persona 表达层画像。"""
+    persona_name: str = Field(..., description="群体典型代表名字")
+    age_range: str = Field(..., description="年龄段")
+    occupation: str = Field(..., description="职业或身份")
+    personality: str = Field(..., description="性格特征")
+    motivation: str = Field(..., description="发言核心动机")
+    typical_phrases: List[str] = Field(..., min_length=2, max_length=3, description="口头禅")
+    communication_style: str = Field(..., max_length=100, description="说话风格")
+
+
+class PersonaEnrichedGroupItem(BaseModel):
+    """合并 skeleton 与 persona 的中间结果。"""
+    skeleton: GroupPlanItem
+    persona: PersonaProfile
+
+
+class PersonaEnrichedGroupPlan(BaseModel):
+    """表达层增强后的群体计划。"""
+    groups: List[PersonaEnrichedGroupItem] = Field(
+        default_factory=list,
+        description="合并 skeleton 与 persona 的群体列表"
+    )
 
 
 # =============================================================================
@@ -247,7 +368,7 @@ class Archetype(BaseModel):
         ..., description="关联的核心实体名称"
     )
     description: str = Field(..., max_length=100, description="50字以内的人设描述")
-    stance_score: float = Field(..., ge=1.0, le=10.0, description="初始立场分。1=强烈支持，10=强烈批评")
+    stance_score: float = Field(..., ge=1.0, le=10.0, description="初始立场分。1.0-3.0=强烈批评，4.0-6.0=中立观望，7.0-10.0=强烈支持")
     susceptibility: float = Field(..., ge=0.0, le=1.0, description="易感性。越高越容易被他人发言影响")
     confirmation_bias_level: Literal["none", "weak", "strong"] = Field(
         ..., description="确认偏差强度"
@@ -330,6 +451,8 @@ class GraphNode(BaseModel):
     修改于：v1.1.4
     - archetype_index 使用特殊值：-1=事件实体，-2=意见传播实体
     - 新增 entity_category 字段区分节点类型
+    修改于：v1.1.12
+    - 新增 persona_name, age_range, occupation, personality, motivation, typical_phrases 字段（透传自 OpinionSpreader）
     """
     id: int = Field(..., description="节点唯一ID")
     group_name: str = Field(..., description="所属群体名称")
@@ -347,6 +470,14 @@ class GraphNode(BaseModel):
     entity_category: Literal["event_entity", "opinion_spreader"] = Field(
         ..., description="实体类别：event_entity 或 opinion_spreader"
     )
+
+    # === v1.1.12 新增字段（透传自 OpinionSpreader） ===
+    persona_name: Optional[str] = Field(default=None, description="群体典型代表的名字")
+    age_range: Optional[str] = Field(default=None, description="年龄段")
+    occupation: Optional[str] = Field(default=None, description="职业或身份")
+    personality: Optional[str] = Field(default=None, description="性格特征")
+    motivation: Optional[str] = Field(default=None, description="发言的核心动机")
+    typical_phrases: Optional[List[str]] = Field(default=None, description="口头禅列表")
 
 
 class EdgeType(str, Enum):
@@ -407,6 +538,46 @@ class TickLog(BaseModel):
     tick: int = Field(..., ge=0, description="轮次编号（0=事件实体发言）")
     entries: List[AgentEntry] = Field(..., description="所有 Agent 的发言条目")
     global_metrics: GlobalMetrics = Field(..., description="本轮全局指标")
+
+
+class SimulationCard(BaseModel):
+    """Phase 3 轻量模拟卡片。"""
+    agent_id: int = Field(..., ge=0, description="Agent 唯一ID")
+    group_name: str = Field(..., description="群体名称")
+    related_entity: str = Field(..., description="关联实体")
+    current_stance: float = Field(..., ge=1.0, le=10.0, description="当前立场分")
+    susceptibility: float = Field(..., ge=0.0, le=1.0, description="易感性")
+    short_personality: str = Field(..., description="压缩后的性格摘要")
+    short_motivation: str = Field(..., description="压缩后的动机摘要")
+    top_phrases: List[str] = Field(default_factory=list, description="保留的1-2条口头禅")
+    activity_state: str = Field(default="active", description="为未来 state machine 预留的活动状态入口")
+
+
+class SpeakerSelectionResult(BaseModel):
+    """自适应 speaker 选择结果。"""
+    selected_speakers: List[int] = Field(default_factory=list, description="本轮被选中发言的 agent ids")
+    silent_agents: List[int] = Field(default_factory=list, description="本轮静默更新的 agent ids")
+    ratio: float = Field(..., ge=0.0, le=1.0, description="本轮目标发言比例")
+    spreader_count: int = Field(default=0, ge=0, description="本轮传播者总数")
+    computed_num_speakers: int = Field(default=0, ge=0, description="规则计算得到的目标发言数")
+    expected_selected_count: int = Field(default=0, ge=0, description="本轮期望被选中的 speaker 数")
+    actual_selected_count: int = Field(default=0, ge=0, description="本轮实际被选中的 speaker 数")
+    is_full_selection: bool = Field(default=False, description="本轮是否全量选择")
+    full_selection_reason: str = Field(default="not_full_selection", description="全量选择原因分类")
+    validation_basis: str = Field(default="selected_speakers", description="当前校验所依据的 speaker 集合")
+
+
+class SilentAgentUpdate(BaseModel):
+    """静默 agent 的轻量更新结果。"""
+    agent_id: int = Field(..., ge=0, description="Agent 唯一ID")
+    previous_stance: float = Field(..., ge=1.0, le=10.0, description="更新前立场分")
+    current_stance: float = Field(..., ge=1.0, le=10.0, description="更新后立场分")
+    stance_delta: float = Field(..., description="立场变化量")
+    saw_posts_from: List[int] = Field(default_factory=list, description="本轮被动看到的发言者 ID 列表")
+    change_reason: str = Field(..., description="silent agent 变化原因")
+    comment: str = Field(default="（未发言）", description="静默 agent 的占位评论")
+    reasoning: str = Field(default="本轮未进入公开发言队列", description="静默 agent 的解释")
+    activity_state: str = Field(default="silent", description="为未来 state machine 预留的活动状态入口")
 
 
 # =============================================================================

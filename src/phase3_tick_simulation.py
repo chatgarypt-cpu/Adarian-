@@ -10,9 +10,14 @@ Phase 3: 异步时间步推演
 关键输出：x(t) 序列，即全局平均立场分，用于后续 AD/SEIR 模块。
 
 修改于：v1.1.4
+修改于：v1.1.12 - 拓扑信息流修复 + Agent 人设增强 + 历史记忆注入
+- get_followed_comments() 增加 tick 参数，Tick 2+ 可看到 peer 发言
+- generate_opinion_spreader_post() 增加 tick 参数，注入历史记忆
+- AGENT_POST_SYSTEM_PROMPT/USER_PROMPT 重构，包含完整人设档案
 """
 
 import json
+import time
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple
 import networkx as nx
@@ -27,6 +32,11 @@ from src.schemas import (
     TickLog, AgentEntry, GlobalMetrics, NodeRole
 )
 from src.llm_client import get_llm_client
+from src.utils.runtime_logger import get_runtime_logger
+from src.phase3.context_builder import build_lightweight_context
+from src.phase3.simulation_card import build_simulation_card
+from src.phase3.speaker_selector import select_speakers
+from src.phase3.state_updater import update_silent_agent
 
 console = Console()
 
@@ -112,12 +122,20 @@ EVENT_ENTITY_POST_SYSTEM_PROMPT = """你是一个真实的社会事件参与者�
 """
 
 
-# 意见传播实体发言 Prompt（Tick N）
-AGENT_POST_SYSTEM_PROMPT = """你是一个社交媒体用户，你的人设如下：
-- 身份：{group_name}
-- 关联实体：**{related_entity}**（你必须围绕这个实体展开讨论）
-- 性格特征：{description}
+# 意见传播实体发言 Prompt（Tick N，v1.1.12 重构）
+AGENT_POST_SYSTEM_PROMPT = """你是一个真实的社交媒体用户，你有自己的身份、性格和说话习惯。
+
+【你的身份档案】
+- 名字：{persona_name}
+- 所属群体：{group_name}
+- 年龄段：{age_range}
+- 职业：{occupation}
+- 性格：{personality}
+- 发言动机：{motivation}
+- 口头禅：{typical_phrases}
+- 关联实体：**{related_entity}**（你的发言必须围绕这个实体展开）
 - 说话风格：{communication_style}
+- 人设简介：{description}
 
 {stance_semantics}
 
@@ -125,17 +143,18 @@ AGENT_POST_SYSTEM_PROMPT = """你是一个社交媒体用户，你的人设如�
 
 {opinion_pressure_prompt}
 
+【发言要求】
+1. 你的发言必须符合你的性格（{personality}）和职业背景（{occupation}）
+2. 适当使用你的口头禅，但不要每句都用
+3. 你的发言必须提及或暗示关联实体**{related_entity}**
+4. 发言要像真实社交媒体评论，不要像官方声明
+
 你必须严格按照以下 JSON 格式输出：
 {{
-  "comment": "你的评论（50字以内，必须提及或暗示关联实体**{related_entity}**，符合你的说话风格）",
+  "comment": "你的评论（50字以内，符合你的人设和说话风格）",
   "new_stance": 1.0到10.0之间的浮点数,
   "reasoning": "你为什么持这个立场（30字以内）"
 }}
-
-注意：
-1. new_stance 必须在 1.0-10.0 之间
-2. 评论要符合你的人设和说话风格
-3. **重要**：你的发言必须提及你的关联实体"**{related_entity}**"
 """
 
 AGENT_POST_USER_PROMPT = """【事件背景】
@@ -144,14 +163,18 @@ AGENT_POST_USER_PROMPT = """【事件背景】
 【事件实体{event_entity_name}的发言】
 {event_entity_post}
 
-你关注的人最近说了这些话：
+【你关注的人最近说了这些话】
 {followed_agents_comments}
+
+【你之前的发言记录】
+{agent_history}
 
 {stance_meaning}
 
 {opinion_pressure_situation}
 
 请根据你的人设，发表你的看法。
+重要：你必须结合你关注的人的发言，针对他们说的具体内容进行回应或反驳，而不是只发表无关的感想。
 """
 
 
@@ -203,6 +226,7 @@ class SimulationEngine:
 
         # 事件实体发言记录（Tick 0）
         self.event_entity_posts: Dict[int, str] = {}  # agent_id -> comment
+        self.activity_state: Dict[int, str] = {node.id: "active" for node in phase2_output.nodes}
 
         # LLM 客户端（差异化温度）
         from src.llm_client import LLMClient
@@ -263,6 +287,8 @@ class SimulationEngine:
                     previous_stance=5.0,
                     current_stance=5.0,
                     stance_delta=0.0,
+                    susceptibility=0.0,
+                    change_reason="entity_not_speaking",
                     comment=reason,
                     reasoning="实体不可发言",
                 )
@@ -285,6 +311,8 @@ class SimulationEngine:
                     previous_stance=5.0,
                     current_stance=5.0,
                     stance_delta=0.0,
+                    susceptibility=0.0,
+                    change_reason="entity_original_statement",
                     comment=comment,
                     reasoning=reasoning,
                 )
@@ -323,6 +351,8 @@ class SimulationEngine:
                     previous_stance=5.0,
                     current_stance=5.0,
                     stance_delta=0.0,
+                    susceptibility=0.0,
+                    change_reason="entity_generated_statement",
                     comment=comment,
                     reasoning=reasoning,
                 )
@@ -343,17 +373,24 @@ class SimulationEngine:
                     previous_stance=5.0,
                     current_stance=5.0,
                     stance_delta=0.0,
+                    susceptibility=0.0,
+                    change_reason="entity_generation_failed",
                     comment=comment,
                     reasoning="生成失败",
                 ))
 
         return entries
 
-    def get_followed_comments(self, agent_id: int, max_posts: int = None) -> List[Tuple[int, str]]:
-        """获取某 agent 关注的节点的最新发言
+    def get_followed_comments(self, agent_id: int, tick: int, max_posts: int = None) -> List[Tuple[int, str]]:
+        """获取某agent 能看到的发言
+
+        v1.1.12 拓扑信息流修复：
+        - 信息来源1：拓扑连接的 core 节点（事件实体）的 Tick 0 发言（始终可见）
+        - 信息来源2：拓扑连接的 peer 节点（其他 opinion_spreader）的上轮发言（Tick 2+ 可见）
 
         Args:
             agent_id: agent ID
+            tick: 当前轮次
             max_posts: 最多获取的发言数
 
         Returns:
@@ -361,25 +398,56 @@ class SimulationEngine:
         """
         max_posts = max_posts or config.MAX_POSTS_PER_TICK
 
-        # 获取该 agent 关注的节点（关注的人）
+        # 获取该 agent 拓扑连接的节点
         followers = list(self.G.successors(agent_id))
 
         comments = []
+
         for followed_id in followers:
-            if followed_id in self.agent_comments and self.agent_comments[followed_id]:
-                last_comment = self.agent_comments[followed_id][-1]
-                comments.append((followed_id, last_comment))
+            if followed_id not in self.agent_comments:
+                continue
+            if not self.agent_comments[followed_id]:
+                continue
+
+            followed_node = self.phase2_output.nodes[followed_id]
+
+            if followed_node.entity_category == "event_entity":
+                # core 节点：始终返回 Tick 0 发言
+                comments.append((followed_id, self.agent_comments[followed_id][0]))
+
+            elif followed_node.entity_category == "opinion_spreader" and tick >= 2:
+                # peer 节点：Tick 2+ 返回上轮发言（最后一条）
+                comments.append((followed_id, self.agent_comments[followed_id][-1]))
 
         return comments[:max_posts]
 
-    def generate_opinion_spreader_post(self, agent: GraphNode) -> Tuple[str, float, str, str]:
+    def _get_selection_inputs(self, spreader_nodes: List[GraphNode]) -> tuple[Dict[int, float], Dict[int, float], Dict[int, float]]:
+        """构造 speaker selection 所需的 activity/exposure/novelty 分数。"""
+        activity_levels: Dict[int, float] = {}
+        exposure_levels: Dict[int, float] = {}
+        novelty_scores: Dict[int, float] = {}
+
+        for node in spreader_nodes:
+            activity_levels[node.id] = min(len(self.agent_comments.get(node.id, [])) / 3, 1.0)
+            exposure_levels[node.id] = min(len(list(self.G.successors(node.id))) / 3, 1.0)
+            history = self.agent_comments.get(node.id, [])
+            novelty_scores[node.id] = 1.0 if not history else 0.4
+
+        return activity_levels, exposure_levels, novelty_scores
+
+    def generate_opinion_spreader_post(self, agent: GraphNode, tick: int) -> Tuple[str, float, str, str]:
         """为意见传播实体生成发言
+
+        v1.1.12 修改：
+        - 增加 tick 参数，用于拓扑信息流判断（Tick 2+ 才能看到 peer 发言）
+        - 增加历史记忆注入
 
         Args:
             agent: GraphNode 对象
+            tick: 当前轮次
 
         Returns:
-            (comment, new_stance, reasoning) tuple
+            (comment, new_stance, reasoning, change_reason) tuple
         """
         spreader = self.spreader_map.get(agent.group_name)
 
@@ -392,8 +460,8 @@ class SimulationEngine:
                 event_entity_post = self.event_entity_posts[node.id]
                 break
 
-        # 获取关注的发言
-        followed = self.get_followed_comments(agent.id)
+        # v1.1.12：获取关注的发言（传递 tick 参数）
+        followed = self.get_followed_comments(agent.id, tick)
         followed_text = ""
         if followed:
             followed_lines = []
@@ -403,6 +471,18 @@ class SimulationEngine:
             followed_text = "\n".join(followed_lines)
         else:
             followed_text = "（暂无其他关注对象的发言）"
+
+        # v1.1.12：构建历史发言文本（最多最近 5 轮）
+        agent_history_list = self.agent_comments.get(agent.id, [])
+        if agent_history_list:
+            recent_history = agent_history_list[-5:]  # 最多最近5轮
+            history_lines = []
+            for i, comment in enumerate(recent_history):
+                tick_num = len(agent_history_list) - len(recent_history) + i + 1
+                history_lines.append(f"- 第{tick_num}轮: \"{comment}\"")
+            history_text = "\n".join(history_lines)
+        else:
+            history_text = "（这是你的第一次发言）"
 
         # stance 语义解释
         stance = self.agent_stances[agent.id]
@@ -440,24 +520,19 @@ class SimulationEngine:
         else:
             opinion_pressure_situation = ""
 
-        # 构建 prompt
-        system_prompt = AGENT_POST_SYSTEM_PROMPT.format(
-            group_name=agent.group_name,
-            related_entity=agent.related_entity,
-            description=spreader.description if spreader else "",
-            communication_style=spreader.communication_style if spreader else "",
-            stance_semantics=STANCE_SEMANTICS,
-            confirmation_bias_prompt=confirmation_bias_prompt,
-            opinion_pressure_prompt=opinion_pressure_prompt,
-        )
+        simulation_card = build_simulation_card(agent, self.agent_stances[agent.id])
+        lightweight_followed = []
+        for src_id, comment in followed[:3]:
+            src_node = self.phase2_output.nodes[src_id]
+            lightweight_followed.append((src_id, src_node.group_name, comment))
 
-        user_prompt = AGENT_POST_USER_PROMPT.format(
+        system_prompt, user_prompt = build_lightweight_context(
+            card=simulation_card,
             event_summary=self.event_summary,
             event_entity_name=event_entity_name,
             event_entity_post=event_entity_post,
-            followed_agents_comments=followed_text,
-            stance_meaning=stance_meaning,
-            opinion_pressure_situation=opinion_pressure_situation,
+            followed=lightweight_followed,
+            history=agent_history_list,
         )
 
         try:
@@ -642,38 +717,77 @@ class SimulationEngine:
         Returns:
             TickLog 对象
         """
-        entries = []
-
-        # 只处理意见传播实体
         spreader_nodes = [
             n for n in self.phase2_output.nodes
             if n.entity_category == "opinion_spreader"
         ]
+        entries = []
+        activity_levels, exposure_levels, novelty_scores = self._get_selection_inputs(spreader_nodes)
+        selection = select_speakers(
+            tick=tick,
+            spreader_nodes=spreader_nodes,
+            activity_levels=activity_levels,
+            exposure_levels=exposure_levels,
+            novelty_scores=novelty_scores,
+        )
+        get_runtime_logger().log_speaker_selection(
+            tick=tick,
+            spreader_count=selection.spreader_count,
+            computed_num_speakers=selection.computed_num_speakers,
+            expected_selected_count=selection.expected_selected_count,
+            actual_selected_count=selection.actual_selected_count,
+            selected_speakers_count=len(selection.selected_speakers),
+            is_full_selection=selection.is_full_selection,
+            full_selection_reason=selection.full_selection_reason,
+        )
+
+        selected_lookup = set(selection.selected_speakers)
 
         for node in spreader_nodes:
             previous_stance = self.agent_stances[node.id]
 
-            # 生成发言
-            comment, new_stance, reasoning, change_reason = self.generate_opinion_spreader_post(node)
+            if node.id in selected_lookup:
+                comment, new_stance, reasoning, change_reason = self.generate_opinion_spreader_post(node, tick)
+                self.agent_stances[node.id] = new_stance
+                self.agent_comments[node.id].append(comment)
+                self.activity_state[node.id] = "active"
 
-            # 更新立场
-            self.agent_stances[node.id] = new_stance
-            self.agent_comments[node.id].append(comment)
+                saw_posts = [source_id for source_id, _ in self.get_followed_comments(node.id, tick)]
+                entry = AgentEntry(
+                    agent_id=node.id,
+                    group_name=node.group_name,
+                    saw_posts_from=saw_posts,
+                    previous_stance=previous_stance,
+                    current_stance=new_stance,
+                    stance_delta=round(new_stance - previous_stance, 2),
+                    susceptibility=node.susceptibility,
+                    change_reason=change_reason,
+                    comment=comment,
+                    reasoning=reasoning,
+                )
+                entries.append(entry)
+                continue
 
-            # 获取本轮看到的发言者
-            saw_posts = list(self.G.successors(node.id))
+            silent_update = update_silent_agent(
+                agent_id=node.id,
+                previous_stance=previous_stance,
+                susceptibility=node.susceptibility,
+                followed_comments=self.get_followed_comments(node.id, tick),
+            )
+            self.agent_stances[node.id] = silent_update.current_stance
+            self.activity_state[node.id] = silent_update.activity_state
 
             entry = AgentEntry(
                 agent_id=node.id,
                 group_name=node.group_name,
-                saw_posts_from=saw_posts,
-                previous_stance=previous_stance,
-                current_stance=new_stance,
-                stance_delta=round(new_stance - previous_stance, 2),
-                susceptibility=node.susceptibility,  # 新增 v1.1.9
-                change_reason=change_reason,  # 新增 v1.1.9
-                comment=comment,
-                reasoning=reasoning,
+                saw_posts_from=silent_update.saw_posts_from,
+                previous_stance=silent_update.previous_stance,
+                current_stance=silent_update.current_stance,
+                stance_delta=silent_update.stance_delta,
+                susceptibility=node.susceptibility,
+                change_reason=silent_update.change_reason,
+                comment=silent_update.comment,
+                reasoning=silent_update.reasoning,
             )
             entries.append(entry)
 
@@ -696,10 +810,14 @@ class SimulationEngine:
             List[TickLog]，每轮的日志
         """
         max_ticks = max_ticks or config.MAX_TICKS
+        logger = get_runtime_logger()
 
         console.print(f"[bold]开始模拟：[/bold] {max_ticks} 轮\n")
 
         # Tick 0: 事件实体发言
+        tick_0_start = time.perf_counter()
+        tick_0_llm_before = logger.get_llm_call_count()
+        logger.log_tick_start(0)
         tick_0_entries = self.run_tick_0()
 
         # Tick 0 也要计算全局指标
@@ -710,6 +828,12 @@ class SimulationEngine:
             global_metrics=tick_0_metrics,
         )
         self.tick_logs.append(tick_0_log)
+        logger.log_tick_end(
+            0,
+            time.perf_counter() - tick_0_start,
+            len(tick_0_entries),
+            logger.get_llm_call_count() - tick_0_llm_before,
+        )
 
         # Tick 1+: 意见传播实体发言
         with Progress(
@@ -723,8 +847,17 @@ class SimulationEngine:
             task = progress.add_task("[cyan]模拟进度", total=max_ticks)
 
             for tick in range(1, max_ticks + 1):
+                tick_start = time.perf_counter()
+                llm_before = logger.get_llm_call_count()
+                logger.log_tick_start(tick)
                 tick_log = self.run_tick(tick)
                 self.tick_logs.append(tick_log)
+                logger.log_tick_end(
+                    tick,
+                    time.perf_counter() - tick_start,
+                    len([entry for entry in tick_log.entries if entry.comment != "（未发言）"]),
+                    logger.get_llm_call_count() - llm_before,
+                )
 
                 progress.update(
                     task,
@@ -752,31 +885,25 @@ class SimulationEngine:
         return [log.global_metrics.mean_stance for log in self.tick_logs]
 
 
-def save_tick_logs(tick_logs: List[TickLog], output_dir: Path = None):
+def save_tick_logs(tick_logs: List[TickLog], output_path: Path = None):
     """保存每轮交互日志
 
     Args:
         tick_logs: TickLog 列表
-        output_dir: 输出目录，默认使用 config.TICK_LOGS_DIR
+        output_path: 输出文件，默认使用 config.TICK_LOGS_PATH
     """
-    output_dir = output_dir or config.TICK_LOGS_DIR
+    output_path = output_path or config.TICK_LOGS_PATH
+    output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # 清空旧日志
-    if output_dir.exists():
-        for f in output_dir.glob("tick_*.json"):
-            f.unlink()
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump([log.model_dump() for log in tick_logs], f, ensure_ascii=False, indent=2)
 
-    for log in tick_logs:
-        output_path = output_dir / f"tick_{log.tick}.json"
-        with open(output_path, "w", encoding="utf-8") as f:
-            json.dump(log.model_dump(), f, ensure_ascii=False, indent=2)
-
-    console.print(f"[green]✓[/green] 交互日志已保存至: {output_dir}")
+    console.print(f"[green]✓[/green] 交互日志已保存至: {output_path}")
 
 
 def load_extraction_output(file_path: Path = None) -> EntityExtractionOutput:
     """加载 Phase 1 输出"""
-    file_path = file_path or config.OUTPUTS_DIR / "entities_and_relations.json"
+    file_path = file_path or config.ENTITIES_OUTPUT_PATH
 
     with open(file_path, "r", encoding="utf-8") as f:
         data = json.load(f)

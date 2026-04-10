@@ -4,7 +4,85 @@
 
 ---
 
-## v1.1.9 (2026-03-30)
+## 文档变更记录
+
+### 2026-03-30
+
+| 文档 | 变更内容 |
+|------|---------|
+| `README.md` | 重写，更新项目结构、核心概念、当前版本为 v1.1.9 |
+| `dev_spec.md` | 新增第3章「核心参数定义手册」，修订章节编号，添加变更记录表头 |
+| `dev_workflow.md` | 精简为流程指南，移除过时内容，引用 dev_spec.md |
+
+---
+
+## 代码变更记录
+
+## v1.1.11 (2026-04-02)（已完成）
+
+**主题**：IPC 框架 Phase 1 重构 - 引入 SEIR 观点动力学三维参数
+
+### Breaking Change
+- **event_temperature/event_intensity 废除** → 替换为 event_scale/event_controversy
+- **stance_score 废除** → 替换为 I（强度）+ P（方向）
+- **confirmation_bias_level 废除** → 由 I 推导
+- **group_distribution_strategy 废除** → 由 event_controversy 控制
+
+### 新增
+- [schemas.py] `OpinionSpreader.I` - 立场强度 (1-10)
+- [schemas.py] `OpinionSpreader.P` - 立场方向 (+1/-1)
+- [schemas.py] `OpinionSpreader.C` - 一致性（计算属性，C = P × I/10）
+- [schemas.py] `OpinionSpreader.stance_score` - 兼容属性（I/P → 1-10 映射）
+- [schemas.py] `OpinionSpreader.confirmation_bias_level` - 兼容属性（由 I 推导）
+- [schemas.py] `EntityExtractionOutput.event_scale` - 事件规模
+- [schemas.py] `EntityExtractionOutput.event_controversy` - 事件争议性
+
+### 修改
+- [Phase 1] Analyzer Prompt 重写 - 输出 event_scale + event_controversy + event_type
+- [Phase 1] Generator Prompt 重写 - 输出 I + P，移除 stance_score/confirmation_bias_level
+- [Phase 1] Validator Prompt 重写 - 校验 I ∈ [1,10]，P ∈ {+1,-1}
+- [Phase 1] 后处理逻辑更新 - 校验双向对立（P=+1 和 P=-1）
+- [main.py] event_temperature/intensity 引用 → event_scale/event_controversy
+- [phase4_report_agent.py] 报告中的事件参数引用更新
+- [dev_spec.md] 第3章参数定义、第4章数据流全面更新
+
+### 功能
+- ✅ IPC 三维参数框架：I（强度）/ P（方向）/ C（一致性）
+- ✅ event_scale 决定 Agent 总人数和 I 分布
+- ✅ event_controversy 决定 P（立场方向）分布比例
+- ✅ 极化从 I/P 分布自然涌现
+
+### 向后兼容
+- `OpinionSpreader.stance_score` 作为兼容属性保留
+- `OpinionSpreader.confirmation_bias_level` 作为兼容属性保留
+- Phase 2/3/4 无需修改即可正常工作
+
+**详细文档**：[v1.1.11_ipc_phase1_redesign.md](./v1.1.11_ipc_phase1_redesign.md)
+**完成时间**：2026-04-02
+
+---
+
+## v1.1.10 (2026-03-31)（已完成）
+
+### Bug Fix
+- **stance_score 描述修正**：修复 dev_spec.md 第3.1节内部矛盾，删除错误的警告文字（原"1分=最支持，10分=最批评"）
+- **schemas.py stance_score 描述修正**：`src/schemas.py` OpinionSpreader 和 Archetype 的 stance_score description 修正为"1.0-3.0=强烈批评，4.0-6.0=中立观望，7.0-10.0=强烈支持"
+
+### Documentation
+- **LLM 角色重命名**：Phase 1 的 LLM1/2/3 正式更名为 Analyzer/Generator/Validator
+  - `llm1_set_parameters` → `analyzer_set_parameters`
+  - `llm2_generate_entities` → `generator_create_entities`
+  - `llm3_validate` → `validator_check_format`
+  - Prompt 常量全部重命名（LLM1_SYSTEM_PROMPT → ANALYZER_SYSTEM_PROMPT 等）
+- **更新所有引用文件**：main.py, README.md, CLAUDE.md, schemas.py, __init__.py, dev_spec.md
+
+### 详细文档
+- [v1.1.10_stance_and_naming_fix.md](./v1.1.10_stance_and_naming_fix.md)
+- **完成时间**：2026-03-31
+
+---
+
+## v1.1.9 (2026-03-30)（已完成）
 
 ### Bug Fix
 - **数据源修复**：最终报告立场变化数据从 tick_log[1] 和 tick_log[-1] 读取，而非 tick_log[0]（事件实体）和 tick_log[-1]。修复了意见传播实体立场变化始终为 0 的问题。

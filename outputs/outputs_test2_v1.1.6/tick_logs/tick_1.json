@@ -1,0 +1,87 @@
+{
+  "tick": 1,
+  "entries": [
+    {
+      "agent_id": 4,
+      "group_name": "支持譚竹的網友",
+      "saw_posts_from": [
+        1,
+        6,
+        8,
+        9
+      ],
+      "previous_stance": 2.59,
+      "current_stance": 3.59,
+      "stance_delta": 1.0,
+      "comment": "譚竹的建議合理，應尊重個人隱私與情感問題。",
+      "reasoning": "支持譚竹的理性建議"
+    },
+    {
+      "agent_id": 5,
+      "group_name": "譚竹批評者",
+      "saw_posts_from": [
+        1,
+        7
+      ],
+      "previous_stance": 7.91,
+      "current_stance": 7.61,
+      "stance_delta": -0.3,
+      "comment": "譚竹，你這種冷靜話術就是對感情的不負責任！",
+      "reasoning": "譚竹回避問題，缺乏情感責任"
+    },
+    {
+      "agent_id": 6,
+      "group_name": "支持胖貓姐姐的網友",
+      "saw_posts_from": [
+        2,
+        9
+      ],
+      "previous_stance": 2.8,
+      "current_stance": 2.5,
+      "stance_delta": -0.3,
+      "comment": "胖貓姐姐的傷心誰能體會？譚竹必須為這一切負責！",
+      "reasoning": "對事件感到悲痛，要求責任歸屬"
+    },
+    {
+      "agent_id": 7,
+      "group_name": "批評胖貓姐姐的網友",
+      "saw_posts_from": [
+        2
+      ],
+      "previous_stance": 8.16,
+      "current_stance": 7.86,
+      "stance_delta": -0.3,
+      "comment": "胖貓姐姐煽動網絡暴力，影響事件真相。",
+      "reasoning": "其行為助長謠言與網暴，損害公眾理性判斷。"
+    },
+    {
+      "agent_id": 8,
+      "group_name": "關注網絡熱度的網友",
+      "saw_posts_from": [
+        0
+      ],
+      "previous_stance": 6.13,
+      "current_stance": 6.13,
+      "stance_delta": 0.0,
+      "comment": "胖貓，你這事兒鬧大了，網友都在等你發聲！",
+      "reasoning": "繼續支持胖貓，等他回應"
+    },
+    {
+      "agent_id": 9,
+      "group_name": "關注警方聲明的網友",
+      "saw_posts_from": [
+        3
+      ],
+      "previous_stance": 4.02,
+      "current_stance": 4.5,
+      "stance_delta": 0.48,
+      "comment": "重慶警方已回应，需等待调查结果。",
+      "reasoning": "警方已介入调查，保持中立观察。"
+    }
+  ],
+  "global_metrics": {
+    "mean_stance": 5.23,
+    "std_stance": 1.64,
+    "polarization_index": 0.31
+  }
+}

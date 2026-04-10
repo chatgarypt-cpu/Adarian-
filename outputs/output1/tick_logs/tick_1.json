@@ -1,0 +1,110 @@
+{
+  "tick": 1,
+  "entries": [
+    {
+      "agent_id": 5,
+      "group_name": "情感批评者",
+      "saw_posts_from": [
+        0
+      ],
+      "previous_stance": 8.24,
+      "current_stance": 8.24,
+      "stance_delta": 0.0,
+      "comment": "胖貓，你到底在想什么？！",
+      "reasoning": "保持信任"
+    },
+    {
+      "agent_id": 6,
+      "group_name": "法律关注者",
+      "saw_posts_from": [
+        4,
+        8,
+        9
+      ],
+      "previous_stance": 5.85,
+      "current_stance": 5.75,
+      "stance_delta": -0.1,
+      "comment": "重慶警方不予立案，需进一步核实证据。",
+      "reasoning": "警方决定需依据法律程序。"
+    },
+    {
+      "agent_id": 7,
+      "group_name": "中立观察者",
+      "saw_posts_from": [
+        3
+      ],
+      "previous_stance": 5.37,
+      "current_stance": 5.1,
+      "stance_delta": -0.27,
+      "comment": "胖貓姐姐的言论反映了部分网友情绪，需理性看待事件。",
+      "reasoning": "情绪化表达可能影响舆论公正性。"
+    },
+    {
+      "agent_id": 8,
+      "group_name": "网络暴力批评者",
+      "saw_posts_from": [
+        2,
+        11
+      ],
+      "previous_stance": 9.33,
+      "current_stance": 9.03,
+      "stance_delta": -0.3,
+      "comment": "譚竹，你這種說法簡直是對網暴的縱容！",
+      "reasoning": "譚竹支持冷靜，實為包庇網暴行為"
+    },
+    {
+      "agent_id": 9,
+      "group_name": "理性支持者",
+      "saw_posts_from": [
+        4,
+        10
+      ],
+      "previous_stance": 3.19,
+      "current_stance": 4.19,
+      "stance_delta": 1.0,
+      "comment": "重慶警方已明确不予立案，相信官方调查结果。",
+      "reasoning": "相信官方调查结果，保持中立"
+    },
+    {
+      "agent_id": 10,
+      "group_name": "专家评论员",
+      "saw_posts_from": [
+        0
+      ],
+      "previous_stance": 5.39,
+      "current_stance": 5.39,
+      "stance_delta": 0.0,
+      "comment": "胖貓事件折射出心理压力与社会支持缺失问题",
+      "reasoning": "保持客观分析，关注事件背后心理因素"
+    },
+    {
+      "agent_id": 11,
+      "group_name": "情感支持者",
+      "saw_posts_from": [
+        0
+      ],
+      "previous_stance": 2.48,
+      "current_stance": 2.3,
+      "stance_delta": -0.18,
+      "comment": "胖貓，你真的太让人心疼了，希望你能好起来。",
+      "reasoning": "对受害者表示同情"
+    },
+    {
+      "agent_id": 12,
+      "group_name": "网络蹭热度者",
+      "saw_posts_from": [
+        2
+      ],
+      "previous_stance": 1.43,
+      "current_stance": 1.5,
+      "stance_delta": 0.07,
+      "comment": "譚竹說冷靜，但這事兒真能冷靜嗎？",
+      "reasoning": "譚竹的建議顯得無力，缺乏共情"
+    }
+  ],
+  "global_metrics": {
+    "mean_stance": 5.13,
+    "std_stance": 1.99,
+    "polarization_index": 0.39
+  }
+}

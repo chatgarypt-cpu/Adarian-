@@ -1,0 +1,98 @@
+{
+  "tick": 3,
+  "entries": [
+    {
+      "agent_id": 4,
+      "group_name": "真相追求者",
+      "saw_posts_from": [
+        1
+      ],
+      "previous_stance": 9.0,
+      "current_stance": 9.0,
+      "stance_delta": 0.0,
+      "comment": "當事學生堅守真相，值得尊重。",
+      "reasoning": "學生維護事實，值得信任。"
+    },
+    {
+      "agent_id": 5,
+      "group_name": "校方支持者",
+      "saw_posts_from": [
+        0,
+        7,
+        10
+      ],
+      "previous_stance": 2.8,
+      "current_stance": 3.1,
+      "stance_delta": 0.3,
+      "comment": "江西工業職業技術學院已承認錯誤，應積極改進，保障學生飲食安全。",
+      "reasoning": "學校承認錯誤，態度較為誠懇。"
+    },
+    {
+      "agent_id": 6,
+      "group_name": "媒体评论员",
+      "saw_posts_from": [
+        2
+      ],
+      "previous_stance": 7.5,
+      "current_stance": 7.6,
+      "stance_delta": 0.1,
+      "comment": "食品管理局已介入核查，表明监管到位。",
+      "reasoning": "监管行动符合职责，维护公众健康。"
+    },
+    {
+      "agent_id": 7,
+      "group_name": "网络段子手",
+      "saw_posts_from": [
+        0,
+        8
+      ],
+      "previous_stance": 2.3,
+      "current_stance": 2.1,
+      "stance_delta": -0.2,
+      "comment": "江西工業職業技術學院食堂鼠頭事件，這波操作有點迷。",
+      "reasoning": "承認錯誤但缺乏信任"
+    },
+    {
+      "agent_id": 8,
+      "group_name": "食品安全关注者",
+      "saw_posts_from": [
+        2,
+        9
+      ],
+      "previous_stance": 8.08,
+      "current_stance": 7.78,
+      "stance_delta": -0.3,
+      "comment": "食品管理局应加强监管，杜绝类似事件！",
+      "reasoning": "食品管理局需更严格监管"
+    },
+    {
+      "agent_id": 9,
+      "group_name": "中立观察者",
+      "saw_posts_from": [
+        3
+      ],
+      "previous_stance": 5.2,
+      "current_stance": 5.2,
+      "stance_delta": 0.0,
+      "comment": "江西省政府已介入调查，涉事食堂问题属实。",
+      "reasoning": "事件已查实，政府回应中立。"
+    },
+    {
+      "agent_id": 10,
+      "group_name": "学生代表",
+      "saw_posts_from": [
+        1
+      ],
+      "previous_stance": 2.0,
+      "current_stance": 2.5,
+      "stance_delta": 0.5,
+      "comment": "當事學生堅守真相，我們支持你的正義行動。",
+      "reasoning": "支持當事學生維權行動"
+    }
+  ],
+  "global_metrics": {
+    "mean_stance": 5.21,
+    "std_stance": 2.2,
+    "polarization_index": 0.42
+  }
+}

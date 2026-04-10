@@ -1,0 +1,50 @@
+{
+  "tick": 0,
+  "entries": [
+    {
+      "agent_id": 0,
+      "group_name": "胖貓",
+      "saw_posts_from": [],
+      "previous_stance": 5.0,
+      "current_stance": 5.0,
+      "stance_delta": 0.0,
+      "comment": "我只是一個普通網遊玩家，不願成為網絡焦點。希望大家都過好自己的生活。",
+      "reasoning": "作為當事人，只想平靜面對"
+    },
+    {
+      "agent_id": 1,
+      "group_name": "譚竹",
+      "saw_posts_from": [],
+      "previous_stance": 5.0,
+      "current_stance": 5.0,
+      "stance_delta": 0.0,
+      "comment": "我對此事深感遺憾，願逝者安息，希望社會能理性看待，避免傷害無辜。",
+      "reasoning": "作為事件相關人，表達哀悼與呼籲理性"
+    },
+    {
+      "agent_id": 2,
+      "group_name": "胖貓姐姐",
+      "saw_posts_from": [],
+      "previous_stance": 5.0,
+      "current_stance": 5.0,
+      "stance_delta": 0.0,
+      "comment": "我是胖貓姐姐，我只希望真相被看見，請不要傷害無辜。",
+      "reasoning": "為弟弟討公道，保護家人隱私"
+    },
+    {
+      "agent_id": 3,
+      "group_name": "重慶警方",
+      "saw_posts_from": [],
+      "previous_stance": 5.0,
+      "current_stance": 5.0,
+      "stance_delta": 0.0,
+      "comment": "重慶警方已介入調查，將依法處理相關違法行為，維護社會秩序與網絡環境。",
+      "reasoning": "履行職責，維護社會穩定"
+    }
+  ],
+  "global_metrics": {
+    "mean_stance": 5.2,
+    "std_stance": 1.57,
+    "polarization_index": 0.3
+  }
+}

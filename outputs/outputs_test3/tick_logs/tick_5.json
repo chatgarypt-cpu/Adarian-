@@ -1,0 +1,98 @@
+{
+  "tick": 5,
+  "entries": [
+    {
+      "agent_id": 4,
+      "group_name": "真相追求者",
+      "saw_posts_from": [
+        1
+      ],
+      "previous_stance": 9.0,
+      "current_stance": 9.3,
+      "stance_delta": 0.3,
+      "comment": "當事學生堅持真相，值得敬佩。",
+      "reasoning": "學生維護真相，支持其立場。"
+    },
+    {
+      "agent_id": 5,
+      "group_name": "校方支持者",
+      "saw_posts_from": [
+        0,
+        7,
+        10
+      ],
+      "previous_stance": 3.4,
+      "current_stance": 3.7,
+      "stance_delta": 0.3,
+      "comment": "江西工業職業技術學院積極配合調查，態度誠懇，值得肯定。",
+      "reasoning": "學校主動承認錯誤，積極整改，表現負責任。"
+    },
+    {
+      "agent_id": 6,
+      "group_name": "媒体评论员",
+      "saw_posts_from": [
+        2
+      ],
+      "previous_stance": 7.8,
+      "current_stance": 8.2,
+      "stance_delta": 0.4,
+      "comment": "食品管理局已介入核查，表明监管到位。",
+      "reasoning": "监管机构及时响应，体现责任担当。"
+    },
+    {
+      "agent_id": 7,
+      "group_name": "网络段子手",
+      "saw_posts_from": [
+        0,
+        8
+      ],
+      "previous_stance": 2.5,
+      "current_stance": 2.0,
+      "stance_delta": -0.5,
+      "comment": "江西工業職業技術學院食堂鼠頭事件，這波操作有點迷。",
+      "reasoning": "承認錯誤但缺乏行動"
+    },
+    {
+      "agent_id": 8,
+      "group_name": "食品安全关注者",
+      "saw_posts_from": [
+        2,
+        9
+      ],
+      "previous_stance": 7.48,
+      "current_stance": 7.48,
+      "stance_delta": 0.0,
+      "comment": "食品管理局应加强监管，杜绝类似事件再次发生。",
+      "reasoning": "信任食品管理局的监管能力。"
+    },
+    {
+      "agent_id": 9,
+      "group_name": "中立观察者",
+      "saw_posts_from": [
+        3
+      ],
+      "previous_stance": 5.2,
+      "current_stance": 5.2,
+      "stance_delta": 0.0,
+      "comment": "江西省政府已介入调查，涉事食堂问题属实。",
+      "reasoning": "事件已查实，政府回应客观。"
+    },
+    {
+      "agent_id": 10,
+      "group_name": "学生代表",
+      "saw_posts_from": [
+        1
+      ],
+      "previous_stance": 2.5,
+      "current_stance": 2.0,
+      "stance_delta": -0.5,
+      "comment": "當事學生堅守真相，令人敬佩。學校應正視問題，保障學生權益。",
+      "reasoning": "學生維權合理，學校處理不夠積極。"
+    }
+  ],
+  "global_metrics": {
+    "mean_stance": 5.27,
+    "std_stance": 2.32,
+    "polarization_index": 0.44
+  }
+}

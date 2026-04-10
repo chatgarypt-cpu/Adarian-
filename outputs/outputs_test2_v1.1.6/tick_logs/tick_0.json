@@ -1,0 +1,50 @@
+{
+  "tick": 0,
+  "entries": [
+    {
+      "agent_id": 0,
+      "group_name": "胖貓",
+      "saw_posts_from": [],
+      "previous_stance": 5.0,
+      "current_stance": 5.0,
+      "stance_delta": 0.0,
+      "comment": "（该实体不可发言）",
+      "reasoning": "实体不可发言"
+    },
+    {
+      "agent_id": 1,
+      "group_name": "譚竹",
+      "saw_posts_from": [],
+      "previous_stance": 5.0,
+      "current_stance": 5.0,
+      "stance_delta": 0.0,
+      "comment": "互相冷靜一段時間，過自己的生活",
+      "reasoning": "原始发言（从种子材料提取）"
+    },
+    {
+      "agent_id": 2,
+      "group_name": "胖貓姐姐",
+      "saw_posts_from": [],
+      "previous_stance": 5.0,
+      "current_stance": 5.0,
+      "stance_delta": 0.0,
+      "comment": "（该实体不可发言）",
+      "reasoning": "实体不可发言"
+    },
+    {
+      "agent_id": 3,
+      "group_name": "重慶警方",
+      "saw_posts_from": [],
+      "previous_stance": 5.0,
+      "current_stance": 5.0,
+      "stance_delta": 0.0,
+      "comment": "對『胖貓』姐姐指控詐騙不予立案，對譚竹隱私被侵犯仍在調查處理",
+      "reasoning": "原始发言（从种子材料提取）"
+    }
+  ],
+  "global_metrics": {
+    "mean_stance": 5.17,
+    "std_stance": 1.86,
+    "polarization_index": 0.36
+  }
+}

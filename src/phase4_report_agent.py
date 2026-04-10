@@ -100,9 +100,8 @@ def build_full_report_context(
     lines.append("【事件概要】")
     lines.append(f"事件摘要：{extraction_output.event_summary}")
     lines.append(f"事件类型：{extraction_output.event_type}")
-    lines.append(f"事件温度：{extraction_output.event_temperature:.2f}（0-1，1=最热）")
-    lines.append(f"事件烈度：{extraction_output.event_intensity:.2f}（0-1，1=最强）")
-    lines.append(f"群体分布策略：{getattr(extraction_output, 'group_distribution_strategy', 'normal')}")
+    lines.append(f"事件规模：{extraction_output.event_scale:.2f}（0-1，1=全社会）")
+    lines.append(f"事件争议性：{extraction_output.event_controversy:.2f}（0-1，1=高度对立）")
 
     # 2. 实体图谱
     lines.append("\n【实体图谱】")
@@ -470,8 +469,8 @@ def generate_markdown_report(phase4_output: Phase4Output, extraction_output: Ent
         extraction_output.event_summary,
         "",
         f"**事件类型**: {extraction_output.event_type}",
-        f"**事件温度**: {extraction_output.event_temperature:.2f}",
-        f"**事件烈度**: {extraction_output.event_intensity:.2f}",
+        f"**事件规模**: {extraction_output.event_scale:.2f}",
+        f"**事件争议性**: {extraction_output.event_controversy:.2f}",
         "",
         "## 二、利益相关方图谱",
         "",

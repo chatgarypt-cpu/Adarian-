@@ -4,7 +4,7 @@ Adarian: 主入口
 串联 Phase 1-4，执行完整的舆情预判流程。
 
 v1.1.4 架构变化：
-- Phase 0 → Phase 1：LLM1/2/3 协作架构
+- Phase 0 → Phase 1：Analyzer/Generator/Validator 协作架构
 - 实体分类：事件实体 vs 意见传播实体
 - Tick 0：事件实体发言
 - Tick 1+：意见传播实体发言
@@ -18,7 +18,8 @@ v1.1.4 架构变化：
 修改历史：
 - v1.1.0: 初始实现，Phase 1-4 串联
 - v1.1.1: 增加 Phase 0 调用，增加实体提取步骤
-- v1.1.4: Phase 0 → Phase 1 重构，LLM1/2/3 协作架构
+- v1.1.4: Phase 0 → Phase 1 重构，Analyzer/Generator/Validator 协作架构
+- v1.1.10: LLM1/2/3 → Analyzer/Generator/Validator
 """
 
 import sys
@@ -48,7 +49,7 @@ def print_banner():
 
 
 def run_phase1(seed_file: str):
-    """执行 Phase 1：实体提取与分类（LLM1/2/3 协作）
+    """执行 Phase 1：实体提取与分类（Analyzer/Generator/Validator 协作）
 
     Args:
         seed_file: 种子文件路径
@@ -59,14 +60,14 @@ def run_phase1(seed_file: str):
     """
     from src.phase1_entity_extraction import extract_entities_from_file, save_entities_output
 
-    console.print(Panel("[bold]Phase 1: 实体提取与分类（LLM1/2/3 协作）[/bold]", border_style="cyan"))
+    console.print(Panel("[bold]Phase 1: 实体提取与分类（Analyzer/Generator/Validator 协作）[/bold]", border_style="cyan"))
 
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
         console=console,
     ) as progress:
-        task = progress.add_task("[cyan]LLM1/2/3 协作提取实体...", total=1)
+        task = progress.add_task("[cyan]Analyzer/Generator/Validator 协作提取实体...", total=1)
         extraction_output = extract_entities_from_file(seed_file)
         progress.update(task, completed=1)
 
@@ -76,8 +77,8 @@ def run_phase1(seed_file: str):
     console.print(f"  事件实体数量: {len(extraction_output.event_entities)}")
     console.print(f"  意见传播者数量: {len(extraction_output.opinion_spreaders)}")
     console.print(f"  事件类型: {extraction_output.event_type}")
-    console.print(f"  事件温度: {extraction_output.event_temperature:.2f}")
-    console.print(f"  事件烈度: {extraction_output.event_intensity:.2f}\n")
+    console.print(f"  事件规模: {extraction_output.event_scale:.2f}")
+    console.print(f"  事件争议性: {extraction_output.event_controversy:.2f}\n")
 
     return extraction_output, entities_file
 
@@ -220,7 +221,7 @@ def main():
     start_time = time.time()
 
     try:
-        # Phase 1: 实体提取与分类（LLM1/2/3 协作）
+        # Phase 1: 实体提取与分类（Analyzer/Generator/Validator 协作）
         phase1_start = time.time()
         extraction_output, entities_file = run_phase1(str(seed_file))
         phase1_time = time.time() - phase1_start

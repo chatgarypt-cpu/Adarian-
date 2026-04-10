@@ -1,0 +1,111 @@
+{
+  "tick": 8,
+  "entries": [
+    {
+      "agent_id": 4,
+      "group_name": "胖貓支持者",
+      "saw_posts_from": [
+        0,
+        5,
+        7
+      ],
+      "previous_stance": 2.9,
+      "current_stance": 3.0,
+      "stance_delta": 0.1,
+      "comment": "胖貓這話太虛了，根本不想承擔責任！😢",
+      "reasoning": "覺得胖貓避重就輕，不負責任"
+    },
+    {
+      "agent_id": 5,
+      "group_name": "譚竹批評者",
+      "saw_posts_from": [
+        1,
+        11
+      ],
+      "previous_stance": 3.5,
+      "current_stance": 3.0,
+      "stance_delta": -0.5,
+      "comment": "譚竹的發言過於籠統，缺乏對責任的明確態度。",
+      "reasoning": "缺乏具體責任歸屬分析"
+    },
+    {
+      "agent_id": 6,
+      "group_name": "網絡道德觀眾",
+      "saw_posts_from": [
+        0
+      ],
+      "previous_stance": 7.5,
+      "current_stance": 7.5,
+      "stance_delta": 0.0,
+      "comment": "胖貓願息事寧人，網絡暴力應被反思。",
+      "reasoning": "理性面對輿論，避免二次傷害。"
+    },
+    {
+      "agent_id": 7,
+      "group_name": "網紅蹭熱度者",
+      "saw_posts_from": [
+        0,
+        10
+      ],
+      "previous_stance": 6.5,
+      "current_stance": 6.2,
+      "stance_delta": -0.3,
+      "comment": "胖貓裝可憐？別忘了你才是焦點！",
+      "reasoning": "胖貓推卸責任"
+    },
+    {
+      "agent_id": 8,
+      "group_name": "法律關注者",
+      "saw_posts_from": [
+        3
+      ],
+      "previous_stance": 8.5,
+      "current_stance": 8.5,
+      "stance_delta": 0.0,
+      "comment": "重慶警方介入調查，依法處理違法行為，體現司法公正。",
+      "reasoning": "警方依法作為，維護社會秩序。"
+    },
+    {
+      "agent_id": 9,
+      "group_name": "情感諮詢者",
+      "saw_posts_from": [
+        0,
+        10
+      ],
+      "previous_stance": 7.8,
+      "current_stance": 8.1,
+      "stance_delta": 0.3,
+      "comment": "胖貓的发言体现了对生活的尊重，值得理解。",
+      "reasoning": "表达理性，展现责任感。"
+    },
+    {
+      "agent_id": 10,
+      "group_name": "媒體觀察者",
+      "saw_posts_from": [
+        0
+      ],
+      "previous_stance": 1.8,
+      "current_stance": 2.0,
+      "stance_delta": 0.2,
+      "comment": "胖貓避重就輕，事件背後有更多值得深思之處。",
+      "reasoning": "回避責任，缺乏同理心。"
+    },
+    {
+      "agent_id": 11,
+      "group_name": "網絡謠言反對者",
+      "saw_posts_from": [
+        0
+      ],
+      "previous_stance": 5.3,
+      "current_stance": 5.5,
+      "stance_delta": 0.2,
+      "comment": "胖貓只是普通玩家，不該被無端指責。理性看待事件。",
+      "reasoning": "理性看待，不擴大謠言影響"
+    }
+  ],
+  "global_metrics": {
+    "mean_stance": 5.35,
+    "std_stance": 2.03,
+    "polarization_index": 0.38
+  }
+}

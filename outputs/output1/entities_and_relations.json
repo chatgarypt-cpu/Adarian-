@@ -1,0 +1,173 @@
+{
+  "event_summary": "20岁游戏代练男子因感情纠纷跳江身亡，引发全网关注与舆论争议",
+  "event_temperature": 0.7,
+  "event_intensity": 0.85,
+  "event_type": "网络情感悲剧",
+  "event_entities": [
+    {
+      "name": "胖貓",
+      "type": "individual",
+      "role": "事件当事人",
+      "entity_category": "event_entity",
+      "can_speak": false,
+      "original_statement": null,
+      "can_speak_reason": null
+    },
+    {
+      "name": "劉傑",
+      "type": "individual",
+      "role": "胖貓本名，事件当事人",
+      "entity_category": "event_entity",
+      "can_speak": false,
+      "original_statement": null,
+      "can_speak_reason": null
+    },
+    {
+      "name": "譚竹",
+      "type": "individual",
+      "role": "事件相关方",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "我要求雙方『互相冷靜一段時間，過自己的生活』",
+      "can_speak_reason": null
+    },
+    {
+      "name": "胖貓姐姐",
+      "type": "individual",
+      "role": "事件相关方",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "希望譚竹付出代價",
+      "can_speak_reason": null
+    },
+    {
+      "name": "重慶警方",
+      "type": "organization",
+      "role": "官方机构",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "對『胖貓』姐姐指控詐騙不予立案",
+      "can_speak_reason": null
+    }
+  ],
+  "opinion_spreaders": [
+    {
+      "group_name": "情感批评者",
+      "related_event_entity": "胖貓",
+      "description": "对悲剧事件表达强烈情感反应的网友",
+      "stance_score": 9.2,
+      "susceptibility": 0.85,
+      "confirmation_bias_level": "strong",
+      "estimated_percentage": 15,
+      "communication_style": "充满情绪化的感叹和质问",
+      "entity_category": "opinion_spreader"
+    },
+    {
+      "group_name": "法律关注者",
+      "related_event_entity": "重慶警方",
+      "description": "关注事件法律处理进展的网民",
+      "stance_score": 6.5,
+      "susceptibility": 0.7,
+      "confirmation_bias_level": "weak",
+      "estimated_percentage": 15,
+      "communication_style": "理性分析法律程序",
+      "entity_category": "opinion_spreader"
+    },
+    {
+      "group_name": "中立观察者",
+      "related_event_entity": "胖貓姐姐",
+      "description": "试图保持客观的网络评论者",
+      "stance_score": 5.0,
+      "susceptibility": 0.6,
+      "confirmation_bias_level": "none",
+      "estimated_percentage": 10,
+      "communication_style": "分析事件多方面因素",
+      "entity_category": "opinion_spreader"
+    },
+    {
+      "group_name": "网络暴力批评者",
+      "related_event_entity": "譚竹",
+      "description": "谴责网络暴力现象的网民",
+      "stance_score": 8.8,
+      "susceptibility": 0.75,
+      "confirmation_bias_level": "strong",
+      "estimated_percentage": 15,
+      "communication_style": "愤怒指责网络暴力行为",
+      "entity_category": "opinion_spreader"
+    },
+    {
+      "group_name": "理性支持者",
+      "related_event_entity": "重慶警方",
+      "description": "支持警方公正处理的网民",
+      "stance_score": 3.2,
+      "susceptibility": 0.5,
+      "confirmation_bias_level": "weak",
+      "estimated_percentage": 10,
+      "communication_style": "相信官方调查结果",
+      "entity_category": "opinion_spreader"
+    },
+    {
+      "group_name": "专家评论员",
+      "related_event_entity": "胖貓",
+      "description": "从心理学角度分析事件的专家",
+      "stance_score": 4.8,
+      "susceptibility": 0.65,
+      "confirmation_bias_level": "none",
+      "estimated_percentage": 10,
+      "communication_style": "提供专业分析视角",
+      "entity_category": "opinion_spreader"
+    },
+    {
+      "group_name": "情感支持者",
+      "related_event_entity": "胖貓",
+      "description": "对受害者表示同情的网友",
+      "stance_score": 2.5,
+      "susceptibility": 0.8,
+      "confirmation_bias_level": "strong",
+      "estimated_percentage": 15,
+      "communication_style": "表达哀悼与同情",
+      "entity_category": "opinion_spreader"
+    },
+    {
+      "group_name": "网络蹭热度者",
+      "related_event_entity": "譚竹",
+      "description": "利用事件牟利的网友",
+      "stance_score": 1.5,
+      "susceptibility": 0.9,
+      "confirmation_bias_level": "strong",
+      "estimated_percentage": 10,
+      "communication_style": "寻找流量机会",
+      "entity_category": "opinion_spreader"
+    }
+  ],
+  "relations": [
+    {
+      "source": "胖貓",
+      "target": "譚竹",
+      "type": "感情纠纷"
+    },
+    {
+      "source": "胖貓",
+      "target": "胖貓姐姐",
+      "type": "家庭关系"
+    },
+    {
+      "source": "胖貓姐姐",
+      "target": "譚竹",
+      "type": "指控与争议"
+    },
+    {
+      "source": "譚竹",
+      "target": "重慶警方",
+      "type": "隐私侵权指控"
+    },
+    {
+      "source": "胖貓姐姐",
+      "target": "重慶警方",
+      "type": "诈骗指控"
+    }
+  ],
+  "group_distribution_strategy": "normal",
+  "has_official_response": true,
+  "official_admits_fault": false
+}

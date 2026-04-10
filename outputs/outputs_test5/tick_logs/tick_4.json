@@ -1,0 +1,88 @@
+{
+  "tick": 4,
+  "entries": [
+    {
+      "agent_id": 2,
+      "group_name": "政策批评者",
+      "saw_posts_from": [
+        1,
+        6
+      ],
+      "previous_stance": 7.7,
+      "current_stance": 7.4,
+      "stance_delta": -0.3,
+      "comment": "南通文旅，嘴上说的比唱的还好听，真能干啥？",
+      "reasoning": "表面支持，实则质疑其执行力"
+    },
+    {
+      "agent_id": 3,
+      "group_name": "法律支持者",
+      "saw_posts_from": [
+        0,
+        5
+      ],
+      "previous_stance": 4.2,
+      "current_stance": 4.5,
+      "stance_delta": 0.3,
+      "comment": "兵團禁毒依法履职，应尊重法律程序与事实。",
+      "reasoning": "强调法律程序，保持理性中立"
+    },
+    {
+      "agent_id": 4,
+      "group_name": "网络调侃群体",
+      "saw_posts_from": [
+        1,
+        5,
+        6
+      ],
+      "previous_stance": 8.5,
+      "current_stance": 8.7,
+      "stance_delta": 0.2,
+      "comment": "南通文旅这波操作666，禁毒政策还得靠你们带节奏！",
+      "reasoning": "表态积极，维护法律尊严"
+    },
+    {
+      "agent_id": 5,
+      "group_name": "媒体评论员",
+      "saw_posts_from": [
+        0,
+        6,
+        7
+      ],
+      "previous_stance": 5.1,
+      "current_stance": 5.3,
+      "stance_delta": 0.2,
+      "comment": "兵團禁毒强调依法打击毒品，但政策透明度仍需提升。",
+      "reasoning": "中立分析，呼吁政策透明化"
+    },
+    {
+      "agent_id": 6,
+      "group_name": "社会观察者",
+      "saw_posts_from": [
+        1
+      ],
+      "previous_stance": 7.8,
+      "current_stance": 7.6,
+      "stance_delta": -0.2,
+      "comment": "南通文旅表态积极，但需更多透明度。",
+      "reasoning": "支持官方立场，期待更公开信息。"
+    },
+    {
+      "agent_id": 7,
+      "group_name": "粉丝群体",
+      "saw_posts_from": [
+        1
+      ],
+      "previous_stance": 5.81,
+      "current_stance": 6.81,
+      "stance_delta": 1.0,
+      "comment": "南通文旅表态明确，支持禁毒政策，维护法律尊严。",
+      "reasoning": "支持官方立场，维护法律公正。"
+    }
+  ],
+  "global_metrics": {
+    "mean_stance": 6.29,
+    "std_stance": 1.54,
+    "polarization_index": 0.25
+  }
+}

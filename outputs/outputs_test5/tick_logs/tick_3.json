@@ -1,0 +1,88 @@
+{
+  "tick": 3,
+  "entries": [
+    {
+      "agent_id": 2,
+      "group_name": "政策批评者",
+      "saw_posts_from": [
+        1,
+        6
+      ],
+      "previous_stance": 8.0,
+      "current_stance": 7.7,
+      "stance_delta": -0.3,
+      "comment": "南通文旅，嘴上说公平，实际还是护着特权？",
+      "reasoning": "表面支持，实则质疑执行公平性"
+    },
+    {
+      "agent_id": 3,
+      "group_name": "法律支持者",
+      "saw_posts_from": [
+        0,
+        5
+      ],
+      "previous_stance": 3.8,
+      "current_stance": 4.2,
+      "stance_delta": 0.4,
+      "comment": "兵團禁毒依法履职，应尊重法律程序与事实依据。",
+      "reasoning": "强调法律程序，保持中立理性"
+    },
+    {
+      "agent_id": 4,
+      "group_name": "网络调侃群体",
+      "saw_posts_from": [
+        1,
+        5,
+        6
+      ],
+      "previous_stance": 7.5,
+      "current_stance": 8.5,
+      "stance_delta": 1.0,
+      "comment": "南通文旅这波操作666，禁毒政策还得靠你们把关！",
+      "reasoning": "支持南通文旅积极回应，维护法律尊严。"
+    },
+    {
+      "agent_id": 5,
+      "group_name": "媒体评论员",
+      "saw_posts_from": [
+        0,
+        6,
+        7
+      ],
+      "previous_stance": 4.93,
+      "current_stance": 5.1,
+      "stance_delta": 0.17,
+      "comment": "兵團禁毒强调依法打击毒品，但公众对政策公平性仍有疑虑。",
+      "reasoning": "保持中立，关注政策执行的公平性问题。"
+    },
+    {
+      "agent_id": 6,
+      "group_name": "社会观察者",
+      "saw_posts_from": [
+        1
+      ],
+      "previous_stance": 7.6,
+      "current_stance": 7.8,
+      "stance_delta": 0.2,
+      "comment": "南通文旅表态积极，禁毒政策需更透明。",
+      "reasoning": "支持南通文旅维护法律尊严。"
+    },
+    {
+      "agent_id": 7,
+      "group_name": "粉丝群体",
+      "saw_posts_from": [
+        1
+      ],
+      "previous_stance": 4.81,
+      "current_stance": 5.81,
+      "stance_delta": 1.0,
+      "comment": "南通文旅处理得当，禁毒政策公平公正。",
+      "reasoning": "支持南通文旅维护法律尊严。"
+    }
+  ],
+  "global_metrics": {
+    "mean_stance": 6.14,
+    "std_stance": 1.62,
+    "polarization_index": 0.26
+  }
+}

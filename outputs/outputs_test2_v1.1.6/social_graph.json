@@ -1,0 +1,231 @@
+{
+  "nodes": [
+    {
+      "id": 0,
+      "group_name": "胖貓",
+      "archetype_index": -1,
+      "related_entity": "胖貓",
+      "role": "core",
+      "stance_score": 4.78,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity"
+    },
+    {
+      "id": 1,
+      "group_name": "譚竹",
+      "archetype_index": -1,
+      "related_entity": "譚竹",
+      "role": "core",
+      "stance_score": 5.14,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity"
+    },
+    {
+      "id": 2,
+      "group_name": "胖貓姐姐",
+      "archetype_index": -1,
+      "related_entity": "胖貓姐姐",
+      "role": "core",
+      "stance_score": 5.2,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity"
+    },
+    {
+      "id": 3,
+      "group_name": "重慶警方",
+      "archetype_index": -1,
+      "related_entity": "重慶警方",
+      "role": "core",
+      "stance_score": 4.99,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity"
+    },
+    {
+      "id": 4,
+      "group_name": "支持譚竹的網友",
+      "archetype_index": -2,
+      "related_entity": "譚竹",
+      "role": "periphery",
+      "stance_score": 2.59,
+      "susceptibility": 0.59,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader"
+    },
+    {
+      "id": 5,
+      "group_name": "譚竹批評者",
+      "archetype_index": -2,
+      "related_entity": "譚竹",
+      "role": "periphery",
+      "stance_score": 7.91,
+      "susceptibility": 0.67,
+      "confirmation_bias_level": "strong",
+      "entity_category": "opinion_spreader"
+    },
+    {
+      "id": 6,
+      "group_name": "支持胖貓姐姐的網友",
+      "archetype_index": -2,
+      "related_entity": "胖貓姐姐",
+      "role": "periphery",
+      "stance_score": 2.8,
+      "susceptibility": 0.45,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader"
+    },
+    {
+      "id": 7,
+      "group_name": "批評胖貓姐姐的網友",
+      "archetype_index": -2,
+      "related_entity": "胖貓姐姐",
+      "role": "periphery",
+      "stance_score": 8.16,
+      "susceptibility": 0.53,
+      "confirmation_bias_level": "strong",
+      "entity_category": "opinion_spreader"
+    },
+    {
+      "id": 8,
+      "group_name": "關注網絡熱度的網友",
+      "archetype_index": -2,
+      "related_entity": "胖貓",
+      "role": "periphery",
+      "stance_score": 6.13,
+      "susceptibility": 0.79,
+      "confirmation_bias_level": "strong",
+      "entity_category": "opinion_spreader"
+    },
+    {
+      "id": 9,
+      "group_name": "關注警方聲明的網友",
+      "archetype_index": -2,
+      "related_entity": "重慶警方",
+      "role": "periphery",
+      "stance_score": 4.02,
+      "susceptibility": 0.38,
+      "confirmation_bias_level": "none",
+      "entity_category": "opinion_spreader"
+    }
+  ],
+  "edges": [
+    {
+      "source": 0,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 0,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 0,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 4,
+      "target": 1,
+      "type": "follows"
+    },
+    {
+      "source": 5,
+      "target": 1,
+      "type": "follows"
+    },
+    {
+      "source": 6,
+      "target": 2,
+      "type": "follows"
+    },
+    {
+      "source": 7,
+      "target": 2,
+      "type": "follows"
+    },
+    {
+      "source": 8,
+      "target": 0,
+      "type": "follows"
+    },
+    {
+      "source": 9,
+      "target": 3,
+      "type": "follows"
+    },
+    {
+      "source": 4,
+      "target": 6,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 4,
+      "target": 8,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 4,
+      "target": 9,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 5,
+      "target": 7,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 6,
+      "target": 9,
+      "type": "follows_cross_group"
+    }
+  ]
+}

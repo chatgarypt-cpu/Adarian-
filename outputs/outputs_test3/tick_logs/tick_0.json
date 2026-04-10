@@ -1,0 +1,50 @@
+{
+  "tick": 0,
+  "entries": [
+    {
+      "agent_id": 0,
+      "group_name": "江西工業職業技術學院",
+      "saw_posts_from": [],
+      "previous_stance": 5.0,
+      "current_stance": 5.0,
+      "stance_delta": 0.0,
+      "comment": "我校對此事高度重視，已配合調查並承認錯誤，將嚴肅處理相關責任人，加強食堂管理。",
+      "reasoning": "承認錯誤，回應輿論，維護學校聲譽。"
+    },
+    {
+      "agent_id": 1,
+      "group_name": "當事學生",
+      "saw_posts_from": [],
+      "previous_stance": 5.0,
+      "current_stance": 5.0,
+      "stance_delta": 0.0,
+      "comment": "我坚决维护事实真相，不会被任何压力左右。此事关乎食品安全和公众信任。",
+      "reasoning": "作为当事人，必须坚持真实立场。"
+    },
+    {
+      "agent_id": 2,
+      "group_name": "食品管理局",
+      "saw_posts_from": [],
+      "previous_stance": 5.0,
+      "current_stance": 5.0,
+      "stance_delta": 0.0,
+      "comment": "已对涉事食堂进行核查，发现食品卫生问题，将严肃处理并加强监管。",
+      "reasoning": "履行监管职责，回应公众关切。"
+    },
+    {
+      "agent_id": 3,
+      "group_name": "江西省政府",
+      "saw_posts_from": [],
+      "previous_stance": 5.0,
+      "current_stance": 5.0,
+      "stance_delta": 0.0,
+      "comment": "已查明涉事食堂食品为鼠头，相关责任单位将依法依规严肃处理。",
+      "reasoning": "履行监督职责，回应社会关切"
+    }
+  ],
+  "global_metrics": {
+    "mean_stance": 5.11,
+    "std_stance": 2.44,
+    "polarization_index": 0.48
+  }
+}

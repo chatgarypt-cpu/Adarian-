@@ -1,5 +1,15 @@
 # Adarian MVP 开发规范
 
+## Implementation Guidelines（实施准则）
+
+**实施前必须确认方法**：
+在写任何代码之前，先向用户确认实现方案。用以下格式：
+> "我的计划是：A 这么做原因X，B 那么做原因Y。你选哪个？"
+
+如果不确定正确方向，提出 2-3 个选项让用户选择。**不要**在未获确认前直接执行代码。
+
+**Why：** wrong_approach 是最高频摩擦来源（12次），避免在架构决策上返工。
+
 ## 工作流程
 
 当用户给予关于 adarian mvp 的迭代任务时：
@@ -49,7 +59,7 @@
 **代码架构变化判断标准**：
 - 新增/删除模块（Phase X）
 - 数据结构变化（schemas.py 中的模型变更）
-- LLM 调用流程变化（如新增 LLM3 校验）
+- LLM 调用流程变化（如新增 Validator 校验）
 - 社交网络拓扑规则变化
 - 核心算法逻辑变化
 
@@ -99,6 +109,12 @@
 - 缺失导入
 - 运行失败
 
+**修复 bug 后主动扫描**：
+修复用户报告的 bug 后，用 Grep 搜索相关代码中是否有类似问题。例如：
+- 修复已故实体发言 bug → 检查其他实体状态处理逻辑
+- 修复距离检查 bug → 检查其他 proximity 检查是否有同类问题
+- 修复参数校验 bug → 检查其他参数校验是否遗漏同类边界条件
+
 ---
 
 ### 文件确认规范
@@ -107,3 +123,36 @@
 1. 先用 Glob 搜索确认文件存在
 2. 如不存在，询问用户确认
 3. 不要假设文件位置
+
+---
+
+### 自动同步规范
+
+每次运行模拟或代码修改后，**必须自动同步**以下内容到云端：
+
+1. **outputs 文件夹** → 同步到 `BaiduSyncdisk/文件快传/outputs(cloud)/`
+   - `entities_and_relations.json`
+   - `social_graph.json`
+   - `final_report.md`
+   - `agents_profile.json`
+   - `tick_logs/`（整个文件夹）
+
+2. **CHANGELOG.md** → 同步到 `BaiduSyncdisk/文件快传/docx(cloud)/iterations/CHANGELOG.md`
+
+**触发时机**：
+- 运行 `py main.py seeds/*.txt` 后
+- 修改 CHANGELOG 后
+- 任何产生新输出文件的操作后
+
+**同步命令**：
+```bash
+# 同步 outputs
+cp outputs/entities_and_relations.json BaiduSyncdisk/文件快传/outputs(cloud)/
+cp outputs/social_graph.json BaiduSyncdisk/文件快传/outputs(cloud)/
+cp outputs/final_report.md BaiduSyncdisk/文件快传/outputs(cloud)/
+cp outputs/agents_profile.json BaiduSyncdisk/文件快传/outputs(cloud)/
+cp -r outputs/tick_logs/* BaiduSyncdisk/文件快传/outputs(cloud)/tick_logs/
+
+# 同步 CHANGELOG
+cp docs/iterations/CHANGELOG.md BaiduSyncdisk/文件快传/docx(cloud)/iterations/
+```

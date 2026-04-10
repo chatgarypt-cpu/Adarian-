@@ -1,13 +1,13 @@
 """
-Phase 1: 实体提取与分类模块（LLM1/2/3 协作架构）
+Phase 1: 实体提取与分类模块（Analyzer/Generator/Validator 协作架构）
 ---
-通过 LLM1/2/3 三阶段协作，实现实体分类（事件实体 vs 意见传播实体），
+通过 Analyzer/Generator/Validator 三阶段协作，实现实体分类（事件实体 vs 意见传播实体），
 并通过迭代校验确保输出质量。
 
 架构流程：
-1. LLM1：分析种子材料 → event_temperature + event_intensity
-2. LLM2：提取事件实体 + 生成意见传播者
-3. LLM3：格式校验（失败则 LLM2 重试）
+1. Analyzer：分析种子材料 → event_temperature + event_intensity
+2. Generator：提取事件实体 + 生成意见传播者
+3. Validator：格式校验（失败则 Generator 重试）
 
 为什么需要这个模块（Why）：
 - v1.1.4 版本区分两种实体类型：事件实体（直接参与）和意见传播实体（评论事件）
@@ -15,6 +15,7 @@ Phase 1: 实体提取与分类模块（LLM1/2/3 协作架构）
 - 意见传播实体基于温度/烈度生成，必须关注事件实体才能发言
 
 新增于：v1.1.4
+修改于：v1.1.10（LLM1/2/3 → Analyzer/Generator/Validator）
 """
 
 import json
@@ -28,57 +29,62 @@ from src.schemas import EntityExtractionOutput, Entity, OpinionSpreader, Relatio
 console = Console()
 
 # =============================================================================
-# LLM1: 设置事件温度和烈度
+# Analyzer: 设置事件温度和烈度
 # =============================================================================
 
-LLM1_SYSTEM_PROMPT = """你是一位资深的社会舆情分析师。你的任务是从一段事件材料中分析并设置两个关键参数。
+ANALYZER_SYSTEM_PROMPT = """你是一位资深的社会舆情分析师。你的任务是从一段事件材料中分析并设置参数。
 
-【事件温度（event_temperature）】
-- 0.0 = 冷门事件，几乎无人讨论
-- 1.0 = 全网热议，全民关注
+【event_scale（事件规模）】
+- 0.0 = 个人事件，几乎无人讨论
+- 1.0 = 全社会事件，全民关注
 - 判断标准：
-  - 涉及范围：个人事件(0.2) < 群体事件(0.5) < 全社会事件(0.8)
-  - 争议性：事实清晰(0.3) < 存在争议(0.6) < 高度对立(0.9)
-  - 社会影响：局部(0.2) < 行业(0.5) < 全国(0.8)
-- 综合三个维度取平均值
-
-【事件烈度（event_intensity）】
-- 0.0 = 事件烈度极低，只有少量客观网友简单评价
-- 1.0 = 事件烈度极高，引发大规模、多样化的舆论反应
-- 判断标准：
-  - 情绪强度：平和(0.2) < 激动(0.5) < 愤怒(0.8) < 疯狂(1.0)
+  - 涉及范围：个人(0.2) < 群体(0.5) < 全社会(0.8)
   - 参与多样性：单一群体(0.2) < 多个群体(0.5) < 全民参与(0.8)
-  - 烈度高时会出现多种类型的意见传播者（粉丝、专家、批评者、支持者等）
-  - 烈度低时只有少量客观网友评价
+- event_scale 用于决定 Agent 总人数
+
+【event_controversy（事件争议性）】
+- 0.0 = 事实清晰、对错分明
+- 1.0 = 高度对立、黑白颠倒
+- 判断标准：
+  - 是非清晰度：事实清晰(0.2) < 存在争议(0.6) < 高度对立(0.9)
+  - 道德判断：明确对错(0.2) < 灰色地带(0.5) < 黑白颠倒(0.8)
+- event_controversy 用于决定 P（立场方向）的分布比例
+- 高争议 + 官方拒不承认 → 极低支持者比例
+
+【event_type（事件类型）】
+- 分类：食品安全、医疗事故、校园暴力、官员不当行为、环境灾害、产品质量问题、政策争议、学术不端、普通事故、明星娱乐等
+- 用途：作为可调参接口，影响争议性偏移系数（后续版本实现）
+- 当前版本：event_type 仅记录，不影响计算
 
 请分析以下事件材料，输出 JSON 格式的参数设置：
 
 {{
-  "event_temperature": 0.0到1.0之间的浮点数,
-  "event_intensity": 0.0到1.0之间的浮点数,
+  "event_scale": 0.0到1.0之间的浮点数,
+  "event_controversy": 0.0到1.0之间的浮点数,
   "event_summary": "一句话概括事件（50字以内）",
-  "event_type": "事件类型（如：产品质量危机、校园冲突、政策争议）",
-  "reasoning": "简要说明为什么这样设置"
+  "event_type": "事件类型",
+  "reasoning": "简要说明参数判断依据"
 }}
 
 约束：
-1. event_temperature 和 event_intensity 必须在 0.0-1.0 之间
+1. event_scale 和 event_controversy 必须在 0.0-1.0 之间
 2. event_summary 必须简洁，50字以内
+3. event_type 必须为有效的事件类型
 """
 
-LLM1_USER_PROMPT = """请分析以下事件材料：
+ANALYZER_USER_PROMPT = """请分析以下事件材料：
 
 {seed_text}
 """
 
 
 # =============================================================================
-# LLM2: 提取事件实体 + 生成意见传播者
+# Generator: 提取事件实体 + 生成意见传播者
 # =============================================================================
 
-LLM2_SYSTEM_PROMPT = """你是一位资深的事件分析专家。你的任务是从一段事件材料中完成两项工作：
+GENERATOR_SYSTEM_PROMPT = """你是一位资深的事件分析专家。你的任务是从一段事件材料中完成两项工作：
 1. 提取事件实体（直接参与事件的核心主体）
-2. 基于事件温度和烈度，生成意见传播者（评论事件的人群）
+2. 基于 event_scale 和 event_controversy，生成意见传播者（评论事件的人群）
 
 【事件实体特征】
 - 直接参与事件本身
@@ -86,19 +92,35 @@ LLM2_SYSTEM_PROMPT = """你是一位资深的事件分析专家。你的任务�
 - 例如：当事人、品牌方、机构、媒体等
 - 从种子文本中显式提及的实体
 
-【意见传播者特征】
-- 不直接参与事件，但会传播意见
-- 基于事件温度和烈度生成：
-  - event_temperature < 0.3：极端派占比 < 20%
-  - event_temperature >= 0.5：极端派占比 30-50%
-  - event_intensity 高：多种类型（粉丝、专家、批评者、支持者）
-  - event_intensity 低：少量客观网友
-- 每个意见传播者必须关联到一个事件实体
-- 所有事件实体 + 意见传播者总数 ≤ 15
+【IPC 框架参数】
+【I（Intensity，立场强度）1-10】
+- I 越高，越不容易被说服改变立场
+- I=8-10：极度坚定
+- I=4-6：中等坚定
+- I=1-3：极易动摇
+
+【P（Position，立场方向）】
+- +1 = 支持/维护
+- -1 = 反对/批评
+- 由 I 决定：I ≥ 6 → P=+1；I ≤ 5 → P=-1
+
+【C（Consistency）】
+- 由系统计算：C = P × (I/10)
+- 你不需要生成 C，系统会自动推导
+
+【分布约束】
+- event_scale: {event_scale} → 决定 I 分布和人数：
+  * < 0.3：3-5 人，I 偏中立（3-6 为主）
+  * 0.3-0.7：5-7 人，I 中等分布（4-7 为主）
+  * ≥ 0.7：7-10 人，I 高度分化（3-10）
+- event_controversy: {event_controversy} → 决定 P 分布：
+  * < 0.3：反对 40% / 支持 60%
+  * 0.3-0.7：反对 55% / 支持 45%
+  * > 0.7：反对 70% / 支持 30%
 
 【参数信息】
-- event_temperature: {event_temperature}（0.0-1.0）
-- event_intensity: {event_intensity}（0.0-1.0）
+- event_scale: {event_scale}（0.0-1.0）
+- event_controversy: {event_controversy}（0.0-1.0）
 - 事件类型: {event_type}
 - 事件摘要: {event_summary}
 
@@ -120,9 +142,9 @@ LLM2_SYSTEM_PROMPT = """你是一位资深的事件分析专家。你的任务�
       "group_name": "群体名称",
       "related_event_entity": "关联的事件实体名称（必须在 event_entities 中存在）",
       "description": "15-50字的人设描述，要简洁有特色",
-      "stance_score": 1.0到10.0之间的浮点数（1=强烈支持，10=强烈批评）,
+      "I": 1.0到10.0之间的浮点数,
+      "P": +1 或 -1,
       "susceptibility": 0.0到1.0之间的浮点数,
-      "confirmation_bias_level": "none | weak | strong",
       "estimated_percentage": 0到100之间的整数（所有群体之和=100）,
       "communication_style": "该群体的典型说话风格，要多样化",
       "entity_category": "opinion_spreader"
@@ -144,6 +166,7 @@ LLM2_SYSTEM_PROMPT = """你是一位资深的事件分析专家。你的任务�
   * 已故 → can_speak = false
   * 匿名（如当事人、受害者、佚名）→ can_speak = false
   * 具名在世 → can_speak = true
+  * 涉及"轻生、跳江、跳楼、自杀、死亡、遇难、身亡"等事件的当事人（如受害者、家属等）→ can_speak = false
 
 【original_statement 提取规则】
 - 优先提取带引号的"直接引语"（如："哪位少爺吸了"）
@@ -154,19 +177,19 @@ LLM2_SYSTEM_PROMPT = """你是一位资深的事件分析专家。你的任务�
 约束：
 1. event_entities + opinion_spreaders 总数 ≤ 15
 2. opinion_spreaders 的 estimated_percentage 之和 = 100
-3. 至少包含一个 stance_score < 3.0 和一个 > 7.0 的群体
+3. 至少有一个 P=+1 和一个 P=-1（确保双向对立）
 4. 每个 opinion_spreader 必须有 related_event_entity 且在 event_entities 中存在
 5. 在输出最终 JSON 之前，必须验证所有 estimated_percentage 之和是否等于 100，如果不等需要调整
 """
 
-LLM2_USER_PROMPT = """请根据以下参数分析事件材料，提取事件实体并生成意见传播者：
+GENERATOR_USER_PROMPT = """请根据以下参数分析事件材料，提取事件实体并生成意见传播者：
 
 【种子文本】
 {seed_text}
 
 【已设置的参数】
-- event_temperature: {event_temperature}
-- event_intensity: {event_intensity}
+- event_scale: {event_scale}
+- event_controversy: {event_controversy}
 - event_type: {event_type}
 - event_summary: {event_summary}
 
@@ -176,10 +199,10 @@ LLM2_USER_PROMPT = """请根据以下参数分析事件材料，提取事件实�
 
 
 # =============================================================================
-# LLM3: 格式校验
+# Validator: 格式校验
 # =============================================================================
 
-LLM3_SYSTEM_PROMPT = """你是一位严格的格式校验专家。你的任务是检查输入的 JSON 是否符合要求。
+VALIDATOR_SYSTEM_PROMPT = """你是一位严格的格式校验专家。你的任务是检查输入的 JSON 是否符合要求。
 
 【校验规则】
 1. 必须是合法的 JSON 格式
@@ -188,24 +211,26 @@ LLM3_SYSTEM_PROMPT = """你是一位严格的格式校验专家。你的任务�
 4. opinion_spreaders 中的每个元素必须有 entity_category = "opinion_spreader"
 5. event_entities + opinion_spreaders 总数 ≤ 15
 6. 每个 opinion_spreader 必须有 related_event_entity 字段，且对应的实体在 event_entities 中存在
-7. opinion_spreaders 的 estimated_percentage 之和 ≈ 100（允许 ±5 的误差）
-8. 至少包含一个 stance_score < 3.0 和一个 > 7.0 的群体
-9. event_entities 至少要有 1 个实体
-10. relations 字段是可选的，允许存在也可以不存在（不要对 relations 字段报错）
+7. opinion_spreaders 的 estimated_percentage 之和 ≈ 100（允许 ±10 的误差）
+8. I 必须为 1.0-10.0 之间的浮点数
+9. P 必须为 +1 或 -1
+10. susceptibility 必须为 0.0-1.0 之间的浮点数
+11. 至少有一个 P=+1 和一个 P=-1（确保双向对立）
+12. event_entities 至少要有 1 个实体
+13. relations 字段是可选的，允许存在也可以不存在（不要对 relations 字段报错）
+14. entity_category 字段：如果缺失，后处理会自动补充
 
 【重要】不要对 relations 字段报错，该字段是可选的。
 
 【can_speak 合理性校验】
-- 检查种子材料中是否有"已故"、"去世"、"死亡"、"离世"、"身亡"等关键词
-  * 如果有，检查对应实体的 can_speak 是否为 false
-  * 如果 can_speak 为 true 而实体已故，报错："XXX 已故，can_speak 应为 false"
-- 检查是否有"匿名"、"佚名"、"网友"等匿名表述
-  * 如果有，检查对应实体的 can_speak 是否为 false
-  * 注意："当事人"、"受害者"等主体可以正常发言（can_speak 可以为 true）
+- 注意：can_speak 的检查由代码级后处理自动完成（_post_process_entities 函数）
+- Validator 无需对 can_speak 报错，后处理会自动修正
+- 如果发现 can_speak 问题，只需在 message 中提醒，不要作为 errors
 
 【original_statement 合理性校验】
-- 如果 original_statement 不为 null，检查种子材料中是否确实有该发言
-- 如果种子材料中没有，提示："original_statement 与种子材料不符，请确认或设为 null"
+- 注意：original_statement 的检查由代码级后处理自动完成
+- 如果 can_speak=false 但 original_statement 非 null，后处理会自动设为 null
+- 如果发现问题，只需在 message 中提醒，不要作为 errors
 
 【输出格式】
 如果通过：
@@ -221,7 +246,7 @@ LLM3_SYSTEM_PROMPT = """你是一位严格的格式校验专家。你的任务�
 }}
 """
 
-LLM3_USER_PROMPT = """请校验以下 JSON：
+VALIDATOR_USER_PROMPT = """请校验以下 JSON：
 
 【种子材料】
 {seed_text}
@@ -232,29 +257,30 @@ LLM3_USER_PROMPT = """请校验以下 JSON：
 
 
 # =============================================================================
-# LLM1: 设置参数
+# Analyzer: 设置参数
 # =============================================================================
 
-def llm1_set_parameters(seed_text: str) -> Dict[str, Any]:
+def analyzer_set_parameters(seed_text: str) -> Dict[str, Any]:
     """
-    LLM1: 分析种子材料，设置 event_temperature 和 event_intensity
+    Analyzer: 分析种子材料，设置 event_temperature 和 event_intensity
 
     Args:
         seed_text: 种子文本内容
 
     Returns:
-        包含 event_temperature, event_intensity, event_summary, event_type 的字典
+        包含 event_temperature, event_intensity, event_summary, event_type,
+        group_distribution_strategy, has_official_response, official_admits_fault 的字典
     """
     llm = get_llm_client()
 
-    user_prompt = LLM1_USER_PROMPT.format(seed_text=seed_text)
+    user_prompt = ANALYZER_USER_PROMPT.format(seed_text=seed_text)
 
-    console.print("[bold cyan]LLM1:[/bold cyan] 正在分析事件参数...")
+    console.print("[bold cyan]Analyzer:[/bold cyan] 正在分析事件参数...")
 
     result = llm.generate(
-        system=LLM1_SYSTEM_PROMPT,
+        system=ANALYZER_SYSTEM_PROMPT,
         user=user_prompt,
-        response_model=None,  # LLM1 返回自由 JSON
+        response_model=None,  # Analyzer 返回自由 JSON
     )
 
     # 解析 JSON
@@ -263,31 +289,31 @@ def llm1_set_parameters(seed_text: str) -> Dict[str, Any]:
     else:
         params = result
 
-    console.print(f"  [green]✓[/green] 事件温度: {params.get('event_temperature', 'N/A')}")
-    console.print(f"  [green]✓[/green] 事件烈度: {params.get('event_intensity', 'N/A')}")
+    console.print(f"  [green]✓[/green] 事件规模: {params.get('event_scale', 'N/A')}")
+    console.print(f"  [green]✓[/green] 事件争议性: {params.get('event_controversy', 'N/A')}")
 
     return params
 
 
 # =============================================================================
-# LLM2: 生成实体
+# Generator: 生成实体
 # =============================================================================
 
-def llm2_generate_entities(
+def generator_create_entities(
     seed_text: str,
-    event_temperature: float,
-    event_intensity: float,
+    event_scale: float,
+    event_controversy: float,
     event_type: str,
     event_summary: str,
     error_feedback: str = ""
 ) -> Dict[str, Any]:
     """
-    LLM2: 提取事件实体 + 生成意见传播者
+    Generator: 提取事件实体 + 生成意见传播者
 
     Args:
         seed_text: 种子文本内容
-        event_temperature: 事件温度
-        event_intensity: 事件烈度
+        event_scale: 事件规模
+        event_controversy: 事件争议性
         event_type: 事件类型
         event_summary: 事件摘要
         error_feedback: 上一轮的错误反馈（用于重试）
@@ -295,25 +321,25 @@ def llm2_generate_entities(
     Returns:
         包含 event_entities, opinion_spreaders, relations 的字典
     """
-    # LLM2 使用较高的 temperature 使输出更发散
+    # Generator 使用较高的 temperature 使输出更发散
     from src.llm_client import LLMClient
     llm = LLMClient(temperature=0.7)
 
-    user_prompt = LLM2_USER_PROMPT.format(
+    user_prompt = GENERATOR_USER_PROMPT.format(
         seed_text=seed_text,
-        event_temperature=event_temperature,
-        event_intensity=event_intensity,
+        event_scale=event_scale,
+        event_controversy=event_controversy,
         event_type=event_type,
         event_summary=event_summary,
         error_feedback=error_feedback
     )
 
-    console.print("[bold cyan]LLM2:[/bold cyan] 正在提取事件实体与生成意见传播者...")
+    console.print("[bold cyan]Generator:[/bold cyan] 正在提取事件实体与生成意见传播者...")
 
     result = llm.generate(
-        system=LLM2_SYSTEM_PROMPT,
+        system=GENERATOR_SYSTEM_PROMPT,
         user=user_prompt,
-        response_model=None,  # LLM2 返回自由 JSON
+        response_model=None,  # Generator 返回自由 JSON
     )
 
     # 解析 JSON，增加错误处理
@@ -334,22 +360,131 @@ def llm2_generate_entities(
             entities_data = result
     except (json.JSONDecodeError, Exception) as e:
         # JSON 解析失败，抛出错误让上层重试
-        raise ValueError(f"LLM2 返回内容无法解析为 JSON: {e}\n原始内容: {result[:200] if result else '空'}")
+        raise ValueError(f"Generator 返回内容无法解析为 JSON: {e}\n原始内容: {result[:200] if result else '空'}")
 
     event_entities_count = len(entities_data.get('event_entities', []))
     opinion_spreaders_count = len(entities_data.get('opinion_spreaders', []))
     console.print(f"  [green]✓[/green] 事件实体: {event_entities_count}, 意见传播者: {opinion_spreaders_count}")
 
+    # v1.1.11 后处理：自动修正常见错误
+    entities_data = _post_process_entities(entities_data, seed_text)
+
+    return entities_data
+
+
+def _post_process_entities(
+    entities_data: Dict[str, Any],
+    seed_text: str
+) -> Dict[str, Any]:
+    """
+    后处理：自动修正 Generator 生成的实体数据中的常见错误
+
+    Args:
+        entities_data: Generator 生成的原始数据
+        seed_text: 种子文本（用于检查已故关键词）
+
+    Returns:
+        修正后的数据
+    """
+    import re
+
+    # 0. 自动补充缺失的 entity_category 字段
+    for entity in entities_data.get("event_entities", []):
+        if "entity_category" not in entity:
+            entity["entity_category"] = "event_entity"
+            console.print(f"  [yellow]⚠[/yellow] 自动补充：{entity.get('name', '未知')} 的 entity_category")
+
+    for spreader in entities_data.get("opinion_spreaders", []):
+        if "entity_category" not in spreader:
+            spreader["entity_category"] = "opinion_spreader"
+            console.print(f"  [yellow]⚠[/yellow] 自动补充：{spreader.get('group_name', '未知')} 的 entity_category")
+
+    # 1. 自动修正 can_speak（检查种子材料中是否有已故关键词）
+    death_keywords = ["已故", "去世", "死亡", "离世", "身亡", "逝世", "轻生", "跳江", "跳楼", "自杀", "遇难"]
+    seed_lower = seed_text.lower()
+
+    for entity in entities_data.get("event_entities", []):
+        entity_name = entity.get("name", "")
+        entity_type = entity.get("type", "")
+        # 检查实体名称或角色是否包含死亡关键词
+        if any(kw in entity_name or kw in entity.get("role", "") for kw in death_keywords):
+            if entity.get("can_speak", True):
+                console.print(f"  [yellow]⚠[/yellow] 自动修正：{entity_name} 已故，can_speak 设为 false")
+                entity["can_speak"] = False
+        # 如果实体是个体且名字不在名称/角色中包含死亡关键词
+        # 检查种子文本中该实体是否被描述为死亡主体（而非仅出现在死亡上下文中）
+        elif entity_type == "individual" and entity.get("can_speak", True):
+            # 检查种子文本中是否有"[实体]死亡/去世/..."的模式
+            # 即：实体名称 + 死亡动词（0-10字间隔内），或者"已故的[实体]"
+            import re
+            name_escaped = re.escape(entity_name)
+            # 模式1：实体名后紧跟死亡动词（0-10字间隔）
+            pattern1 = f"{name_escaped}[.　]{{0,10}}(已故|去世|死亡|离世|身亡|逝世|轻生)"
+            # 模式2：实体名前有死亡形容词修饰
+            pattern2 = f"(已故|去世|死亡|离世|身亡|逝世|轻生)的{entity_name}"
+            if re.search(pattern1, seed_text) or re.search(pattern2, seed_text):
+                console.print(f"  [yellow]⚠[/yellow] 自动修正：{entity_name} 在种子材料中被描述为已故，can_speak 设为 false")
+                entity["can_speak"] = False
+
+    # 2. 自动修正 original_statement（如果 can_speak=false，original_statement 应为 null）
+    for entity in entities_data.get("event_entities", []):
+        if not entity.get("can_speak", True) and entity.get("original_statement"):
+            # 如果实体不可发言，original_statement 应该为 null
+            if entity["original_statement"] and len(entity["original_statement"]) > 0:
+                console.print(f"  [yellow]⚠[/yellow] 自动修正：{entity.get('name')} 不可发言，original_statement 设为 null")
+                entity["original_statement"] = None
+
+    # 3. 确保 P 值存在（如果缺少 I 但有 stance_score，自动补充 P）
+    opinion_spreaders = entities_data.get("opinion_spreaders", [])
+    for spreader in opinion_spreaders:
+        if "I" in spreader and "P" not in spreader:
+            I = spreader.get("I", 5)
+            spreader["P"] = +1 if I >= 6 else -1
+            console.print(f"  [yellow]⚠[/yellow] 自动补充：{spreader.get('group_name')} 的 P={spreader['P']}（根据 I={I} 推导）")
+
+    # 4. 确保百分比之和为 100
+    total_pct = sum(s.get("estimated_percentage", 0) for s in entities_data.get("opinion_spreaders", []))
+    if total_pct != 100 and total_pct > 0:
+        delta = 100 - total_pct
+        max_spreader = max(entities_data.get("opinion_spreaders", []),
+                           key=lambda s: s.get("estimated_percentage", 0))
+        max_spreader["estimated_percentage"] += delta
+        console.print(f"  [yellow]⚠[/yellow] 自动修正：百分比之和调整为 100（偏差 {delta}）")
+
+    # 5. 确保双向对立存在（至少一个 P=+1 和一个 P=-1）
+    opinion_spreaders = entities_data.get("opinion_spreaders", [])
+    has_support = any(s.get("P", +1) == +1 for s in opinion_spreaders)
+    has_oppose = any(s.get("P", -1) == -1 for s in opinion_spreaders)
+
+    if not has_support or not has_oppose:
+        console.print(f"  [yellow]⚠[/yellow] 自动修正：双向对立不足，调整现有群体立场")
+        # 找一个中间立场的群体进行调整
+        for spreader in opinion_spreaders:
+            current_P = spreader.get("P", 0)
+            if not has_support and current_P == -1:
+                spreader["P"] = +1
+                has_support = True
+                console.print(f"    将 {spreader['group_name']} P 从 -1 调整为 +1（支持者）")
+            elif not has_oppose and current_P == +1:
+                spreader["P"] = -1
+                has_oppose = True
+                console.print(f"    将 {spreader['group_name']} P 从 +1 调整为 -1（反对者）")
+            if has_support and has_oppose:
+                break
+
     return entities_data
 
 
 # =============================================================================
-# LLM3: 格式校验
+# Validator: 格式校验
 # =============================================================================
 
-def llm3_validate(json_content: Dict[str, Any], seed_text: str) -> Dict[str, Any]:
+def validator_check_format(
+    json_content: Dict[str, Any],
+    seed_text: str
+) -> Dict[str, Any]:
     """
-    LLM3: 格式校验
+    Validator: 格式校验
 
     Args:
         json_content: 要校验的 JSON 数据
@@ -360,17 +495,17 @@ def llm3_validate(json_content: Dict[str, Any], seed_text: str) -> Dict[str, Any
     """
     llm = get_llm_client()
 
-    user_prompt = LLM3_USER_PROMPT.format(
+    user_prompt = VALIDATOR_USER_PROMPT.format(
         seed_text=seed_text,
         json_content=json.dumps(json_content, ensure_ascii=False)
     )
 
-    console.print("[bold cyan]LLM3:[/bold cyan] 正在校验格式...")
+    console.print("[bold cyan]Validator:[/bold cyan] 正在校验格式...")
 
     result = llm.generate(
-        system=LLM3_SYSTEM_PROMPT,
+        system=VALIDATOR_SYSTEM_PROMPT,
         user=user_prompt,
-        response_model=None,  # LLM3 返回自由 JSON
+        response_model=None,  # Validator 返回自由 JSON
     )
 
     # 解析 JSON，增加错误处理
@@ -391,10 +526,10 @@ def llm3_validate(json_content: Dict[str, Any], seed_text: str) -> Dict[str, Any
             validation = result
     except json.JSONDecodeError as e:
         # JSON 解析失败，视为校验不通过
-        console.print(f"  [yellow]⚠[/yellow] LLM3 返回格式错误，视为校验失败")
+        console.print(f"  [yellow]⚠[/yellow] Validator 返回格式错误，视为校验失败")
         return {
             "pass": False,
-            "message": "LLM 返回内容无法解析为 JSON",
+            "message": "Validator 返回内容无法解析为 JSON",
             "errors": [f"JSON 解析错误: {str(e)}"]
         }
 
@@ -421,10 +556,10 @@ def extract_entities_with_validation(seed_text: str) -> EntityExtractionOutput:
     带迭代校验的实体提取
 
     流程：
-    1. LLM1：设置 event_temperature + event_intensity
-    2. LLM2：提取事件实体 + 生成意见传播者
-    3. LLM3：校验格式
-    4. 如果不通过，反馈错误给 LLM2，重新生成
+    1. Analyzer：设置 event_scale + event_controversy + event_type
+    2. Generator：提取事件实体 + 生成意见传播者（输出 I + P）
+    3. Validator：校验格式
+    4. 如果不通过，反馈错误给 Generator，重新生成
     5. 最多重试 MAX_RETRIES 次
 
     Args:
@@ -433,33 +568,42 @@ def extract_entities_with_validation(seed_text: str) -> EntityExtractionOutput:
     Returns:
         EntityExtractionOutput: 包含 event_entities, opinion_spreaders 等
     """
-    console.print("[bold cyan]Phase 1:[/bold cyan] 开始实体提取与分类（LLM1/2/3 协作）...")
+    console.print("[bold cyan]Phase 1:[/bold cyan] 开始实体提取与分类（Analyzer/Generator/Validator 协作）...")
 
-    # Step 1: LLM1 设置参数
-    params = llm1_set_parameters(seed_text)
-    event_temperature = params["event_temperature"]
-    event_intensity = params["event_intensity"]
+    # Step 1: Analyzer 设置参数
+    params = analyzer_set_parameters(seed_text)
+    event_scale = params["event_scale"]
+    event_controversy = params["event_controversy"]
     event_summary = params["event_summary"]
     event_type = params["event_type"]
 
-    # Step 2-4: LLM2 生成 + LLM3 校验（迭代）
+    # Step 2-4: Generator 生成 + Validator 校验（迭代）
+    last_validation = None
+    last_entities_data = None
+    error_feedback = ""
+
     for attempt in range(MAX_RETRIES):
-        # LLM2 生成
-        entities_data = llm2_generate_entities(
+        # Generator 生成（首次无错误反馈，后续迭代传入错误反馈）
+        entities_data = generator_create_entities(
             seed_text=seed_text,
-            event_temperature=event_temperature,
-            event_intensity=event_intensity,
+            event_scale=event_scale,
+            event_controversy=event_controversy,
             event_type=event_type,
             event_summary=event_summary,
-            error_feedback=""
+            error_feedback=error_feedback
         )
 
-        # LLM3 校验
-        validation = llm3_validate(entities_data, seed_text)
+        # Validator 校验
+        validation = validator_check_format(entities_data, seed_text)
+        last_validation = validation
+        last_entities_data = entities_data
 
         if validation["pass"]:
             # 通过校验，构建输出
-            console.print(f"[green]✓[/green] LLM3 校验通过（第 {attempt + 1} 次）")
+            console.print(f"[green]✓[/green] Validator 校验通过（第 {attempt + 1} 次）")
+
+            # 后处理：自动修正常见错误
+            entities_data = _post_process_entities(entities_data, seed_text)
 
             # 构建 EntityExtractionOutput
             event_entities = [
@@ -474,54 +618,29 @@ def extract_entities_with_validation(seed_text: str) -> EntityExtractionOutput:
 
             return EntityExtractionOutput(
                 event_summary=event_summary,
-                event_temperature=event_temperature,
-                event_intensity=event_intensity,
+                event_scale=event_scale,
+                event_controversy=event_controversy,
                 event_type=event_type,
                 event_entities=event_entities,
                 opinion_spreaders=opinion_spreaders,
-                relations=relations
+                relations=relations,
             )
 
-        # 不通过，收集错误反馈给 LLM2 重试
+        # 不通过，收集错误反馈给 Generator 重试
         errors = validation.get("errors", [])
         error_feedback = "\n".join([f"- {e}" for e in errors])
-        console.print(f"[yellow]⚠[/yellow] LLM3 校验失败，准备重试（第 {attempt + 1}/{MAX_RETRIES} 次）...")
+        console.print(f"[yellow]⚠[/yellow] Validator 校验失败，准备重试（第 {attempt + 1}/{MAX_RETRIES} 次）...")
 
-        # 在下一次迭代时传入错误反馈
-        if attempt < MAX_RETRIES - 1:
-            entities_data = llm2_generate_entities(
-                seed_text=seed_text,
-                event_temperature=event_temperature,
-                event_intensity=event_intensity,
-                event_type=event_type,
-                event_summary=event_summary,
-                error_feedback=error_feedback
-            )
-            validation = llm3_validate(entities_data, seed_text)
-            if validation["pass"]:
-                break
+    # 达到最大重试次数，校验仍然失败
+    console.print(f"[red]✗[/red] 达到最大重试次数（{MAX_RETRIES}），Validator 校验仍然失败")
 
-    # 达到最大重试次数，使用最后一次结果
-    console.print(f"[yellow]⚠[/yellow] 达到最大重试次数，使用最后一次结果")
-
-    event_entities = [
-        Entity(**e) for e in entities_data.get("event_entities", [])
-    ]
-    opinion_spreaders = [
-        OpinionSpreader(**o) for o in entities_data.get("opinion_spreaders", [])
-    ]
-    relations = [
-        Relation(**r) for r in entities_data.get("relations", [])
-    ]
-
-    return EntityExtractionOutput(
-        event_summary=event_summary,
-        event_temperature=event_temperature,
-        event_intensity=event_intensity,
-        event_type=event_type,
-        event_entities=event_entities,
-        opinion_spreaders=opinion_spreaders,
-        relations=relations
+    # 构建错误信息
+    final_errors = last_validation.get("errors", []) if last_validation else ["未知错误"]
+    error_summary = "\n".join([f"  - {e}" for e in final_errors[:5]])
+    raise ValueError(
+        f"Phase 1 实体提取失败：Validator 校验在 {MAX_RETRIES} 次重试后仍然失败。\n"
+        f"错误摘要：\n{error_summary}\n"
+        f"请检查种子文本。"
     )
 
 
@@ -627,7 +746,7 @@ if __name__ == "__main__":
     console.print(f"\n[bold]意见传播者：[/bold]")
     for spreader in entities_output.opinion_spreaders:
         console.print(f"  - {spreader.group_name} (关联: {spreader.related_event_entity})")
-        console.print(f"    立场: {spreader.stance_score}, 偏差: {spreader.confirmation_bias_level}")
+        console.print(f"    I={spreader.I}, P={spreader.P}, susceptibility={spreader.susceptibility}")
 
     console.print(f"\n[bold]关系：[/bold]")
     for relation in entities_output.relations:
