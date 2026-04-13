@@ -6,11 +6,15 @@ Why: 统一接口便于切换 provider，统一错误处理和重试机制。
 """
 
 import json
+import inspect
+import re
 import time
+import httpx
 from typing import Type, TypeVar, Generic, Optional
 from pydantic import BaseModel
 from openai import OpenAI
 import config
+from src.utils.runtime_logger import get_runtime_logger
 
 # 类型变量，用于泛型返回
 T = TypeVar('T', bound=BaseModel)
@@ -38,20 +42,54 @@ class LLMClient:
         model: str = None,
         temperature: float = config.DEFAULT_TEMPERATURE,
         max_tokens: int = config.DEFAULT_MAX_TOKENS,
+        request_timeout: float | None = None,
     ):
         self.provider = provider
         self.temperature = temperature
         self.max_tokens = max_tokens
+        self.request_timeout = request_timeout
 
         # 初始化 OpenAI 客户端
         #兼容 DeepSeek/Zhipu/Qwen 等 provider
+        _default_timeout = httpx.Timeout(
+            connect=10.0,
+            read=180.0,
+            write=10.0,
+            pool=10.0,
+        )
         self.client = OpenAI(
             api_key=api_key,
             base_url=base_url if base_url else None,
+            timeout=_default_timeout,
         )
 
         # 确定模型名称
         self.model = model or config.get_model_name()
+
+    def _diag_log(self, stage: str, caller: str | None = None, extra: str | None = None) -> None:
+        parts = [
+            "[llm_diag]",
+            f"stage={stage}",
+            f"model={self.model}",
+            f"provider={self.provider}",
+            f"timeout={self.request_timeout}",
+            f"max_tokens={self.max_tokens}",
+        ]
+        if caller:
+            parts.append(f"caller={caller}")
+        if extra:
+            parts.append(extra)
+        print(" ".join(parts))
+
+    def _estimate_message_chars(self, messages: list) -> int:
+        total = 0
+        for item in messages:
+            content = item.get("content", "")
+            if isinstance(content, str):
+                total += len(content)
+            else:
+                total += len(str(content))
+        return total
 
     def _build_messages(self, system: str, user: str) -> list:
         """构建消息格式
@@ -75,15 +113,24 @@ class LLMClient:
         """
         retry_times = retry_times or config.LLM_RETRY_TIMES
         last_error = None
+        caller = inspect.stack()[2].function if len(inspect.stack()) > 2 else "unknown"
+        logger = get_runtime_logger()
 
         for attempt in range(retry_times):
             try:
+                start = time.perf_counter()
+                self._diag_log("before_call_with_retry", caller=caller, extra=f"attempt={attempt}")
+                logger.log_llm_start(caller, self.model)
+                self._diag_log("before_chat_completions_create", caller=caller, extra=f"attempt={attempt}")
                 response = self.client.chat.completions.create(
                     model=self.model,
                     messages=messages,
                     temperature=self.temperature,
                     max_tokens=self.max_tokens,
+                    timeout=self.request_timeout,
                 )
+                elapsed = time.perf_counter() - start
+                logger.log_llm_end(caller, self.model, elapsed)
 
                 content = response.choices[0].message.content
                 return LLMResponse(
@@ -98,12 +145,46 @@ class LLMClient:
                 )
 
             except Exception as e:
+                self._diag_log(
+                    "on_exception",
+                    caller=caller,
+                    extra=f"attempt={attempt} exception_type={type(e).__name__}",
+                )
+                logger.log_error(f"llm:{caller}", str(e))
                 last_error = e
                 if attempt < retry_times - 1:
                     time.sleep(config.LLM_RETRY_DELAY * (attempt + 1))
                 continue
 
         raise RuntimeError(f"LLM 调用失败，已重试 {retry_times} 次: {last_error}")
+
+    def _strip_think_block(self, content: str) -> str:
+        """过滤思维链内容（qwen3 等模型的 :react 标签）
+
+        移除内容中的 :react\n\n... 思维链块，只保留最终回答。
+
+        Args:
+            content: 原始响应内容
+
+        Returns:
+            过滤后的内容
+        """
+        # 移除 :react 标签开头的思维链
+        # 模式: :react\n\n<思考内容>\n\n<实际回答>
+        if content.startswith(":react") or content.startswith(":React"):
+            # 找到第一个换行后的实际内容
+            lines = content.split("\n", 2)
+            if len(lines) >= 3:
+                # lines[0] = ":react", lines[1] = "", lines[2] = 剩余内容
+                content = lines[2] if len(lines) == 3 else "\n".join(lines[2:])
+
+        # 通用模式：移除 <think>...</think> 思维链块
+        content = re.sub(r'<think>[\s\S]*?</think>', '', content)
+
+        # 通用模式：移除 <!-- ... --> 注释块
+        content = re.sub(r'<!--[\s\S]*?-->', '', content)
+
+        return content.strip()
 
     def generate(
         self,
@@ -122,14 +203,29 @@ class LLMClient:
             如果指定了 response_model，返回 Pydantic 模型实例；
             否则返回原始字符串。
         """
+        self._diag_log("before_generate")
         messages = self._build_messages(system, user)
+        self._diag_log(
+            "input_size",
+            extra=(
+                f"system_chars={len(system)} "
+                f"user_chars={len(user)} "
+                f"message_count={len(messages)} "
+                f"total_chars={self._estimate_message_chars(messages)} "
+                f"estimated_tokens={self._estimate_message_chars(messages) // 4}"
+            ),
+        )
         response = self._call_with_retry(messages)
 
         if response_model is None:
-            return response.content
+          
+            return self._strip_think_block(response.content)
 
         # 结构化输出：尝试解析 JSON
         content = response.content.strip()
+
+       
+        content = self._strip_think_block(content)
 
         # 尝试提取 JSON（处理可能的 markdown 代码块）
         if content.startswith("```json"):
@@ -182,6 +278,8 @@ class LLMClient:
                     response = self._call_with_retry(new_messages)
 
                     content = response.content.strip()
+                    # v1.1.13: 过滤思维链内容
+                    content = self._strip_think_block(content)
                     if content.startswith("```json"):
                         content = content[7:]
                     if content.endswith("```"):

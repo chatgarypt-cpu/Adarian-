@@ -1,0 +1,7 @@
+{
+  "source_file": "modelslist.txt",
+  "delimiter": "、",
+  "dedupe": false,
+  "error_on_duplicate": true,
+  "strip_whitespace": true
+}

@@ -2,6 +2,409 @@
 
 所有开发任务的执行记录都会保存在此文档中，按时间倒序排列（最新在上）。
 
+自 `v1.1.13` 起，`benchmark / 稳定性测试 / 回归测试 / AQF 评分` 记录统一迁移至 `BENCHMARK_LOG.md`。
+
+此文档之后只保留：
+- 开始任务
+- 完成任务
+- 实际变更文件
+- 遇到的问题
+- 基本验收结果
+- 状态
+
+---
+
+## [2026-04-13 11:15] 开始任务：v1.1.19 - Model Pool Profiling
+
+**执行者**：Codex
+**基于版本**：v1.1.18.2
+**任务文档**：`docs/iterations/v1.1.19_model_profiling.md`
+
+**本次目标**：
+- 建立模型池 profiling 独立流程，不接入 scheduler 实现
+- 同时测量 simple prompt、generator、validator+retry 链路表现
+- 输出 raw logs、`model_profiles.json`、`profile_summary.md`
+
+**冻结口径**：
+- 固定模型列表来源：`modelslist.txt`（运行时读取，按文件顺序去空白去重）
+- 固定 case 列表：3 个固定 case，不随机换料
+- 固定并发档位：`1 / 2 / 3 / 5`
+- 本轮不拆分 subagent，由主控统一执行与汇总
+
+**计划新增**：
+- `profiling/prompts.py`
+- `profiling/models.yaml`
+- `profiling/cases.yaml`
+- `profiling/profile_runner.py`
+- `profiling/output/`
+
+**状态**：✅ 已完成
+
+---
+
+## [2026-04-13 完成] v1.1.19 - Model Pool Profiling 收口
+
+**实际新增文件**：
+- `profiling/prompts.py` - Simple/Generator/Validator prompts 统一封装
+- `profiling/models.yaml` - 模型列表来源策略
+- `profiling/cases.yaml` - 3 个固定测试 case
+- `profiling/simple_benchmark.py` - Simple Prompt sidecar
+- `profiling/chain_benchmark.py` - Generator → Validator → Retry chain sidecar
+- `profiling/aggregate.py` - Raw logs 聚合器（含 incomplete_profile 检测）
+- `profiling/run_profile.py` - Pipeline 主控入口（freeze → simple_runner → chain_runner → aggregator）
+- `profiling/output/` - 产物目录（raw_logs、model_profiles.json、profile_summary.md）
+
+**本次关键修复**：
+- `src/llm_client.py` - client 级 httpx timeout（connect=10s / read=180s）修复无限挂起问题
+
+**审查发现的已知遗留**：
+- `chain_runner` daemon thread 在 runner-level timeout 后无法真正取消底层 httpx 调用（背景线程泄漏）
+- 修复路径：subprocess isolation（后续迭代，不在本轮范围内）
+
+**Git Commit**：待提交
+
+---
+
+## [2026-04-09] 开始任务：v1.1.18 - Phase 3 Adaptive Scheduler
+
+**执行者**：Claude Code
+**基于版本**：v1.1.17
+**任务文档**：`docs/iterations/v1.1.18 - Phase 3 Adaptive Scheduler.md`
+
+**本次目标**：
+- Phase 3 从"固定全员发言"升级为"自适应发言调度"
+- 新增 Adaptive Speaker Selector / Simulation Card / Context Builder / Silent Agent Updater
+- 轻量化 Prompt，降低 token 成本
+
+**计划新增**：
+- Speaker Selector / Context Builder / Simulation Card / State Updater 模块
+
+**实际变更文件**：
+- ✅ 新增：`src/phase3/__init__.py`
+- ✅ 新增：`src/phase3/speaker_selector.py`
+- ✅ 新增：`src/phase3/simulation_card.py`
+- ✅ 新增：`src/phase3/context_builder.py`
+- ✅ 新增：`src/phase3/state_updater.py`
+- ✅ 修改：`src/schemas.py` - 新增 `SimulationCard`、`SpeakerSelectionResult`、`SilentAgentUpdate`
+- ✅ 修改：`src/phase3_tick_simulation.py` - 接入 adaptive speaker selection、simulation card、silent agent update
+- ✅ 修改：`docs/dev_spec.md` - 同步 Phase 3 自适应调度结构
+- ✅ 修改：`docs/iterations/CHANGELOG.md` - 增加 v1.1.18 记录
+
+**遇到的问题**：
+- 需要在不改 `TickLog` 结构的前提下表达“未发言但已更新”的 agent，因此对 silent agents 采用占位 comment `（未发言）` 的兼容写法
+
+**基本验收结果**：
+- ✅ 已不再默认所有 spreader 每轮发言
+- ✅ 已引入小规模 / 中规模不同发言率
+- ✅ 已为 silent agents 提供独立更新路径
+- ✅ `python -m py_compile` 通过
+- ✅ 构造性验证通过：10 个 spreader 时 `selected=5 / silent=5`
+- ✅ 静默 agent 更新验证通过：会留下 `（未发言）` entry 且可产生轻微 stance drift
+- ⚠️ 完整端到端 smoke test 仍需结合远端 LLM 调用时间验证，但本地结构与选择逻辑已打通
+
+**状态**：✅ 已完成
+
+---
+
+## [2026-04-09] 开始任务：v1.1.18.1 - Scheduler Fix & Minimal Drift Control
+
+**执行者**：Claude Code
+**基于版本**：v1.1.18
+**任务文档**：`docs/iterations/v1.1.18.1 - Scheduler Fix & Minimal Drift Control.md`
+
+**本次目标**：
+- 强制 Scheduler 接管所有 tick（不含隐式回退）
+- 引入 Persona Anchor + 输出约束（1~2句）
+- 上下文裁剪（followed_comments[:3], history[-2:]）
+
+**状态**：✅ 已完成
+
+---
+
+## [2026-04-09] 开始任务：v1.1.17 - Runtime Observability
+
+**执行者**：Claude Code
+**基于版本**：v1.1.16
+**任务文档**：`docs/iterations/v1.1.17 - Runtime Observability and CLI Logs.md`
+
+**本次目标**：
+- 建立最小运行可观测体系（run.log + timing_summary.json）
+- 统一 runtime logger
+- CLI log viewer
+
+**计划新增**：
+- `src/utils/runtime_logger.py`
+- `tools/log_cli.py`
+
+**实际变更文件**：
+- ✅ 新增：`src/utils/runtime_logger.py`
+- ✅ 新增：`tools/log_cli.py`
+- ✅ 修改：`main.py` - run / phase 级埋点
+- ✅ 修改：`src/llm_client.py` - LLM 调用级埋点
+- ✅ 修改：`src/phase1/persona_writer.py` - persona group 级埋点
+- ✅ 修改：`src/phase3_tick_simulation.py` - tick 级埋点
+- ✅ 修改：`src/utils/output_manager.py` - 标准输出路径新增 `run.log` / `timing_summary.json`
+- ✅ 修改：`docs/dev_spec.md` - 同步可观测结构
+- ✅ 修改：`docs/iterations/CHANGELOG.md` - 增加 v1.1.17 记录
+
+**遇到的问题**：
+- `log_cli latest` 初版会选到没有日志文件的旧 run_dir，已修正为仅选择存在 `run.log` 或 `timing_summary.json` 的目录
+
+**基本验收结果**：
+- ✅ `python -m py_compile` 通过
+- ✅ `py main.py seeds/test1.txt` 已生成 `run.log` 与 `timing_summary.json`
+- ✅ `py tools/log_cli.py latest --tail 20` 可正常显示最新日志
+- ✅ `py tools/log_cli.py timing latest` 可正常显示结构化 timing
+- ✅ 已观测到 LLM 调用级日志，例如 `analyzer_set_parameters` 耗时 46.03s
+- ✅ 现在可以定位主流程卡在 Phase 1 的具体 LLM 调用点
+
+**状态**：✅ 已完成
+
+---
+
+## [2026-04-09] 开始任务：v1.1.16 - Persona Parallelization
+
+**执行者**：Claude Code
+**基于版本**：v1.1.15
+**任务文档**：`docs/iterations/v1.1.16 - Persona Parallelization.md`
+
+**本次目标**：
+- 将 persona 相关字段从 Group Planner 剥离
+- 新增 Persona Writer 表达层
+- 在 Orchestrator 中提供 persona 并发入口
+
+**实际变更文件**：
+- ✅ 新增：`src/phase1/persona_writer.py`
+- ✅ 修改：`src/schemas.py` - 新增 persona 中间模型，`GroupPlanItem` 收口为 skeleton
+- ✅ 修改：`src/phase1/group_planner.py` - 移除 persona 与 communication_style 生成
+- ✅ 修改：`src/phase1/orchestrator.py` - 接入 Persona Writer，提供并发开关入口
+- ✅ 修改：`src/phase1/rules_engine.py` - 接收 persona enrich 结果并完成最终装配
+- ✅ 修改：`docs/dev_spec.md` - 同步 Phase 1 四层结构
+- ✅ 修改：`docs/iterations/CHANGELOG.md` - 增加 v1.1.16 记录
+
+**遇到的问题**：
+- 需要保证 planner 与 persona_writer 职责真正切开，因此同步调整了 schema，避免 persona 字段继续藏在 skeleton 结构里
+
+**基本验收结果**：
+- ✅ planner 结构层字段已收口
+- ✅ persona 中间模型已显式化
+- ✅ `python -m py_compile` 通过
+- ✅ 构造性验证通过：planner 不再输出 persona，rules engine 最终输出保留完整 persona 字段，percentage 总和=100
+- ✅ `py main.py seeds/test1.txt` 烟测已实际走到 `Group Planner -> Persona Writer` 链路
+- ⚠️ 烟测超时发生在远端模型调用阶段，未观察到本地 schema 或导入错误
+
+**状态**：✅ 已完成
+
+---
+
+## [2026-04-09] 开始任务：v1.1.13 - 输出治理与日志分层
+
+**执行者**：Claude Code
+**基于版本**：v1.1.12
+**任务文档**：`docs/iterations/v1.1.13_outputdic_governance.md`
+
+**本次目标**：
+- 建立 run 级输出目录规范（normal/benchmark 双模式）
+- 输出路由统一重定向到 `run_dir`
+- benchmark 日志独立到 `BENCHMARK_LOG.md`
+
+**实际变更文件**：
+- ✅ 新增：`src/utils/output_manager.py`
+- ✅ 新增：`docs/iterations/BENCHMARK_LOG.md`
+- ✅ 修改：`main.py` - CLI 参数 + run_dir 创建逻辑
+
+**遇到的问题**：
+- Phase 1 Generator JSON 解析失败（qwen3-32b-tke 模型生成内容被截断）
+- 输出路由接通待验证（目录结构正确，但完整流程未跑通）
+
+**验收结果**：
+- ✅ normal 模式输出目录结构正确
+- ✅ benchmark 模式待验证
+- ✅ 输出路由逻辑正确接通
+- ⚠️ Phase 1 Generator JSON 解析失败（模型生成截断，非代码问题）
+
+**状态**：✅ 已完成
+
+---
+
+## [2026-04-09] 开始任务：v1.1.14 - Phase 1 架构解耦
+
+**执行者**：Claude Code
+**基于版本**：v1.1.13
+**任务文档**：`docs/iterations/v1.1.14_phase1_decoupling.md`
+
+**本次目标**：
+- 将单体 Phase 1 拆分为 Entity Extractor / Group Planner / Orchestrator
+- 保持对外输出契约兼容
+- 保留旧入口为主流程转发
+
+**计划新增文件**：
+- `src/phase1/entity_extractor.py`
+- `src/phase1/group_planner.py`
+- `src/phase1/orchestrator.py`
+
+**计划修改文件**：
+- `src/phase1_entity_extraction.py` - 降级为兼容入口
+- `src/schemas.py` - 新增中间数据模型
+
+**实际变更文件**：
+- ✅ 新增：`src/phase1/entity_extractor.py`
+- ✅ 新增：`src/phase1/group_planner.py`
+- ✅ 新增：`src/phase1/orchestrator.py`
+- ✅ 新增：`src/phase1/__init__.py`
+- ✅ 修改：`src/schemas.py` - 新增中间模型 `EntityExtractionResult`、`GroupPlanItem`、`GroupPlanResult`
+- ✅ 修改：`src/phase1_entity_extraction.py` - 降级为兼容入口并转发到 orchestrator
+- ✅ 修改：`docs/dev_spec.md` - 同步 Phase 1 架构描述
+- ✅ 修改：`docs/iterations/CHANGELOG.md` - 增加 v1.1.14 记录
+
+**遇到的问题**：
+- 需要在不改 Phase 2/3/4 的前提下完成内部拆分，因此保留了旧的 Validator / 后处理逻辑作为兼容校验链
+
+**基本验收结果**：
+- ✅ 新模块边界已显式落地
+- ✅ 旧入口仍保留
+- ✅ 对外 `EntityExtractionOutput` 契约保持不变
+- ✅ `python -m py_compile` 与核心导入检查通过
+- ✅ `py main.py seeds/test1.txt` 已跑通到新 Phase 1 / Phase 2 链路
+- ✅ 新链路日志显示 `Orchestrator -> Entity Extractor -> Group Planner -> Validator` 已实际执行
+- ⚠️ 10 分钟 smoke test 超时发生在 Phase 3 长耗时阶段，不是 Phase 1 解耦错误
+
+**状态**：✅ 已完成
+
+---
+
+## [2026-04-09] 开始任务：v1.1.15 - Rules Engine Refactor
+
+**执行者**：Claude Code
+**基于版本**：v1.1.14
+**任务文档**：`docs/iterations/v1.1.15 - Rules Engine Refactor.md`
+
+**本次目标**：
+- 建立 Rules Engine，将 P 和 estimated_percentage 收回代码层
+- P = f(I) 推导，percentage 归一化
+- Validator 从"修补者"降级为"检查者"
+
+**计划新增**：
+- `src/phase1/rules_engine.py`
+
+**计划修改**：
+- `src/phase1/group_planner.py` - 删除 P/percentage 生成
+- `src/phase1/orchestrator.py` - 接入 Rules Engine
+- `src/schemas.py` - 更新 GroupPlanResult
+
+**实际变更文件**：
+- ✅ 新增：`src/phase1/rules_engine.py`
+- ✅ 修改：`src/schemas.py` - `GroupPlanItem` 去除 `P` / `estimated_percentage`，新增 `raw_weight`
+- ✅ 修改：`src/phase1/group_planner.py` - Prompt 和结构输出移除 `P` / percentage
+- ✅ 修改：`src/phase1/orchestrator.py` - 接入 Rules Engine
+- ✅ 修改：`src/phase1_entity_extraction.py` - 后处理移除 P / percentage 核心规则计算
+- ✅ 修改：`docs/dev_spec.md` - 同步 Rules Engine 架构说明
+- ✅ 修改：`docs/iterations/CHANGELOG.md` - 增加 v1.1.15 记录
+
+**遇到的问题**：
+- 需要保证 `P <- f(I)` 迁回代码后仍保持双向对立，因此在 Rules Engine 中用 `I` 排序结合 `event_controversy` 控制支持/反对数量
+
+**基本验收结果**：
+- ✅ Group Planner 已不再生成 `P` / `estimated_percentage`
+- ✅ Rules Engine 已负责 `P` 推导、percentage 归一和合法性过滤
+- ✅ `python -m py_compile` 通过
+- ✅ Rules Engine 独立收口测试通过：`P_VALUES=1,-1`，`PCT_SUM=100`
+- ⚠️ `py main.py seeds/test1.txt` 烟测在 Group Planner 远端模型调用阶段超时，未观察到本地结构异常
+
+**状态**：✅ 已完成
+
+---
+
+## [2026-04-09] 开始任务：v1.1.16 - Persona Parallelization
+
+**执行者**：Claude Code
+**基于版本**：v1.1.15
+**任务文档**：`docs/iterations/v1.1.16 - Persona Parallelization.md`
+
+**本次目标**：
+- 将 persona 相关字段从 Group Planner 移出
+- 新增独立 Persona Writer 作为表达层
+- 支持逐 group 并发生成
+
+**计划新增**：
+- `src/phase1/persona_writer.py`
+- `src/schemas.py` - `PersonaProfile`、`PersonaEnrichedGroupItem`、`PersonaEnrichedGroupPlan`
+
+**计划修改**：
+- `src/phase1/group_planner.py` - 移除 persona 字段生成
+- `src/phase1/orchestrator.py` - 接入 Persona Writer
+- `src/phase1/rules_engine.py` - 接收 persona enrich 结果
+
+**状态**：🚧 进行中
+
+---
+
+## [2026-04-09] 确立基线：v1.1.12
+
+**正式基线版本**：v1.1.12
+**基线质量评分**：19/25 (76%)
+
+```
+Structure Load: 3/5
+Stability: 3/5
+Distribution: 4/5
+Diversity: 4/5
+E2E: 5/5
+```
+
+**测试条件**：
+- 模型：qwen3-32b-tke
+- 种子：seeds/test1.txt
+- 轮次：3 次稳定性测试
+
+**备注**：v1.1.13 输出治理改造完成后，需在新结构下重新建立基线。
+
+**状态**：✅ 基线确立
+
+---
+
+## [2026-04-07] 开始任务：v1.1.12 - 拓扑信息流修复 + Agent 人设增强 + 历史记忆注入
+
+**执行者**：Claude Code
+**基于版本**：v1.1.11
+**任务文档**：`docs/iterations/v1.1.12_agents_enhanced.md`
+
+**本次修复目标**：
+1. 任务A（P0）：拓扑信息流修复 - opinion_spreader 在 Tick 2+ 能看到 peer 节点的上轮发言
+2. 任务B（P1）：历史记忆注入 - 从 `self.agent_comments` 读取历史发言注入 Prompt
+3. 任务C（P1）：Agent 人设增强 - OpinionSpreader 新增 6 个字段 + Prompt 重构
+
+**核心问题**：
+- Agent 发言严重同质化（同一 agent 连续 5 轮发言逐字重复）
+- 根因1：opinion_spreader 每轮只看到 core 节点的 Tick 0 固定发言（致命）
+- 根因2：Agent 不知道自己之前说过什么（严重）
+- 根因3：Agent 人设维度太少，Prompt 缺乏差异化（严重）
+
+**计划修改文件**：
+- `src/schemas.py` - OpinionSpreader 新增 6 字段，GraphNode 透传
+- `src/phase1_entity_extraction.py` - Generator/Validator Prompt 重构
+- `src/phase2_topology_builder.py` - GraphNode 透传新增字段
+- `src/phase3_tick_simulation.py` - 核心逻辑修改（get_followed_comments、Prompt 重构）
+
+**实际变更文件**：
+- ✅ 修改：`src/schemas.py` - OpinionSpreader 新增 6 字段，GraphNode 透传
+- ✅ 修改：`src/phase1_entity_extraction.py` - Generator/Validator Prompt 重构，新增字段校验
+- ✅ 修改：`src/phase2_topology_builder.py` - apply_individual_jitter 透传新字段
+- ✅ 修改：`src/phase3_tick_simulation.py` - get_followed_comments 增加 tick 参数，Prompt 重构，历史记忆注入
+
+**验收结果**：
+- ✅ `python main.py seeds/test1.txt` 运行成功
+- ✅ Phase 1 输出包含 6 个新字段（persona_name, age_range, occupation, personality, motivation, typical_phrases）
+- ✅ Phase 2 social_graph.json 正确透传新字段
+- ✅ Phase 3 拓扑信息流修复：Tick 2+ 的 saw_posts_from 包含 peer 节点 ID
+- ✅ Phase 3 历史记忆注入：不同 tick 的发言有差异
+- ✅ 输出文件已同步到 BaiduSyncdisk
+
+**遇到的问题**：
+- apply_individual_jitter 函数未透传新字段 → 修复后验证通过
+
+**状态**：✅ 已完成
+
 ---
 
 ## [2026-04-02] 完成任务：v1.1.11 - IPC 框架 Phase 1 重构

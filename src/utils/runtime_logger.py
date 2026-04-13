@@ -47,6 +47,22 @@ class RuntimeLogger:
     def _timestamp(self) -> str:
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+    def _ensure_summary_shape(self) -> None:
+        self.summary.setdefault("run", {})
+        self.summary["run"].setdefault("start_time", None)
+        self.summary["run"].setdefault("end_time", None)
+        self.summary["run"].setdefault("elapsed_seconds", None)
+        self.summary["run"].setdefault("status", "initialized")
+        self.summary.setdefault("phases", {})
+        self.summary.setdefault("llm", {})
+        self.summary["llm"].setdefault("count", 0)
+        self.summary["llm"].setdefault("calls", [])
+        self.summary.setdefault("persona", {})
+        self.summary["persona"].setdefault("count", 0)
+        self.summary["persona"].setdefault("groups", [])
+        self.summary.setdefault("ticks", [])
+        self.summary.setdefault("errors", [])
+
     def _append_log(self, message: str) -> None:
         if not self.log_path:
             return
@@ -60,6 +76,7 @@ class RuntimeLogger:
             json.dump(self.summary, f, ensure_ascii=False, indent=2)
 
     def log_run_start(self, mode: str, seed_file: str, run_dir: str) -> None:
+        self._ensure_summary_shape()
         self.summary["run"].update({
             "start_time": self._timestamp(),
             "mode": mode,
@@ -71,6 +88,7 @@ class RuntimeLogger:
         self._write_summary()
 
     def log_run_end(self, status: str, elapsed: float) -> None:
+        self._ensure_summary_shape()
         self.summary["run"].update({
             "end_time": self._timestamp(),
             "elapsed_seconds": round(elapsed, 2),
@@ -80,12 +98,14 @@ class RuntimeLogger:
         self._write_summary()
 
     def log_phase_start(self, name: str) -> None:
+        self._ensure_summary_shape()
         self.summary["phases"].setdefault(name, {})
         self.summary["phases"][name]["start_time"] = self._timestamp()
         self._append_log(f"PHASE START name={name}")
         self._write_summary()
 
     def log_phase_end(self, name: str, elapsed: float) -> None:
+        self._ensure_summary_shape()
         self.summary["phases"].setdefault(name, {})
         self.summary["phases"][name]["end_time"] = self._timestamp()
         self.summary["phases"][name]["elapsed_seconds"] = round(elapsed, 2)
@@ -96,6 +116,7 @@ class RuntimeLogger:
         self._append_log(f"LLM START caller={caller} model={model}")
 
     def log_llm_end(self, caller: str, model: str, elapsed: float) -> None:
+        self._ensure_summary_shape()
         self.summary["llm"]["count"] += 1
         self.summary["llm"]["calls"].append({
             "caller": caller,
@@ -110,6 +131,7 @@ class RuntimeLogger:
         self._append_log(f"PERSONA START group={group}")
 
     def log_persona_end(self, group: str, elapsed: float) -> None:
+        self._ensure_summary_shape()
         self.summary["persona"]["count"] += 1
         self.summary["persona"]["groups"].append({
             "group": group,
@@ -133,6 +155,7 @@ class RuntimeLogger:
         is_full_selection: bool,
         full_selection_reason: str,
     ) -> None:
+        self._ensure_summary_shape()
         payload = {
             "tick": tick,
             "spreader_count": spreader_count,
@@ -162,6 +185,7 @@ class RuntimeLogger:
         self._write_summary()
 
     def log_tick_end(self, tick: int, elapsed: float, speakers: int, llm_calls: int) -> None:
+        self._ensure_summary_shape()
         tick_entry = next((entry for entry in self.summary["ticks"] if entry.get("tick") == tick), None)
         if tick_entry is None:
             tick_entry = {"tick": tick}
@@ -178,6 +202,7 @@ class RuntimeLogger:
         self._write_summary()
 
     def log_error(self, stage: str, error: str) -> None:
+        self._ensure_summary_shape()
         self.summary["errors"].append({
             "stage": stage,
             "error": error,

@@ -6,6 +6,15 @@
 
 ## 文档变更记录
 
+### 2026-04-08
+
+| 文档 | 变更内容 |
+|------|---------|
+| `README.md` | 修正主流程说明，移除过时的 `phase0_entity_extraction.py` / `phase1_persona_engine.py` 主流程描述，补充“遗留/未接入主流程脚本”清单，更新参数说明为 `I / P / C / event_scale / event_controversy` |
+| `src/__init__.py` | 更新模块说明，明确 `phase0_entity_extraction.py`、`phase1_persona_engine.py`、`agent_quality_analyzer.py` 为历史脚本或未接入主流程工具 |
+| `docs/dev_spec.md` | 同步当前文件结构与验收项，移除已删除历史脚本在现行技术规格中的引用 |
+| `docs/technical_analysis_agent_speaking_logic.md` | 增加归档说明，明确该文档基于旧架构，不再作为当前实现依据 |
+
 ### 2026-03-30
 
 | 文档 | 变更内容 |
@@ -17,6 +26,247 @@
 ---
 
 ## 代码变更记录
+
+## v1.1.18 (2026-04-09)（已完成）
+
+**主题**：Phase 3 Adaptive Scheduler
+
+### 新增
+- [src/phase3/speaker_selector.py] 新增自适应发言调度器
+- [src/phase3/simulation_card.py] 新增 persona projection，输出轻量 Simulation Card
+- [src/phase3/context_builder.py] 新增轻量上下文构造
+- [src/phase3/state_updater.py] 新增静默 agent 轻量更新器
+- [src/phase3/__init__.py] 新增 Phase 3 子模块包
+
+### 修改
+- [src/schemas.py] 新增 `SimulationCard`、`SpeakerSelectionResult`、`SilentAgentUpdate`
+- [src/phase3_tick_simulation.py] `run_tick()` 解耦为选择、轻量上下文、静默更新与装配流程
+- [docs/dev_spec.md] 同步 Phase 3 自适应调度结构说明
+
+### 兼容性
+- ✅ `TickLog` / `AgentEntry` 对外结构保持兼容
+- ✅ Phase 4 仍可继续消费 `tick_logs`
+- ✅ 仅改变 Phase 3 的调度与上下文成本，不改变上游下游契约
+
+## v1.1.18.1 (2026-04-09)（已完成）
+
+**主题**：Scheduler Fix & Minimal Drift Control
+
+### 问题
+- Tick 1 仍出现全员发言，Scheduler 未真正接管
+
+### 修改
+- [src/phase3/speaker_selector.py] 强制 Scheduler 接管所有 tick，Tick 1 显式配置 75%/80%
+- [src/phase3/context_builder.py] 新增 Persona Anchor + 输出约束（1~2句，不要解释/分析）
+
+### 兼容性
+- ✅ Phase 3 从"隐式全员发言"升级为"自适应显式调度"
+
+## v1.1.19 (2026-04-13)（已完成）
+
+**主题**：Model Pool Profiling Pipeline
+
+### 新增
+- [profiling/prompts.py] Simple/Generator/Validator prompts 统一封装
+- [profiling/models.yaml] 模型列表来源策略（modelslist.txt 唯一真源）
+- [profiling/cases.yaml] 3 个固定测试 case（中规模/中高争议、高规模/高争议、高规模/高争议）
+- [profiling/simple_benchmark.py] Simple Prompt sidecar（manifest-driven）
+- [profiling/chain_benchmark.py] Generator → Validator → Retry chain sidecar（manifest-driven）
+- [profiling/aggregate.py] Raw logs 聚合器，含 incomplete_profile / missing_logs 检测
+- [profiling/run_profile.py] Pipeline 主控入口（freeze → simple_runner → chain_runner → aggregator）
+- [profiling/output/] 产物目录
+
+### 修改
+- [src/llm_client.py] 新增 httpx client 级 timeout（connect=10s / read=180s / write=10s / pool=10s），修复无限挂起问题
+
+### 已知遗留
+- [chain_runner] daemon thread 在 runner-level timeout 后无法真正取消底层 httpx 调用
+- 修复路径：subprocess isolation（后续迭代）
+
+### 兼容性
+- ✅ 完全兼容，profiling 独立运行，不影响 Phase 1-4
+- ✅ run_manifest.json 作为唯一测试口径，models 唯一真源为 modelslist.txt
+
+---
+
+## v1.1.17 (2026-04-09)（已完成）
+
+**主题**：Runtime Observability and CLI Logs
+
+### 新增
+- [src/utils/runtime_logger.py] 新增统一运行观测器，输出 `run.log` 与 `timing_summary.json`
+- [tools/log_cli.py] 新增 CLI 查看工具，支持 `latest`、`latest --tail`、`timing latest`、`show <run_dir>`
+
+### 修改
+- [main.py] 新增 run / phase 级埋点
+- [src/llm_client.py] 新增统一 LLM 调用埋点与错误记录
+- [src/phase1/persona_writer.py] 新增 persona group 级 timing 埋点
+- [src/phase3_tick_simulation.py] 新增 tick 级 timing 与 llm_calls 统计
+- [src/utils/output_manager.py] 标准输出路径新增 `run.log` 与 `timing_summary.json`
+- [docs/dev_spec.md] 同步可观测性结构说明
+
+### 兼容性
+- ✅ 不改变 Phase 1~4 业务语义
+- ✅ 不改变原有结构化输出内容
+- ✅ 仅新增运行诊断与 CLI 回看能力
+
+## v1.1.16 (2026-04-09)（已完成）
+
+**主题**：Persona Parallelization
+
+### 新增
+- [src/phase1/persona_writer.py] 新增表达层 Persona Writer，负责基于 group skeleton 生成 persona 字段
+
+### 修改
+- [src/schemas.py] 新增 `PersonaProfile`、`PersonaEnrichedGroupItem`、`PersonaEnrichedGroupPlan`
+- [src/phase1/group_planner.py] 移除 persona 与 communication_style 生成职责，仅保留 skeleton 字段
+- [src/phase1/orchestrator.py] 接入 Persona Writer，并提供可串行/可并发的 persona enrich 入口
+- [src/phase1/rules_engine.py] 改为接收 persona enrich 结果后进行最终装配
+- [docs/dev_spec.md] 同步 Phase 1 四层结构说明
+
+### 兼容性
+- ✅ Phase 2 / 3 / 4 无需感知本次改动
+- ✅ 最终 `EntityExtractionOutput` 仍保留完整 persona 字段
+- ✅ Persona Writer 仅负责表达层，不承担结构规则
+## v1.1.15 (2026-04-09)（已完成）
+
+**主题**：Rules Engine Refactor
+
+### 新增
+- [src/phase1/rules_engine.py] 新增集中规则层，负责 P 推导、percentage 归一化、合法性约束和 Phase 1 输出收口
+
+### 修改
+- [src/schemas.py] `GroupPlanItem` 去除 `P` / `estimated_percentage`，改为 `raw_weight`
+- [src/phase1/group_planner.py] Prompt 与输出结构移除 `P` / `estimated_percentage`
+- [src/phase1/orchestrator.py] 接入 Rules Engine，调整为 `extractor -> planner -> rules_engine -> validator`
+- [src/phase1_entity_extraction.py] 后处理移除 P 和 percentage 的核心规则计算
+- [docs/dev_spec.md] 同步 Rules Engine 架构说明
+
+### 兼容性
+- ✅ Phase 2 / 3 / 4 无需感知本次改动
+- ✅ 对外仍返回原有 `EntityExtractionOutput`
+- ✅ Validator 保持检查职责，不再承担核心结构计算
+
+## v1.1.14 (2026-04-09)（已完成）
+
+**主题**：Phase 1 架构解耦
+
+### 新增
+- [src/phase1/entity_extractor.py] 抽离事实层，负责提取 event_summary / event_scale / event_controversy / event_type / event_entities / relations
+- [src/phase1/group_planner.py] 抽离结构层，负责生成 opinion_spreaders
+- [src/phase1/orchestrator.py] 新增编排层，串联 extractor / planner / validator / 后处理
+
+### 修改
+- [src/schemas.py] 新增中间模型 `EntityExtractionResult`、`GroupPlanItem`、`GroupPlanResult`
+- [src/phase1_entity_extraction.py] 降级为兼容入口，主流程调用转发到 orchestrator
+- [docs/dev_spec.md] 同步 Phase 1 内部结构说明
+
+### 兼容性
+- ✅ Phase 2 / 3 / 4 无需感知本次改动
+- ✅ 对外仍返回原有 `EntityExtractionOutput`
+- ✅ 保留旧入口以降低回滚成本
+
+### 2026-04-08 清理记录
+
+### 删除
+- [src] 删除 `phase0_entity_extraction.py`
+- [src] 删除 `phase1_persona_engine.py`
+- [src] 删除 `agent_quality_analyzer.py`
+
+### 说明
+- 当前运行主链路确认为：`main.py -> phase1_entity_extraction.py -> phase2_topology_builder.py -> phase3_tick_simulation.py -> phase4_report_agent.py`
+- 本次清理不改变主流程逻辑，仅移除未接入主流程的历史脚本，并同步修正文档描述
+- 清理后继续修正 `phase1_entity_extraction.py`、`schemas.py` 中残留的旧参数注释（`event_temperature/event_intensity` → `event_scale/event_controversy`）
+
+## v1.1.12 (2026-04-07)（已完成）
+
+**主题**：拓扑信息流修复 + Agent 人设增强 + 历史记忆注入
+
+### 问题
+- **Agent 发言严重同质化**：同一 agent 连续 5 轮发言逐字重复
+- **根因**：每轮只看到 core 节点 Tick 0 固定发言；Agent 不知道自己之前说过什么；人设维度太少
+
+### 新增
+- [schemas.py] `OpinionSpreader` 新增 6 个字段：
+  - `persona_name` - 群体典型代表名字（如：小美、老张）
+  - `age_range` - 年龄段（如：18-24、25-34）
+  - `occupation` - 职业（如：大学生、美妆博主）
+  - `personality` - 性格特征（如：冲动易怒、冷静理性）
+  - `motivation` - 发言核心动机
+  - `typical_phrases` - 2-3 个口头禅
+- [schemas.py] `GraphNode` 新增 6 个 Optional 字段透传
+
+### 修改
+- [phase1_entity_extraction.py] Generator Prompt 增加 6 个新字段输出要求
+- [phase1_entity_extraction.py] Validator Prompt 增加新字段校验规则
+- [phase2_topology_builder.py] `apply_individual_jitter` 透传新增字段
+- [phase3_tick_simulation.py] `get_followed_comments()` 增加 tick 参数，Tick 2+ 可看到 peer 发言
+- [phase3_tick_simulation.py] `generate_opinion_spreader_post()` 增加 tick 参数
+- [phase3_tick_simulation.py] `AGENT_POST_SYSTEM_PROMPT` 重构，包含完整人设档案
+- [phase3_tick_simulation.py] `AGENT_POST_USER_PROMPT` 增加历史发言记录
+
+### 功能
+- ✅ **拓扑信息流修复**：Tick 2+ 的 `saw_posts_from` 包含 peer 节点 ID
+- ✅ **历史记忆注入**：Prompt 中包含 agent 之前最多 5 轮的发言记录
+- ✅ **人设差异化**：不同 agent 的 Prompt 包含不同的 persona_name、occupation、personality
+
+**详细文档**：[v1.1.12_agents_enhanced.md](./v1.1.12_agents_enhanced.md)
+**完成时间**：2026-04-07
+
+---
+
+## v1.1.13 (2026-04-09)（已完成）
+
+**主题**：输出治理与日志分层
+
+### 问题
+- 输出文件直接平铺在 `outputs/` 根目录，缺乏独立边界
+- 普通运行与 benchmark 输出未分区
+- `TASK_LOG.md` 同时承载任务执行与 benchmark 记录，职责混乱
+
+### 新增
+- [src/utils] 新增 `output_manager.py` - run 级目录管理器
+  - `create_normal_run_dir()` - normal 模式输出目录
+  - `create_benchmark_run_dir()` - benchmark 模式输出目录（禁止覆盖）
+  - `write_run_meta()` - 写入运行元信息
+  - `copy_seed_to_run_dir()` - 复制 seed 到 run_dir
+  - `build_run_output_paths()` - 返回标准输出路径字典
+- [docs] 新增 `BENCHMARK_LOG.md` - benchmark/稳定性测试/回归测试专用日志
+- [config.py] 新增 `NORMAL_OUTPUTS_DIR` / `BENCHMARK_OUTPUTS_DIR` 配置
+
+### 修改
+- [main.py] 增加 CLI 参数：`--mode normal|benchmark`、`--version`、`--run_idx`
+- [main.py] 创建 run_dir 并将输出路由到 `outputs/normal/{seed}_{timestamp}/` 或 `outputs/benchmark/{version}_run{idx}_{seed}/`
+- [main.py] 传递 output_path 参数到各 Phase 保存函数
+- [TASK_LOG.md] 顶部增加职责说明，明确 benchmark 内容迁移至 BENCHMARK_LOG.md
+
+### 目录规范
+```
+outputs/
+├── normal/
+│   └── {seed}_{YYYYMMDD_HHMMSS}/
+│       ├── seed_input.txt
+│       ├── entities_and_relations.json
+│       ├── social_graph.json
+│       ├── tick_logs.json
+│       ├── final_report.json
+│       ├── final_report.md
+│       └── run_meta.json
+└── benchmark/
+    └── {version}_run{N}_{seed}/
+        └──（同上）
+```
+
+### 验收结果
+- ✅ normal 模式目录结构正确
+- ✅ run_meta.json 正确写入
+- ✅ seed_input.txt 正确复制
+- ⚠️ benchmark 模式未完整验证
+
+**详细文档**：[v1.1.13_outputdic_governance.md](./v1.1.13_outputdic_governance.md)
+**完成时间**：2026-04-09
+
+---
 
 ## v1.1.11 (2026-04-02)（已完成）
 
