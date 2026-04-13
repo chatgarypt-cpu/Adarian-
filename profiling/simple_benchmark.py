@@ -111,6 +111,7 @@ class SimpleBenchmarkRunSpec:
     provider: str
     api_key: str
     base_url: str
+    raw_log_dir: Path
 
 
 @dataclass(slots=True)
@@ -292,6 +293,15 @@ def resolve_simple_benchmark_spec(manifest_source: str | Path | Mapping[str, Any
     raw_manifest, manifest_path = _load_manifest_source(manifest_source)
     manifest = _require_section(raw_manifest, "simple_benchmark")
 
+    output_section = raw_manifest.get("output")
+    raw_log_dir_value = manifest.get("raw_log_dir")
+    if not isinstance(raw_log_dir_value, str) or not raw_log_dir_value.strip():
+        if isinstance(output_section, Mapping):
+            raw_log_dir_value = str(output_section.get("raw_logs_dir") or "").strip()
+    raw_log_dir = Path(raw_log_dir_value) if isinstance(raw_log_dir_value, str) and raw_log_dir_value.strip() else RAW_LOG_DIR
+    if not raw_log_dir.is_absolute():
+        raw_log_dir = (config.PROJECT_ROOT / raw_log_dir).resolve()
+
     return SimpleBenchmarkRunSpec(
         manifest=manifest,
         manifest_path=manifest_path,
@@ -306,6 +316,7 @@ def resolve_simple_benchmark_spec(manifest_source: str | Path | Mapping[str, Any
         provider=_require_non_empty_str(manifest.get("provider"), "simple_benchmark.provider"),
         api_key=_require_non_empty_str(manifest.get("api_key"), "simple_benchmark.api_key"),
         base_url=_require_non_empty_str(manifest.get("base_url"), "simple_benchmark.base_url"),
+        raw_log_dir=raw_log_dir,
     )
 
 
@@ -594,10 +605,10 @@ def _slugify_filename(text: str) -> str:
     return cleaned or "simple_benchmark"
 
 
-def _build_raw_log_path(run_name: str) -> Path:
-    RAW_LOG_DIR.mkdir(parents=True, exist_ok=True)
+def _build_raw_log_path(run_name: str, raw_log_dir: Path) -> Path:
+    raw_log_dir.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-    return RAW_LOG_DIR / f"{_slugify_filename(run_name)}_{timestamp}.jsonl"
+    return raw_log_dir / f"{_slugify_filename(run_name)}_{timestamp}.jsonl"
 
 
 def _write_raw_logs(*, raw_log_path: Path, spec: SimpleBenchmarkRunSpec, report: SimpleBenchmarkReport) -> Path:
@@ -694,7 +705,7 @@ def run_simple_benchmark(manifest_source: str | Path | Mapping[str, Any]) -> Sim
     """Run the benchmark described by run_manifest.json."""
     spec = resolve_simple_benchmark_spec(manifest_source)
     report = _run_simple_benchmark(spec)
-    raw_log_path = _build_raw_log_path(spec.run_name)
+    raw_log_path = _build_raw_log_path(spec.run_name, spec.raw_log_dir)
     console.print(f"[cyan]simple_runner[/cyan] run_name={spec.run_name} stage=before_write_raw_log path={raw_log_path}")
     _write_raw_logs(raw_log_path=raw_log_path, spec=spec, report=report)
     report.meta["raw_log_path"] = str(raw_log_path)

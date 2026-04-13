@@ -12,7 +12,6 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-import threading
 import time
 from dataclasses import dataclass
 from datetime import datetime
@@ -26,12 +25,24 @@ if __package__ in (None, ""):
 
 import config
 from rich.console import Console
+
 from profiling.prompts import build_generator_prompts, build_validator_prompts
+from profiling.utils.subprocess_runner import ExecutionOutcome, run_chain_in_subprocess
 from src.llm_client import LLMClient
 
 PROFILE_ROOT = config.PROJECT_ROOT / "profiling"
 RAW_LOG_DIR = PROFILE_ROOT / "output" / "raw_logs"
 console = Console()
+
+DEFAULT_EXECUTION_METADATA = {
+    "execution_mode": "subprocess",
+    "timeout_triggered": False,
+    "termination_method": "none",
+    "timeout_final_state": "not_triggered",
+    "worker_exit_code": None,
+    "worker_exit_status": "unknown",
+    "result_file_present": False,
+}
 
 
 @dataclass(frozen=True)
@@ -295,13 +306,45 @@ def _build_attempt_record(
     }
 
 
-def _build_timeout_result(
+def _execution_metadata_from_outcome(outcome: ExecutionOutcome) -> dict[str, Any]:
+    return {
+        "execution_mode": outcome.execution_mode,
+        "timeout_triggered": outcome.timeout_triggered,
+        "termination_method": outcome.termination_method,
+        "timeout_final_state": outcome.timeout_final_state,
+        "worker_exit_code": outcome.worker_exit_code,
+        "worker_exit_status": outcome.worker_exit_status,
+        "result_file_present": outcome.result_file_present,
+    }
+
+
+def _attach_execution_metadata(result: Mapping[str, Any], outcome: ExecutionOutcome) -> dict[str, Any]:
+    payload = dict(result)
+    execution = _execution_metadata_from_outcome(outcome)
+    payload["execution"] = execution
+    attempts: list[dict[str, Any]] = []
+    for attempt in payload.get("attempts", []):
+        row = dict(attempt)
+        for key, value in DEFAULT_EXECUTION_METADATA.items():
+            row.setdefault(key, value)
+        row.update(execution)
+        attempts.append(row)
+    payload["attempts"] = attempts
+    return payload
+
+
+def _build_failure_result(
     *,
     generator_model: str,
     validator_model: str,
     case: Mapping[str, Any],
     max_retry_count: int,
     request_timeout: float,
+    error_types: Sequence[str],
+    exception_type: str,
+    exception_message: str,
+    timeout: bool,
+    execution: Mapping[str, Any],
 ) -> dict[str, Any]:
     seed_case_id = str(case["id"])
     request_id = f"{generator_model}:{seed_case_id}"
@@ -318,7 +361,7 @@ def _build_timeout_result(
         end_to_end_latency_sec=request_timeout,
         generator_success=False,
         validator_pass=False,
-        timeout=True,
+        timeout=timeout,
         empty_response=False,
         json_parse_ok=False,
         entity_count=0,
@@ -326,9 +369,9 @@ def _build_timeout_result(
         estimated_percentage_sum=0,
         has_positive_P=False,
         has_negative_P=False,
-        error_types=["timeout", "generator_error:RunnerTimeout"],
-        exception_type="RunnerTimeout",
-        exception_message=f"chain case exceeded runner timeout {request_timeout:.2f}s",
+        error_types=error_types,
+        exception_type=exception_type,
+        exception_message=exception_message,
         generator_raw_response=None,
         generator_parsed_json=None,
         validator_raw_response=None,
@@ -336,7 +379,7 @@ def _build_timeout_result(
         validator_errors=[],
         error_feedback="",
     )
-    return {
+    result = {
         "model_name": generator_model,
         "validator_model_name": validator_model,
         "seed_case_id": seed_case_id,
@@ -347,7 +390,7 @@ def _build_timeout_result(
         "json_parse_ok": False,
         "validator_pass": False,
         "retry_count": 0,
-        "error_types": ["timeout", "generator_error:RunnerTimeout"],
+        "error_types": list(error_types),
         "entity_count": 0,
         "opinion_spreader_count": 0,
         "estimated_percentage_sum": 0,
@@ -358,6 +401,193 @@ def _build_timeout_result(
         "final_validator_json": None,
         "case": dict(case),
     }
+    return _attach_execution_metadata(result, ExecutionOutcome.from_metadata(execution))
+
+
+def _build_timeout_result(
+    *,
+    generator_model: str,
+    validator_model: str,
+    case: Mapping[str, Any],
+    max_retry_count: int,
+    request_timeout: float,
+    outcome: ExecutionOutcome,
+) -> dict[str, Any]:
+    return _build_failure_result(
+        generator_model=generator_model,
+        validator_model=validator_model,
+        case=case,
+        max_retry_count=max_retry_count,
+        request_timeout=request_timeout,
+        error_types=["timeout", "generator_error:RunnerTimeout"],
+        exception_type="RunnerTimeout",
+        exception_message=f"chain case exceeded runner timeout {request_timeout:.2f}s",
+        timeout=True,
+        execution=_execution_metadata_from_outcome(outcome),
+    )
+
+
+def _build_worker_error_result(
+    *,
+    generator_model: str,
+    validator_model: str,
+    case: Mapping[str, Any],
+    max_retry_count: int,
+    request_timeout: float,
+    outcome: ExecutionOutcome,
+) -> dict[str, Any]:
+    error_types = ["generator_error:WorkerFailure"]
+    exception_type = "WorkerFailure"
+    exception_message = "chain worker failed without a structured error payload"
+
+    payload = outcome.result_payload if isinstance(outcome.result_payload, Mapping) else {}
+    error_payload = payload.get("error") if isinstance(payload, Mapping) else None
+    if isinstance(error_payload, Mapping):
+        exception_type = str(error_payload.get("exception_type") or exception_type)
+        exception_message = str(error_payload.get("exception_message") or exception_message)
+        payload_error_types = error_payload.get("error_types")
+        if isinstance(payload_error_types, list) and payload_error_types:
+            error_types = [str(item) for item in payload_error_types if str(item).strip()]
+        if error_payload.get("timeout") is True and "timeout" not in error_types:
+            error_types = ["timeout"] + error_types
+
+    if outcome.worker_exit_status == "completed" and not outcome.result_file_present:
+        error_types = ["generator_error:ResultFileMissing"]
+        exception_type = "WorkerResultMissing"
+        exception_message = "chain worker exited normally but no result file was written"
+    elif outcome.worker_exit_status == "abnormal_exit" and not outcome.result_file_present:
+        error_types = ["generator_error:WorkerAbnormalExit", "generator_error:ResultFileMissing"]
+        exception_type = "WorkerAbnormalExit"
+        exception_message = f"chain worker exited abnormally with code {outcome.worker_exit_code}"
+
+    if outcome.worker_stderr_tail:
+        exception_message = f"{exception_message}; stderr_tail={outcome.worker_stderr_tail}"
+    elif outcome.worker_stdout_tail:
+        exception_message = f"{exception_message}; stdout_tail={outcome.worker_stdout_tail}"
+
+    timeout = outcome.timeout_triggered or "timeout" in error_types
+    return _build_failure_result(
+        generator_model=generator_model,
+        validator_model=validator_model,
+        case=case,
+        max_retry_count=max_retry_count,
+        request_timeout=request_timeout,
+        error_types=error_types,
+        exception_type=exception_type,
+        exception_message=exception_message,
+        timeout=timeout,
+        execution=_execution_metadata_from_outcome(outcome),
+    )
+
+
+def _build_worker_payload(
+    *,
+    generator_model: str,
+    validator_model: str,
+    case: Mapping[str, Any],
+    max_retry_count: int,
+    provider: str,
+    api_key: str,
+    base_url: str,
+    generator_temperature: float,
+    validator_temperature: float,
+    max_tokens: int,
+    request_timeout: float,
+) -> dict[str, Any]:
+    return {
+        "generator_model": generator_model,
+        "validator_model": validator_model,
+        "case": dict(case),
+        "max_retry_count": max_retry_count,
+        "provider": provider,
+        "api_key": api_key,
+        "base_url": base_url,
+        "generator_temperature": generator_temperature,
+        "validator_temperature": validator_temperature,
+        "max_tokens": max_tokens,
+        "request_timeout": request_timeout,
+    }
+
+
+def _run_chain_side_runner(
+    *,
+    generator_model: str,
+    validator_model: str,
+    case: Mapping[str, Any],
+    max_retry_count: int,
+    provider: str,
+    api_key: str,
+    base_url: str,
+    generator_temperature: float,
+    validator_temperature: float,
+    max_tokens: int,
+    request_timeout: float,
+    worker_tmp_root: Path,
+) -> tuple[dict[str, Any], ExecutionOutcome]:
+    console.print(
+        f"[cyan]chain_runner[/cyan] model={generator_model} case={case['id']} "
+        f"stage=spawn_subprocess timeout_sec={request_timeout}"
+    )
+    payload = _build_worker_payload(
+        generator_model=generator_model,
+        validator_model=validator_model,
+        case=case,
+        max_retry_count=max_retry_count,
+        provider=provider,
+        api_key=api_key,
+        base_url=base_url,
+        generator_temperature=generator_temperature,
+        validator_temperature=validator_temperature,
+        max_tokens=max_tokens,
+        request_timeout=request_timeout,
+    )
+    outcome = run_chain_in_subprocess(
+        payload,
+        timeout_sec=request_timeout,
+        project_root=config.PROJECT_ROOT,
+        temp_root=worker_tmp_root,
+    )
+    console.print(
+        f"[cyan]chain_runner[/cyan] model={generator_model} case={case['id']} "
+        f"stage=subprocess_done timeout_sec={request_timeout} "
+        f"timeout_triggered={outcome.timeout_triggered} final_state={outcome.timeout_final_state} "
+        f"exit_status={outcome.worker_exit_status} cleanup_status={outcome.cleanup_status}"
+    )
+    if outcome.cleanup_status != "cleaned":
+        console.print(
+            f"[yellow]chain_runner[/yellow] model={generator_model} case={case['id']} "
+            f"stage=worker_tmp_cleanup_failed detail={outcome.cleanup_message}"
+        )
+
+    if outcome.timeout_triggered:
+        return (
+            _build_timeout_result(
+                generator_model=generator_model,
+                validator_model=validator_model,
+                case=case,
+                max_retry_count=max_retry_count,
+                request_timeout=request_timeout,
+                outcome=outcome,
+            ),
+            outcome,
+        )
+
+    if isinstance(outcome.result_payload, Mapping) and outcome.result_payload.get("ok") is True:
+        worker_result = outcome.result_payload.get("result")
+        if isinstance(worker_result, Mapping):
+            return _attach_execution_metadata(worker_result, outcome), outcome
+
+    return (
+        _build_worker_error_result(
+            generator_model=generator_model,
+            validator_model=validator_model,
+            case=case,
+            max_retry_count=max_retry_count,
+            request_timeout=request_timeout,
+            outcome=outcome,
+        ),
+        outcome,
+    )
 
 
 def run_chain_case(
@@ -615,6 +845,8 @@ def run_chain_benchmark(*, manifest_path: str | Path | None = None) -> dict[str,
 
     bundle = _resolve_manifest(manifest, resolved_manifest_path)
     bundle.raw_log_dir.mkdir(parents=True, exist_ok=True)
+    worker_tmp_root = bundle.raw_log_dir / "_worker_tmp"
+    worker_tmp_root.mkdir(parents=True, exist_ok=True)
 
     run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
     raw_log_path = bundle.raw_log_dir / f"{bundle.run_name}_{resolved_manifest_path.stem}_{run_id}.jsonl"
@@ -627,46 +859,26 @@ def run_chain_benchmark(*, manifest_path: str | Path | None = None) -> dict[str,
             console.print(
                 f"[cyan]chain_runner[/cyan] model={generator_model} case={case['id']} stage=begin_case"
             )
-            holder: dict[str, Any] = {}
-            worker_error: dict[str, BaseException] = {}
-
-            def _worker() -> None:
-                try:
-                    holder["result"] = run_chain_case(
-                        generator_model=generator_model,
-                        validator_model=bundle.validator_model,
-                        case=case,
-                        max_retry_count=bundle.max_retry_count,
-                        provider=bundle.provider,
-                        api_key=bundle.api_key,
-                        base_url=bundle.base_url,
-                        generator_temperature=bundle.generator_temperature,
-                        validator_temperature=bundle.validator_temperature,
-                        max_tokens=bundle.max_tokens,
-                        request_timeout=bundle.request_timeout,
-                    )
-                except BaseException as exc:
-                    worker_error["error"] = exc
-
-            worker = threading.Thread(target=_worker, name=f"chain_case_{generator_model}_{case['id']}", daemon=True)
-            worker.start()
-            worker.join(timeout=bundle.request_timeout)
-            if "error" in worker_error:
-                raise worker_error["error"]
-            if worker.is_alive():
+            result, outcome = _run_chain_side_runner(
+                generator_model=generator_model,
+                validator_model=bundle.validator_model,
+                case=case,
+                max_retry_count=bundle.max_retry_count,
+                provider=bundle.provider,
+                api_key=bundle.api_key,
+                base_url=bundle.base_url,
+                generator_temperature=bundle.generator_temperature,
+                validator_temperature=bundle.validator_temperature,
+                max_tokens=bundle.max_tokens,
+                request_timeout=bundle.request_timeout,
+                worker_tmp_root=worker_tmp_root,
+            )
+            if outcome.timeout_triggered:
                 console.print(
                     f"[yellow]chain_runner[/yellow] model={generator_model} case={case['id']} "
-                    f"stage=runner_timeout timeout_sec={bundle.request_timeout}"
+                    f"stage=runner_timeout timeout_sec={bundle.request_timeout} "
+                    f"final_state={outcome.timeout_final_state}"
                 )
-                result = _build_timeout_result(
-                    generator_model=generator_model,
-                    validator_model=bundle.validator_model,
-                    case=case,
-                    max_retry_count=bundle.max_retry_count,
-                    request_timeout=bundle.request_timeout,
-                )
-            else:
-                result = holder["result"]
             results.append(result)
             raw_rows.extend(result["attempts"])
             raw_log_path.write_text(

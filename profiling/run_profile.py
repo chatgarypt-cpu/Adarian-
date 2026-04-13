@@ -11,6 +11,7 @@ Execution-only orchestrator responsibilities:
 from __future__ import annotations
 
 import json
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -30,16 +31,15 @@ console = Console()
 PROFILE_ROOT = config.PROJECT_ROOT / "profiling"
 OUTPUT_ROOT = PROFILE_ROOT / "output"
 RAW_LOG_DIR = OUTPUT_ROOT / "raw_logs"
+RUNS_ROOT = OUTPUT_ROOT / "runs"
 RUN_MANIFEST_PATH = OUTPUT_ROOT / "run_manifest.json"
-MANIFEST_SNAPSHOT_PATH = OUTPUT_ROOT / "run_manifest.snapshot.json"
-MODEL_PROFILES_PATH = OUTPUT_ROOT / "model_profiles.json"
-PROFILE_SUMMARY_PATH = OUTPUT_ROOT / "profile_summary.md"
 
 
 def ensure_output_dirs() -> None:
     """Ensure profiling output directories exist."""
     OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
     RAW_LOG_DIR.mkdir(parents=True, exist_ok=True)
+    RUNS_ROOT.mkdir(parents=True, exist_ok=True)
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -56,6 +56,24 @@ def _write_json(path: Path, payload: Any) -> None:
 
 def _now_iso() -> str:
     return datetime.now().isoformat(timespec="seconds")
+
+
+def _make_run_id() -> str:
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    return f"run_{timestamp}_{os.getpid()}"
+
+
+def _build_run_paths(run_id: str) -> dict[str, Path]:
+    run_root = RUNS_ROOT / run_id
+    raw_log_dir = run_root / "raw_logs"
+    return {
+        "run_id": run_id,
+        "run_root": run_root,
+        "raw_log_dir": raw_log_dir,
+        "manifest_snapshot_path": run_root / f"run_manifest.snapshot.{run_id}.json",
+        "model_profiles_path": run_root / "model_profiles.json",
+        "profile_summary_path": run_root / "profile_summary.md",
+    }
 
 
 def _resolve_models_source(source_path: str) -> Path:
@@ -161,23 +179,34 @@ def validate_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def freeze_step(manifest: dict[str, Any], validated: dict[str, Any]) -> Path:
+def freeze_step(manifest: dict[str, Any], validated: dict[str, Any], run_paths: dict[str, Path]) -> Path:
     """Create execution snapshot for sidecars.
 
     The source manifest remains single-source-of-truth for config.
     The snapshot only materializes resolved model names for sidecar execution.
     """
     snapshot = json.loads(json.dumps(manifest, ensure_ascii=False))
-    snapshot["run_id"] = f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    run_id = str(run_paths["run_id"])
+    snapshot["run_id"] = run_id
     snapshot["frozen_at"] = _now_iso()
     snapshot["freeze"] = {
         "models_source_path": validated["models_source_path"],
         "resolved_models_count": len(validated["models"]),
     }
+    output_section = snapshot.get("output", {})
+    if isinstance(output_section, dict):
+        output_section["root_dir"] = str(run_paths["run_root"])
+        output_section["raw_logs_dir"] = str(run_paths["raw_log_dir"])
+        output_section["profiles_path"] = str(run_paths["model_profiles_path"])
+        output_section["summary_path"] = str(run_paths["profile_summary_path"])
+        output_section["manifest_snapshot_path"] = str(run_paths["manifest_snapshot_path"])
+        snapshot["output"] = output_section
 
     simple_section = snapshot.get("simple_benchmark", {})
     if isinstance(simple_section, dict):
         simple_section["models"] = list(validated["models"])
+        simple_section["run_name"] = f"{simple_section.get('run_name', 'simple_benchmark')}_{run_id}"
+        simple_section["raw_log_dir"] = str(run_paths["raw_log_dir"])
         snapshot["simple_benchmark"] = simple_section
 
     chain_section = snapshot.get("chain_benchmark", {})
@@ -186,10 +215,18 @@ def freeze_step(manifest: dict[str, Any], validated: dict[str, Any]) -> Path:
         chain_section["generator_model"] = list(validated["models"])
         chain_section["validator_model"] = "minimax"
         chain_section["max_retry_count"] = 2
+        chain_section["run_name"] = f"{chain_section.get('run_name', 'chain_benchmark')}_{run_id}"
+        chain_section["raw_log_dir"] = str(run_paths["raw_log_dir"])
         snapshot["chain_benchmark"] = chain_section
 
-    _write_json(MANIFEST_SNAPSHOT_PATH, snapshot)
-    return MANIFEST_SNAPSHOT_PATH
+    aggregator_section = snapshot.get("aggregator", {})
+    if isinstance(aggregator_section, dict):
+        aggregator_section["model_profiles_path"] = str(run_paths["model_profiles_path"])
+        aggregator_section["profile_summary_path"] = str(run_paths["profile_summary_path"])
+        snapshot["aggregator"] = aggregator_section
+
+    _write_json(run_paths["manifest_snapshot_path"], snapshot)
+    return run_paths["manifest_snapshot_path"]
 
 
 def run_simple_runner(manifest_snapshot_path: Path) -> dict[str, Any]:
@@ -232,7 +269,12 @@ def run_chain_runner(manifest_snapshot_path: Path) -> dict[str, Any]:
         }
 
 
-def run_aggregate(manifest_snapshot_path: Path, raw_log_paths: list[str], runner_failures: list[str]) -> dict[str, Any]:
+def run_aggregate(
+    manifest_snapshot_path: Path,
+    raw_log_paths: list[str],
+    runner_failures: list[str],
+    run_paths: dict[str, Path],
+) -> dict[str, Any]:
     """Aggregate even if raw logs are incomplete."""
     existing_paths = [path for path in raw_log_paths if path]
     summary = aggregate_from_paths(
@@ -256,7 +298,11 @@ def run_aggregate(manifest_snapshot_path: Path, raw_log_paths: list[str], runner
 
     summary["missing_logs"] = deduped_missing
     summary["incomplete_profile"] = bool(deduped_missing) or bool(summary.get("has_failures"))
-    write_outputs(summary, model_profiles_path=MODEL_PROFILES_PATH, summary_path=PROFILE_SUMMARY_PATH)
+    write_outputs(
+        summary,
+        model_profiles_path=run_paths["model_profiles_path"],
+        summary_path=run_paths["profile_summary_path"],
+    )
     return summary
 
 
@@ -292,7 +338,13 @@ def run_pipeline() -> dict[str, Any]:
     try:
         manifest = load_manifest()
         validated = validate_manifest(manifest)
-        manifest_snapshot_path = freeze_step(manifest, validated)
+        run_id = _make_run_id()
+        run_paths = _build_run_paths(run_id)
+        run_paths["run_root"].mkdir(parents=True, exist_ok=True)
+        run_paths["raw_log_dir"].mkdir(parents=True, exist_ok=True)
+        manifest_snapshot_path = freeze_step(manifest, validated, run_paths)
+        result["run_id"] = run_id
+        result["run_root"] = str(run_paths["run_root"])
         result["steps"]["freeze"] = {"ok": True, "manifest_snapshot_path": str(manifest_snapshot_path)}
     except Exception as exc:
         result["steps"]["freeze"] = {"ok": False, "error": str(exc)}
@@ -315,7 +367,7 @@ def run_pipeline() -> dict[str, Any]:
     if not chain_result["ok"]:
         runner_failures.append(f"chain_runner failed: {chain_result.get('error', 'unknown error')}")
 
-    aggregate_result = run_aggregate(manifest_snapshot_path, raw_log_paths, runner_failures)
+    aggregate_result = run_aggregate(manifest_snapshot_path, raw_log_paths, runner_failures, run_paths)
     result["aggregate"] = aggregate_result
 
     if runner_failures:

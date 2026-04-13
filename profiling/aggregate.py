@@ -466,6 +466,12 @@ def _summarize_model(
     timeout_rate = _numeric_timeout_rate(model_records)
     empty_response_count = sum(1 for record in model_records if _maybe_bool(record.get("empty_response")) is True)
     json_parse_fail_count = sum(1 for record in model_records if _maybe_bool(record.get("json_parse_ok")) is False)
+    subprocess_execution_count = sum(1 for record in chain_records if str(record.get("execution_mode", "")).strip().lower() == "subprocess")
+    killed_count = sum(1 for record in chain_records if str(record.get("timeout_final_state", "")).strip().lower() == "killed")
+    kill_failed_count = sum(1 for record in chain_records if str(record.get("timeout_final_state", "")).strip().lower() == "kill_failed")
+    worker_exit_abnormal_count = sum(
+        1 for record in chain_records if str(record.get("worker_exit_status", "")).strip().lower() == "abnormal_exit"
+    )
     schema_fail_count = sum(
         1
         for record in model_records
@@ -550,6 +556,10 @@ def _summarize_model(
             "review_latency": review_latency,
             "end_to_end_latency": end_to_end_latency,
             "timeout_count": sum(1 for record in model_records if _maybe_bool(record.get("timeout")) is True),
+            "subprocess_execution_count": subprocess_execution_count,
+            "killed_count": killed_count,
+            "kill_failed_count": kill_failed_count,
+            "worker_exit_abnormal_count": worker_exit_abnormal_count,
             "empty_response_count": empty_response_count,
             "json_parse_fail_count": json_parse_fail_count,
             "schema_fail_count": schema_fail_count,
@@ -649,6 +659,19 @@ def build_profile_summary_data(
 
     pool_counts = Counter(str(row.get("recommended_pool", "fragile")) for row in model_rows)
     stability_counts = Counter(str(row.get("stability", "low")) for row in model_rows)
+    execution_hygiene = {
+        "subprocess_execution_count": sum(
+            int(row.get("breakdown", {}).get("subprocess_execution_count", 0) or 0) for row in model_rows
+        ),
+        "timeout_count": sum(int(row.get("breakdown", {}).get("timeout_count", 0) or 0) for row in model_rows),
+        "killed_count": sum(int(row.get("breakdown", {}).get("killed_count", 0) or 0) for row in model_rows),
+        "kill_failed_count": sum(
+            int(row.get("breakdown", {}).get("kill_failed_count", 0) or 0) for row in model_rows
+        ),
+        "worker_exit_abnormal_count": sum(
+            int(row.get("breakdown", {}).get("worker_exit_abnormal_count", 0) or 0) for row in model_rows
+        ),
+    }
     ranked_models = sorted(model_rows, key=lambda row: (
         STABILITY_SCORE.get(str(row.get("stability", "low")), 0),
         _maybe_float(row.get("final_pass_rate")) or -1.0,
@@ -673,6 +696,17 @@ def build_profile_summary_data(
         {"title": "Pool Counts", "kind": "kv", "items": [{"label": "fast", "value": pool_counts.get("fast", 0)}, {"label": "heavy", "value": pool_counts.get("heavy", 0)}, {"label": "fragile", "value": pool_counts.get("fragile", 0)}]},
         {"title": "Stability Counts", "kind": "kv", "items": [{"label": "high", "value": stability_counts.get("high", 0)}, {"label": "medium", "value": stability_counts.get("medium", 0)}, {"label": "low", "value": stability_counts.get("low", 0)}]},
         {
+            "title": "Execution Hygiene",
+            "kind": "kv",
+            "items": [
+                {"label": "subprocess_execution_count", "value": execution_hygiene["subprocess_execution_count"]},
+                {"label": "timeout_count", "value": execution_hygiene["timeout_count"]},
+                {"label": "killed_count", "value": execution_hygiene["killed_count"]},
+                {"label": "kill_failed_count", "value": execution_hygiene["kill_failed_count"]},
+                {"label": "worker_exit_abnormal_count", "value": execution_hygiene["worker_exit_abnormal_count"]},
+            ],
+        },
+        {
             "title": "Model Table",
             "kind": "table",
             "columns": ["model_name", "simple_latency", "generator_latency", "review_latency", "end_to_end_latency", "first_pass_rate", "final_pass_rate", "avg_retry_count", "concurrency_limit", "timeout_rate", "stability", "recommended_pool", "fallback_target"],
@@ -696,6 +730,7 @@ def build_profile_summary_data(
         "fallback_target": fallback_target,
         "pool_counts": dict(pool_counts),
         "stability_counts": dict(stability_counts),
+        "execution_hygiene": execution_hygiene,
         "models": model_rows,
         "summary_sections": summary_sections,
         "warnings": warnings,

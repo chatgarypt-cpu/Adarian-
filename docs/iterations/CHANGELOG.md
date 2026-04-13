@@ -62,6 +62,45 @@
 ### 兼容性
 - ✅ Phase 3 从"隐式全员发言"升级为"自适应显式调度"
 
+## v1.1.20 (2026-04-13)（已完成）
+
+**主题**：Execution Isolation & Hard Kill Timeout
+
+### 新增
+- [profiling/chain_worker.py] 子进程入口，单个 chain 单元执行 + JSON 文件回传
+- [profiling/utils/subprocess_runner.py] subprocess 生命周期管理（spawn / wait / kill / cleanup）
+- [profiling/chain_benchmark.py] 主控重构：解耦为纯遍历调度，chain 单元执行下沉至 subprocess
+
+### 修改
+- [profiling/chain_benchmark.py] chain 单元执行从主进程内直接调用改为 subprocess 调度
+- [profiling/aggregate.py] 新增 execution_hygiene 统计字段（subprocess_execution_count / timeout_count / killed_count / kill_failed_count / worker_exit_abnormal_count）
+- raw log 新增 7 个 execution/termination 字段：execution_mode / timeout_triggered / termination_method / timeout_final_state / worker_exit_code / worker_exit_status / result_file_present
+
+### 功能
+- ✅ chain 执行从"线程内不可可靠取消"升级为"子进程级可强制终止"
+- ✅ timeout 到达后主控执行 proc.kill()，kill 失败时显式标记 kill_failed，不伪装成功
+- ✅ subprocess isolation 为后续小规模并发试探提供可控、可杀死、可观测的执行模型
+
+### 已知遗留
+- _worker_tmp 目录在 kill 后存在残留清理问题（shutil.rmtree ignore_errors=True 对部分目录无效）
+- subprocess timeout 参数传递链路在真实 provider 条件下疑似失效（待 4 并发验证时一并确认）
+- 2 并发下 raw log 文件名冲突（两个进程使用相同 manifest snapshot 路径），需确保每次 run 使用独立 run_id
+
+### 兼容性
+- ✅ 不改变 manifest-only 契约
+- ✅ 不改变 aggregate 的主统计口径
+- ✅ 不改变 simple runner 主逻辑
+- ✅ aggregate overall_status 主判定逻辑保持 v1.1.19 收口结果
+
+### 验证状态（2 并发 E2E）
+- 进程行为：两个进程均完成 simple benchmark，chain 部分 Process 1 正常收口，Process 2 结果因路径冲突丢失
+- kill 行为：subprocess kill 机制落地，kill_failed_count=0，worker_exit_abnormal_count=0
+- raw log 字段：成功写入的 record 包含全部 7 个新增字段
+- aggregate：正常产出，无 `<unknown>` 回归
+- 阻塞问题：Process 2 chain 结果丢失（路径冲突）、timeout 参数传递待验证、_worker_tmp 残留
+
+---
+
 ## v1.1.19 (2026-04-13)（已完成）
 
 **主题**：Model Pool Profiling Pipeline
