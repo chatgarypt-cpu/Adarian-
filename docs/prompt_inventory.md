@@ -265,7 +265,7 @@
 
 **L3 (Production)**: `build_lightweight_context()` function output
 
-**Purpose**: Build lightweight context for agent post generation (replaces heavy persona档案 in context)
+**Purpose**: Build lightweight context for agent post generation (v1.1.18+ replaces heavy persona档案 in context)
 
 **Schema Complexity**:
 - System prompt: identity + lightweight profile (6 fields) + JSON constraint
@@ -276,6 +276,8 @@
 - L1: Pure unframed "说一句话评论这个事件"
 - L2: Add persona name and basic stance
 - L3: Full lightweight context with followed agents and history
+
+**与 P3-A 的关系**: `build_lightweight_context()` 输出的 prompt 字符串被 `SimulationEngine.generate_opinion_spreader_post()` 使用，替代了 `AGENT_POST_SYSTEM_PROMPT` 中的重 persona 档案
 
 ---
 
@@ -304,6 +306,34 @@
 - L3: Full production with all 10 sections, emoji, and risk assessment rules
 
 **Input Data**: build_full_report_context() produces structured input including event metrics, entity list, tick data, stance changes
+
+---
+
+## Phase 3 Source Map
+
+### 模块拆分状态
+
+| 模块 | 文件 | 性质 | Prompt 来源 |
+|------|------|------|------------|
+| speaker_selector | `src/phase3/speaker_selector.py` | 纯逻辑 | 无 LLM prompt |
+| state_updater | `src/phase3/state_updater.py` | 纯逻辑 | 无 LLM prompt |
+| simulation_card | `src/phase3/simulation_card.py` | 纯逻辑 | 无 LLM prompt |
+| context_builder | `src/phase3/context_builder.py` | Prompt 生成函数 | ✅ P3-C 生成函数在此 |
+| event_entity_post | `phase3_tick_simulation.py` | Prompt 常量 | ❌ P3-E 常量仍在主文件 |
+| agent_post | `phase3_tick_simulation.py` | Prompt 常量 | ❌ P3-A 常量仍在主文件 |
+
+**结论**：模块逻辑已拆分为独立文件，但 `EVENT_ENTITY_POST_SYSTEM_PROMPT` 和 `AGENT_POST_SYSTEM_PROMPT` 两个 prompt 常量仍留在 `phase3_tick_simulation.py` 主入口文件中。
+
+### P3-A 与 P3-C 的关系
+
+- **P3-C** (`build_lightweight_context()`)：生成"轻量版" agent post prompt
+  - 在 v1.1.18+ 中使用，作为 P3-A 的上下文构建方式
+  - 输出 system_prompt + user_prompt 字符串，供 `SimulationEngine.generate_opinion_spreader_post()` 调用
+
+- **P3-E** (`EVENT_ENTITY_POST_SYSTEM_PROMPT`)：事件实体发言 prompt，独立常量在主文件
+
+- **P3-A** (`AGENT_POST_SYSTEM_PROMPT` + `AGENT_POST_USER_PROMPT`)：意见传播者发言 prompt
+  - v1.1.18+ 实际使用 `build_lightweight_context()` 输出的轻量版
 
 ---
 
