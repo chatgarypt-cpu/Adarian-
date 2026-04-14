@@ -1,0 +1,1 @@
+qwen3-30b-tke、qwen3-32b-tke、qwen3-80b-tke、qwen35-122b-a10b、minimax

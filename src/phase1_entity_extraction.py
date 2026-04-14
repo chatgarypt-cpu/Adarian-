@@ -5,24 +5,28 @@ Phase 1: 实体提取与分类模块（Analyzer/Generator/Validator 协作架构
 并通过迭代校验确保输出质量。
 
 架构流程：
-1. Analyzer：分析种子材料 → event_temperature + event_intensity
+1. Analyzer：分析种子材料 → event_scale + event_controversy
 2. Generator：提取事件实体 + 生成意见传播者
 3. Validator：格式校验（失败则 Generator 重试）
 
 为什么需要这个模块（Why）：
 - v1.1.4 版本区分两种实体类型：事件实体（直接参与）和意见传播实体（评论事件）
 - 事件实体作为第一批发言者，参与社交网络的核心传播
-- 意见传播实体基于温度/烈度生成，必须关注事件实体才能发言
+- 意见传播实体基于规模/争议性生成，必须关注事件实体才能发言
 
 新增于：v1.1.4
 修改于：v1.1.10（LLM1/2/3 → Analyzer/Generator/Validator）
 """
+
+# ⚠️ LEGACY FILE — v1.1.14+ 已迁移到 src/phase1/
+# 本文件保留用于兼容，新代码请使用 src/phase1/ 模块
 
 import json
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 from rich.console import Console
 
+import config
 from src.llm_client import get_llm_client
 from src.schemas import EntityExtractionOutput, Entity, OpinionSpreader, Relation
 
@@ -147,7 +151,13 @@ GENERATOR_SYSTEM_PROMPT = """你是一位资深的事件分析专家。你的任
       "susceptibility": 0.0到1.0之间的浮点数,
       "estimated_percentage": 0到100之间的整数（所有群体之和=100）,
       "communication_style": "该群体的典型说话风格，要多样化",
-      "entity_category": "opinion_spreader"
+      "entity_category": "opinion_spreader",
+      "persona_name": "该群体典型代表的名字（如：小美、老张、陈老师）",
+      "age_range": "年龄段（如：18-24、25-34、35-45）",
+      "occupation": "职业或身份（如：大学生、美妆博主、全职妈妈）",
+      "personality": "性格特征（如：冲动易怒、冷静理性、感性共情）",
+      "motivation": "发言的核心动机（如：维护消费者权益、追求性价比）",
+      "typical_phrases": ["口头禅1", "口头禅2", "口头禅3"]
     }}
   ],
   "relations": [
@@ -180,6 +190,12 @@ GENERATOR_SYSTEM_PROMPT = """你是一位资深的事件分析专家。你的任
 3. 至少有一个 P=+1 和一个 P=-1（确保双向对立）
 4. 每个 opinion_spreader 必须有 related_event_entity 且在 event_entities 中存在
 5. 在输出最终 JSON 之前，必须验证所有 estimated_percentage 之和是否等于 100，如果不等需要调整
+6. persona_name 必须是中文名字，不同群体的名字不能重复
+7. age_range 必须符合格式 "XX-XX"（如 18-24、25-34）
+8. occupation 不同群体之间必须有差异
+9. personality 不同群体之间必须有差异，不能都是"理性客观"
+10. typical_phrases 必须有2-3个，要符合该群体的说话风格和年龄特征
+11. 不同群体的 persona_name + occupation + personality + typical_phrases 组合必须有明显差异
 """
 
 GENERATOR_USER_PROMPT = """请根据以下参数分析事件材料，提取事件实体并生成意见传播者：
@@ -219,6 +235,12 @@ VALIDATOR_SYSTEM_PROMPT = """你是一位严格的格式校验专家。你的任
 12. event_entities 至少要有 1 个实体
 13. relations 字段是可选的，允许存在也可以不存在（不要对 relations 字段报错）
 14. entity_category 字段：如果缺失，后处理会自动补充
+
+# === v1.1.12 新增校验规则 ===
+15. opinion_spreaders 中每个元素必须包含 persona_name、age_range、occupation、personality、motivation、typical_phrases 字段
+16. typical_phrases 必须是长度为 2-3 的字符串数组
+17. 不同 opinion_spreader 的 persona_name 不能重复
+18. age_range 必须符合格式（如：18-24、25-34、35-45、45-60）
 
 【重要】不要对 relations 字段报错，该字段是可选的。
 
@@ -262,14 +284,13 @@ VALIDATOR_USER_PROMPT = """请校验以下 JSON：
 
 def analyzer_set_parameters(seed_text: str) -> Dict[str, Any]:
     """
-    Analyzer: 分析种子材料，设置 event_temperature 和 event_intensity
+    Analyzer: 分析种子材料，设置 event_scale 和 event_controversy
 
     Args:
         seed_text: 种子文本内容
 
     Returns:
-        包含 event_temperature, event_intensity, event_summary, event_type,
-        group_distribution_strategy, has_official_response, official_admits_fault 的字典
+        包含 event_scale、event_controversy、event_summary、event_type 的字典
     """
     llm = get_llm_client()
 
@@ -283,9 +304,22 @@ def analyzer_set_parameters(seed_text: str) -> Dict[str, Any]:
         response_model=None,  # Analyzer 返回自由 JSON
     )
 
-    # 解析 JSON
+    # 解析 JSON，增加错误处理和 markdown 过滤
     if isinstance(result, str):
-        params = json.loads(result)
+        content = result.strip()  # 先移除首尾空白
+        # 处理可能的 markdown 代码块
+        if content.startswith("```json"):
+            content = content[7:]
+        elif content.startswith("```"):
+            content = content[3:]
+        if content.endswith("```"):
+            content = content[:-3]
+        content = content.strip()
+        try:
+            params = json.loads(content)
+        except json.JSONDecodeError as e:
+            console.print(f"  [yellow]⚠[/yellow] Analyzer 返回格式错误: {e}")
+            raise
     else:
         params = result
 
@@ -348,6 +382,7 @@ def generator_create_entities(
             # 尝试提取 JSON 部分
             result = result.strip()
             # 处理可能的 markdown 代码块
+            result = result.strip()  # 先移除首尾空白
             if result.startswith("```json"):
                 result = result[7:]
             elif result.startswith("```"):
@@ -416,7 +451,6 @@ def _post_process_entities(
         elif entity_type == "individual" and entity.get("can_speak", True):
             # 检查种子文本中是否有"[实体]死亡/去世/..."的模式
             # 即：实体名称 + 死亡动词（0-10字间隔内），或者"已故的[实体]"
-            import re
             name_escaped = re.escape(entity_name)
             # 模式1：实体名后紧跟死亡动词（0-10字间隔）
             pattern1 = f"{name_escaped}[.　]{{0,10}}(已故|去世|死亡|离世|身亡|逝世|轻生)"
@@ -433,44 +467,6 @@ def _post_process_entities(
             if entity["original_statement"] and len(entity["original_statement"]) > 0:
                 console.print(f"  [yellow]⚠[/yellow] 自动修正：{entity.get('name')} 不可发言，original_statement 设为 null")
                 entity["original_statement"] = None
-
-    # 3. 确保 P 值存在（如果缺少 I 但有 stance_score，自动补充 P）
-    opinion_spreaders = entities_data.get("opinion_spreaders", [])
-    for spreader in opinion_spreaders:
-        if "I" in spreader and "P" not in spreader:
-            I = spreader.get("I", 5)
-            spreader["P"] = +1 if I >= 6 else -1
-            console.print(f"  [yellow]⚠[/yellow] 自动补充：{spreader.get('group_name')} 的 P={spreader['P']}（根据 I={I} 推导）")
-
-    # 4. 确保百分比之和为 100
-    total_pct = sum(s.get("estimated_percentage", 0) for s in entities_data.get("opinion_spreaders", []))
-    if total_pct != 100 and total_pct > 0:
-        delta = 100 - total_pct
-        max_spreader = max(entities_data.get("opinion_spreaders", []),
-                           key=lambda s: s.get("estimated_percentage", 0))
-        max_spreader["estimated_percentage"] += delta
-        console.print(f"  [yellow]⚠[/yellow] 自动修正：百分比之和调整为 100（偏差 {delta}）")
-
-    # 5. 确保双向对立存在（至少一个 P=+1 和一个 P=-1）
-    opinion_spreaders = entities_data.get("opinion_spreaders", [])
-    has_support = any(s.get("P", +1) == +1 for s in opinion_spreaders)
-    has_oppose = any(s.get("P", -1) == -1 for s in opinion_spreaders)
-
-    if not has_support or not has_oppose:
-        console.print(f"  [yellow]⚠[/yellow] 自动修正：双向对立不足，调整现有群体立场")
-        # 找一个中间立场的群体进行调整
-        for spreader in opinion_spreaders:
-            current_P = spreader.get("P", 0)
-            if not has_support and current_P == -1:
-                spreader["P"] = +1
-                has_support = True
-                console.print(f"    将 {spreader['group_name']} P 从 -1 调整为 +1（支持者）")
-            elif not has_oppose and current_P == +1:
-                spreader["P"] = -1
-                has_oppose = True
-                console.print(f"    将 {spreader['group_name']} P 从 +1 调整为 -1（反对者）")
-            if has_support and has_oppose:
-                break
 
     return entities_data
 
@@ -543,7 +539,6 @@ def validator_check_format(
 
     return validation
 
-
 # =============================================================================
 # 主函数：带迭代校验的实体提取
 # =============================================================================
@@ -553,14 +548,7 @@ MAX_RETRIES = 3
 
 def extract_entities_with_validation(seed_text: str) -> EntityExtractionOutput:
     """
-    带迭代校验的实体提取
-
-    流程：
-    1. Analyzer：设置 event_scale + event_controversy + event_type
-    2. Generator：提取事件实体 + 生成意见传播者（输出 I + P）
-    3. Validator：校验格式
-    4. 如果不通过，反馈错误给 Generator，重新生成
-    5. 最多重试 MAX_RETRIES 次
+    兼容入口：转发到 v1.1.14 的 Phase 1 Orchestrator。
 
     Args:
         seed_text: 种子文本内容
@@ -568,80 +556,9 @@ def extract_entities_with_validation(seed_text: str) -> EntityExtractionOutput:
     Returns:
         EntityExtractionOutput: 包含 event_entities, opinion_spreaders 等
     """
-    console.print("[bold cyan]Phase 1:[/bold cyan] 开始实体提取与分类（Analyzer/Generator/Validator 协作）...")
+    from src.phase1.orchestrator import run_phase1_orchestrator
 
-    # Step 1: Analyzer 设置参数
-    params = analyzer_set_parameters(seed_text)
-    event_scale = params["event_scale"]
-    event_controversy = params["event_controversy"]
-    event_summary = params["event_summary"]
-    event_type = params["event_type"]
-
-    # Step 2-4: Generator 生成 + Validator 校验（迭代）
-    last_validation = None
-    last_entities_data = None
-    error_feedback = ""
-
-    for attempt in range(MAX_RETRIES):
-        # Generator 生成（首次无错误反馈，后续迭代传入错误反馈）
-        entities_data = generator_create_entities(
-            seed_text=seed_text,
-            event_scale=event_scale,
-            event_controversy=event_controversy,
-            event_type=event_type,
-            event_summary=event_summary,
-            error_feedback=error_feedback
-        )
-
-        # Validator 校验
-        validation = validator_check_format(entities_data, seed_text)
-        last_validation = validation
-        last_entities_data = entities_data
-
-        if validation["pass"]:
-            # 通过校验，构建输出
-            console.print(f"[green]✓[/green] Validator 校验通过（第 {attempt + 1} 次）")
-
-            # 后处理：自动修正常见错误
-            entities_data = _post_process_entities(entities_data, seed_text)
-
-            # 构建 EntityExtractionOutput
-            event_entities = [
-                Entity(**e) for e in entities_data.get("event_entities", [])
-            ]
-            opinion_spreaders = [
-                OpinionSpreader(**o) for o in entities_data.get("opinion_spreaders", [])
-            ]
-            relations = [
-                Relation(**r) for r in entities_data.get("relations", [])
-            ]
-
-            return EntityExtractionOutput(
-                event_summary=event_summary,
-                event_scale=event_scale,
-                event_controversy=event_controversy,
-                event_type=event_type,
-                event_entities=event_entities,
-                opinion_spreaders=opinion_spreaders,
-                relations=relations,
-            )
-
-        # 不通过，收集错误反馈给 Generator 重试
-        errors = validation.get("errors", [])
-        error_feedback = "\n".join([f"- {e}" for e in errors])
-        console.print(f"[yellow]⚠[/yellow] Validator 校验失败，准备重试（第 {attempt + 1}/{MAX_RETRIES} 次）...")
-
-    # 达到最大重试次数，校验仍然失败
-    console.print(f"[red]✗[/red] 达到最大重试次数（{MAX_RETRIES}），Validator 校验仍然失败")
-
-    # 构建错误信息
-    final_errors = last_validation.get("errors", []) if last_validation else ["未知错误"]
-    error_summary = "\n".join([f"  - {e}" for e in final_errors[:5]])
-    raise ValueError(
-        f"Phase 1 实体提取失败：Validator 校验在 {MAX_RETRIES} 次重试后仍然失败。\n"
-        f"错误摘要：\n{error_summary}\n"
-        f"请检查种子文本。"
-    )
+    return run_phase1_orchestrator(seed_text)
 
 
 # =============================================================================
@@ -650,7 +567,7 @@ def extract_entities_with_validation(seed_text: str) -> EntityExtractionOutput:
 
 def extract_entities(seed_text: str) -> EntityExtractionOutput:
     """
-    兼容函数：直接调用 extract_entities_with_validation
+    兼容函数：直接调用 orchestrator 入口
 
     Args:
         seed_text: 种子文本内容
@@ -671,15 +588,9 @@ def extract_entities_from_file(seed_file: str) -> EntityExtractionOutput:
     Returns:
         EntityExtractionOutput 对象
     """
-    seed_path = Path(seed_file)
+    from src.phase1.orchestrator import run_phase1_orchestrator_from_file
 
-    if not seed_path.exists():
-        raise FileNotFoundError(f"种子文件不存在: {seed_file}")
-
-    with open(seed_path, "r", encoding="utf-8") as f:
-        seed_text = f.read()
-
-    return extract_entities_with_validation(seed_text)
+    return run_phase1_orchestrator_from_file(seed_file)
 
 
 def save_entities_output(
@@ -697,7 +608,7 @@ def save_entities_output(
         保存的文件路径
     """
     if output_path is None:
-        output_path = Path(__file__).parent.parent / "outputs" / "entities_and_relations.json"
+        output_path = config.ENTITIES_OUTPUT_PATH
     else:
         output_path = Path(output_path)
 
