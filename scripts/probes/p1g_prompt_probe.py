@@ -22,8 +22,6 @@ if str(PROJECT_ROOT) not in sys.path:
 from src.llm_client import LLMClient
 from src.phase1_entity_extraction import GENERATOR_SYSTEM_PROMPT, GENERATOR_USER_PROMPT
 
-CONTROL_DIR = PROJECT_ROOT / "control"
-INBOX_PATH = CONTROL_DIR / "inbox.md"
 RUNS_ROOT = PROJECT_ROOT / "profiling" / "output" / "runs"
 BASELINE_MANIFEST_PATH = (
     PROJECT_ROOT
@@ -461,18 +459,6 @@ def build_summary_markdown(run_dir_rel: Path, summary_payload: dict[str, Any]) -
     return "\n".join(lines)
 
 
-def append_inbox_result(run_dir: Path, findings: list[str]) -> None:
-    today = datetime.now().strftime("%Y-%m-%d")
-    line = f"- [{today}] Codex P1-G prompt-aware profiling 完成；{'；'.join(findings)}；产物目录：`{run_dir.relative_to(PROJECT_ROOT).as_posix()}`"
-    inbox_text = INBOX_PATH.read_text(encoding="utf-8")
-    marker = "## 待处理"
-    if marker not in inbox_text:
-        inbox_text = inbox_text.rstrip() + f"\n\n{marker}\n\n{line}\n"
-    else:
-        inbox_text = inbox_text.replace(marker, marker + f"\n\n{line}", 1)
-    INBOX_PATH.write_text(inbox_text, encoding="utf-8")
-
-
 def run_repeat(
     *,
     model_name: str,
@@ -686,8 +672,6 @@ def main() -> int:
         build_summary_markdown(run_dir.relative_to(PROJECT_ROOT), summary_payload),
         encoding="utf-8",
     )
-    append_inbox_result(run_dir, findings)
-
     console.print(f"[green]probe completed[/green]: {run_dir}")
     console.print(f"records={len(records)} bottleneck={bottleneck}")
     return 0

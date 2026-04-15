@@ -20,9 +20,6 @@ if str(PROJECT_ROOT) not in sys.path:
 import config
 from src.llm_client import LLMClient
 
-CONTROL_DIR = PROJECT_ROOT / "control"
-STATE_PATH = CONTROL_DIR / "state.json"
-INBOX_PATH = CONTROL_DIR / "inbox.md"
 BASELINE_MANIFEST_PATH = (
     PROJECT_ROOT
     / "profiling"
@@ -32,6 +29,7 @@ BASELINE_MANIFEST_PATH = (
     / "run_manifest.snapshot_v1.2.0_baseline.json"
 )
 PROBE_ROOT = PROJECT_ROOT / "profiling" / "output" / "probes"
+BASELINE_PATH = "profiling/output/baseline/v1.2.0_baseline"
 TARGET_MODELS = ["qwen3-80b-tke", "qwen35-122b-a10b"]
 
 GENERATOR_SYSTEM_TEMPLATE = """你是一位事件信息压缩助手。你的任务是从事件材料中抽取最小平面结构。
@@ -216,39 +214,7 @@ def aggregate_metrics(records: list[dict[str, Any]], model_name: str) -> dict[st
     }
 
 
-def append_inbox_result(probe_dir: Path, metrics: dict[str, dict[str, float]]) -> None:
-    today = datetime.now().strftime("%Y-%m-%d")
-    def fmt(model: str) -> str:
-        item = metrics[model]
-        return (
-            f"{model}: parse_fail_rate={item['parse_fail_rate']:.3f}, "
-            f"timeout_rate={item['timeout_rate']:.3f}, "
-            f"validator_fail_rate={item['validator_fail_rate']:.3f}"
-        )
-
-    conclusion_parts: list[str] = []
-    for model in TARGET_MODELS:
-        if metrics[model]["parse_fail_rate"] < 1.0:
-            conclusion_parts.append(f"{model} 的 parse fail 明显下降，说明模型可用性受 schema 复杂度影响")
-        else:
-            conclusion_parts.append(f"{model} 的 parse fail 未下降，说明问题不只是 schema 复杂度")
-    line = (
-        f"- [{today}] Codex reduced-schema chain probe 完成；"
-        f"{fmt(TARGET_MODELS[0])}；{fmt(TARGET_MODELS[1])}；"
-        f"{'；'.join(conclusion_parts)}；产物目录：`{probe_dir.relative_to(PROJECT_ROOT)}`"
-    )
-
-    inbox_text = INBOX_PATH.read_text(encoding="utf-8")
-    marker = "## 待处理"
-    if marker not in inbox_text:
-        inbox_text = inbox_text.rstrip() + f"\n\n{marker}\n\n{line}\n"
-    else:
-        inbox_text = inbox_text.replace(marker, marker + f"\n\n{line}", 1)
-    INBOX_PATH.write_text(inbox_text, encoding="utf-8")
-
-
 def main() -> int:
-    state = load_json(STATE_PATH)
     manifest = load_json(BASELINE_MANIFEST_PATH)
     chain_manifest = manifest["chain_benchmark"]
     chain_runner = manifest["chain_runner"]
@@ -371,7 +337,7 @@ def main() -> int:
     metrics = {model: aggregate_metrics(records, model) for model in TARGET_MODELS}
     summary_payload = {
         "generated_at": utc_now_iso(),
-        "baseline_path": state["baseline_path"],
+        "baseline_path": BASELINE_PATH,
         "probe_dir": str(probe_dir),
         "models": TARGET_MODELS,
         "metrics": metrics,
@@ -379,7 +345,6 @@ def main() -> int:
         "comparison_note": "Compare against baseline where both models had parse_fail_rate=1.0, timeout_rate=0.0, validator_fail_rate=0.0.",
     }
     summary_path.write_text(json.dumps(summary_payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    append_inbox_result(probe_dir, metrics)
 
     console.print(f"[green]probe completed[/green]: {probe_dir}")
     for model_name in TARGET_MODELS:

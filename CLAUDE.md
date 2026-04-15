@@ -1,5 +1,11 @@
 # Adarian MVP 开发规范
 
+## Workflow Authority Notice
+
+`docs/skills/workflow_core.md` 是当前唯一流程规则权威源。
+
+本文件只保留历史规范和辅助操作约定；若与 `workflow_core.md` 冲突，以 `workflow_core.md` 为准。
+
 ## Implementation Guidelines（实施准则）
 
 **实施前必须确认方法**：
@@ -10,6 +16,41 @@
 
 **Why：** wrong_approach 是最高频摩擦来源（12次），避免在架构决策上返工。
 
+### Pre-Flight 检查
+
+**每次运行 Python 代码之前**，先用 `pre-flight` skill 检查文件：
+- 文件是否含非 ASCII 字符且缺少 encoding 声明
+- import 是否都有对应模块
+- 是否有 unsafe patterns（os.system / eval / exec）
+- 是否混用了 threading（需用 concurrent.futures）
+
+**触发时机**：执行 `py ... .py` 或 `python ... .py` 之前自动调用 `/pre-flight`。
+
+### Code Verification（代码验证规范）
+
+每次代码修改后，必须运行验证：
+
+1. **Python 文件修改** → 运行 `py -3 -m py_compile {file}` 验证语法
+2. **新增 import** → 运行 `py -3 -c "import xxx"` 验证导入
+3. **配置修改** → 运行模拟验证配置生效
+4. **修复 bug** → 运行模拟验证问题已解决
+
+避免出现：
+- 语法错误
+- 缺失导入
+- 运行失败
+
+**修复 bug 后主动扫描**：
+修复用户报告的 bug 后，用 Grep 搜索相关代码中是否有类似问题。
+
+### API / 网络错误处理
+
+当遇到 API 错误时，必须同时报告**错误类型**和**具体下一步**：
+- `timeout` → 建议重试或检查网络
+- `auth` / `api-key` → 建议检查 ANTHROPIC_AUTH_TOKEN 配置
+- `VLM` 错误 → 建议检查模型名称是否正确
+不要只说"失败了"，要给出具体诊断和可操作建议。
+
 ## 工作流程
 
 当用户给予关于 adarian mvp 的迭代任务时：
@@ -17,6 +58,7 @@
 1. **读取迭代文档**：`docs/iterations/vX.Y.Z_xxx.md`
 2. **理解修复目标**：明确本次要解决什么问题
 3. **识别文件变更范围**：哪些文件需要新增、修改、保持不变
+4. **创建或确认迭代文档**在开始实现之前，**必须**有明确的迭代文档（新建或已有），明确目标、范围和验收标准。如果文档缺失或不清晰，先向用户确认，**不要在未确认前直接写代码**。
 
 ### 执行步骤
 
@@ -91,31 +133,10 @@
 
 | Skill 名称 | 命令 | 用途 |
 |-----------|------|------|
-| `/test1` | 运行 `python main.py seeds/test1.txt` | 运行 test1 模拟 |
+| `/test1` | 运行 `py main.py seeds/test1.txt` | 运行 test1 模拟 |
 | `/verify` | 运行模拟并验证输出质量 | 验证修改是否正确 |
-
----
-
-### 代码验证规范
-
-每次代码修改后，必须运行验证：
-
-1. **Python 文件修改** → 运行 `python -c "import xxx"` 验证导入
-2. **配置修改** → 运行模拟验证配置生效
-3. **修复 bug** → 运行模拟验证问题已解决
-
-避免出现：
-- 语法错误
-- 缺失导入
-- 运行失败
-
-**修复 bug 后主动扫描**：
-修复用户报告的 bug 后，用 Grep 搜索相关代码中是否有类似问题。例如：
-- 修复已故实体发言 bug → 检查其他实体状态处理逻辑
-- 修复距离检查 bug → 检查其他 proximity 检查是否有同类问题
-- 修复参数校验 bug → 检查其他参数校验是否遗漏同类边界条件
-
----
+| `/profiling-validate` | 运行 profiling pipeline 验证 | 迭代完成后检查 profiling 结果 |
+| `/pre-flight` | 运行 pre-flight 代码检查 | 执行 Python 前检查语法/导入/安全 |
 
 ### 文件确认规范
 

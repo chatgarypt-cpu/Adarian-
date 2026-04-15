@@ -1,0 +1,44 @@
+{
+  "updated_at": "2026-04-14T11:45:00+08:00",
+  "current_focus": "Analyzer eliminated; focus shifting to Generator and chain schema complexity",
+  "baseline_path": "profiling/output/baseline/v1.2.0_baseline",
+  "latest_run_path": "profiling/output/baseline/v1.2.0_baseline/runs/run_20260413_184207_613785_27236",
+  "status": "baseline_locked_with_reduced_schema_probe_conclusion",
+  "open_decisions": [
+    "是否在 baseline-only 评审通过后，再提升 final_profile 为下一层决策入口。"
+  ],
+  "next_actions": [
+    "P1-A Analyzer profiling 已确认稳定，下一步优先定位 Generator prompt 与 chain schema 复杂度边界。",
+    "当前 reduced-schema probe 主结论采用 profiling/output/probes/reduced_schema_chain_probe_20260414_110103，不再使用 20260414_105124 作为主证据。",
+    "将 reduced-schema 结论作为阶段性判断：qwen3-80b-tke 与 qwen35-122b-a10b 本质可用，原始 chain 主要受 schema 复杂度影响。",
+    "当前决策只认 baseline 目录，不把其他 profiling 产物当主入口。",
+    "将 profiling/output/runs 和 profiling/output/final_profile/*/runs 视为实验历史，而不是 baseline。",
+    "将 concurrent_logs、_worker_tmp 和 small_profile_run_output.txt 视为诊断噪声，只有排障时才启用。"
+  ],
+  "profiling": {
+    "p1a_analyzer_probe": {
+      "status": "confirmed",
+      "run_path": "profiling/output/runs/run_20260414_112916_p1a_prompt_probe",
+      "conclusion": [
+        "Analyzer stable across L1/L2/L3",
+        "parse_fail_rate = 0.0",
+        "timeout_rate = 0.0",
+        "validator_fail_rate = 0.0",
+        "no complexity-induced failure observed"
+      ],
+      "implication": "Analyzer is not the bottleneck; shift focus to Generator and chain schema complexity"
+    }
+  },
+  "failure_summary": {
+    "qwen3_80b_tke": {
+      "parse_fail_rate": 1.0,
+      "timeout_rate": 0.0,
+      "validator_fail_rate": 0.0
+    },
+    "qwen35_122b_a10b": {
+      "parse_fail_rate": 1.0,
+      "timeout_rate": 0.0,
+      "validator_fail_rate": 0.0
+    }
+  }
+}

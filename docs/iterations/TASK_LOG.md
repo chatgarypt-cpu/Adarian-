@@ -14,6 +14,107 @@
 
 ---
 
+## Workflow Record Contract
+
+自本次 workflow governance refactor 起，新的验收记录应至少包含：
+
+- `task_id`
+- `review_id`（若适用）
+- `attempt_id`
+- `acceptance_id`
+- `acceptance_result`
+- `carry_over`
+
+最小记录格式：
+
+```text
+task_id: task-vX.Y.Z-xxx
+review_id: review-vX.Y.Z-01
+attempt_id: attempt-vX.Y.Z-01
+acceptance_id: accept-vX.Y.Z-01
+acceptance_result: pass / pass_with_known_issues / fail
+carry_over:
+- item 1
+```
+
+运行状态以当前 iteration 文档状态与本日志中的最新验收记录为准。
+
+---
+
+## [2026-04-15 完成] v1.1.21 - Workflow Governance Closeout
+
+**执行者**：Codex
+**基于版本**：v1.1.19-profiling-closeout
+**任务文档**：`docs/iterations/v1.1.21.md`
+
+**记录标识**：
+- `task_id`: `task-v1.1.21-workflow-governance-closeout`
+- `review_id`: `review-v1.1.21-01`
+- `attempt_id`: `attempt-v1.1.21-01`
+- `acceptance_id`: `accept-v1.1.21-01`
+
+**本轮结果**：`pass_with_known_issues`
+
+**本轮真实收口边界**：
+- `docs/skills/workflow_core.md` 收口为唯一规则权威源
+- `docs/skills/main_agent_delivery.md` 与 `CLAUDE.md` 降级为从属规范
+- `docs/iterations/_template_v2.md`、`docs/iterations/v1.1.21.md`、`TASK_LOG.md` 落入最小 event ids
+- `scripts/probes/reduced_schema_chain_probe.py`、`p1a_prompt_probe.py`、`p1g_prompt_probe.py` 去掉 `control/` 依赖
+- `control/` 与 `scripts/generate_snapshot.py` 归档到 `docs/_archive/control_plane/`
+
+**acceptance_result**：
+- ✅ authority consolidation 已落地
+- ✅ control plane retirement 已落地
+- ✅ minimal eventization 已落地
+- ✅ closeout / freeze 模板已落地
+- ⚠️ 原始 `Phase1 + Phase3` 双解耦实现未在本轮完成，因此按 `pass_with_known_issues` 收口
+
+**carry_over**：
+- Phase1 双解耦实现未落地
+- Phase3 双解耦实现未落地
+- 与双解耦实现相关的业务验证留待后续版本
+
+**Git Tag**：`iter-v1.1.21-closeout`
+
+---
+
+## [2026-04-13 完成] v1.1.20 - Execution Isolation & Hard Kill Timeout
+
+**执行者**：Codex
+**基于版本**：v1.1.19
+**任务文档**：`docs/iterations/v1.1.20_runner_cancellation_timeout_hygiene.md`
+
+**本次目标**：
+- 将 chain 执行从"线程内不可可靠取消"升级为"子进程级可强制终止"
+- timeout 到达后主控可硬杀子进程
+- 将 termination 结果写入 raw log
+- aggregate 只做兼容统计，不改 v1.1.19 的主判定逻辑
+
+**实际新增文件**：
+- `profiling/chain_worker.py` - 子进程入口，单个 chain 单元执行 + JSON 文件回传
+- `profiling/utils/subprocess_runner.py` - subprocess 生命周期管理（spawn / wait / kill / cleanup）
+
+**实际修改文件**：
+- `profiling/chain_benchmark.py` - chain 单元执行从主进程内直接调用改为 subprocess 调度
+- `profiling/aggregate.py` - 新增 execution_hygiene 统计字段
+
+**基本验收结果**：
+- ✅ chain 执行已改为 subprocess 执行
+- ✅ timeout 后执行 proc.kill()，kill 失败时显式标记 kill_failed
+- ✅ raw log 新增 7 个 execution/termination 字段
+- ✅ aggregate 兼容新增字段，不影响 overall_status 主判定逻辑
+- ✅ 1×1 真实 E2E：通过，subprocess_execution_count=1，killed_count=1，kill_failed_count=0
+- ✅ 2 并发 E2E：进程均完成，kill_failed_count=0，worker_exit_abnormal_count=0，无 `<unknown>` 回归
+
+**阻塞问题（待修复后再进入 4 并发）**：
+- Process 2 chain 结果因 raw log 路径冲突丢失（manifest snapshot 路径未隔离）
+- subprocess timeout 参数传递链路疑似失效（15s timeout 未生效，实际跑了 86.5s）
+- _worker_tmp 目录残留未清理
+
+**Git Commit**：待提交
+
+---
+
 ## [2026-04-13 11:15] 开始任务：v1.1.19 - Model Pool Profiling
 
 **执行者**：Codex

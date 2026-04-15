@@ -6,6 +6,21 @@
 
 ## 文档变更记录
 
+### 2026-04-15
+
+| 文档 | 变更内容 |
+|------|---------|
+| `docs/skills/workflow_core.md` | 收口为唯一流程规则权威源，明确 runtime authority、freeze gate 与 closeout record |
+| `docs/skills/main_agent_delivery.md` | 降级为从属执行规范，补入 `review_id / attempt_id` 交付要求 |
+| `CLAUDE.md` | 明确 `workflow_core.md` 为唯一 workflow authority |
+| `docs/iterations/_template_v2.md` | 增加 `task_id / review_id / attempt_id / acceptance_id` 与 closeout record 模板 |
+| `docs/iterations/v1.1.21.md` | 补齐 closeout 状态、acceptance 与 carry-over |
+| `docs/iterations/TASK_LOG.md` | 增加 workflow acceptance record contract 与 v1.1.21 closeout 记录 |
+| `scripts/probes/reduced_schema_chain_probe.py` | 去除对 `control/` 的读写依赖 |
+| `scripts/probes/p1a_prompt_probe.py` | 去除对 `control/inbox.md` 的回写 |
+| `scripts/probes/p1g_prompt_probe.py` | 去除对 `control/inbox.md` 的回写 |
+| `docs/_archive/control_plane/` | 归档原 `control/` 与 `generate_snapshot.py` 历史证据 |
+
 ### 2026-04-08
 
 | 文档 | 变更内容 |
