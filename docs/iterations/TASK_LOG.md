@@ -74,7 +74,7 @@ carry_over:
 - Phase3 双解耦实现未落地
 - 与双解耦实现相关的业务验证留待后续版本
 
-**Git Tag**：`iter-v1.1.21-closeout`
+**Git Tag**：`未创建（freeze blocker: profiling/output/raw_logs/_worker_tmp_test/chain_worker_vawgkfsj 访问被拒绝）`
 
 ---
 
