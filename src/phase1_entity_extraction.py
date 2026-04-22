@@ -22,6 +22,8 @@ Phase 1: 实体提取与分类模块（Analyzer/Generator/Validator 协作架构
 # 本文件保留用于兼容，新代码请使用 src/phase1/ 模块
 
 import json
+import ast
+import re
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 from rich.console import Console
@@ -31,6 +33,77 @@ from src.llm_client import get_llm_client
 from src.schemas import EntityExtractionOutput, Entity, OpinionSpreader, Relation
 
 console = Console()
+
+
+def _parse_json_candidate(candidate: str) -> Any:
+    try:
+        return json.loads(candidate)
+    except json.JSONDecodeError:
+        pass
+
+    normalized = candidate.replace("{{", "{").replace("}}", "}")
+    normalized = re.sub(r",(\s*[}\]])", r"\1", normalized)
+    normalized = re.sub(r"\bNone\b", "null", normalized)
+    normalized = re.sub(r"\bTrue\b", "true", normalized)
+    normalized = re.sub(r"\bFalse\b", "false", normalized)
+
+    try:
+        return json.loads(normalized)
+    except json.JSONDecodeError:
+        pass
+
+    python_literal = re.sub(r"\btrue\b", "True", normalized)
+    python_literal = re.sub(r"\bfalse\b", "False", python_literal)
+    python_literal = re.sub(r"\bnull\b", "None", python_literal)
+    return ast.literal_eval(python_literal)
+
+
+def _parse_llm_json_payload(result: Any) -> Any:
+    """尽量从 LLM 返回中提取顶层 JSON。"""
+    if not isinstance(result, str):
+        return result
+
+    content = result.strip()
+    if content.startswith("```json"):
+        content = content[7:]
+    elif content.startswith("```"):
+        content = content[3:]
+    if content.endswith("```"):
+        content = content[:-3]
+    content = content.strip()
+
+    try:
+        return _parse_json_candidate(content)
+    except (json.JSONDecodeError, ValueError, SyntaxError):
+        pass
+
+    object_start = content.find("{")
+    object_end = content.rfind("}")
+    if object_start != -1 and object_end != -1 and object_end > object_start:
+        return _parse_json_candidate(content[object_start:object_end + 1])
+
+    list_start = content.find("[")
+    list_end = content.rfind("]")
+    if list_start != -1 and list_end != -1 and list_end > list_start:
+        return _parse_json_candidate(content[list_start:list_end + 1])
+
+    raise json.JSONDecodeError("No JSON object found", content, 0)
+
+
+def _coerce_top_level_object(payload: Any, source: str) -> Dict[str, Any]:
+    if isinstance(payload, dict):
+        return payload
+
+    if isinstance(payload, list):
+        if len(payload) == 1 and isinstance(payload[0], dict):
+            return payload[0]
+        for item in payload:
+            if isinstance(item, dict) and (
+                "event_entities" in item or "opinion_spreaders" in item or "relations" in item or "pass" in item
+            ):
+                return item
+
+    raise ValueError(f"{source} 返回顶层必须是 JSON object，当前为 {type(payload).__name__}")
 
 # =============================================================================
 # Analyzer: 设置事件温度和烈度
@@ -304,24 +377,11 @@ def analyzer_set_parameters(seed_text: str) -> Dict[str, Any]:
         response_model=None,  # Analyzer 返回自由 JSON
     )
 
-    # 解析 JSON，增加错误处理和 markdown 过滤
-    if isinstance(result, str):
-        content = result.strip()  # 先移除首尾空白
-        # 处理可能的 markdown 代码块
-        if content.startswith("```json"):
-            content = content[7:]
-        elif content.startswith("```"):
-            content = content[3:]
-        if content.endswith("```"):
-            content = content[:-3]
-        content = content.strip()
-        try:
-            params = json.loads(content)
-        except json.JSONDecodeError as e:
-            console.print(f"  [yellow]⚠[/yellow] Analyzer 返回格式错误: {e}")
-            raise
-    else:
-        params = result
+    try:
+        params = _coerce_top_level_object(_parse_llm_json_payload(result), "Analyzer")
+    except (json.JSONDecodeError, ValueError) as e:
+        console.print(f"  [yellow]⚠[/yellow] Analyzer 返回格式错误: {e}")
+        raise
 
     console.print(f"  [green]✓[/green] 事件规模: {params.get('event_scale', 'N/A')}")
     console.print(f"  [green]✓[/green] 事件争议性: {params.get('event_controversy', 'N/A')}")
@@ -376,24 +436,9 @@ def generator_create_entities(
         response_model=None,  # Generator 返回自由 JSON
     )
 
-    # 解析 JSON，增加错误处理
     try:
-        if isinstance(result, str):
-            # 尝试提取 JSON 部分
-            result = result.strip()
-            # 处理可能的 markdown 代码块
-            result = result.strip()  # 先移除首尾空白
-            if result.startswith("```json"):
-                result = result[7:]
-            elif result.startswith("```"):
-                result = result[3:]
-            if result.endswith("```"):
-                result = result[:-3]
-            result = result.strip()
-            entities_data = json.loads(result)
-        else:
-            entities_data = result
-    except (json.JSONDecodeError, Exception) as e:
+        entities_data = _coerce_top_level_object(_parse_llm_json_payload(result), "Generator")
+    except (json.JSONDecodeError, ValueError, SyntaxError, TypeError) as e:
         # JSON 解析失败，抛出错误让上层重试
         raise ValueError(f"Generator 返回内容无法解析为 JSON: {e}\n原始内容: {result[:200] if result else '空'}")
 
@@ -504,23 +549,9 @@ def validator_check_format(
         response_model=None,  # Validator 返回自由 JSON
     )
 
-    # 解析 JSON，增加错误处理
     try:
-        if isinstance(result, str):
-            # 尝试提取 JSON 部分
-            result = result.strip()
-            # 处理可能的 markdown 代码块
-            if result.startswith("```json"):
-                result = result[7:]
-            elif result.startswith("```"):
-                result = result[3:]
-            if result.endswith("```"):
-                result = result[:-3]
-            result = result.strip()
-            validation = json.loads(result)
-        else:
-            validation = result
-    except json.JSONDecodeError as e:
+        validation = _coerce_top_level_object(_parse_llm_json_payload(result), "Validator")
+    except (json.JSONDecodeError, ValueError, SyntaxError, TypeError) as e:
         # JSON 解析失败，视为校验不通过
         console.print(f"  [yellow]⚠[/yellow] Validator 返回格式错误，视为校验失败")
         return {
@@ -556,9 +587,58 @@ def extract_entities_with_validation(seed_text: str) -> EntityExtractionOutput:
     Returns:
         EntityExtractionOutput: 包含 event_entities, opinion_spreaders 等
     """
-    from src.phase1.orchestrator import run_phase1_orchestrator
+    params = analyzer_set_parameters(seed_text)
+    last_validation: Optional[Dict[str, Any]] = None
+    error_feedback = ""
 
-    return run_phase1_orchestrator(seed_text)
+    for attempt in range(MAX_RETRIES):
+        if attempt > 0:
+            console.print(f"[yellow]重试第 {attempt + 1}/{MAX_RETRIES} 轮...[/yellow]")
+
+        try:
+            entities_data = generator_create_entities(
+                seed_text=seed_text,
+                event_scale=params["event_scale"],
+                event_controversy=params["event_controversy"],
+                event_type=params["event_type"],
+                event_summary=params["event_summary"],
+                error_feedback=error_feedback,
+            )
+        except ValueError as e:
+            last_validation = {
+                "pass": False,
+                "message": "Generator 输出解析失败",
+                "errors": [str(e)],
+            }
+            error_feedback = (
+                "上一轮输出未能解析为合法 JSON。"
+                "请严格输出单个 JSON object，不要附带解释、不要使用双大括号模板。"
+                f"\n- {e}"
+            )
+            continue
+
+        validation = validator_check_format(entities_data, seed_text)
+        last_validation = validation
+
+        if validation.get("pass"):
+            merged_output = {
+                "event_summary": params["event_summary"],
+                "event_scale": params["event_scale"],
+                "event_controversy": params["event_controversy"],
+                "event_type": params["event_type"],
+                "event_entities": entities_data.get("event_entities", []),
+                "opinion_spreaders": entities_data.get("opinion_spreaders", []),
+                "relations": entities_data.get("relations", []),
+            }
+            return EntityExtractionOutput(**merged_output)
+
+        errors = validation.get("errors", [])
+        error_feedback = "\n".join(f"- {error}" for error in errors)
+
+    raise ValueError(
+        "Phase 1 校验失败，超过最大重试次数。"
+        f" 最后一次校验结果: {last_validation}"
+    )
 
 
 # =============================================================================
@@ -588,9 +668,8 @@ def extract_entities_from_file(seed_file: str) -> EntityExtractionOutput:
     Returns:
         EntityExtractionOutput 对象
     """
-    from src.phase1.orchestrator import run_phase1_orchestrator_from_file
-
-    return run_phase1_orchestrator_from_file(seed_file)
+    seed_text = Path(seed_file).read_text(encoding="utf-8")
+    return extract_entities_with_validation(seed_text)
 
 
 def save_entities_output(

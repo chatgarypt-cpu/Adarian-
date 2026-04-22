@@ -42,11 +42,17 @@ OUTPUTS_DIR = PROJECT_ROOT / "outputs"
 # Agent 画像输出路径
 AGENTS_PROFILE_PATH = OUTPUTS_DIR / "agents_profile.json"
 
+# Phase 1 实体提取输出路径
+ENTITIES_OUTPUT_PATH = OUTPUTS_DIR / "entities_and_relations.json"
+
 # 社交网络拓扑输出路径
 SOCIAL_GRAPH_PATH = OUTPUTS_DIR / "social_graph.json"
 
 # 每轮交互日志目录
 TICK_LOGS_DIR = OUTPUTS_DIR / "tick_logs"
+
+# Phase 3 日志聚合输出路径
+TICK_LOGS_PATH = OUTPUTS_DIR / "tick_logs.json"
 
 # 最终报告输出路径
 FINAL_REPORT_PATH = OUTPUTS_DIR / "final_report.md"
@@ -77,7 +83,7 @@ DEEPSEEK_MODEL = "deepseek-chat"
 ZHIPU_MODEL = "glm-4"
 
 # Qwen 模型
-QWEN_MODEL = "qwen-turbo"
+QWEN_MODEL = os.getenv("QWEN_MODEL", "qwen35-122b-a10b")
 
 # =============================================================================
 # LLM 调用参数
@@ -87,7 +93,7 @@ QWEN_MODEL = "qwen-turbo"
 DEFAULT_TEMPERATURE = 0.7
 
 # 最大 Token 数
-DEFAULT_MAX_TOKENS = 2048
+DEFAULT_MAX_TOKENS = 8192
 
 # 重试次数
 LLM_RETRY_TIMES = 3
