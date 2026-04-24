@@ -248,6 +248,14 @@ class SimulationEngine:
         for spreader in extraction_output.opinion_spreaders:
             self.spreader_map[spreader.group_name] = spreader
 
+    def _normalize_text(self, value: str, max_length: int, fallback: str = "") -> str:
+        """清洗 LLM 文本并裁剪到 schema 允许长度。"""
+        text = (value or "").strip()
+        if not text:
+            return fallback
+        text = " ".join(text.split())
+        return text[:max_length]
+
     def run_tick_0(self) -> List[AgentEntry]:
         """执行 Tick 0：事件实体发言
 
@@ -635,8 +643,8 @@ class SimulationEngine:
         if json_match:
             try:
                 data = json.loads(json_match.group())
-                comment = data.get("comment", "")
-                reasoning = data.get("reasoning", "")
+                comment = self._normalize_text(data.get("comment", ""), 200, "（解析失败）")
+                reasoning = self._normalize_text(data.get("reasoning", ""), 100)
                 return comment, reasoning
             except (json.JSONDecodeError, ValueError):
                 pass
@@ -645,8 +653,12 @@ class SimulationEngine:
         comment_match = re.search(r'"comment":\s*"([^"]*)"', response)
         reasoning_match = re.search(r'"reasoning":\s*"([^"]*)"', response)
 
-        comment = comment_match.group(1) if comment_match else "（解析失败）"
-        reasoning = reasoning_match.group(1) if reasoning_match else ""
+        comment = self._normalize_text(
+            comment_match.group(1) if comment_match else "",
+            200,
+            "（解析失败）",
+        )
+        reasoning = self._normalize_text(reasoning_match.group(1) if reasoning_match else "", 100)
 
         return comment, reasoning
 
@@ -666,9 +678,9 @@ class SimulationEngine:
         if json_match:
             try:
                 data = json.loads(json_match.group())
-                comment = data.get("comment", "")
+                comment = self._normalize_text(data.get("comment", ""), 200, "（解析失败）")
                 new_stance = float(data.get("new_stance", 5.0))
-                reasoning = data.get("reasoning", "")
+                reasoning = self._normalize_text(data.get("reasoning", ""), 100)
 
                 new_stance = max(1.0, min(10.0, new_stance))
                 return comment, new_stance, reasoning
@@ -680,9 +692,13 @@ class SimulationEngine:
         stance_match = re.search(r'"new_stance":\s*([\d.]+)', response)
         reasoning_match = re.search(r'"reasoning":\s*"([^"]*)"', response)
 
-        comment = comment_match.group(1) if comment_match else "（解析失败）"
+        comment = self._normalize_text(
+            comment_match.group(1) if comment_match else "",
+            200,
+            "（解析失败）",
+        )
         new_stance = float(stance_match.group(1)) if stance_match else 5.0
-        reasoning = reasoning_match.group(1) if reasoning_match else ""
+        reasoning = self._normalize_text(reasoning_match.group(1) if reasoning_match else "", 100)
 
         new_stance = max(1.0, min(10.0, new_stance))
 
