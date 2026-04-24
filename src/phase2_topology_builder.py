@@ -69,6 +69,12 @@ def apply_individual_jitter(agents: List[GraphNode]) -> List[GraphNode]:
             susceptibility=new_susc,
             confirmation_bias_level=agent.confirmation_bias_level,
             entity_category=agent.entity_category,
+            persona_name=agent.persona_name,
+            age_range=agent.age_range,
+            occupation=agent.occupation,
+            personality=agent.personality,
+            motivation=agent.motivation,
+            typical_phrases=agent.typical_phrases,
         ))
 
     return jittered_agents
@@ -128,7 +134,13 @@ def build_topology(
             stance_score=spreader.stance_score,
             susceptibility=spreader.susceptibility,
             confirmation_bias_level=spreader.confirmation_bias_level,
-            entity_category="opinion_spreader"
+            entity_category="opinion_spreader",
+            persona_name=spreader.persona_name,
+            age_range=spreader.age_range,
+            occupation=spreader.occupation,
+            personality=spreader.personality,
+            motivation=spreader.motivation,
+            typical_phrases=spreader.typical_phrases,
         )
         nodes.append(node)
         periphery_nodes.append(node)
