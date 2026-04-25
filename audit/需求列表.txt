@@ -1,0 +1,8 @@
+P0：当前白盒观测能力审查
+P0：speaker 为什么不能发声的解释缺口
+P0：simulation quality 审查
+P1：influence trace / stance update explainability
+P1：seed fact coverage
+P1：entity role taxonomy
+P2：source enrichment / MCP 能力缺口
+P2：print / logging 职责边界

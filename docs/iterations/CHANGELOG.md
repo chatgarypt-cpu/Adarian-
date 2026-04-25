@@ -10,6 +10,9 @@
 
 | 文档 | 变更内容 |
 |------|---------|
+| `docs/iterations/v1.2.1-run-artifact-governance-runtime-logging.md` | 新增 v1.2.1 运行产物治理迭代文档，记录 run_dir / RuntimeLogger / report contract 验收结果 |
+| `docs/iterations/CHANGELOG.md` | 新增 v1.2.1 条目，记录 run artifact governance 与 runtime logging 实际变更 |
+| `docs/iterations/TASK_LOG.md` | 新增 v1.2.1 workflow acceptance record，结果为 pass_with_known_issues |
 | `docs/iterations/v1.2.0-functional-baseline-restore.md` | 新增 v1.2.0 功能基线重建迭代文档，记录灾难原因、恢复动作、test7 E2E 验证数据、carry_over 清单 |
 | `docs/iterations/CHANGELOG.md` | 新增 v1.2.0 条目，明确新基线建立、E2E 恢复、已知缺口、下一版本指向 v1.2.1 |
 | `docs/iterations/TASK_LOG.md` | 新增 v1.2.0 workflow acceptance record，包含 task_id / review_id / attempt_id / acceptance_id |
@@ -50,6 +53,77 @@
 ---
 
 ## 代码变更记录
+
+## v1.2.1 (2026-04-25)（已完成）
+
+**主题**：Run Artifact Governance & Runtime Logging
+
+### 目标
+
+本轮执行最小运行产物治理，将主链输出从 root `outputs/` 改为 run 级隔离目录，并接入现有 `RuntimeLogger`。
+
+权威 run 目录：
+
+```text
+outputs/runs/<seed_stem>_<YYYYMMDD_HHMMSS>/
+```
+
+### 新增
+
+- [main.py] 新增 `build_run_paths()`，创建 `outputs/runs/<run_id>/`
+- [main.py] 新增 `write_run_meta()`，写入 `run_meta.json`
+- [main.py] 新增 `seed_input.txt` copy
+- [main.py] 主入口接入 `RuntimeLogger.configure(run_dir)`
+- [docs/iterations] 新增 v1.2.1 迭代文档
+
+### 修改
+
+- [main.py] Phase 1-4 主链显式传入 run_dir 内输出路径
+- [main.py] run / phase 边界写入 RuntimeLogger
+- [main.py] 结束提示改为显示本轮 run_dir 内真实产物
+- [src/phase4_report_agent.py] `final_report.json` 与 `final_report.md` 分离写入
+- [src/phase4_report_agent.py] `save_markdown_report()` 支持显式 `output_path`
+- [src/phase4_report_agent.py] 报告解析支持主链传入 `phase2_output`，减少对 root `social_graph.json` 的隐式依赖
+
+### 验收结果
+
+```text
+命令：py main.py seeds/test7.txt
+退出码：0
+run_id：test7_20260425_160152
+run_dir：outputs/runs/test7_20260425_160152/
+总耗时：280.23s
+风险等级：low
+```
+
+run_dir 内必备产物齐全：
+
+- `seed_input.txt`
+- `run_meta.json`
+- `run.log`
+- `timing_summary.json`
+- `entities_and_relations.json`
+- `social_graph.json`
+- `tick_logs.json`
+- `final_report.json`
+- `final_report.md`
+
+### 已知遗留
+
+- `run_meta.json` 缺少 `seed_stem / git_commit / git_dirty / output_dir`
+- Windows 路径在部分检查输出中存在编码显示问题
+- CLI / CSV / benchmark / profiling 治理继续延后
+- 历史 outputs 清理继续延后
+
+### 兼容性
+
+- ✅ root outputs 默认路径保留为兼容 API
+- ✅ 主链权威输出切换至 run_dir
+- ✅ 不改 schemas / Phase 3 scheduler / profiling
+
+**详细文档**：[v1.2.1-run-artifact-governance-runtime-logging.md](./v1.2.1-run-artifact-governance-runtime-logging.md)
+
+---
 
 ## v1.2.0 (2026-04-25)（已完成）
 

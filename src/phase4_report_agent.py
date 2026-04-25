@@ -287,6 +287,7 @@ def generate_report_with_llm(
     extraction_output: EntityExtractionOutput,
     tick_logs: List[TickLog],
     x_t_sequence: List[float],
+    phase2_output: Phase2Output = None,
 ) -> Phase4Output:
     """使用 LLM 生成报告
 
@@ -325,7 +326,13 @@ def generate_report_with_llm(
     _llm_generated_markdown = response
 
     # 解析响应并构建 Phase4Output
-    phase4_output = parse_llm_report_response(response, extraction_output, tick_logs, x_t_sequence)
+    phase4_output = parse_llm_report_response(
+        response,
+        extraction_output,
+        tick_logs,
+        x_t_sequence,
+        phase2_output=phase2_output,
+    )
 
     return phase4_output
 
@@ -335,6 +342,7 @@ def parse_llm_report_response(
     extraction_output: EntityExtractionOutput,
     tick_logs: List[TickLog],
     x_t_sequence: List[float],
+    phase2_output: Phase2Output = None,
 ) -> Phase4Output:
     """解析 LLM 报告响应
 
@@ -352,7 +360,12 @@ def parse_llm_report_response(
     # 检查响应是否有效
     if not response or len(response) < 100:
         console.print("[yellow]警告：[/yellow] LLM 报告过短，使用自动分析")
-        return generate_fallback_report(extraction_output, tick_logs, x_t_sequence)
+        return generate_fallback_report(
+            extraction_output,
+            tick_logs,
+            x_t_sequence,
+            phase2_output=phase2_output,
+        )
 
     # 构建情绪轨迹
     emotion_trajectory = [
@@ -367,8 +380,9 @@ def parse_llm_report_response(
     ]
 
     # 识别拐点
-    from src.phase3_tick_simulation import load_phase2_output
-    phase2_output = load_phase2_output()
+    if phase2_output is None:
+        from src.phase3_tick_simulation import load_phase2_output
+        phase2_output = load_phase2_output()
     inflection_points = identify_inflection_points(tick_logs, phase2_output)
 
     # 风险评估
@@ -393,7 +407,8 @@ def parse_llm_report_response(
 def generate_fallback_report(
     extraction_output: EntityExtractionOutput,
     tick_logs: List[TickLog],
-    x_t_sequence: List[float]
+    x_t_sequence: List[float],
+    phase2_output: Phase2Output = None,
 ) -> Phase4Output:
     """生成自动报告（当 LLM 失败时）
 
@@ -405,9 +420,9 @@ def generate_fallback_report(
     Returns:
         Phase4Output 对象
     """
-    from src.phase3_tick_simulation import load_phase2_output
-
-    phase2_output = load_phase2_output()
+    if phase2_output is None:
+        from src.phase3_tick_simulation import load_phase2_output
+        phase2_output = load_phase2_output()
 
     # 识别拐点
     inflection_points = identify_inflection_points(tick_logs, phase2_output)
@@ -557,9 +572,10 @@ def save_report(phase4_output: Phase4Output, output_path: Path = None):
 
     Args:
         phase4_output: Phase4 输出
-        output_path: 输出路径，默认使用 config.FINAL_REPORT_PATH
+        output_path: 输出路径，默认使用 config.FINAL_REPORT_PATH.with_suffix(".json")
     """
-    output_path = output_path or config.FINAL_REPORT_PATH
+    output_path = output_path or config.FINAL_REPORT_PATH.with_suffix(".json")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
 
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(phase4_output.model_dump(), f, ensure_ascii=False, indent=2)
@@ -567,12 +583,17 @@ def save_report(phase4_output: Phase4Output, output_path: Path = None):
     console.print(f"[green]✓[/green] JSON 报告已保存至: {output_path}")
 
 
-def save_markdown_report(phase4_output: Phase4Output, extraction_output: EntityExtractionOutput):
+def save_markdown_report(
+    phase4_output: Phase4Output,
+    extraction_output: EntityExtractionOutput,
+    output_path: Path = None,
+):
     """保存 Markdown 格式报告
 
     Args:
         phase4_output: Phase4 输出
         extraction_output: 实体提取结果
+        output_path: 输出路径，默认使用 config.FINAL_REPORT_PATH.with_suffix(".md")
     """
     global _llm_generated_markdown
 
@@ -583,7 +604,8 @@ def save_markdown_report(phase4_output: Phase4Output, extraction_output: EntityE
         # 否则生成默认格式
         md_content = generate_markdown_report(phase4_output, extraction_output)
 
-    md_path = config.FINAL_REPORT_PATH.with_suffix(".md")
+    md_path = output_path or config.FINAL_REPORT_PATH.with_suffix(".md")
+    md_path.parent.mkdir(parents=True, exist_ok=True)
     with open(md_path, "w", encoding="utf-8") as f:
         f.write(md_content)
 

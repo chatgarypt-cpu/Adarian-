@@ -25,6 +25,8 @@ v1.1.4 架构变化：
 import sys
 import time
 import json
+import shutil
+from datetime import datetime
 from pathlib import Path
 from rich.console import Console
 from rich.panel import Panel
@@ -33,6 +35,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
 import config
 from config import ensure_dirs
 from src.llm_client import init_llm_client, get_llm_client
+from src.utils.runtime_logger import get_runtime_logger
 
 console = Console()
 
@@ -48,7 +51,7 @@ def print_banner():
     console.print(banner, style="bold cyan")
 
 
-def run_phase1(seed_file: str):
+def run_phase1(seed_file: str, output_path: Path = None):
     """执行 Phase 1：实体提取与分类（Analyzer/Generator/Validator 协作）
 
     Args:
@@ -72,7 +75,7 @@ def run_phase1(seed_file: str):
         progress.update(task, completed=1)
 
     # 保存 Phase 1 输出
-    entities_file = save_entities_output(extraction_output)
+    entities_file = save_entities_output(extraction_output, output_path=output_path)
 
     console.print(f"  事件实体数量: {len(extraction_output.event_entities)}")
     console.print(f"  意见传播者数量: {len(extraction_output.opinion_spreaders)}")
@@ -83,7 +86,7 @@ def run_phase1(seed_file: str):
     return extraction_output, entities_file
 
 
-def run_phase2(extraction_output):
+def run_phase2(extraction_output, output_path: Path = None):
     """执行 Phase 2：社交拓扑构建
 
     Args:
@@ -110,7 +113,7 @@ def run_phase2(extraction_output):
         progress.update(task, completed=1)
 
     validate_topology(phase2_output)
-    save_social_graph(phase2_output)
+    save_social_graph(phase2_output, output_path=output_path)
 
     event_entity_count = sum(1 for n in phase2_output.nodes if n.entity_category == "event_entity")
     spreader_count = sum(1 for n in phase2_output.nodes if n.entity_category == "opinion_spreader")
@@ -123,7 +126,7 @@ def run_phase2(extraction_output):
     return phase2_output
 
 
-def run_phase3(extraction_output, phase2_output, seed_text):
+def run_phase3(extraction_output, phase2_output, seed_text, output_path: Path = None):
     """执行 Phase 3：多轮涌现推演
 
     Args:
@@ -144,7 +147,7 @@ def run_phase3(extraction_output, phase2_output, seed_text):
 
     tick_logs = engine.run_simulation(max_ticks=config.MAX_TICKS)
 
-    save_tick_logs(tick_logs)
+    save_tick_logs(tick_logs, output_path=output_path)
     print_simulation_summary(tick_logs)
 
     x_t_sequence = engine.get_x_t_sequence()
@@ -153,7 +156,7 @@ def run_phase3(extraction_output, phase2_output, seed_text):
     return tick_logs, x_t_sequence
 
 
-def run_phase4(extraction_output, tick_logs, x_t_sequence):
+def run_phase4(extraction_output, phase2_output, tick_logs, x_t_sequence, json_output_path: Path = None, markdown_output_path: Path = None):
     """执行 Phase 4：宏观洞察生成
 
     Args:
@@ -176,13 +179,67 @@ def run_phase4(extraction_output, tick_logs, x_t_sequence):
         console=console,
     ) as progress:
         task = progress.add_task("[cyan]生成报告...", total=1)
-        phase4_output = generate_report_with_llm(extraction_output, tick_logs, x_t_sequence)
+        phase4_output = generate_report_with_llm(
+            extraction_output,
+            tick_logs,
+            x_t_sequence,
+            phase2_output=phase2_output,
+        )
         progress.update(task, completed=1)
 
-    save_report(phase4_output)
-    save_markdown_report(phase4_output, extraction_output)
+    save_report(phase4_output, output_path=json_output_path)
+    save_markdown_report(phase4_output, extraction_output, output_path=markdown_output_path)
 
     return phase4_output
+
+
+def build_run_paths(seed_file: Path) -> dict:
+    """Create the run directory and return all authoritative output paths."""
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    run_id = f"{seed_file.stem}_{timestamp}"
+    run_dir = config.OUTPUTS_DIR / "runs" / run_id
+    run_dir.mkdir(parents=True, exist_ok=False)
+
+    seed_copy = run_dir / "seed_input.txt"
+    shutil.copyfile(seed_file, seed_copy)
+
+    outputs = {
+        "entities": run_dir / "entities_and_relations.json",
+        "social_graph": run_dir / "social_graph.json",
+        "tick_logs": run_dir / "tick_logs.json",
+        "final_report_json": run_dir / "final_report.json",
+        "final_report_md": run_dir / "final_report.md",
+        "run_log": run_dir / "run.log",
+        "timing_summary": run_dir / "timing_summary.json",
+        "run_meta": run_dir / "run_meta.json",
+    }
+
+    return {
+        "run_id": run_id,
+        "run_dir": run_dir,
+        "seed_copy": seed_copy,
+        "outputs": outputs,
+    }
+
+
+def write_run_meta(run_context: dict, seed_file: Path, status: str, started_at: str, **extra) -> None:
+    """Write run metadata for replay and acceptance checks."""
+    outputs = run_context["outputs"]
+    payload = {
+        "run_id": run_context["run_id"],
+        "seed_file": str(seed_file),
+        "seed_copy": str(run_context["seed_copy"]),
+        "run_dir": str(run_context["run_dir"]),
+        "started_at": started_at,
+        "provider": config.LLM_PROVIDER,
+        "model": config.get_model_name(),
+        "status": status,
+        "outputs": {key: str(path) for key, path in outputs.items()},
+    }
+    payload.update(extra)
+
+    with open(outputs["run_meta"], "w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=False, indent=2)
 
 
 def main():
@@ -212,7 +269,19 @@ def main():
         console.print(f"[bold red]错误：[/bold red] 种子文件不存在: {seed_file}")
         sys.exit(1)
 
+    seed_file = seed_file.resolve()
+    run_context = build_run_paths(seed_file)
+    run_dir = run_context["run_dir"]
+    outputs = run_context["outputs"]
+    started_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    write_run_meta(run_context, seed_file, status="running", started_at=started_at)
+
+    logger = get_runtime_logger()
+    logger.configure(run_dir)
+    logger.log_run_start("normal", str(seed_file), str(run_dir))
+
     console.print(f"种子文件: {seed_file.name}\n")
+    console.print(f"运行目录: {run_dir}\n")
 
     with open(seed_file, "r", encoding="utf-8") as f:
         seed_text = f.read()
@@ -222,27 +291,59 @@ def main():
 
     try:
         # Phase 1: 实体提取与分类（Analyzer/Generator/Validator 协作）
+        logger.log_phase_start("phase1_entity_extraction")
         phase1_start = time.time()
-        extraction_output, entities_file = run_phase1(str(seed_file))
+        extraction_output, entities_file = run_phase1(str(seed_file), output_path=outputs["entities"])
         phase1_time = time.time() - phase1_start
+        logger.log_phase_end("phase1_entity_extraction", phase1_time)
 
         # Phase 2: 社交拓扑构建
+        logger.log_phase_start("phase2_topology_builder")
         phase2_start = time.time()
-        phase2_output = run_phase2(extraction_output)
+        phase2_output = run_phase2(extraction_output, output_path=outputs["social_graph"])
         phase2_time = time.time() - phase2_start
+        logger.log_phase_end("phase2_topology_builder", phase2_time)
 
         # Phase 3: 多轮涌现推演
+        logger.log_phase_start("phase3_tick_simulation")
         phase3_start = time.time()
-        tick_logs, x_t_sequence = run_phase3(extraction_output, phase2_output, seed_text)
+        tick_logs, x_t_sequence = run_phase3(
+            extraction_output,
+            phase2_output,
+            seed_text,
+            output_path=outputs["tick_logs"],
+        )
         phase3_time = time.time() - phase3_start
+        logger.log_phase_end("phase3_tick_simulation", phase3_time)
 
         # Phase 4: 宏观洞察生成
+        logger.log_phase_start("phase4_report_agent")
         phase4_start = time.time()
-        phase4_output = run_phase4(extraction_output, tick_logs, x_t_sequence)
+        phase4_output = run_phase4(
+            extraction_output,
+            phase2_output,
+            tick_logs,
+            x_t_sequence,
+            json_output_path=outputs["final_report_json"],
+            markdown_output_path=outputs["final_report_md"],
+        )
         phase4_time = time.time() - phase4_start
+        logger.log_phase_end("phase4_report_agent", phase4_time)
 
         # 总耗时
         total_time = time.time() - start_time
+        logger.log_run_end("success", total_time)
+        write_run_meta(
+            run_context,
+            seed_file,
+            status="success",
+            started_at=started_at,
+            completed_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            elapsed_seconds=round(total_time, 2),
+            x_t_sequence=x_t_sequence,
+            final_polarization_index=tick_logs[-1].global_metrics.polarization_index,
+            risk_level=phase4_output.risk_level.value,
+        )
 
         # 打印最终结果
         console.print("\n" + "=" * 60)
@@ -263,16 +364,44 @@ def main():
   风险等级: {phase4_output.risk_level.value.upper()}
 
 [bold]输出文件：[/bold]
+  运行目录: {run_dir}
   实体提取: {entities_file}
-  社交拓扑: {config.SOCIAL_GRAPH_PATH}
-  交互日志: {config.TICK_LOGS_DIR}/
-  最终报告: {config.FINAL_REPORT_PATH.with_suffix('.md')}
+  社交拓扑: {outputs["social_graph"]}
+  交互日志: {outputs["tick_logs"]}
+  JSON 报告: {outputs["final_report_json"]}
+  Markdown 报告: {outputs["final_report_md"]}
+  运行日志: {outputs["run_log"]}
+  时间摘要: {outputs["timing_summary"]}
+  运行元数据: {outputs["run_meta"]}
 """)
 
     except KeyboardInterrupt:
+        total_time = time.time() - start_time
+        logger.log_error("keyboard_interrupt", "用户中断")
+        logger.log_run_end("interrupted", total_time)
+        write_run_meta(
+            run_context,
+            seed_file,
+            status="interrupted",
+            started_at=started_at,
+            completed_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            elapsed_seconds=round(total_time, 2),
+        )
         console.print("\n[yellow]用户中断[/yellow]")
         sys.exit(1)
     except Exception as e:
+        total_time = time.time() - start_time
+        logger.log_error("main", str(e))
+        logger.log_run_end("failed", total_time)
+        write_run_meta(
+            run_context,
+            seed_file,
+            status="failed",
+            started_at=started_at,
+            completed_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            elapsed_seconds=round(total_time, 2),
+            error=str(e),
+        )
         console.print(f"\n[bold red]错误：[/bold red] {e}")
         import traceback
         traceback.print_exc()

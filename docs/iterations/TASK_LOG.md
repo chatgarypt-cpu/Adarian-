@@ -41,6 +41,73 @@ carry_over:
 
 ---
 
+## [2026-04-25 完成] v1.2.1 - Run Artifact Governance & Runtime Logging
+
+**执行者**：Codex
+**基于版本**：v1.2.0 functional baseline
+**任务文档**：`docs/iterations/v1.2.1-run-artifact-governance-runtime-logging.md`
+
+**记录标识**：
+- `task_id`: `task-v1.2.1-run-artifact-governance-runtime-logging`
+- `review_id`: `review-v1.2.1-01`
+- `attempt_id`: `attempt-v1.2.1-01`
+- `acceptance_id`: `accept-v1.2.1-01`
+
+**本轮结果**：`pass_with_known_issues`
+
+**本轮任务性质**：
+- 最小运行产物治理
+- 主链输出从 root `outputs/` 改为 run 级隔离目录
+- 接入现有 `RuntimeLogger`
+- 修复 `final_report.json` / `final_report.md` 输出契约
+
+**实际新增文件**：
+- `docs/iterations/v1.2.1-run-artifact-governance-runtime-logging.md` — v1.2.1 迭代文档
+
+**实际修改文件**：
+- `main.py` — 新增 `outputs/runs/<run_id>/`、`run_meta.json`、seed copy、RuntimeLogger 接入、显式 run_dir 输出路由
+- `src/phase4_report_agent.py` — JSON/Markdown 分离写入，支持显式 `output_path`，主链可传入 `phase2_output`
+- `docs/iterations/TASK_LOG.md` — 新增 v1.2.1 完成记录
+- `docs/iterations/CHANGELOG.md` — 新增 v1.2.1 变更记录
+
+**test7 E2E 验证数据**：
+
+```text
+命令：py main.py seeds/test7.txt
+结果：端到端通过
+退出码：0
+run_id：test7_20260425_160152
+run_dir：outputs/runs/test7_20260425_160152/
+总耗时：280.23s
+Phase 1：96.91s
+Phase 2：1.16s
+Phase 3：130.00s
+Phase 4：52.14s
+风险等级：low
+```
+
+**acceptance_result**：
+- ✅ `py -m py_compile main.py src/phase3_tick_simulation.py src/phase4_report_agent.py src/utils/runtime_logger.py` 通过
+- ✅ `py main.py seeds/test7.txt` 退出码 0
+- ✅ `outputs/runs/test7_20260425_160152/` 符合 `<seed_stem>_<YYYYMMDD_HHMMSS>`
+- ✅ run_dir 内 9 个必备产物齐全
+- ✅ `run.log` 完整记录 RUN / PHASE / LLM / TICK 事件流
+- ✅ `timing_summary.json` 包含 run / phases / llm / ticks / errors
+- ✅ `final_report.json` 与 `final_report.md` 分离写入
+- ✅ 本次运行未刷新 root `outputs/` latest 业务产物
+- ⚠️ `run_meta.json` 缺少 `seed_stem / git_commit / git_dirty / output_dir`
+- ⚠️ 文档 closeout 已在本记录补齐
+
+**carry_over**：
+- run_meta 字段增强：补齐 `seed_stem / git_commit / git_dirty / output_dir`
+- Windows 路径编码显示问题后续观察
+- CLI / CSV / benchmark / profiling 治理仍不纳入本轮
+- 历史 outputs 清理不纳入本轮
+
+**Git Tag**：未创建
+
+---
+
 ## [2026-04-25 完成] v1.2.0 - Functional Baseline Restore
 
 **执行者**：文档治理 Agent
