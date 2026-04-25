@@ -6,6 +6,15 @@
 
 ## 文档变更记录
 
+### 2026-04-25
+
+| 文档 | 变更内容 |
+|------|---------|
+| `docs/iterations/v1.2.0-functional-baseline-restore.md` | 新增 v1.2.0 功能基线重建迭代文档，记录灾难原因、恢复动作、test7 E2E 验证数据、carry_over 清单 |
+| `docs/iterations/CHANGELOG.md` | 新增 v1.2.0 条目，明确新基线建立、E2E 恢复、已知缺口、下一版本指向 v1.2.1 |
+| `docs/iterations/TASK_LOG.md` | 新增 v1.2.0 workflow acceptance record，包含 task_id / review_id / attempt_id / acceptance_id |
+| `audit/baseline_audit_2026-04-25.md` | 新增本轮只读审计报告，verdict = pass_with_known_issues，记录 run_dir / run.log / timing_summary.json 缺失根因 |
+
 ### 2026-04-15
 
 | 文档 | 变更内容 |
@@ -41,6 +50,108 @@
 ---
 
 ## 代码变更记录
+
+## v1.2.0 (2026-04-25)（已完成）
+
+**主题**：Functional Baseline Restore — 新功能基线重建
+
+### 版本定位
+
+v1.2.0 不是普通小版本，而是一次"新功能基线重建"：
+
+- 当前代码状态已不适合继续沿用旧 v1.1.x 迭代链路判断
+- 旧迭代文档与当前源码事实存在明显漂移
+- 项目经历恢复性修复，主链 E2E 重新确认可运行
+- v1.2.0 作为后续迭代的新起点
+
+**版本区分**：
+```text
+v1.2.0 = functional baseline candidate（本轮）
+v1.2.1 = run artifact governance / runtime logging（下一轮）
+```
+
+### 灾难原因 / 事故复盘
+
+**根本问题**：
+- 文档状态领先或偏离源码状态
+- 旧迭代记录与当前真实代码不完全一致
+- 输出产物混乱，root outputs 被多次覆盖
+- E2E 证据链不清晰
+- runtime logger / output manager 在文档中被描述，但主链实际未完整落盘
+
+**直接灾难表现**：
+- `run_dir` 不存在
+- `run.log` 不存在
+- `timing_summary.json` 不存在
+- outputs 根目录产物被覆盖
+- `final_report.json` / `final_report.md` 存在输出契约风险
+- `tick_logs` 提示路径与实际写入不一致
+- 旧文档不能作为当前 baseline 的权威判断依据
+
+### 恢复动作
+
+本轮完成：
+
+- ✅ 主链 E2E 重新跑通（test7）
+- ✅ Phase 1-4 验证完成
+- ✅ 迭代文档补齐
+- ✅ CHANGELOG / TASK_LOG 更新
+- ✅ Closeout Record 填写
+
+本轮**不改代码**：
+- `main.py` — 未修改
+- `src/` — 未修改
+- `profiling/` — 未修改
+- `outputs/` — 未修改
+
+### test7 E2E 验证数据
+
+```text
+命令：py main.py seeds/test7.txt
+结果：端到端通过
+退出码：0
+总耗时：约 223.1s
+LLM：qwen / qwen35-122b-a10b
+Phase 1：77.0s
+Phase 2：1.0s
+Phase 3：93.6s
+Phase 4：51.5s
+x(t)：4.73 -> 4.65 -> 4.74 -> 4.75 -> 4.81 -> 4.70
+最终极化指数：0.34
+风险等级：LOW
+```
+
+**白盒说明**：
+- Phase 1 首次 Validator 因两个 `age_range=45-55` 不合规失败，第二轮通过
+- Phase 2 拓扑验证通过，10 节点、29 边
+- Phase 3 完成 Tick 0-5，Tick 0 有 5 条 entry（2 个发言，3 个不可发言）
+- Tick 1-5 每轮 5 个意见传播者发言
+- 最大立场摆动集中在秩序维护派和程序质疑者
+- 极化峰值出现在 Tick 3，约 0.36
+
+### 已知缺口（carry_over）
+
+v1.2.0 不解决的问题，全部延后至 v1.2.1：
+
+- `run_dir` / `run.log` / `timing_summary.json` 缺失
+- RuntimeLogger 未在 main.py 入口接入
+- `final_report.json` / `final_report.md` 输出契约问题
+- `tick_logs` 输出提示不一致
+- outputs 目录治理（多次运行互相覆盖）
+- CLI / CSV / benchmark / profiling 不纳入本轮
+- Phase 1 语义分类质量问题延后观察
+
+### 兼容性
+
+- ✅ 完全兼容，本轮不改代码
+- ✅ 仅补文档，确立新基线起点
+
+### 详细文档
+
+- [v1.2.0-functional-baseline-restore.md](./v1.2.0-functional-baseline-restore.md)
+- [baseline_audit_2026-04-25.md](../audit/baseline_audit_2026-04-25.md)
+
+---
 
 ## v1.1.18 (2026-04-09)（已完成）
 

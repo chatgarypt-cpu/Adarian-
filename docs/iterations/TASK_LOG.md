@@ -41,6 +41,82 @@ carry_over:
 
 ---
 
+## [2026-04-25 完成] v1.2.0 - Functional Baseline Restore
+
+**执行者**：文档治理 Agent
+**基于版本**：HEAD = `035566d` (baseline: restore test1 e2e runnable)
+**任务文档**：`docs/iterations/v1.2.0-functional-baseline-restore.md`
+
+**记录标识**：
+- `task_id`: `task-v1.2.0-functional-baseline-restore`
+- `review_id`: `review-v1.2.0-01`
+- `attempt_id`: `attempt-v1.2.0-01`
+- `acceptance_id`: `accept-v1.2.0-01`
+
+**本轮结果**：`pass_with_known_issues`
+
+**本轮任务性质**：
+- 不改代码，只补文档
+- 建立新功能基线起点
+- 记录灾难原因与恢复动作
+- 明确 v1.2.1 carry_over
+
+**test7 E2E 验证数据**：
+
+```text
+命令：py main.py seeds/test7.txt
+结果：端到端通过
+退出码：0
+总耗时：约 223.1s
+LLM：qwen / qwen35-122b-a10b
+Phase 1：77.0s（首次 Validator 失败，第二轮通过）
+Phase 2：1.0s（10 节点、29 边）
+Phase 3：93.6s（Tick 0-5 完成）
+Phase 4：51.5s
+x(t)：4.73 -> 4.65 -> 4.74 -> 4.75 -> 4.81 -> 4.70
+最终极化指数：0.34
+风险等级：LOW
+```
+
+**实际新增文件**：
+- `docs/iterations/v1.2.0-functional-baseline-restore.md` — 新基线重建迭代文档
+- `audit/baseline_audit_2026-04-25.md` — 只读审计报告（已存在）
+
+**实际修改文件**：
+- `docs/iterations/CHANGELOG.md` — 新增 v1.2.0 条目
+- `docs/iterations/TASK_LOG.md` — 新增 v1.2.0 执行记录
+
+**未修改文件**：
+- `main.py` — 未修改
+- `src/` — 未修改
+- `profiling/` — 未修改
+- `outputs/` — 未修改
+
+**acceptance_result**：
+- ✅ Phase 1-4 E2E 可运行（test7 通过）
+- ✅ 退出码 0
+- ✅ 四个核心产物生成
+- ✅ x(t) 序列完整
+- ✅ 风险等级判定输出
+- ✅ 迭代文档补齐
+- ✅ CHANGELOG 更新
+- ✅ TASK_LOG 更新
+- ✅ Closeout Record 填写
+- ⚠️ run_dir / run.log / timing_summary.json 缺失（延后至 v1.2.1）
+
+**carry_over**：
+- v1.2.1 处理 run_dir / run.log / timing_summary.json
+- v1.2.1 修复 final_report.json / final_report.md 输出契约
+- v1.2.1 修正 tick_logs 输出提示
+- v1.2.1 RuntimeLogger 接入 main.py 入口
+- v1.2.1 outputs 目录治理
+- CLI / CSV / benchmark / profiling 不纳入 v1.2.0
+- Phase 1 语义分类质量问题延后观察
+
+**Git Tag**：未创建（本轮不改代码，文档补账无需 tag）
+
+---
+
 ## [2026-04-15 完成] v1.1.21 - Workflow Governance Closeout
 
 **执行者**：Codex
