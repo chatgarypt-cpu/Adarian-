@@ -6,6 +6,13 @@
 
 ## 文档变更记录
 
+### 2026-04-27
+
+| 文档 | 变更内容 |
+|------|---------|
+| `docs/iterations/CHANGELOG.md` | 新增 v1.2.2 条目，记录 JSON Parser 引号容错修复 |
+| `docs/iterations/TASK_LOG.md` | 新增 v1.2.2 workflow acceptance record，结果为 pass |
+
 ### 2026-04-25
 
 | 文档 | 变更内容 |
@@ -53,6 +60,66 @@
 ---
 
 ## 代码变更记录
+
+## v1.2.2 (2026-04-27)（已完成）
+
+**主题**：JSON Parser 引号容错修复（白盒测试收口）
+
+### 背景
+
+test7_1 E2E 测试暴露 Phase 1 JSON 解析失败：
+- LLM 返回 JSON 字符串 value 内部包含未转义英文双引号
+- `json.loads` 将内部引号误判为字符串结束边界
+- 原方案通过 monkey patch (`run_test7_1_injected.py`) 临时绕过
+
+### 根因
+
+**这不是 Unicode/UTF-8 冲突，而是 JSON 语法问题：**
+
+```json
+{"event_summary": "深圳公交站引发"裸检"争议"}
+```
+
+- 外层 JSON 字符串用英文双引号 `"..."` 包裹
+- value 内部出现未转义英文双引号 `"`
+- `json.loads` 解析失败
+
+### 新增
+
+- [src/phase1_entity_extraction.py] `_normalize_unescaped_quotes_inside_string_values()` — 状态机扫描，区分 key/value 字符串，只处理 value 内部未转义引号
+- [src/phase1_entity_extraction.py] `_normalize_inner_cjk_quotes()` — 中文弯引号兼容层
+- [tests/test_json_parser_quote_tolerance.py] — 6 个 case 单元测试
+- [tests/__init__.py] — 测试包初始化
+
+### 修改
+
+- [src/phase1_entity_extraction.py] `_parse_json_candidate()` — 新增 fallback 顺序：状态机处理 → 中文引号处理 → ast.literal_eval
+
+### 隔离
+
+- `run_test7_1_injected.py` → 移动到 `_deprecated/` 并删除
+
+### 验收结果
+
+```text
+命令：py main.py seeds/test7_1.txt
+退出码：0（不依赖注入脚本）
+run_id：test7_1_20260427_155436
+总耗时：299.3s
+风险等级：LOW
+事件实体：4（王某某、陈某、光明区联合调查组、境外媒体）
+意见传播者：5
+单元测试：10 passed, 0 failed
+```
+
+### 关键约束
+
+- 合法 JSON 仍优先 `json.loads`（不受预处理污染）
+- JSON key 不被破坏
+- 不修改 prompt / schema / Phase 1 业务流程
+- 不依赖 monkey patch
+
+---
 
 ## v1.2.1 (2026-04-25)（已完成）
 

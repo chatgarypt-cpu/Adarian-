@@ -1,0 +1,468 @@
+[
+  {
+    "tick": 0,
+    "entries": [
+      {
+        "agent_id": 0,
+        "group_name": "王某某",
+        "saw_posts_from": [],
+        "previous_stance": 5.0,
+        "current_stance": 5.0,
+        "stance_delta": 0.0,
+        "susceptibility": 0.0,
+        "change_reason": "entity_not_speaking",
+        "comment": "（该实体不可发言）",
+        "reasoning": "实体不可发言"
+      },
+      {
+        "agent_id": 1,
+        "group_name": "陈某",
+        "saw_posts_from": [],
+        "previous_stance": 5.0,
+        "current_stance": 5.0,
+        "stance_delta": 0.0,
+        "susceptibility": 0.0,
+        "change_reason": "entity_not_speaking",
+        "comment": "（该实体不可发言）",
+        "reasoning": "实体不可发言"
+      },
+      {
+        "agent_id": 2,
+        "group_name": "光明区联合调查组",
+        "saw_posts_from": [],
+        "previous_stance": 5.0,
+        "current_stance": 5.0,
+        "stance_delta": 0.0,
+        "susceptibility": 0.0,
+        "change_reason": "entity_original_statement",
+        "comment": "双方被带至公安机关执法办案中心调查并接受人身安全检查，当晚22时许自愿和解",
+        "reasoning": "原始发言（从种子材料提取）"
+      },
+      {
+        "agent_id": 3,
+        "group_name": "境外媒体",
+        "saw_posts_from": [],
+        "previous_stance": 5.0,
+        "current_stance": 5.0,
+        "stance_delta": 0.0,
+        "susceptibility": 0.0,
+        "change_reason": "entity_original_statement",
+        "comment": "控烟之城被讽表演型人格",
+        "reasoning": "原始发言（从种子材料提取）"
+      }
+    ],
+    "global_metrics": {
+      "mean_stance": 4.69,
+      "std_stance": 1.6,
+      "polarization_index": 0.34
+    }
+  },
+  {
+    "tick": 1,
+    "entries": [
+      {
+        "agent_id": 4,
+        "group_name": "女性权益关注者",
+        "saw_posts_from": [
+          0
+        ],
+        "previous_stance": 7.51,
+        "current_stance": 7.25,
+        "stance_delta": -0.26,
+        "susceptibility": 0.25,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "深圳公交站劝烟纠纷引发执法程序争议，境外媒体炒作裸检议题，这也能被过度解读？女性发声不容沉默，但更应关注执法程序是否规范透明。支持勇敢女孩维护权益，但事实真相需要理性对待，而不是被境外舆论带节奏。公共空间的权益维护需要各方依法行事。",
+        "reasoning": "作为女性权益关注者，我关注的是执法程序是否规范、公民权益是否得到保障。境外媒体炒作裸检议题存在过度解读嫌疑，应保持理性客观。立场中立，既支持正当维权，也反对不实炒作。"
+      },
+      {
+        "agent_id": 5,
+        "group_name": "法律程序关注者",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 2.91,
+        "current_stance": 3.16,
+        "stance_delta": 0.25,
+        "susceptibility": 0.19,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "作为法律从业者，关注此事的重点应在于执法程序本身。通报称双方被带至执法办案中心接受人身安全检查，但关键信息仍不透明：1）人身安全检查的法律依据和审批程序是什么？2）'自愿和解'的意愿如何得到法律保障？3）检查过程是否有完整记录和第三方见证？程序正义不能只靠结果来证明，权力行使的边界需要明确的程序约束。期待调查组公布更详细的执法流程说明。",
+        "reasoning": "作为法律程序关注者，对官方通报持审慎态度。既不能仅凭境外媒体描述就认定执法违法，也不能因'和解'结果就默认程序合法。执法程序透明度不足，需要更多细节才能做出判断，故保持中立立场，但强调程序监督的必要性"
+      },
+      {
+        "agent_id": 6,
+        "group_name": "公共文明支持者",
+        "saw_posts_from": [
+          1
+        ],
+        "previous_stance": 5.18,
+        "current_stance": 5.5,
+        "stance_delta": 0.32,
+        "susceptibility": 0.4,
+        "change_reason": "within_effective_delta",
+        "comment": "公共场所不能吸烟，这是基本的文明规范。深圳公交站作为公共空间，禁烟规定应当得到遵守。对于劝烟纠纷，关键在于执法程序是否规范，而非情绪化对抗。规矩就是规矩，但执行过程也需依法依规。境外媒体将正常执法程序与敏感议题挂钩，这种炒作不利于问题解决。文明社会需要自律，也需要依法治理，双方都应理性对待。",
+        "reasoning": "作为退休教师，我支持公共场所禁烟和规则执行，但对执法程序争议持客观中立态度。既维护公共文明秩序，也关注执法规范性问题。对外媒炒作保持警惕，认为不应过度政治化或敏感化处理常规执法争议。"
+      },
+      {
+        "agent_id": 7,
+        "group_name": "境外舆论观察者",
+        "saw_posts_from": [
+          3
+        ],
+        "previous_stance": 1.77,
+        "current_stance": 1.77,
+        "stance_delta": 0.0,
+        "susceptibility": 0.11,
+        "change_reason": "silent_no_change",
+        "comment": "（未发言）",
+        "reasoning": "本轮未进入发言队列"
+      },
+      {
+        "agent_id": 8,
+        "group_name": "中立理性派",
+        "saw_posts_from": [
+          0
+        ],
+        "previous_stance": 4.83,
+        "current_stance": 5.0,
+        "stance_delta": 0.17,
+        "susceptibility": 0.59,
+        "change_reason": "within_effective_delta",
+        "comment": "这个事件确实需要理性讨论。公交劝烟本身是维护公共环境的好意，但执法程序是否规范确实值得追问。至于裸检这种说法，让子弹飞一会儿吧，目前信息有限，境外媒体的解读也有夸大之嫌。两边都有问题，既不能纵容违规行为，也不能过度执法。等官方调查结果出来再说。",
+        "reasoning": "作为中立理性派，我认为需要从程序正义和事实真相两个维度看待此事件。执法部门应公开透明回应程序争议，同时公众也应警惕信息被片面解读和放大。不站队、不情绪化，等待更多客观信息。"
+      }
+    ],
+    "global_metrics": {
+      "mean_stance": 4.75,
+      "std_stance": 1.53,
+      "polarization_index": 0.32
+    }
+  },
+  {
+    "tick": 2,
+    "entries": [
+      {
+        "agent_id": 4,
+        "group_name": "女性权益关注者",
+        "saw_posts_from": [
+          0,
+          8
+        ],
+        "previous_stance": 7.25,
+        "current_stance": 6.99,
+        "stance_delta": -0.26,
+        "susceptibility": 0.25,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "中立理性派说的有道理，等官方调查结果确实很重要。但我还是想强调一点，女性维护公共空间权益不应该被污名化。劝烟是公民正当行为，执法程序是否规范需要调查，但女性发声不容沉默。境外媒体炒作裸检议题确实有夸大之嫌，这也能被过度解读？我们支持勇敢女孩维护权益，但也要警惕舆论被带节奏。公共空间的权益维护需要各方依法行事，程序正义同样重要。",
+        "reasoning": "作为女性权益关注者，我认同需要理性讨论执法程序问题，但同时也强调女性维护公共权益的行为不应被污名化。立场保持中立偏理性，既支持女性发声，也呼吁等待官方调查结果，避免被境外舆论带节奏。"
+      },
+      {
+        "agent_id": 5,
+        "group_name": "法律程序关注者",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 3.16,
+        "current_stance": 3.41,
+        "stance_delta": 0.25,
+        "susceptibility": 0.19,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "调查组发布通报是程序透明的第一步，值得肯定。但作为法律从业者，仍有几个核心程序问题需要明确：1）人身安全检查在《公安机关办理行政案件程序规定》中具体适用哪一条款？2）'自愿和解'的笔录形成过程、是否有律师在场或录音录像佐证？3）夜间22时完成和解，当事人的精神状态和意愿真实性如何评估？通报提供了结果，但程序链条的每个环节仍需要证据支撑。程序正义的价值不在于结果是否'和解'，而在于过程是否经得起法律",
+        "reasoning": "调查组发布通报体现了一定的程序透明度，这是积极信号，立场从之前的监督质疑转向有限认可。但仍需关注具体程序细节是否公开，不能仅以和解结果替代程序审查。保持中立偏审慎态度，继续监督执法程序合法性。"
+      },
+      {
+        "agent_id": 6,
+        "group_name": "公共文明支持者",
+        "saw_posts_from": [
+          1,
+          8
+        ],
+        "previous_stance": 5.5,
+        "current_stance": 4.55,
+        "stance_delta": -0.95,
+        "susceptibility": 0.4,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "公共场所不能吸烟，这是基本的文明规范。深圳公交站作为公共空间，禁烟规定应当得到遵守。对于劝烟纠纷，关键在于执法程序是否规范，而非情绪化对抗。规矩就是规矩，但执行过程也需依法依规。境外媒体将正常执法程序与敏感议题挂钩，这种炒作不利于问题解决。文明社会需要自律，也需要依法治理，双方都应理性对待。",
+        "reasoning": "作为退休教师，我认为维护公共秩序和禁烟法规是基本原则。但执法程序确实需要规范，不能简单化。境外媒体的炒作有夸大嫌疑，应等待官方调查结果。整体倾向于支持依法治理，但对程序规范性保持质疑态度，故立场偏批评"
+      },
+      {
+        "agent_id": 7,
+        "group_name": "境外舆论观察者",
+        "saw_posts_from": [
+          3
+        ],
+        "previous_stance": 1.77,
+        "current_stance": 2.0,
+        "stance_delta": 0.23,
+        "susceptibility": 0.11,
+        "change_reason": "within_effective_delta",
+        "comment": "又是表演型治理的典型样本。深圳作为'控烟之城'的标签，在执法程序争议中反而暴露权力边界模糊问题。境外媒体炒作裸检议题虽存夸大成分，但折射出公众对公权力过度干预私人领域的合理质疑。当城市治理沦为形象工程，所谓文明标准便失去公信力。",
+        "reasoning": "基于事件暴露的执法程序瑕疵及媒体对公民权利侵害的指控，结合其一贯批判公权力越界的立场，该表态反映对治理模式缺陷的强烈质疑。虽裸检说法存疑，但执法争议本身已构成对公民权利的潜在威胁。"
+      },
+      {
+        "agent_id": 8,
+        "group_name": "中立理性派",
+        "saw_posts_from": [
+          0
+        ],
+        "previous_stance": 5.0,
+        "current_stance": 5.0,
+        "stance_delta": 0.0,
+        "susceptibility": 0.59,
+        "change_reason": "within_effective_delta",
+        "comment": "这个事件还是得理性讨论。公共场所禁烟是大方向，但具体执法程序确实需要规范。裸检这种说法太夸张了，目前信息有限，不宜轻信。境外媒体喜欢蹭热点，但报道也要基于事实。等官方调查清楚了再说，让子弹飞一会儿。",
+        "reasoning": "保持中立立场。支持公共环境维护的初衷，但质疑执法程序的规范性；对裸检说法持保留态度，认为境外媒体报道可能存在夸大。主张等待官方调查结果再做判断。"
+      }
+    ],
+    "global_metrics": {
+      "mean_stance": 4.67,
+      "std_stance": 1.36,
+      "polarization_index": 0.29
+    }
+  },
+  {
+    "tick": 3,
+    "entries": [
+      {
+        "agent_id": 4,
+        "group_name": "女性权益关注者",
+        "saw_posts_from": [
+          0,
+          8
+        ],
+        "previous_stance": 6.99,
+        "current_stance": 6.73,
+        "stance_delta": -0.26,
+        "susceptibility": 0.25,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "这个事件确实需要冷静看待。劝烟本身是公民正当行为，女性维护公共空间权益不应该被污名化。执法程序的规范性确实值得调查，但境外媒体对裸检议题的过度炒作确实需要警惕。支持勇敢女孩维护权益，女性发声不容沉默。等官方调查结果出来之前，我们既要关注程序正义，也要避免被带节奏。公共空间的权益维护需要各方依法行事。",
+        "reasoning": "保持中立理性立场，既支持女性维护公共权益的正当行为，也强调等待官方调查结果的重要性。认为境外媒体的裸检议题炒作存在夸大嫌疑，但同时也强调执法程序规范化的必要性。整体态度是支持女性发声但反对舆论带节奏，"
+      },
+      {
+        "agent_id": 5,
+        "group_name": "法律程序关注者",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 3.41,
+        "current_stance": 3.66,
+        "stance_delta": 0.25,
+        "susceptibility": 0.19,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "光明区联合调查组发布通报值得肯定，程序透明度有所提升。但作为法律从业者，仍有几点程序细节需要进一步说明：1）人身安全检查的法律依据是否明确援引《公安机关办理行政案件程序规定》具体条款；2）和解笔录的形成过程是否有录音录像或第三方见证；3）夜间22时完成和解，当事人精神状态评估是否有记录。程序正义不能只靠结果来证明，权力行使的边界需要明确的程序约束。期待调查组公布更详细的执法流程说明，让每个环节经得",
+        "reasoning": "对调查组发布通报表示肯定，认为这是程序透明的第一步。但作为法律程序关注者，仍坚持对执法程序细节的追问，立场保持中立理性。程序正义的核心在于过程可审查，而非仅看和解结果。继续监督程序合法性，但不预设立场"
+      },
+      {
+        "agent_id": 6,
+        "group_name": "公共文明支持者",
+        "saw_posts_from": [
+          1,
+          8
+        ],
+        "previous_stance": 4.55,
+        "current_stance": 5.5,
+        "stance_delta": 0.95,
+        "susceptibility": 0.4,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "公共场所不能吸烟，这是最基本的文明规范。深圳公交站作为公共空间，禁烟规定应当严格执行。劝烟纠纷的核心在于双方都应遵守规则，执法部门也需按程序依法办事。规矩就是规矩，不能因为争议就否定禁烟规定的正当性。至于裸检说法，目前缺乏官方证实，不宜轻信和传播。境外媒体借机炒作，将正常执法与敏感议题挂钩，这种倾向性报道不利于问题理性解决。文明社会需要自律，也需要依法治理，公众应保持理性，等待官方调查结果，不助长",
+        "reasoning": "作为退休教师，我始终认为公共场所禁烟是维护公共秩序的基本要求。此次事件关键在于依法治理，既要坚持禁烟规定，也要确保执法程序规范。境外媒体的炒作行为不利于问题解决，公众应保持理性态度，不轻信未经证实的信"
+      },
+      {
+        "agent_id": 7,
+        "group_name": "境外舆论观察者",
+        "saw_posts_from": [
+          3
+        ],
+        "previous_stance": 2.0,
+        "current_stance": 2.0,
+        "stance_delta": 0.0,
+        "susceptibility": 0.11,
+        "change_reason": "silent_no_change",
+        "comment": "（未发言）",
+        "reasoning": "本轮未进入发言队列"
+      },
+      {
+        "agent_id": 8,
+        "group_name": "中立理性派",
+        "saw_posts_from": [
+          0
+        ],
+        "previous_stance": 5.0,
+        "current_stance": 5.0,
+        "stance_delta": 0.0,
+        "susceptibility": 0.59,
+        "change_reason": "within_effective_delta",
+        "comment": "关于这个事件，还是那句话，让子弹飞一会儿。劝烟本意是好的，维护公共环境没错，但执法程序必须合规，这是底线。裸检这种说法目前缺乏实锤，境外媒体的报道节奏确实值得警惕。两边都有问题：一方面不能纵容公共场所吸烟，另一方面执法也不能越界。现在各方信息都不完整，等官方调查结果出来再下定论比较稳妥。理性讨论，避免被带节奏。",
+        "reasoning": "持中立立场是因为事件信息尚不完整，劝烟行为本身符合公共利益，但执法程序需要接受监督；境外媒体对裸检议题的报道存在夸大嫌疑，但不代表可以完全忽视程序正义问题。在官方调查结果公布前，保持中立、等待更多信息"
+      }
+    ],
+    "global_metrics": {
+      "mean_stance": 4.77,
+      "std_stance": 1.31,
+      "polarization_index": 0.27
+    }
+  },
+  {
+    "tick": 4,
+    "entries": [
+      {
+        "agent_id": 4,
+        "group_name": "女性权益关注者",
+        "saw_posts_from": [
+          0,
+          8
+        ],
+        "previous_stance": 6.73,
+        "current_stance": 6.47,
+        "stance_delta": -0.26,
+        "susceptibility": 0.25,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "中立理性派说得对，让子弹飞一会儿是有必要的。不过我还是要强调，女性维护公共空间权益的行为本身不应被质疑。劝烟是正当的公民行为，执法程序是否规范需要官方调查来说话。境外媒体对裸检议题的过度解读确实值得警惕，但这不能成为忽视女性权益的理由。女性发声不容沉默，支持勇敢女孩维护权益的同时，我们也需要关注程序正义。等官方调查结果出来再下定论，但在这之前，女性维护公共空间权益的正当性不应被模糊化。",
+        "reasoning": "认同理性讨论的重要性，但坚持女性权益发声不应被污名化。立场偏向中立理性，但强调女性维护公共空间权益的正当性，符合关注女性权益的身份定位。"
+      },
+      {
+        "agent_id": 5,
+        "group_name": "法律程序关注者",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 3.66,
+        "current_stance": 3.91,
+        "stance_delta": 0.25,
+        "susceptibility": 0.19,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "光明区联合调查组发布通报是程序透明的进步，值得肯定。但作为法律从业者，仍需关注几个核心程序问题：1）人身安全检查的审批流程和法律依据是否完整记录；2）和解过程是否有录音录像或第三方见证；3）夜间22时完成和解，当事人意愿表达的真实性如何保障。程序正义不能只靠结果来证明，权力行使的边界需要明确的程序约束。期待调查组公布更详细的执法流程说明，让每个环节经得起法律检验。",
+        "reasoning": "对调查组发布通报表示肯定，程序透明度有所提升；但对执法程序细节仍有合理质疑，保持中立立场。作为法律从业者，关注点始终是程序合法性而非情绪化评判。"
+      },
+      {
+        "agent_id": 6,
+        "group_name": "公共文明支持者",
+        "saw_posts_from": [
+          1,
+          8
+        ],
+        "previous_stance": 5.5,
+        "current_stance": 5.5,
+        "stance_delta": 0.0,
+        "susceptibility": 0.4,
+        "change_reason": "within_effective_delta",
+        "comment": "公共场所不能吸烟，这是最基本的文明规范。深圳公交站作为公共空间，禁烟规定应当严格执行。劝烟纠纷的核心在于双方都应遵守规则，执法部门也需按程序依法办事。规矩就是规矩，不能因为争议就否定禁烟规定的正当性。至于裸检说法，目前缺乏官方证实，不宜轻信和传播。境外媒体借机炒作，将正常执法与敏感议题挂钩，这种倾向性报道不利于问题理性解决。文明社会需要自律，也需要依法治理，公众应保持理性，等待官方调查结果，不助长",
+        "reasoning": "作为退休教师，我支持维护公共秩序和禁烟法规，公共场所禁烟是基本规范。但执法程序必须合规合法，这一点不能含糊。中立理性派的观点较为平衡，既肯定劝烟初衷，也强调执法程序底线，同时警惕境外媒体炒作，这一立场"
+      },
+      {
+        "agent_id": 7,
+        "group_name": "境外舆论观察者",
+        "saw_posts_from": [
+          3
+        ],
+        "previous_stance": 2.0,
+        "current_stance": 2.0,
+        "stance_delta": 0.0,
+        "susceptibility": 0.11,
+        "change_reason": "silent_no_change",
+        "comment": "（未发言）",
+        "reasoning": "本轮未进入发言队列"
+      },
+      {
+        "agent_id": 8,
+        "group_name": "中立理性派",
+        "saw_posts_from": [
+          0
+        ],
+        "previous_stance": 5.0,
+        "current_stance": 4.5,
+        "stance_delta": -0.5,
+        "susceptibility": 0.59,
+        "change_reason": "within_effective_delta",
+        "comment": "这个事还是要理性讨论。劝烟本身是维护公共秩序的正当行为，值得肯定；但执法程序是否规范，确实需要官方给出明确调查结果。裸检这种说法目前缺乏实锤，境外媒体过度渲染的倾向明显，我们不宜被带节奏。两边都有问题：既不能纵容公共场所违规吸烟，也不能容忍执法越界。等官方通报出来再看，让子弹飞一会儿。",
+        "reasoning": "立场保持中立偏谨慎。认可劝烟行为的正当性，但对执法程序和裸检说法持怀疑态度，强调等待官方调查结果。不急于站队，避免被境外媒体节奏影响。"
+      }
+    ],
+    "global_metrics": {
+      "mean_stance": 4.71,
+      "std_stance": 1.24,
+      "polarization_index": 0.26
+    }
+  },
+  {
+    "tick": 5,
+    "entries": [
+      {
+        "agent_id": 4,
+        "group_name": "女性权益关注者",
+        "saw_posts_from": [
+          0,
+          8
+        ],
+        "previous_stance": 6.47,
+        "current_stance": 6.21,
+        "stance_delta": -0.26,
+        "susceptibility": 0.25,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "理性讨论是必要的，但女性维护公共权益的行为不能被污名化。劝烟是公民正当权利，执法程序规范与否需官方调查确认，境外媒体对裸检的过度炒作确实存在误导倾向。这也能被过度解读？支持勇敢女孩维护权益的同时，程序正义同样需要关注。女性发声不容沉默，我们既要避免舆论带节奏，也要确保公共空间权益的正当性不被模糊化。",
+        "reasoning": "基于事件需要客观调查，但女性权益维护行为具有正当性。立场保持中立平衡，既强调程序正义重要性，也坚持女性发声的必要性，符合理性讨论与权益保护并重的原则。"
+      },
+      {
+        "agent_id": 5,
+        "group_name": "法律程序关注者",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 3.91,
+        "current_stance": 4.16,
+        "stance_delta": 0.25,
+        "susceptibility": 0.19,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "作为法律从业者，对调查组持续跟进表示认可。但程序正义的完整性仍需关注：1）人身安全检查是否履行了审批手续？《公安机关办理行政案件程序规定》第38条要求检查需经批准，相关审批记录是否可查？2）'自愿和解'的法律效力依赖于当事人真实意思表示，22时的时间节点需要评估当事人是否存在疲劳、压力等影响判断力的因素，是否有相应的精神状态记录？3）境外媒体炒作的'裸检'议题，若属实则涉及公民人格尊严权，调查组应",
+        "reasoning": "保持中立立场，肯定调查组程序透明度提升，但作为法律从业者仍需追问关键程序细节，体现程序正义的核心关切"
+      },
+      {
+        "agent_id": 6,
+        "group_name": "公共文明支持者",
+        "saw_posts_from": [
+          1,
+          8
+        ],
+        "previous_stance": 5.5,
+        "current_stance": 5.0,
+        "stance_delta": -0.5,
+        "susceptibility": 0.4,
+        "change_reason": "within_effective_delta",
+        "comment": "公共场所不能吸烟，这是文明社会的基本规矩。深圳公交站作为公共空间，禁烟规定必须得到遵守，这一点不容置疑。劝烟行为本身是维护公共秩序的正当之举，值得肯定。但执法程序是否规范，确实需要等待官方调查结果，不能急于下结论。裸检这种说法目前缺乏实锤，境外媒体过度渲染的倾向明显，我们不宜被带节奏。规矩就是规矩，文明社会需要自律，也需要依法治理。公众应保持理性，不轻信、不传播未经证实的消息，等官方通报出来再看。",
+        "reasoning": "作为退休教师，我支持公共场所禁烟的正当性，这是基本文明规范；但执法程序问题需官方调查结论，不宜过早定性。对境外媒体的炒作倾向持批评态度，主张理性等待官方调查结果。立场中立，兼顾支持禁烟与关注程序正义。"
+      },
+      {
+        "agent_id": 7,
+        "group_name": "境外舆论观察者",
+        "saw_posts_from": [
+          3
+        ],
+        "previous_stance": 2.0,
+        "current_stance": 2.0,
+        "stance_delta": 0.0,
+        "susceptibility": 0.11,
+        "change_reason": "silent_no_change",
+        "comment": "（未发言）",
+        "reasoning": "本轮未进入发言队列"
+      },
+      {
+        "agent_id": 8,
+        "group_name": "中立理性派",
+        "saw_posts_from": [
+          0
+        ],
+        "previous_stance": 4.5,
+        "current_stance": 5.0,
+        "stance_delta": 0.5,
+        "susceptibility": 0.59,
+        "change_reason": "within_effective_delta",
+        "comment": "这个事还是要让子弹飞一会儿。劝烟维护公共环境没问题，但执法程序必须合规，这是底线。裸检这种说法目前缺乏实锤，境外媒体过度渲染的倾向比较明显。两边都有问题：既不能纵容公共场所违规吸烟，也不能容忍执法越界。等官方通报出来再看，理性讨论，避免被带节奏。",
+        "reasoning": "保持中立理性立场，既认可公共场所禁烟的合理性，也强调执法程序必须规范。对裸检说法持谨慎态度，认为信息不足不宜轻信，同时警惕境外媒体的过度渲染。主张等待官方调查结果，避免极端化解读。"
+      }
+    ],
+    "global_metrics": {
+      "mean_stance": 4.71,
+      "std_stance": 1.15,
+      "polarization_index": 0.24
+    }
+  }
+]

@@ -41,6 +41,91 @@ carry_over:
 
 ---
 
+## [2026-04-27 完成] v1.2.2 - JSON Parser 引号容错修复
+
+**执行者**：Codex
+**基于版本**：v1.2.1 functional baseline
+**任务文档**：本轮为最小修复，无独立迭代文档
+
+**记录标识**：
+- `task_id`: `task-v1.2.2-json-parser-quote-tolerance`
+- `review_id`: `review-v1.2.2-01`
+- `attempt_id`: `attempt-v1.2.2-01`
+- `acceptance_id`: `accept-v1.2.2-01`
+
+**本轮结果**：`pass`
+
+**本轮任务性质**：
+- 白盒测试收口修复
+- test7_1 暴露的 JSON 解析问题从 monkey patch 转为正式源码最小修复
+- 新增状态机 helper 处理 value 字符串内部未转义引号
+
+**根因确认**：
+- 这不是 Unicode/UTF-8 冲突
+- 而是 JSON 字符串 value 内部未转义引号导致 JSON 语法非法
+- LLM 输出如 `{"event_summary": "深圳公交站引发"裸检"争议"}`
+- 中文弯引号 "" 在 JSON value 内部是合法字符，但英文双引号未转义会导致 `json.loads` 解析失败
+
+**修复方式**：
+- 新增 `_normalize_unescaped_quotes_inside_string_values(candidate: str) -> str`
+- 使用状态机扫描 JSON 文本，区分 key/value 字符串
+- 只处理 value 内部未转义英文双引号：向后检查下一个字符是否为 `,}]`
+- 若非结束边界，替换为单引号 `'`
+- 保留 `_normalize_inner_cjk_quotes()` 处理中文弯引号
+- 修复逻辑仅在 `json.loads` 失败后触发，不影响主路径
+
+**实际新增文件**：
+- `tests/test_json_parser_quote_tolerance.py` — 6 个 case 单元测试
+- `tests/__init__.py` — 测试包初始化
+
+**实际修改文件**：
+- `src/phase1_entity_extraction.py` — 新增状态机 helper + 修改 `_parse_json_candidate()` fallback 顺序
+
+**实际隔离文件**：
+- `run_test7_1_injected.py` → 移动到 `_deprecated/`
+
+**单元测试覆盖**：
+- Case 1: 合法 JSON 不受影响 ✅
+- Case 2: value 内部未转义引号 ✅
+- Case 3: 中文弯引号合法字符 ✅
+- Case 4: JSON key 不被破坏 ✅
+- Case 5: 嵌套结构 ✅
+- Case 6: None/True/False 兼容 ✅
+
+**test7_1 E2E 验证数据**：
+
+```text
+命令：py main.py seeds/test7_1.txt
+结果：端到端通过（不依赖注入脚本）
+退出码：0
+run_id：test7_1_20260427_155436
+总耗时：299.3s
+Phase 1：157.2s（Validator 第1轮失败，第2轮通过）
+Phase 2：1.2s
+Phase 3：88.7s
+Phase 4：52.1s
+风险等级：LOW
+事件实体：王某某、陈某、光明区联合调查组、境外媒体（4个）
+意见传播者：5个
+```
+
+**acceptance_result**：
+- ✅ `py -m py_compile src/phase1_entity_extraction.py` 通过
+- ✅ `py tests/test_json_parser_quote_tolerance.py` 10 passed
+- ✅ `py main.py seeds/test7_1.txt` 退出码 0（无注入脚本）
+- ✅ 合法 JSON 仍优先 `json.loads`
+- ✅ JSON key 不被破坏
+- ✅ 不修改 prompt
+- ✅ 不修改 schema
+- ✅ 不修改 Phase 1 业务流程
+- ✅ git diff 范围仅包含允许修改文件
+
+**carry_over**：无
+
+**Git Tag**：未创建
+
+---
+
 ## [2026-04-25 完成] v1.2.1 - Run Artifact Governance & Runtime Logging
 
 **执行者**：Codex
