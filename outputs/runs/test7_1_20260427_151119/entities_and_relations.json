@@ -1,0 +1,178 @@
+{
+  "event_summary": "深圳公交站劝烟纠纷引发执法程序争议，境外媒体炒作警权边界问题",
+  "event_scale": 0.45,
+  "event_controversy": 0.65,
+  "event_type": "公共执法争议",
+  "event_entities": [
+    {
+      "name": "王某某",
+      "type": "individual",
+      "role": "劝阻吸烟的29岁女子",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": null,
+      "can_speak_reason": null
+    },
+    {
+      "name": "陈某",
+      "type": "individual",
+      "role": "在禁烟区吸烟的33岁男子",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": null,
+      "can_speak_reason": null
+    },
+    {
+      "name": "光明区联合调查组",
+      "type": "organization",
+      "role": "发布调查通报的执法机构",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "双方被带至公安机关执法办案中心调查并接受人身安全检查，当晚22时许自愿和解",
+      "can_speak_reason": null
+    },
+    {
+      "name": "境外媒体",
+      "type": "organization",
+      "role": "报道事件的境外新闻机构",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "控烟之城被讽表演型人格",
+      "can_speak_reason": null
+    }
+  ],
+  "opinion_spreaders": [
+    {
+      "group_name": "女性权益关注者",
+      "related_event_entity": "王某某",
+      "description": "关注女性尊严与权益保护的年轻女性群体，在社交平台活跃发声",
+      "I": 7.0,
+      "P": 1,
+      "susceptibility": 0.3,
+      "estimated_percentage": 25,
+      "communication_style": "情感化表达，善于使用情绪符号和话题标签",
+      "entity_category": "opinion_spreader",
+      "persona_name": "林晓芸",
+      "age_range": "25-34",
+      "occupation": "互联网运营",
+      "personality": "感性共情，易被触动",
+      "motivation": "维护女性尊严，反对污名化受害者",
+      "typical_phrases": [
+        "支持姐妹勇敢说",
+        "别让她白受委屈",
+        "女性尊严不容践踏"
+      ]
+    },
+    {
+      "group_name": "公共道德支持者",
+      "related_event_entity": "王某某",
+      "description": "重视公序良俗的中老年群体，支持文明行为",
+      "I": 6.0,
+      "P": 1,
+      "susceptibility": 0.4,
+      "estimated_percentage": 15,
+      "communication_style": "传统说教式，喜欢引用社会规范",
+      "entity_category": "opinion_spreader",
+      "persona_name": "张建国",
+      "age_range": "35-45",
+      "occupation": "国企职员",
+      "personality": "传统保守，原则性强",
+      "motivation": "维护公序良俗，支持文明行为",
+      "typical_phrases": [
+        "公共场所就该守规矩",
+        "支持文明行为",
+        "这种风气要支持"
+      ]
+    },
+    {
+      "group_name": "执法程序监督者",
+      "related_event_entity": "光明区联合调查组",
+      "description": "关注执法程序合法性的年轻网民，警惕公权力越界",
+      "I": 4.5,
+      "P": -1,
+      "susceptibility": 0.55,
+      "estimated_percentage": 20,
+      "communication_style": "质疑式追问，喜欢深挖细节",
+      "entity_category": "opinion_spreader",
+      "persona_name": "刘子轩",
+      "age_range": "18-24",
+      "occupation": "在校大学生",
+      "personality": "批判思维，警惕性强",
+      "motivation": "关注程序正义，警惕公权力滥用",
+      "typical_phrases": [
+        "程序是否合法",
+        "证据链完整吗",
+        "别糊弄过去"
+      ]
+    },
+    {
+      "group_name": "质疑王某某行为者",
+      "related_event_entity": "王某某",
+      "description": "认为女性处理方式过激的保守群体",
+      "I": 5.0,
+      "P": -1,
+      "susceptibility": 0.5,
+      "estimated_percentage": 20,
+      "communication_style": "理性分析式，强调双方责任",
+      "entity_category": "opinion_spreader",
+      "persona_name": "周志远",
+      "age_range": "45-60",
+      "occupation": "中学教师",
+      "personality": "理性冷静，注重逻辑",
+      "motivation": "认为双方都有错，反对过度偏袒",
+      "typical_phrases": [
+        "这样做合适吗",
+        "一个巴掌拍不响",
+        "理性看待问题"
+      ]
+    },
+    {
+      "group_name": "理性法律群体",
+      "related_event_entity": "光明区联合调查组",
+      "description": "从法律专业角度分析事件的从业者群体",
+      "I": 5.5,
+      "P": -1,
+      "susceptibility": 0.45,
+      "estimated_percentage": 20,
+      "communication_style": "专业术语分析，条理清晰",
+      "entity_category": "opinion_spreader",
+      "persona_name": "陈思远",
+      "age_range": "25-34",
+      "occupation": "执业律师",
+      "personality": "专业严谨，中立客观",
+      "motivation": "从法律角度分析程序合法性",
+      "typical_phrases": [
+        "依法办事",
+        "程序正义",
+        "法律边界在哪里"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "source": "王某某",
+      "target": "陈某",
+      "type": "冲突双方"
+    },
+    {
+      "source": "王某某",
+      "target": "光明区联合调查组",
+      "type": "被调查对象"
+    },
+    {
+      "source": "陈某",
+      "target": "光明区联合调查组",
+      "type": "被调查对象"
+    },
+    {
+      "source": "境外媒体",
+      "target": "光明区联合调查组",
+      "type": "报道质疑"
+    },
+    {
+      "source": "境外媒体",
+      "target": "王某某",
+      "type": "关注报道"
+    }
+  ]
+}

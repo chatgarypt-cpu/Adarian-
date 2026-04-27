@@ -1,0 +1,6 @@
+[2026-04-27 15:03:54] RUN START mode=normal seed=D:\项目开发\研一\adarian\adarian mvp\seeds\test7_1.txt run_dir=D:\项目开发\研一\adarian\adarian mvp\outputs\runs\test7_1_20260427_150354
+[2026-04-27 15:03:54] PHASE START name=phase1_entity_extraction
+[2026-04-27 15:03:54] LLM START caller=analyzer_set_parameters model=qwen35-122b-a10b
+[2026-04-27 15:04:01] LLM END caller=analyzer_set_parameters model=qwen35-122b-a10b elapsed=7.33s
+[2026-04-27 15:04:01] ERROR stage=main error=invalid syntax. Perhaps you forgot a comma? (<unknown>, line 4)
+[2026-04-27 15:04:01] RUN END status=failed elapsed=7.50s

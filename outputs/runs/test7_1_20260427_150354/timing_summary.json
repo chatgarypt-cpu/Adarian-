@@ -1,0 +1,39 @@
+{
+  "run": {
+    "start_time": "2026-04-27 15:03:54",
+    "end_time": "2026-04-27 15:04:01",
+    "elapsed_seconds": 7.5,
+    "status": "failed",
+    "mode": "normal",
+    "seed_file": "D:\\项目开发\\研一\\adarian\\adarian mvp\\seeds\\test7_1.txt",
+    "run_dir": "D:\\项目开发\\研一\\adarian\\adarian mvp\\outputs\\runs\\test7_1_20260427_150354"
+  },
+  "phases": {
+    "phase1_entity_extraction": {
+      "start_time": "2026-04-27 15:03:54"
+    }
+  },
+  "llm": {
+    "count": 1,
+    "calls": [
+      {
+        "caller": "analyzer_set_parameters",
+        "model": "qwen35-122b-a10b",
+        "elapsed_seconds": 7.33,
+        "timestamp": "2026-04-27 15:04:01"
+      }
+    ]
+  },
+  "persona": {
+    "count": 0,
+    "groups": []
+  },
+  "ticks": [],
+  "errors": [
+    {
+      "stage": "main",
+      "error": "invalid syntax. Perhaps you forgot a comma? (<unknown>, line 4)",
+      "timestamp": "2026-04-27 15:04:01"
+    }
+  ]
+}
