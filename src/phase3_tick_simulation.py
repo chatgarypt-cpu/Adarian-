@@ -256,6 +256,39 @@ class SimulationEngine:
         text = " ".join(text.split())
         return text[:max_length]
 
+    def _event_entity_observability(self, entity: Entity) -> dict:
+        """Build fallback observability fields from Phase 1 entity material."""
+        return {
+            "can_speak_reason": entity.can_speak_reason or "unknown",
+            "speech_availability": "unknown",
+            "source_basis": "seed_material",
+        }
+
+    def _map_event_entity_failure_reason(self, error: Exception) -> str:
+        message = str(error).lower()
+        if "parse" in message or "parser" in message or "解析" in message:
+            return "parser_failed"
+        if "llm" in message or "generate" in message or "生成" in message:
+            return "llm_generation_failed"
+        return "runtime_error"
+
+    def _selection_observability(self, node_id: int, selection, status: str) -> dict:
+        reason = "selected_by_scheduler" if status == "active" else "not_selected_by_scheduler"
+        return {
+            "speaker_status": status,
+            "speaker_reason": reason,
+            "decision_source": "phase3_speaker_selector",
+            "selector_score": selection.selector_scores.get(node_id),
+            "selector_rank": selection.selector_ranks.get(node_id),
+            "candidate_count": selection.spreader_count,
+            "selected_count": selection.actual_selected_count,
+            "speaker_budget": selection.computed_num_speakers,
+            "selection_policy": "adaptive_speaker_selector",
+            "can_speak_reason": "unknown",
+            "speech_availability": "unknown",
+            "source_basis": "unknown",
+        }
+
     def run_tick_0(self) -> List[AgentEntry]:
         """执行 Tick 0：事件实体发言
 
@@ -299,6 +332,10 @@ class SimulationEngine:
                     change_reason="entity_not_speaking",
                     comment=reason,
                     reasoning="实体不可发言",
+                    speaker_status="blocked",
+                    speaker_reason="can_speak_false",
+                    decision_source="phase1_can_speak",
+                    **self._event_entity_observability(entity),
                 )
                 entries.append(entry)
                 console.print(f"  [dim]○[/dim] {node.group_name}: {reason}")
@@ -323,6 +360,10 @@ class SimulationEngine:
                     change_reason="entity_original_statement",
                     comment=comment,
                     reasoning=reasoning,
+                    speaker_status="active",
+                    speaker_reason="event_entity_statement",
+                    decision_source="phase1_can_speak",
+                    **self._event_entity_observability(entity),
                 )
                 entries.append(entry)
                 console.print(f"  [green]✓[/green] {node.group_name}: {comment[:30]}... [dim](原始发言)[/dim]")
@@ -363,6 +404,10 @@ class SimulationEngine:
                     change_reason="entity_generated_statement",
                     comment=comment,
                     reasoning=reasoning,
+                    speaker_status="active",
+                    speaker_reason="event_entity_statement",
+                    decision_source="phase1_can_speak",
+                    **self._event_entity_observability(entity),
                 )
                 entries.append(entry)
 
@@ -385,6 +430,10 @@ class SimulationEngine:
                     change_reason="entity_generation_failed",
                     comment=comment,
                     reasoning="生成失败",
+                    speaker_status="failed",
+                    speaker_reason=self._map_event_entity_failure_reason(e),
+                    decision_source="llm_client",
+                    **self._event_entity_observability(entity),
                 ))
 
         return entries
@@ -780,6 +829,7 @@ class SimulationEngine:
                     change_reason=change_reason,
                     comment=comment,
                     reasoning=reasoning,
+                    **self._selection_observability(node.id, selection, "active"),
                 )
                 entries.append(entry)
                 continue
@@ -804,6 +854,7 @@ class SimulationEngine:
                 change_reason=silent_update.change_reason,
                 comment=silent_update.comment,
                 reasoning=silent_update.reasoning,
+                **self._selection_observability(node.id, selection, "silent"),
             )
             entries.append(entry)
 

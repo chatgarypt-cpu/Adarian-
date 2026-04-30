@@ -10,8 +10,9 @@
 
 | 文档 | 变更内容 |
 |------|---------|
-| `docs/iterations/CHANGELOG.md` | 新增 v1.2.2 条目，记录 JSON Parser 引号容错修复 |
-| `docs/iterations/TASK_LOG.md` | 新增 v1.2.2 workflow acceptance record，结果为 pass |
+| `docs/iterations/CHANGELOG.md` | 将 JSON Parser 记录归属修正为 v1.2.1.1 hotfix，并新增正式 v1.2.2 条目 |
+| `docs/iterations/TASK_LOG.md` | 将 JSON Parser 记录归属修正为 v1.2.1.1 hotfix，并新增 v1.2.2 closeout record |
+| `docs/iterations/v1.2.2 - White-box Observability for Speaker Behavior.md` | 更新 v1.2.2 closeout、final regression evidence、known issues 与 carry_over |
 
 ### 2026-04-25
 
@@ -63,7 +64,55 @@
 
 ## v1.2.2 (2026-04-27)（已完成）
 
-**主题**：JSON Parser 引号容错修复（白盒测试收口）
+**主题**：White-box Observability for Speaker Behavior
+
+### 新增
+
+- [src/whitebox/report_completeness.py] 新增 Phase 4 报告完整性 / 截断检测
+- [src/whitebox/__init__.py] 新增 whitebox 层模块入口
+- [outputs/runs/<run_id>/whitebox_summary.json] 新增白盒检查产物
+- [src/schemas.py] AgentEntry 新增 speaker behavior observability 字段
+- [src/schemas.py] SpeakerSelectionResult 新增 selector_scores / selector_ranks
+
+### 修改
+
+- [main.py] Phase 4 后写入 report completeness whitebox_summary
+- [src/phase3/speaker_selector.py] 暴露已有 selector score / rank metadata，不改变选择逻辑
+- [src/phase3_tick_simulation.py] Tick 0 / Tick 1+ 写入 speaker behavior 字段
+
+### 验收结果
+
+```text
+命令：py main.py seeds/test7.txt
+退出码：0
+run_id：test7_20260427_174326
+entries_total：46
+missing_core_fields：0
+selector_metadata_ok：40/40
+report_completeness_score：0.85
+report_truncated：false
+```
+
+### 已知遗留
+
+* report completeness section matcher 仍漏检 `舆情态势`
+* Phase 4 报告章节命名契约后续校准
+* influence_trace / stance_delta semantic reason / seed_fact_coverage 延后
+* MCP / Web Search / CLI / CSV / logging migration 延后
+
+### 兼容性
+
+* ✅ 不删除 tick_logs 原有字段
+* ✅ 不改变 speaker selector 策略
+* ✅ 不改变发言生成 prompt
+* ✅ 不改变 stance update
+* ✅ 不改变 Phase 1 / Phase 4 生成逻辑
+
+---
+
+## v1.2.1.1 (2026-04-27)（已完成）
+
+**主题**：JSON Parser 引号容错修复（hotfix）
 
 ### 背景
 

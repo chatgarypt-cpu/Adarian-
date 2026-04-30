@@ -60,6 +60,8 @@ def select_speakers(
         scored.append((node.id, score))
 
     scored.sort(key=lambda item: item[1], reverse=True)
+    selector_scores = {agent_id: round(score, 4) for agent_id, score in scored}
+    selector_ranks = {agent_id: rank for rank, (agent_id, _) in enumerate(scored, start=1)}
     selected = [agent_id for agent_id, _ in scored[:num_speakers]]
     silent = [node.id for node in spreader_nodes if node.id not in set(selected)]
     actual_selected_count = len(selected)
@@ -80,6 +82,8 @@ def select_speakers(
     return SpeakerSelectionResult(
         selected_speakers=selected,
         silent_agents=silent,
+        selector_scores=selector_scores,
+        selector_ranks=selector_ranks,
         ratio=ratio,
         spreader_count=spreader_count,
         computed_num_speakers=num_speakers,

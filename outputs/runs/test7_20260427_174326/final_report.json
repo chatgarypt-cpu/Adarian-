@@ -1,0 +1,59 @@
+{
+  "event_summary": "深圳女子劝阻公交站吸烟反被拟拘留，吸烟者未追责，执法标准与程序引发全国争议",
+  "stakeholder_map": "事件实体: 深圳女子, 吸烟男子, 深圳市公安局, 涉事民警, @中国新闻周刊, @小野的瓜田 | 传播者: 维权意识市民, 年轻女性网友, 法律专业人士, 学生群体, 关注弱势群体者, 理性分析网友, 信任体制群体, 务实执法支持者",
+  "emotion_trajectory": [
+    {
+      "tick": 0,
+      "mean_stance": 4.54,
+      "std_stance": 1.1,
+      "polarization_index": 0.24,
+      "key_event": "Agent #0 发言"
+    },
+    {
+      "tick": 1,
+      "mean_stance": 4.4,
+      "std_stance": 1.19,
+      "polarization_index": 0.27,
+      "key_event": "Agent #11 发言"
+    },
+    {
+      "tick": 2,
+      "mean_stance": 4.46,
+      "std_stance": 1.43,
+      "polarization_index": 0.32,
+      "key_event": "Agent #13 发言"
+    },
+    {
+      "tick": 3,
+      "mean_stance": 4.44,
+      "std_stance": 1.48,
+      "polarization_index": 0.33,
+      "key_event": "Agent #6 发言"
+    },
+    {
+      "tick": 4,
+      "mean_stance": 4.52,
+      "std_stance": 1.39,
+      "polarization_index": 0.31,
+      "key_event": "Agent #8 发言"
+    },
+    {
+      "tick": 5,
+      "mean_stance": 4.5,
+      "std_stance": 1.47,
+      "polarization_index": 0.33,
+      "key_event": "Agent #8 发言"
+    }
+  ],
+  "inflection_points": [],
+  "risk_level": "low",
+  "risk_assessment": "舆情平稳，x(t)=4.5，风险较低",
+  "x_t_sequence": [
+    4.54,
+    4.4,
+    4.46,
+    4.44,
+    4.52,
+    4.5
+  ]
+}

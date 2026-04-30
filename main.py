@@ -209,6 +209,7 @@ def build_run_paths(seed_file: Path) -> dict:
         "tick_logs": run_dir / "tick_logs.json",
         "final_report_json": run_dir / "final_report.json",
         "final_report_md": run_dir / "final_report.md",
+        "whitebox_summary": run_dir / "whitebox_summary.json",
         "run_log": run_dir / "run.log",
         "timing_summary": run_dir / "timing_summary.json",
         "run_meta": run_dir / "run_meta.json",
@@ -240,6 +241,34 @@ def write_run_meta(run_context: dict, seed_file: Path, status: str, started_at: 
 
     with open(outputs["run_meta"], "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=2)
+
+
+def write_report_completeness_summary(run_context: dict) -> dict:
+    """Run Phase 4 report completeness checks and persist the whitebox summary."""
+    from src.whitebox import check_report_completeness
+
+    outputs = run_context["outputs"]
+    with open(outputs["final_report_md"], "r", encoding="utf-8") as f:
+        markdown_text = f.read()
+
+    report_completeness = check_report_completeness(markdown_text)
+    payload = {
+        "report_completeness": report_completeness,
+    }
+
+    with open(outputs["whitebox_summary"], "w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=False, indent=2)
+
+    with open(outputs["run_log"], "a", encoding="utf-8") as f:
+        f.write(
+            f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] "
+            "REPORT COMPLETENESS "
+            f"report_truncated={str(report_completeness['report_truncated']).lower()} "
+            f"score={report_completeness['report_completeness_score']} "
+            f"char_count={report_completeness['report_char_count']}\n"
+        )
+
+    return report_completeness
 
 
 def main():
@@ -329,6 +358,7 @@ def main():
         )
         phase4_time = time.time() - phase4_start
         logger.log_phase_end("phase4_report_agent", phase4_time)
+        report_completeness = write_report_completeness_summary(run_context)
 
         # 总耗时
         total_time = time.time() - start_time
@@ -370,9 +400,15 @@ def main():
   交互日志: {outputs["tick_logs"]}
   JSON 报告: {outputs["final_report_json"]}
   Markdown 报告: {outputs["final_report_md"]}
+  Whitebox 摘要: {outputs["whitebox_summary"]}
   运行日志: {outputs["run_log"]}
   时间摘要: {outputs["timing_summary"]}
   运行元数据: {outputs["run_meta"]}
+
+[bold]白盒报告完整性：[/bold]
+  截断: {str(report_completeness["report_truncated"]).lower()}
+  完整性评分: {report_completeness["report_completeness_score"]}
+  字数: {report_completeness["report_char_count"]}
 """)
 
     except KeyboardInterrupt:

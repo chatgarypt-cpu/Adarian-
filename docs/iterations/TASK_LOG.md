@@ -41,17 +41,89 @@ carry_over:
 
 ---
 
-## [2026-04-27 完成] v1.2.2 - JSON Parser 引号容错修复
+## [2026-04-27 完成] v1.2.2 - White-box Observability for Speaker Behavior
+
+**执行者**：Codex  
+**基于版本**：v1.2.1 Run Artifact Governance & Runtime Logging  
+**任务文档**：docs/iterations/v1.2.2 - White-box Observability for Speaker Behavior.md
+
+**记录标识**：
+- task_id: task-v1.2.2-speaker-behavior-observability
+- review_id: review-v1.2.2-01
+- attempt_id:
+  - attempt-v1.2.2-01
+  - attempt-v1.2.2-02
+- acceptance_id: accept-v1.2.2-01
+
+**本轮结果**：pass_with_known_issues
+
+**本轮任务性质**：
+- 白盒观测能力增强
+- attempt-01：Phase 4 Report Completeness / Truncation Check
+- attempt-02：Speaker Behavior Observability
+- 不改变模拟行为，不改变 speaker selector 策略，不改变 Phase 1 / Phase 4 生成逻辑
+
+**实际新增文件**：
+- src/whitebox/__init__.py
+- src/whitebox/report_completeness.py
+
+**实际修改文件**：
+- main.py
+- src/schemas.py
+- src/phase3/speaker_selector.py
+- src/phase3_tick_simulation.py
+
+**最终回归测试**：
+
+```text
+命令：py main.py seeds/test7.txt
+退出码：0
+run_id：test7_20260427_174326
+```
+
+**验收结果**：
+
+* ✅ run_dir 核心产物齐全
+* ✅ whitebox_summary.json 已生成
+* ✅ report_completeness 字段齐全
+* ✅ tick_logs 46/46 entries 均包含 speaker_status / speaker_reason / decision_source
+* ✅ selector metadata 40/40 覆盖
+* ✅ Tick 0 blocked / active event entity 语义正确
+* ✅ Tick 1+ active / silent opinion spreader 语义正确
+* ✅ E2E 完整通过
+
+**known_issues**：
+
+* report completeness section matcher 仍漏检 `舆情态势`
+* report section 命名契约需要后续校准
+* attempt-01 的 src/whitebox/ 和 main.py 白盒接入应视为后续基线，不应误判为 attempt-02 越界
+
+**carry_over**：
+
+* Phase 4 report completeness section matcher 校准延后
+* Phase 4 报告章节命名契约治理延后
+* influence_trace 延后
+* stance_delta semantic reason 延后
+* seed_fact_coverage 延后
+* MCP / Web Search / Source Enrichment 延后
+* logging migration 延后
+* CLI / CSV 延后
+
+**Git Tag**：未创建
+
+---
+
+## [2026-04-27 完成] v1.2.1.1 - JSON Parser 引号容错修复（hotfix）
 
 **执行者**：Codex
 **基于版本**：v1.2.1 functional baseline
 **任务文档**：本轮为最小修复，无独立迭代文档
 
 **记录标识**：
-- `task_id`: `task-v1.2.2-json-parser-quote-tolerance`
-- `review_id`: `review-v1.2.2-01`
-- `attempt_id`: `attempt-v1.2.2-01`
-- `acceptance_id`: `accept-v1.2.2-01`
+- `task_id`: `task-v1.2.1.1-json-parser-quote-tolerance`
+- `review_id`: `review-v1.2.1.1-01`
+- `attempt_id`: `attempt-v1.2.1.1-01`
+- `acceptance_id`: `accept-v1.2.1.1-01`
 
 **本轮结果**：`pass`
 

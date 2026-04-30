@@ -17,7 +17,7 @@ Why: 保证模块间数据流的可靠性，所有 LLM 输出必须经过校验�
 """
 
 from pydantic import BaseModel, Field, field_validator, model_validator
-from typing import List, Optional, Literal, Any
+from typing import Dict, List, Optional, Literal, Any
 from enum import Enum
 
 
@@ -520,6 +520,46 @@ class AgentEntry(BaseModel):
     change_reason: str = Field(..., description="立场变化原因：within_effective_delta | bounded_by_susceptibility（新增 v1.1.9）")
     comment: str = Field(..., max_length=200, description="发表的评论内容")
     reasoning: str = Field(..., max_length=100, description="立场理由")
+    speaker_status: Optional[Literal["active", "silent", "blocked", "failed"]] = Field(
+        default=None, description="白盒观测：本轮发言状态"
+    )
+    speaker_reason: Optional[Literal[
+        "selected_by_scheduler",
+        "not_selected_by_scheduler",
+        "can_speak_false",
+        "event_entity_statement",
+        "llm_generation_failed",
+        "parser_failed",
+        "runtime_error",
+        "unknown",
+    ]] = Field(default=None, description="白盒观测：发言状态原因")
+    decision_source: Optional[Literal[
+        "phase1_can_speak",
+        "phase3_speaker_selector",
+        "llm_client",
+        "runtime_exception",
+        "unknown",
+    ]] = Field(default=None, description="白盒观测：决策来源")
+    selector_score: Optional[float] = Field(default=None, description="白盒观测：speaker selector 分数")
+    selector_rank: Optional[int] = Field(default=None, description="白盒观测：speaker selector 排名")
+    candidate_count: Optional[int] = Field(default=None, description="白盒观测：本轮候选 speaker 数")
+    selected_count: Optional[int] = Field(default=None, description="白盒观测：本轮选中 speaker 数")
+    speaker_budget: Optional[int] = Field(default=None, description="白盒观测：本轮 speaker 预算")
+    selection_policy: Optional[str] = Field(default=None, description="白盒观测：speaker selection 策略")
+    can_speak_reason: Optional[str] = Field(default=None, description="白盒观测：不可发言原因")
+    speech_availability: Optional[Literal[
+        "direct_quote",
+        "reported_speech",
+        "official_statement",
+        "no_source",
+        "unknown",
+    ]] = Field(default=None, description="白盒观测：发言来源可用性")
+    source_basis: Optional[Literal[
+        "seed_material",
+        "external_search",
+        "none",
+        "unknown",
+    ]] = Field(default=None, description="白盒观测：来源依据")
 
 
 class GlobalMetrics(BaseModel):
@@ -557,6 +597,8 @@ class SpeakerSelectionResult(BaseModel):
     """自适应 speaker 选择结果。"""
     selected_speakers: List[int] = Field(default_factory=list, description="本轮被选中发言的 agent ids")
     silent_agents: List[int] = Field(default_factory=list, description="本轮静默更新的 agent ids")
+    selector_scores: Dict[int, float] = Field(default_factory=dict, description="每个候选 agent 的 selector 分数")
+    selector_ranks: Dict[int, int] = Field(default_factory=dict, description="每个候选 agent 的 selector 排名，1 为最高")
     ratio: float = Field(..., ge=0.0, le=1.0, description="本轮目标发言比例")
     spreader_count: int = Field(default=0, ge=0, description="本轮传播者总数")
     computed_num_speakers: int = Field(default=0, ge=0, description="规则计算得到的目标发言数")

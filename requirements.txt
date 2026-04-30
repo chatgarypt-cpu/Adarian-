@@ -1,7 +1,7 @@
 # Adarian MVP 依赖
 
 # Python 版本要求
-Python >= 3.10
+# Python >= 3.10
 
 # 核心依赖
 openai>=1.0.0           # LLM API 统一调用 (兼容 DeepSeek/Zhipu/Qwen)

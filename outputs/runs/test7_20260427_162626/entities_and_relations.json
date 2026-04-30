@@ -1,0 +1,195 @@
+{
+  "event_summary": "深圳女子劝阻吸烟反被拟拘留，吸烟者未追责，执法标准不一引发舆论争议",
+  "event_scale": 0.6,
+  "event_controversy": 0.85,
+  "event_type": "官员不当行为",
+  "event_entities": [
+    {
+      "name": "劝阻吸烟女子",
+      "type": "individual",
+      "role": "事件当事人，因劝阻吸烟被拟拘留",
+      "entity_category": "event_entity",
+      "can_speak": false,
+      "original_statement": null,
+      "can_speak_reason": null
+    },
+    {
+      "name": "吸烟男子",
+      "type": "individual",
+      "role": "违规吸烟者，被劝阻后反砸女子",
+      "entity_category": "event_entity",
+      "can_speak": false,
+      "original_statement": null,
+      "can_speak_reason": null
+    },
+    {
+      "name": "深圳市公安局",
+      "type": "organization",
+      "role": "执法机构，发布处理决定",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "正在核查",
+      "can_speak_reason": null
+    },
+    {
+      "name": "涉事民警",
+      "type": "individual",
+      "role": "现场执法人员，称公交站不算禁烟区",
+      "entity_category": "event_entity",
+      "can_speak": false,
+      "original_statement": null,
+      "can_speak_reason": null
+    },
+    {
+      "name": "法律界人士",
+      "type": "group",
+      "role": "第三方专业意见，质疑执法程序合法性",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": null,
+      "can_speak_reason": null
+    },
+    {
+      "name": "观察者网",
+      "type": "organization",
+      "role": "媒体报道方",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": null,
+      "can_speak_reason": null
+    }
+  ],
+  "opinion_spreaders": [
+    {
+      "group_name": "维权支持者",
+      "related_event_entity": "深圳市公安局",
+      "description": "关注公民权利与控烟条例执行，认为守法者不应受罚，执法不公令人寒心",
+      "I": 7.5,
+      "P": -1,
+      "susceptibility": 0.25,
+      "estimated_percentage": 40,
+      "communication_style": "情绪化、义愤填膺、使用反问和感叹",
+      "entity_category": "opinion_spreader",
+      "persona_name": "林晓芸",
+      "age_range": "22-28",
+      "occupation": "互联网运营",
+      "personality": "热血冲动、正义感强",
+      "motivation": "维护公民劝阻权，反对选择性执法",
+      "typical_phrases": [
+        "这执法双标太离谱了！",
+        "守法者吃亏，违法者逍遥",
+        "寒蝉效应要来了"
+      ]
+    },
+    {
+      "group_name": "程序正义关注者",
+      "related_event_entity": "深圳市公安局",
+      "description": "关注执法程序规范性，对搜身、限制如厕等操作表示强烈质疑",
+      "I": 6.8,
+      "P": -1,
+      "susceptibility": 0.32,
+      "estimated_percentage": 30,
+      "communication_style": "引用法条、逻辑严密、理性质问",
+      "entity_category": "opinion_spreader",
+      "persona_name": "陈建文",
+      "age_range": "35-42",
+      "occupation": "企业法务",
+      "personality": "严谨审慎、注重规则",
+      "motivation": "维护程序正义，要求执法规范透明",
+      "typical_phrases": [
+        "程序正义在哪里？",
+        "《公安机关办理行政案件程序规定》第几条？",
+        "人格尊严不能践踏"
+      ]
+    },
+    {
+      "group_name": "理性中立群体",
+      "related_event_entity": "劝阻吸烟女子",
+      "description": "承认双方都有问题，女子行为过激但处罚过重，呼吁依法依理处理",
+      "I": 4.5,
+      "P": 1,
+      "susceptibility": 0.55,
+      "estimated_percentage": 20,
+      "communication_style": "平和客观、承认各方问题、建议理性解决",
+      "entity_category": "opinion_spreader",
+      "persona_name": "周雅婷",
+      "age_range": "28-35",
+      "occupation": "中学教师",
+      "personality": "温和包容、理性平衡",
+      "motivation": "寻求合理解决方案，避免极端对立",
+      "typical_phrases": [
+        "话不能这么说，两边都有问题",
+        "先报警再处理不行吗",
+        "理性沟通才是正道"
+      ]
+    },
+    {
+      "group_name": "警方支持者",
+      "related_event_entity": "涉事民警",
+      "description": "支持警方维持秩序，认为劝阻者不应动手，维护执法权威",
+      "I": 6.2,
+      "P": 1,
+      "susceptibility": 0.38,
+      "estimated_percentage": 10,
+      "communication_style": "强调秩序、维护权威、简短有力",
+      "entity_category": "opinion_spreader",
+      "persona_name": "王建军",
+      "age_range": "45-52",
+      "occupation": "国企职工",
+      "personality": "保守稳重、服从权威",
+      "motivation": "维护社会秩序和执法权威",
+      "typical_phrases": [
+        "警察执法你要配合",
+        "动手就是违法",
+        "别给警察添乱"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "source": "劝阻吸烟女子",
+      "target": "吸烟男子",
+      "type": "冲突对象"
+    },
+    {
+      "source": "深圳市公安局",
+      "target": "劝阻吸烟女子",
+      "type": "执法对象"
+    },
+    {
+      "source": "深圳市公安局",
+      "target": "涉事民警",
+      "type": "隶属关系"
+    },
+    {
+      "source": "法律界人士",
+      "target": "深圳市公安局",
+      "type": "监督质疑"
+    },
+    {
+      "source": "观察者网",
+      "target": "劝阻吸烟女子",
+      "type": "媒体报道"
+    },
+    {
+      "source": "维权支持者",
+      "target": "深圳市公安局",
+      "type": "批评质疑"
+    },
+    {
+      "source": "程序正义关注者",
+      "target": "深圳市公安局",
+      "type": "监督质疑"
+    },
+    {
+      "source": "理性中立群体",
+      "target": "劝阻吸烟女子",
+      "type": "观点关联"
+    },
+    {
+      "source": "警方支持者",
+      "target": "涉事民警",
+      "type": "观点支持"
+    }
+  ]
+}

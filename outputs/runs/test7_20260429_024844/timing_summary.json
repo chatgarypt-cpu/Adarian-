@@ -1,0 +1,57 @@
+{
+  "run": {
+    "start_time": "2026-04-29 02:48:44",
+    "end_time": "2026-04-29 02:51:12",
+    "elapsed_seconds": 147.56,
+    "status": "failed",
+    "mode": "normal",
+    "seed_file": "/Users/gary/项目开发/AdarianMigration/adarian mvp/seeds/test7.txt",
+    "run_dir": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test7_20260429_024844"
+  },
+  "phases": {
+    "phase1_entity_extraction": {
+      "start_time": "2026-04-29 02:48:44"
+    }
+  },
+  "llm": {
+    "count": 4,
+    "calls": [
+      {
+        "caller": "analyzer_set_parameters",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 15.52,
+        "timestamp": "2026-04-29 02:49:00"
+      },
+      {
+        "caller": "generator_create_entities",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 44.04,
+        "timestamp": "2026-04-29 02:49:44"
+      },
+      {
+        "caller": "generator_create_entities",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 43.37,
+        "timestamp": "2026-04-29 02:50:27"
+      },
+      {
+        "caller": "generator_create_entities",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 44.53,
+        "timestamp": "2026-04-29 02:51:12"
+      }
+    ]
+  },
+  "persona": {
+    "count": 0,
+    "groups": []
+  },
+  "ticks": [],
+  "errors": [
+    {
+      "stage": "main",
+      "error": "Phase 1 校验失败，超过最大重试次数。 最后一次校验结果: {'pass': False, 'message': 'Generator 输出解析失败', 'errors': ['Generator 返回内容无法解析为 JSON: \\'[\\' was never closed (<unknown>, line 36)\\n原始内容: {\\n  \"event_entities\": [\\n    {\\n      \"name\": \"涉事女子\",\\n      \"type\": \"individual\",\\n      \"role\": \"劝阻吸烟者/当事人\",\\n      \"entity_category\": \"event_entity\",\\n      \"can_speak\": false,\\n      \"original_statement\"']}",
+      "timestamp": "2026-04-29 02:51:12"
+    }
+  ]
+}
