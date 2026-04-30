@@ -1,6 +1,0 @@
-[2026-04-27 15:10:06] RUN START mode=normal seed=D:\项目开发\研一\adarian\adarian mvp\seeds\test7_1.txt run_dir=D:\项目开发\研一\adarian\adarian mvp\outputs\runs\test7_1_20260427_151006
-[2026-04-27 15:10:06] PHASE START name=phase1_entity_extraction
-[2026-04-27 15:10:06] LLM START caller=analyzer_set_parameters model=qwen35-122b-a10b
-[2026-04-27 15:10:12] LLM END caller=analyzer_set_parameters model=qwen35-122b-a10b elapsed=5.31s
-[2026-04-27 15:10:12] ERROR stage=main error=invalid character '【' (U+3010) (<unknown>, line 2)
-[2026-04-27 15:10:12] RUN END status=failed elapsed=5.44s

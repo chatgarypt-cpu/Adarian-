@@ -17,10 +17,14 @@ build/
 *.swp
 *.swo
 
-# Outputs (可选择忽略，因为是运行生成的)
-outputs/*.json
-outputs/tick_logs/
-outputs/*.md
+# Generated runtime artifacts
+outputs/
+profiling/output/
+
+# Keep durable acceptance evidence under audit/evidence/ instead of generated output dirs.
+!audit/
+!audit/evidence/
+!audit/evidence/**/*
 
 # 环境配置
 .env
