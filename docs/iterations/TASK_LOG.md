@@ -41,6 +41,59 @@ carry_over:
 
 ---
 
+## [2026-05-01 已收口] v1.2.4 - Phase 1 R1 Readiness Hardening
+
+**执行者**：Codex  
+**基于版本 / Commit**：`1168842 docs: add dirty tree protocol to iteration guard`  
+**任务文档**：`docs/iterations/v1.2.4 - Phase 1 R1 Readiness Hardening.md`
+
+**记录标识**：
+- task_id: task-v1.2.4-phase1-r1-readiness-hardening
+- review_id: review-v1.2.4-01
+- attempt_id: attempt-v1.2.4-01
+- acceptance_id: accept-v1.2.4-01
+
+**本轮结果**：pass
+
+**本轮任务性质**：
+- pre-R1 hardening
+- minimal code hygiene
+- contract tests
+- R1: HOLD
+
+**实际新增文件**：
+- `tests/test_phase1_output_contract.py`
+
+**实际修改文件**：
+- `src/phase1_entity_extraction.py`
+- `main.py`
+- `docs/iterations/TASK_LOG.md`
+- `docs/iterations/CHANGELOG.md`
+- `docs/iterations/v1.2.4 - Phase 1 R1 Readiness Hardening.md`
+
+**基本验收结果**：
+- ✅ `./.venv/bin/python -m py_compile main.py src/phase1_entity_extraction.py` 通过。
+- ✅ `./.venv/bin/python -m pytest tests/test_phase1_output_contract.py` 通过，2 passed。
+- ⚠️ `./.venv/bin/python main.py seeds/test1.txt` 未通过：Phase 1 Analyzer 远端 LLM 调用发生 `APIConnectionError`；未观察到本地 import / schema / type annotation 错误。
+- ⚠️ `QWEN_MODEL=qwen35-122b-a10b ./.venv/bin/python main.py seeds/test1.txt` 未通过：备用模型已正确加载为 `qwen35-122b-a10b`，但仍在 Phase 1 Analyzer 远端 LLM 调用阶段发生 `APIConnectionError`。
+- ✅ 未修改 `src/schemas.py`。
+- ✅ 未修改 Phase 2 / Phase 3 / Phase 4。
+- ✅ 未创建 `src/phase1/`。
+- ✅ 未进入 R1。
+
+**2026-05-01 最终 smoke 验证**：
+- ✅ `./.venv/bin/python main.py seeds/test2.txt` (qwen36-35b) 通过，686.4s，风险 MEDIUM，极化 0.33
+- ✅ `./.venv/bin/python main.py seeds/test2.txt` (minimax) 通过，345.1s，风险 MEDIUM，极化 0.31
+- ❌ `qwen35-122b-a10b` 确认不可用（持续超时），`.env` 已切换为 `minimax`
+- 可用模型：`qwen3-30b-tke` / `qwen3-32b-tke` / `qwen3-80b-tke` / `minimax`
+
+**Carry-over**：
+- `config.py` 默认模型 `qwen35-122b-a10b` 需同步为当前可用模型
+
+**状态**：🟢 closeout ready / pass
+
+---
+
 ## [2026-05-01 准备收口] v1.2.3 - Phase 1 Output Contract Freeze
 
 **执行者**：Codex  

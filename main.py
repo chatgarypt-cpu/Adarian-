@@ -28,6 +28,7 @@ import json
 import shutil
 from datetime import datetime
 from pathlib import Path
+from typing import List, Optional, Tuple
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
@@ -35,6 +36,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
 import config
 from config import ensure_dirs
 from src.llm_client import init_llm_client, get_llm_client
+from src.schemas import EntityExtractionOutput, Phase2Output, Phase4Output, TickLog
 from src.utils.runtime_logger import get_runtime_logger
 
 console = Console()
@@ -86,7 +88,10 @@ def run_phase1(seed_file: str, output_path: Path = None):
     return extraction_output, entities_file
 
 
-def run_phase2(extraction_output, output_path: Path = None):
+def run_phase2(
+    extraction_output: EntityExtractionOutput,
+    output_path: Optional[Path] = None,
+) -> Phase2Output:
     """执行 Phase 2：社交拓扑构建
 
     Args:
@@ -126,7 +131,12 @@ def run_phase2(extraction_output, output_path: Path = None):
     return phase2_output
 
 
-def run_phase3(extraction_output, phase2_output, seed_text, output_path: Path = None):
+def run_phase3(
+    extraction_output: EntityExtractionOutput,
+    phase2_output: Phase2Output,
+    seed_text: str,
+    output_path: Optional[Path] = None,
+) -> Tuple[List[TickLog], List[float]]:
     """执行 Phase 3：多轮涌现推演
 
     Args:
@@ -156,7 +166,14 @@ def run_phase3(extraction_output, phase2_output, seed_text, output_path: Path = 
     return tick_logs, x_t_sequence
 
 
-def run_phase4(extraction_output, phase2_output, tick_logs, x_t_sequence, json_output_path: Path = None, markdown_output_path: Path = None):
+def run_phase4(
+    extraction_output: EntityExtractionOutput,
+    phase2_output: Phase2Output,
+    tick_logs: List[TickLog],
+    x_t_sequence: List[float],
+    json_output_path: Optional[Path] = None,
+    markdown_output_path: Optional[Path] = None,
+) -> Phase4Output:
     """执行 Phase 4：宏观洞察生成
 
     Args:

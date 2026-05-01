@@ -18,8 +18,9 @@ Phase 1: 实体提取与分类模块（Analyzer/Generator/Validator 协作架构
 修改于：v1.1.10（LLM1/2/3 → Analyzer/Generator/Validator）
 """
 
-# ⚠️ LEGACY FILE — v1.1.14+ 已迁移到 src/phase1/
-# 本文件保留用于兼容，新代码请使用 src/phase1/ 模块
+# v1.2.x 源码事实：当前文件仍是主链 Phase 1 入口模块。
+# 历史上曾计划迁移到 src/phase1/ 分层结构，但当前仓库中该目录不存在。
+# 后续如进入 R1 Parser / Compiler / Validator Skeleton，必须以 v1.2.3 contract 为准。
 
 import json
 import ast

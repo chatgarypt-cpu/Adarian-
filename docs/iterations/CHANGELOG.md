@@ -10,6 +10,9 @@
 
 | 文档 | 变更内容 |
 |------|---------|
+| `docs/iterations/v1.2.4 - Phase 1 R1 Readiness Hardening.md` | 更新 v1.2.4 closeout 待填区，记录 py_compile / contract test 通过、test1 smoke 因远端 LLM 连接不可用未通过 |
+| `docs/iterations/TASK_LOG.md` | 新增 v1.2.4 workflow record，结果为 pass_with_known_issues |
+| `docs/iterations/CHANGELOG.md` | 新增 v1.2.4 变更记录 |
 | `docs/contracts/phase1-output-contract-freeze-v1.2.3.md` | 补充 DS 审计 `PASS_WITH_FINDINGS` 的 contract hardening：双路径差异、`@property` 保护、ghost field、persona getattr 容错边界与 `C` 低优先级说明 |
 | `docs/iterations/v1.2.3-phase1-output-contract-freeze.md` | 更新 R0/R1 状态、review findings remediation、closeout 准备区与 carry_over |
 | `docs/iterations/TASK_LOG.md` | 新增 v1.2.3 workflow record，并对 `src/phase1/` 相关历史漂移记录追加标注 |
@@ -70,6 +73,51 @@
 ---
 
 ## 代码变更记录
+
+## v1.2.4 (2026-05-01)（已完成）
+
+**主题**：Phase 1 R1 Readiness Hardening
+
+### 新增
+
+- [tests/test_phase1_output_contract.py] 新增 Phase 1 output contract 最小测试，覆盖 `EntityExtractionOutput` 字段、`Entity` / `OpinionSpreader` / `Relation` 字段，以及 `C` / `stance_score` / `confirmation_bias_level` 派生属性。
+
+### 修改
+
+- [src/phase1_entity_extraction.py] 修复文件头漂移注释，明确当前文件仍是 v1.2.x 主链 Phase 1 入口，且当前仓库不存在 `src/phase1/`。
+- [main.py] 给 `run_phase2` / `run_phase3` / `run_phase4` 增加最小类型标注，不改变运行行为。
+- [.env] 默认模型从 `qwen36-35b` 切换为 `minimax`（可用且更快）。
+
+### 验收结果
+
+```text
+./.venv/bin/python -m py_compile main.py src/phase1_entity_extraction.py
+结果：通过
+
+./.venv/bin/python -m pytest tests/test_phase1_output_contract.py
+结果：2 passed
+
+./.venv/bin/python main.py seeds/test2.txt (qwen36-35b)
+结果：通过，686.4s，风险 MEDIUM，极化 0.33
+
+./.venv/bin/python main.py seeds/test2.txt (minimax)
+结果：通过，345.1s，风险 MEDIUM，极化 0.31
+```
+
+### 模型可用性
+
+```text
+可用：qwen3-30b-tke / qwen3-32b-tke / qwen3-80b-tke / minimax
+不可用：qwen35-122b-a10b（持续超时）、qwen36-35b（不稳定）
+```
+
+### 兼容性
+
+- ✅ 未修改 `src/schemas.py`
+- ✅ 未修改 Phase 2 / Phase 3 / Phase 4
+- ✅ 未创建 `src/phase1/`
+- ✅ 未进入 R1
+- ✅ 未新增 Parser / Compiler / Validator / Repair Loop
 
 ## v1.2.2 (2026-04-27)（已完成）
 
