@@ -51,6 +51,42 @@ If the working tree is dirty during an architecture, schema, prompt, pipeline, o
 
 Codex must not create commits, branches, stashes, resets, checkouts, or cleanup actions without explicit user confirmation.
 
+### Dirty Tree Response Protocol
+
+If `git status --short` is non-empty before a new iteration, multi-file edit, or quality-gated implementation:
+
+1. Stop before editing files.
+2. Report the dirty entries exactly enough for the user to understand the blocking state.
+3. Provide user-runnable git commands for the two safe paths:
+   - commit the intended preparation / audit / documentation changes
+   - stash the dirty work with untracked files included
+4. Do not run the commit, stash, restore, reset, cleanup, or destructive commands yourself unless the user explicitly asks for that exact action.
+5. Resume the implementation gate only after `git status --short` is empty, or after the user explicitly decides to continue in the dirty tree.
+
+Recommended command templates:
+
+```bash
+git status --short
+git diff --stat
+git diff --cached --stat
+```
+
+For committing intentional preparation work, tailor the pathspecs and message to the observed dirty files:
+
+```bash
+git add <paths>
+git status --short
+git diff --cached --stat
+git commit -m "<message>"
+```
+
+For temporary isolation:
+
+```bash
+git stash push -u -m "wip: <reason>"
+git status --short
+```
+
 ## Required Decision Labels
 
 The review must return exactly one:
