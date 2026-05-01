@@ -41,6 +41,53 @@ carry_over:
 
 ---
 
+## [2026-05-01 准备收口] v1.2.3 - Phase 1 Output Contract Freeze
+
+**执行者**：Codex  
+**基于版本 / Commit**：`b13dd57 chore: isolate generated runtime artifacts`  
+**任务文档**：`docs/iterations/v1.2.3-phase1-output-contract-freeze.md`
+
+**记录标识**：
+- task_id: task-phase1-output-contract-freeze-r0
+- review_id: review-phase1-output-contract-freeze-02
+- attempt_id: attempt-v1.2.3-r0-doc-remediation-01
+- acceptance_id: accept-v1.2.3-r0-doc-remediation-01
+
+**本轮结果**：pass_with_known_issues
+
+**本轮任务性质**：
+- documentation-only
+- contract freeze
+- review findings remediation
+- closeout preparation
+- R0: GO
+- R1: HOLD
+
+**实际新增 / 修改文件**：
+- 新增 / 修改：`docs/contracts/phase1-output-contract-freeze-v1.2.3.md`
+- 新增 / 修改：`docs/iterations/v1.2.3-phase1-output-contract-freeze.md`
+- 修改：`docs/iterations/TASK_LOG.md`
+- 修改：`docs/iterations/CHANGELOG.md`
+
+**DS 审计结论**：
+- `audit/v1.2.3-phase1-output-contract-freeze_审计结论_2026-05-01.md`
+- verdict: `PASS_WITH_FINDINGS`
+- review findings 已在 v1.2.3 内完成文档 remediation。
+
+**基本验收结果**：
+- ✅ 仅执行 Markdown 文档修正。
+- ✅ 未修改 `src/`。
+- ✅ 未修改 `main.py`。
+- ✅ 未修改 `schemas.py`。
+- ✅ 未创建 `src/phase1/`。
+- ✅ 未进入 R1。
+- ⚠️ carry_over：DS 建议的 `main.py` 类型标注未执行，因为本轮明确禁止修改 `main.py`。
+- ⚠️ carry_over：`src/phase1_entity_extraction.py` 文件头漂移未修复，因为本轮明确禁止修改 `src/`。
+
+**状态**：🟡 closeout ready / pass_with_known_issues
+
+---
+
 ## [2026-04-27 完成] v1.2.2 - White-box Observability for Speaker Behavior
 
 **执行者**：Codex  
@@ -579,7 +626,9 @@ x(t)：4.73 -> 4.65 -> 4.74 -> 4.75 -> 4.81 -> 4.70
 - ✅ 修改：`src/schemas.py` - 新增 persona 中间模型，`GroupPlanItem` 收口为 skeleton
 - ✅ 修改：`src/phase1/group_planner.py` - 移除 persona 与 communication_style 生成
 - ✅ 修改：`src/phase1/orchestrator.py` - 接入 Persona Writer，提供并发开关入口
+  - [历史记录漂移：当前仓库不存在该文件，v1.2.3 review findings 已标注为未实施/已回退，不得作为当前源码事实依据]
 - ✅ 修改：`src/phase1/rules_engine.py` - 接收 persona enrich 结果并完成最终装配
+  - [历史记录漂移：当前仓库不存在该文件，v1.2.3 review findings 已标注为未实施/已回退，不得作为当前源码事实依据]
 - ✅ 修改：`docs/dev_spec.md` - 同步 Phase 1 四层结构
 - ✅ 修改：`docs/iterations/CHANGELOG.md` - 增加 v1.1.16 记录
 
@@ -643,6 +692,7 @@ x(t)：4.73 -> 4.65 -> 4.74 -> 4.75 -> 4.81 -> 4.70
 - `src/phase1/entity_extractor.py`
 - `src/phase1/group_planner.py`
 - `src/phase1/orchestrator.py`
+  - [历史记录漂移：当前仓库不存在该文件，v1.2.3 review findings 已标注为未实施/已回退，不得作为当前源码事实依据]
 
 **计划修改文件**：
 - `src/phase1_entity_extraction.py` - 降级为兼容入口
@@ -652,7 +702,9 @@ x(t)：4.73 -> 4.65 -> 4.74 -> 4.75 -> 4.81 -> 4.70
 - ✅ 新增：`src/phase1/entity_extractor.py`
 - ✅ 新增：`src/phase1/group_planner.py`
 - ✅ 新增：`src/phase1/orchestrator.py`
+  - [历史记录漂移：当前仓库不存在该文件，v1.2.3 review findings 已标注为未实施/已回退，不得作为当前源码事实依据]
 - ✅ 新增：`src/phase1/__init__.py`
+  - [历史记录漂移：当前仓库不存在该文件，v1.2.3 review findings 已标注为未实施/已回退，不得作为当前源码事实依据]
 - ✅ 修改：`src/schemas.py` - 新增中间模型 `EntityExtractionResult`、`GroupPlanItem`、`GroupPlanResult`
 - ✅ 修改：`src/phase1_entity_extraction.py` - 降级为兼容入口并转发到 orchestrator
 - ✅ 修改：`docs/dev_spec.md` - 同步 Phase 1 架构描述
@@ -687,17 +739,21 @@ x(t)：4.73 -> 4.65 -> 4.74 -> 4.75 -> 4.81 -> 4.70
 
 **计划新增**：
 - `src/phase1/rules_engine.py`
+  - [历史记录漂移：当前仓库不存在该文件，v1.2.3 review findings 已标注为未实施/已回退，不得作为当前源码事实依据]
 
 **计划修改**：
 - `src/phase1/group_planner.py` - 删除 P/percentage 生成
 - `src/phase1/orchestrator.py` - 接入 Rules Engine
+  - [历史记录漂移：当前仓库不存在该文件，v1.2.3 review findings 已标注为未实施/已回退，不得作为当前源码事实依据]
 - `src/schemas.py` - 更新 GroupPlanResult
 
 **实际变更文件**：
 - ✅ 新增：`src/phase1/rules_engine.py`
+  - [历史记录漂移：当前仓库不存在该文件，v1.2.3 review findings 已标注为未实施/已回退，不得作为当前源码事实依据]
 - ✅ 修改：`src/schemas.py` - `GroupPlanItem` 去除 `P` / `estimated_percentage`，新增 `raw_weight`
 - ✅ 修改：`src/phase1/group_planner.py` - Prompt 和结构输出移除 `P` / percentage
 - ✅ 修改：`src/phase1/orchestrator.py` - 接入 Rules Engine
+  - [历史记录漂移：当前仓库不存在该文件，v1.2.3 review findings 已标注为未实施/已回退，不得作为当前源码事实依据]
 - ✅ 修改：`src/phase1_entity_extraction.py` - 后处理移除 P / percentage 核心规则计算
 - ✅ 修改：`docs/dev_spec.md` - 同步 Rules Engine 架构说明
 - ✅ 修改：`docs/iterations/CHANGELOG.md` - 增加 v1.1.15 记录
@@ -734,7 +790,9 @@ x(t)：4.73 -> 4.65 -> 4.74 -> 4.75 -> 4.81 -> 4.70
 **计划修改**：
 - `src/phase1/group_planner.py` - 移除 persona 字段生成
 - `src/phase1/orchestrator.py` - 接入 Persona Writer
+  - [历史记录漂移：当前仓库不存在该文件，v1.2.3 review findings 已标注为未实施/已回退，不得作为当前源码事实依据]
 - `src/phase1/rules_engine.py` - 接收 persona enrich 结果
+  - [历史记录漂移：当前仓库不存在该文件，v1.2.3 review findings 已标注为未实施/已回退，不得作为当前源码事实依据]
 
 **状态**：🚧 进行中
 

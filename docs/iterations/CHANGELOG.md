@@ -6,6 +6,15 @@
 
 ## 文档变更记录
 
+### 2026-05-01
+
+| 文档 | 变更内容 |
+|------|---------|
+| `docs/contracts/phase1-output-contract-freeze-v1.2.3.md` | 补充 DS 审计 `PASS_WITH_FINDINGS` 的 contract hardening：双路径差异、`@property` 保护、ghost field、persona getattr 容错边界与 `C` 低优先级说明 |
+| `docs/iterations/v1.2.3-phase1-output-contract-freeze.md` | 更新 R0/R1 状态、review findings remediation、closeout 准备区与 carry_over |
+| `docs/iterations/TASK_LOG.md` | 新增 v1.2.3 workflow record，并对 `src/phase1/` 相关历史漂移记录追加标注 |
+| `docs/iterations/CHANGELOG.md` | 新增 v1.2.3 文档变更记录，并对 `src/phase1/` 相关历史漂移记录追加标注 |
+
 ### 2026-04-27
 
 | 文档 | 变更内容 |
@@ -476,7 +485,9 @@ v1.2.0 不解决的问题，全部延后至 v1.2.1：
 - [src/schemas.py] 新增 `PersonaProfile`、`PersonaEnrichedGroupItem`、`PersonaEnrichedGroupPlan`
 - [src/phase1/group_planner.py] 移除 persona 与 communication_style 生成职责，仅保留 skeleton 字段
 - [src/phase1/orchestrator.py] 接入 Persona Writer，并提供可串行/可并发的 persona enrich 入口
+  - [历史记录漂移：当前仓库不存在该文件，v1.2.3 review findings 已标注为未实施/已回退，不得作为当前源码事实依据]
 - [src/phase1/rules_engine.py] 改为接收 persona enrich 结果后进行最终装配
+  - [历史记录漂移：当前仓库不存在该文件，v1.2.3 review findings 已标注为未实施/已回退，不得作为当前源码事实依据]
 - [docs/dev_spec.md] 同步 Phase 1 四层结构说明
 
 ### 兼容性
@@ -489,11 +500,13 @@ v1.2.0 不解决的问题，全部延后至 v1.2.1：
 
 ### 新增
 - [src/phase1/rules_engine.py] 新增集中规则层，负责 P 推导、percentage 归一化、合法性约束和 Phase 1 输出收口
+  - [历史记录漂移：当前仓库不存在该文件，v1.2.3 review findings 已标注为未实施/已回退，不得作为当前源码事实依据]
 
 ### 修改
 - [src/schemas.py] `GroupPlanItem` 去除 `P` / `estimated_percentage`，改为 `raw_weight`
 - [src/phase1/group_planner.py] Prompt 与输出结构移除 `P` / `estimated_percentage`
 - [src/phase1/orchestrator.py] 接入 Rules Engine，调整为 `extractor -> planner -> rules_engine -> validator`
+  - [历史记录漂移：当前仓库不存在该文件，v1.2.3 review findings 已标注为未实施/已回退，不得作为当前源码事实依据]
 - [src/phase1_entity_extraction.py] 后处理移除 P 和 percentage 的核心规则计算
 - [docs/dev_spec.md] 同步 Rules Engine 架构说明
 
@@ -510,6 +523,7 @@ v1.2.0 不解决的问题，全部延后至 v1.2.1：
 - [src/phase1/entity_extractor.py] 抽离事实层，负责提取 event_summary / event_scale / event_controversy / event_type / event_entities / relations
 - [src/phase1/group_planner.py] 抽离结构层，负责生成 opinion_spreaders
 - [src/phase1/orchestrator.py] 新增编排层，串联 extractor / planner / validator / 后处理
+  - [历史记录漂移：当前仓库不存在该文件，v1.2.3 review findings 已标注为未实施/已回退，不得作为当前源码事实依据]
 
 ### 修改
 - [src/schemas.py] 新增中间模型 `EntityExtractionResult`、`GroupPlanItem`、`GroupPlanResult`
