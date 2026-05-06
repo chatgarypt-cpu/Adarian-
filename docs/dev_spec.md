@@ -1,9 +1,9 @@
 # Adarian Dev Spec
 
 **文档状态**：当前系统技术规格说明  
-**当前基线**：v1.2.1 - Run Artifact Governance & Runtime Logging  
-**最后更新**：2026-04-25  
-**依据来源**：当前源码、v1.2.0/v1.2.1 迭代记录、`outputs/runs/` 下最新运行产物
+**当前基线**：v1.2.5 - Source Tree Governance & Whitebox Artifact Shell
+**最后更新**：2026-05-06
+**依据来源**：当前源码、v1.2.0-v1.2.5 迭代记录、`outputs/runs/` 下最新运行产物
 
 本文档描述当前真实系统状态，用于替代旧 v1.1.x 技术设想残留。未实现的未来方向只作为 roadmap 或 out-of-scope 记录，不作为当前能力描述。
 
@@ -197,9 +197,15 @@ flowchart TD
     C --> J["run.log"]
     C --> K["timing_summary.json"]
     C --> L["run_meta.json"]
+    C --> N["whitebox_summary.json"]
+    C --> O["whitebox/"]
+    O --> P["report_completeness.json"]
+    O --> Q["artifact_check.json"]
 
     M["RuntimeLogger.configure(run_dir)"] --> J
     M --> K
+    R["src/whitebox"] --> N
+    R --> O
 ```
 
 当前每次运行的核心输出：
@@ -214,6 +220,9 @@ run.log
 timing_summary.json
 run_meta.json
 seed_input.txt
+whitebox_summary.json
+whitebox/report_completeness.json
+whitebox/artifact_check.json
 ```
 
 ---
@@ -437,7 +446,11 @@ outputs/
         ├── final_report.md
         ├── run.log
         ├── timing_summary.json
-        └── run_meta.json
+        ├── run_meta.json
+        ├── whitebox_summary.json
+        └── whitebox/
+            ├── report_completeness.json
+            └── artifact_check.json
 ```
 
 `run_id` 推荐格式：

@@ -216,6 +216,8 @@ def build_run_paths(seed_file: Path) -> dict:
     run_id = f"{seed_file.stem}_{timestamp}"
     run_dir = config.OUTPUTS_DIR / "runs" / run_id
     run_dir.mkdir(parents=True, exist_ok=False)
+    whitebox_dir = run_dir / "whitebox"
+    whitebox_dir.mkdir(parents=True, exist_ok=True)
 
     seed_copy = run_dir / "seed_input.txt"
     shutil.copyfile(seed_file, seed_copy)
@@ -227,6 +229,7 @@ def build_run_paths(seed_file: Path) -> dict:
         "final_report_json": run_dir / "final_report.json",
         "final_report_md": run_dir / "final_report.md",
         "whitebox_summary": run_dir / "whitebox_summary.json",
+        "whitebox_dir": whitebox_dir,
         "run_log": run_dir / "run.log",
         "timing_summary": run_dir / "timing_summary.json",
         "run_meta": run_dir / "run_meta.json",
@@ -260,32 +263,63 @@ def write_run_meta(run_context: dict, seed_file: Path, status: str, started_at: 
         json.dump(payload, f, ensure_ascii=False, indent=2)
 
 
-def write_report_completeness_summary(run_context: dict) -> dict:
-    """Run Phase 4 report completeness checks and persist the whitebox summary."""
-    from src.whitebox import check_report_completeness
-
+def write_whitebox_summary(
+    run_context: dict,
+    report_completeness: dict,
+    artifact_check: dict,
+) -> dict:
+    """Write the top-level whitebox summary as an index plus status."""
     outputs = run_context["outputs"]
-    with open(outputs["final_report_md"], "r", encoding="utf-8") as f:
-        markdown_text = f.read()
+    checks = {
+        "report_completeness": {
+            "status": report_completeness["status"],
+            "path": report_completeness["path"],
+        },
+        "artifact_check": {
+            "status": artifact_check["status"],
+            "path": artifact_check["path"],
+        },
+    }
 
-    report_completeness = check_report_completeness(markdown_text)
+    if artifact_check["status"] != "pass":
+        status = "fail"
+    elif report_completeness["status"] != "pass":
+        status = "pass_with_warnings"
+    else:
+        status = "pass"
+
     payload = {
-        "report_completeness": report_completeness,
+        "whitebox_version": "v1.2.5",
+        "status": status,
+        "checks": checks,
+        "raw_sources": artifact_check["raw_sources"],
     }
 
     with open(outputs["whitebox_summary"], "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=2)
 
-    with open(outputs["run_log"], "a", encoding="utf-8") as f:
-        f.write(
-            f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] "
-            "REPORT COMPLETENESS "
-            f"report_truncated={str(report_completeness['report_truncated']).lower()} "
-            f"score={report_completeness['report_completeness_score']} "
-            f"char_count={report_completeness['report_char_count']}\n"
-        )
+    return payload
 
-    return report_completeness
+
+def write_whitebox_artifacts(run_context: dict) -> dict:
+    """Write whitebox detail artifacts and the top-level index."""
+    from src.whitebox import check_run_artifacts, write_artifact_check, write_report_completeness_summary
+
+    run_dir = run_context["run_dir"]
+    outputs = run_context["outputs"]
+    report_completeness = write_report_completeness_summary(
+        run_dir,
+        outputs["final_report_md"],
+    )
+    artifact_check = check_run_artifacts(run_dir)
+    summary = write_whitebox_summary(run_context, report_completeness, artifact_check)
+    artifact_check = write_artifact_check(run_dir)
+    summary = write_whitebox_summary(run_context, report_completeness, artifact_check)
+    return {
+        "report_completeness": report_completeness,
+        "artifact_check": artifact_check,
+        "summary": summary,
+    }
 
 
 def main():
@@ -375,7 +409,6 @@ def main():
         )
         phase4_time = time.time() - phase4_start
         logger.log_phase_end("phase4_report_agent", phase4_time)
-        report_completeness = write_report_completeness_summary(run_context)
 
         # 总耗时
         total_time = time.time() - start_time
@@ -391,6 +424,8 @@ def main():
             final_polarization_index=tick_logs[-1].global_metrics.polarization_index,
             risk_level=phase4_output.risk_level.value,
         )
+        whitebox_artifacts = write_whitebox_artifacts(run_context)
+        report_completeness = whitebox_artifacts["report_completeness"]["result"]
 
         # 打印最终结果
         console.print("\n" + "=" * 60)
@@ -418,6 +453,7 @@ def main():
   JSON 报告: {outputs["final_report_json"]}
   Markdown 报告: {outputs["final_report_md"]}
   Whitebox 摘要: {outputs["whitebox_summary"]}
+  Whitebox 目录: {outputs["whitebox_dir"]}
   运行日志: {outputs["run_log"]}
   时间摘要: {outputs["timing_summary"]}
   运行元数据: {outputs["run_meta"]}

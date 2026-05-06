@@ -4,6 +4,34 @@
 
 ---
 
+## v1.2.5 (2026-05-06)（attempt-02 delivered）
+
+**主题**：Source Tree Governance & Whitebox Artifact Shell
+
+### attempt-02 新增
+
+- [src/whitebox/report_observer.py] 将 Phase 4 report completeness detail 写入 `whitebox/report_completeness.json`
+- [src/whitebox/artifact_check.py] 新增 run_dir 关键产物 existence check，不读取或改写业务产物内容
+- [tests/test_whitebox_artifact_shell.py] 新增 whitebox artifact shell import、artifact check、业务文件不改写、summary index shape 测试
+
+### attempt-02 修改
+
+- [main.py] Phase 4 后生成 `whitebox/` detail artifacts，并将顶层 `whitebox_summary.json` 调整为 index + status
+- [src/whitebox/__init__.py] 导出 report observer 与 artifact check API
+- [docs/dev_spec.md] 同步 run artifact governance 中的 whitebox artifact shell 结构
+
+### attempt-02 验收范围
+
+```text
+py_compile 与 tests/test_whitebox_artifact_shell.py 通过。
+full smoke 通过：./.venv/bin/python main.py seeds/test1.txt
+run_dir: outputs/runs/test1_20260506_182638
+whitebox_summary.json status: pass
+whitebox/artifact_check.json missing_artifacts: []
+```
+
+---
+
 ## 文档变更记录
 
 ### 2026-05-01

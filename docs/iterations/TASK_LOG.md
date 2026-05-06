@@ -41,6 +41,51 @@ carry_over:
 
 ---
 
+## [2026-05-06 attempt delivered] v1.2.5 - Source Tree Governance & Whitebox Artifact Shell
+
+**执行者**：Codex
+**基于版本 / Commit**：`7ea4216 feat: v1.2.5 source tree governance attempt 01`
+**任务文档**：`docs/iterations/v1.2.5-source-tree-governance-whitebox-artifact-shell.md`
+
+**记录标识**：
+- task_id: task-v1.2.5-source-tree-whitebox-artifact-shell
+- review_id: review-v1.2.5-attempt-02-codex-01
+- attempt_id: attempt-v1.2.5-02
+- acceptance_id: accept-v1.2.5-01
+
+**本轮任务性质**：
+- attempt-02: Whitebox Artifact Shell
+- 只做 post-run whitebox artifact shell，不改变 Phase 1-4 业务行为
+- 不修改 RuntimeLogger，不进入 timing_observer / speaker_observer 深度分析
+
+**实际新增文件**：
+- `src/whitebox/report_observer.py`
+- `src/whitebox/artifact_check.py`
+- `tests/test_whitebox_artifact_shell.py`
+
+**实际修改文件**：
+- `main.py`
+- `src/whitebox/__init__.py`
+- `docs/dev_spec.md`
+- `docs/iterations/CHANGELOG.md`
+- `docs/iterations/TASK_LOG.md`
+- `docs/iterations/v1.2.5-source-tree-governance-whitebox-artifact-shell.md`
+
+**基本验收结果**：
+- ✅ `./.venv/bin/python -m py_compile main.py` 通过。
+- ✅ `./.venv/bin/python -m py_compile src/whitebox/report_completeness.py src/whitebox/report_observer.py src/whitebox/artifact_check.py src/whitebox/__init__.py` 通过。
+- ✅ `./.venv/bin/python tests/test_whitebox_artifact_shell.py` 通过。
+- ✅ `./.venv/bin/python main.py seeds/test1.txt` 通过。
+- 最新 run_dir：`outputs/runs/test1_20260506_182638`
+- `whitebox_summary.json` status: `pass`
+- `whitebox/artifact_check.json` missing_artifacts: `[]`
+
+**known_issues**：
+- whitebox_summary 仍只是 index + status，不是完整观测中台。
+- 未包含 timing_observer / speaker_observer 深度分析。
+
+---
+
 ## [2026-05-01 已收口] v1.2.4 - Phase 1 R1 Readiness Hardening
 
 **执行者**：Codex  
