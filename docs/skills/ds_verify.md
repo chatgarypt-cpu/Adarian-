@@ -37,19 +37,109 @@ Codex 完成一次 attempt 交付后。
 
 ---
 
+## Project Python Interpreter Rule
+
+本项目在本地 Mac 工作区运行时，项目依赖安装在项目虚拟环境 `.venv` 中。
+
+默认工作区：
+
+```text
+/Users/gary/项目开发/AdarianMigration/adarian mvp
+```
+
+默认 Python 解释器：
+
+```bash
+./.venv/bin/python
+```
+
+禁止默认使用：
+
+```text
+python
+python3
+/usr/bin/python3
+```
+
+原因：
+
+```text
+系统 Python 通常没有安装项目依赖，例如 pydantic。
+如果使用系统 Python 执行 import / smoke，可能误报：
+ModuleNotFoundError: No module named 'pydantic'
+```
+
+在本项目中，出现 `No module named 'pydantic'` 时，应优先判断为解释器环境错误，而不是源码错误。
+
+在执行任何 Python 检查前，DS Team 必须先运行：
+
+```bash
+cd "/Users/gary/项目开发/AdarianMigration/adarian mvp"
+
+./.venv/bin/python --version
+./.venv/bin/python -c "import sys; print(sys.executable)"
+./.venv/bin/python -c "import pydantic; print('pydantic=', pydantic.__version__)"
+```
+
+如果上述检查通过，后续所有 Python 命令统一使用：
+
+```bash
+./.venv/bin/python -m py_compile ...
+./.venv/bin/python tests/xxx.py
+./.venv/bin/python main.py seeds/test1.txt
+```
+
+如果 `./.venv/bin/python` 不存在、不可执行，或 `pydantic` 缺失：
+
+```text
+1. 标记为 environment_blocker。
+2. 不得判定为源码回归。
+3. 不得要求 Codex 修改源码。
+4. 回传 venv 状态、解释器路径、缺失依赖。
+5. 等待 Control Agent / User 决策。
+```
+
+DS Verify 输出中必须包含：
+
+```text
+environment_preflight:
+  workspace:
+  python_executable:
+  python_version:
+  pydantic_available: true / false
+  status: pass / environment_blocker
+```
+
+结果分类规则：
+
+```text
+1. 如果 venv preflight 失败，overall_verify_result 不得直接写 hard_fail。
+2. 应写 hold / blocked_by_environment。
+3. failure_type = environment_blocker。
+4. 如果 venv preflight 通过，但 import / shim / smoke 失败，才可以继续判断是否为 code_regression。
+```
+
+---
+
 ## 验证步骤
+
+### Phase 0 — Environment Preflight
+
+先执行 Project Python Interpreter Rule 中的 venv preflight。
+
+只有 `environment_preflight.status = pass` 后，才允许进入静态检查、import test、smoke test。
 
 ### Phase 1 — 静态检查
 
 ```bash
-python -m py_compile main.py
-python -m compileall src
+./.venv/bin/python -m py_compile main.py
+./.venv/bin/python -m compileall src
 ```
 
 若本版本声明新增 tests：
 
 ```bash
-python tests/<declared_test>.py
+./.venv/bin/python tests/<declared_test>.py
 ```
 
 ### Phase 2 — Forbidden Files 检查
@@ -69,21 +159,21 @@ git diff --name-only <base_commit_or_HEAD>
 根据本版本声明执行 import 测试：
 
 ```bash
-python -c "from src.phase1 import ..."
-python -c "from src.phase1_entity_extraction import ..."
-python -c "from src.whitebox import ..."
+./.venv/bin/python -c "from src.phase1 import ..."
+./.venv/bin/python -c "from src.phase1_entity_extraction import ..."
+./.venv/bin/python -c "from src.whitebox import ..."
 ```
 
 ### Phase 4 — Smoke Test
 
 ```bash
-python main.py seeds/test1.txt
+./.venv/bin/python main.py seeds/test1.txt
 ```
 
 若 iteration doc §8.4 声明 `test7` 为 hard gate，则必须执行：
 
 ```bash
-python main.py seeds/test7.txt
+./.venv/bin/python main.py seeds/test7.txt
 ```
 
 ### Phase 5 — Artifact Contract 检查
@@ -118,6 +208,13 @@ import result
 smoke result
 artifact result
 overall_verify_result: all_pass / partial_fail / hard_fail
+environment_preflight:
+  workspace:
+  python_executable:
+  python_version:
+  pydantic_available: true / false
+  status: pass / environment_blocker
+failure_type: environment_blocker / code_regression / unknown / N/A
 ```
 
 ---

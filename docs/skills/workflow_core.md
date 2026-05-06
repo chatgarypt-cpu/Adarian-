@@ -380,14 +380,14 @@ DS Verify 至少执行以下阶段。
 #### Phase 1 — 静态检查
 
 ```bash
-python -m py_compile main.py
-python -m compileall src
+./.venv/bin/python -m py_compile main.py
+./.venv/bin/python -m compileall src
 ```
 
 如本版本声明新增 tests，则执行：
 
 ```bash
-python tests/<declared_test>.py
+./.venv/bin/python tests/<declared_test>.py
 ```
 
 #### Phase 2 — Forbidden Files 检查
@@ -414,9 +414,9 @@ git diff --name-only <base_commit_or_HEAD>
 例如：
 
 ```bash
-python -c "from src.phase1 import ..."
-python -c "from src.phase1_entity_extraction import ..."
-python -c "from src.whitebox import ..."
+./.venv/bin/python -c "from src.phase1 import ..."
+./.venv/bin/python -c "from src.phase1_entity_extraction import ..."
+./.venv/bin/python -c "from src.whitebox import ..."
 ```
 
 #### Phase 4 — Smoke Test
@@ -424,13 +424,13 @@ python -c "from src.whitebox import ..."
 默认：
 
 ```bash
-python main.py seeds/test1.txt
+./.venv/bin/python main.py seeds/test1.txt
 ```
 
 如果 iteration doc §8.4 声明 `test7` 为 hard gate，则必须执行：
 
 ```bash
-python main.py seeds/test7.txt
+./.venv/bin/python main.py seeds/test7.txt
 ```
 
 #### Phase 5 — Artifact Contract 检查
@@ -620,9 +620,311 @@ Codex 不得：
 
 ---
 
-## 12. Attempt 策略
+## 12. Internal Model Endpoint Preflight Rule
 
-### 12.1 默认策略
+当项目使用内网模型服务时，任何 smoke test / E2E / LLM 调用失败，执行 agent 不得立即判定为代码回归。必须先做模型环境预检，区分：
+
+```text
+1. 网络 / 沙箱权限问题。
+2. endpoint 不可达。
+3. 认证失败。
+4. configured model 不在 /models 列表。
+5. minimal chat 失败。
+6. 真实代码回归。
+```
+
+### 12.1 触发时机
+
+以下情况必须执行本预检：
+
+```text
+1. smoke test 失败，且失败链路包含 LLM 调用。
+2. E2E 失败，且失败链路包含 LLM 调用。
+3. 任何 attempt 的自检级 LLM 调用出现 APIConnectionError / timeout / authentication / model not found。
+4. DS Verify 的 smoke 阶段出现 LLM 连接或模型可用性错误。
+```
+
+### 12.2 预检顺序
+
+必须按以下顺序执行。
+
+#### Step 1 — endpoint reachability
+
+检查 `LLM_BASE_URL` 是否可达。
+
+```text
+未认证访问 /models 返回 401 可视为 endpoint 在线、认证缺失，而非服务宕机。
+```
+
+如因为沙箱网络权限导致连接失败，必须标记为环境阻塞，不得判定为代码回归。
+
+#### Step 2 — authenticated /models
+
+使用项目 `config` 中的 `LLM_API_KEY` 与 `LLM_BASE_URL` 初始化 OpenAI-compatible client。
+
+调用：
+
+```text
+client.models.list()
+```
+
+回传：
+
+```text
+models_count
+models_sample
+```
+
+不得打印完整 API key。
+
+#### Step 3 — configured_model_in_list
+
+检查：
+
+```text
+config.get_model_name() in models list
+```
+
+如果不存在，标记为：
+
+```text
+model_availability_blocker
+```
+
+#### Step 4 — minimal chat test
+
+使用 `config.get_model_name()` 发起最小 chat completion。
+
+最小要求：
+
+```text
+prompt: ping
+max_tokens: 8 左右
+timeout: 15 秒左右
+temperature: 0
+```
+
+#### Step 5 — business smoke
+
+只有 endpoint、认证、模型可用性、minimal chat 均通过后，才重跑业务 smoke。
+
+本项目默认：
+
+```bash
+./.venv/bin/python main.py seeds/test1.txt
+```
+
+如非本地 Mac 工作区环境，应使用该环境的项目虚拟环境解释器，并在报告中说明实际解释器。不得默认使用系统 `python3` 或 `/usr/bin/python3`。
+
+```bash
+<project-venv-python> main.py seeds/test1.txt
+```
+
+必须在报告中说明实际使用的解释器。
+
+### 12.3 结果分类
+
+执行报告必须明确：
+
+```text
+smoke_test_result:
+- pass
+- fail
+- blocked_by_environment
+
+failure_type:
+- environment_blocker
+- code_regression
+- unknown
+```
+
+### 12.4 判定规则
+
+如果出现以下任一情况：
+
+```text
+1. endpoint 不可达。
+2. 沙箱网络禁止。
+3. 认证失败。
+4. configured_model 不在 models list。
+5. minimal chat 失败。
+```
+
+则必须：
+
+```text
+1. 标记为 environment_blocker。
+2. 不得继续修改业务源码。
+3. 不得判定当前 attempt 代码失败。
+4. 回传 blocker 详情。
+```
+
+如果模型预检全部通过，但业务 smoke 出现以下问题：
+
+```text
+1. import error。
+2. shim error。
+3. schema mismatch。
+4. missing function。
+5. Phase 调用链断裂。
+```
+
+则必须：
+
+```text
+1. 标记为 code_regression。
+2. 只允许在当前 attempt 范围内修复。
+3. 不得扩大到下一 attempt。
+```
+
+如果无法归类：
+
+```text
+1. 标记为 unknown。
+2. 停止执行并回传证据。
+3. 不得继续乱改代码。
+```
+
+### 12.5 推荐诊断脚本
+
+```python
+from openai import OpenAI
+import config
+
+client = OpenAI(
+    api_key=config.LLM_API_KEY,
+    base_url=config.LLM_BASE_URL,
+)
+
+print("provider=", config.LLM_PROVIDER)
+print("configured_model=", config.get_model_name())
+
+try:
+    models = client.models.list()
+    ids = [m.id for m in models.data]
+    print("models_count=", len(ids))
+    print("models_sample=", ", ".join(ids[:20]))
+    print("configured_model_in_list=", config.get_model_name() in ids)
+except Exception as e:
+    print("models_list_error=", type(e).__name__, str(e))
+
+try:
+    response = client.chat.completions.create(
+        model=config.get_model_name(),
+        messages=[{"role": "user", "content": "ping"}],
+        max_tokens=8,
+        temperature=0,
+        timeout=15,
+    )
+    print("chat_test=ok")
+    print("chat_model=", response.model)
+    print("chat_content=", response.choices[0].message.content[:80])
+except Exception as e:
+    print("chat_test=fail", type(e).__name__, str(e))
+```
+
+---
+
+## 13. Project Python Interpreter Rule
+
+本项目在本地 Mac 工作区运行时，项目依赖安装在项目虚拟环境 `.venv` 中。DS Team、Codex、Control Agent 或任何执行验证的 agent，在运行 py_compile、import test、smoke test、E2E 或验收复核前，必须先确认项目 Python 解释器。
+
+默认工作区：
+
+```text
+/Users/gary/项目开发/AdarianMigration/adarian mvp
+```
+
+默认 Python 解释器：
+
+```bash
+./.venv/bin/python
+```
+
+禁止默认使用：
+
+```text
+python
+python3
+/usr/bin/python3
+```
+
+原因：
+
+```text
+系统 Python 通常没有安装项目依赖，例如 pydantic。
+如果使用系统 Python 执行 import / smoke，可能误报：
+ModuleNotFoundError: No module named 'pydantic'
+```
+
+在本项目中，出现 `No module named 'pydantic'` 时，应优先判断为解释器环境错误，而不是源码错误。
+
+### 13.1 Environment Preflight
+
+在执行任何 Python 检查前，必须先运行：
+
+```bash
+cd "/Users/gary/项目开发/AdarianMigration/adarian mvp"
+
+./.venv/bin/python --version
+./.venv/bin/python -c "import sys; print(sys.executable)"
+./.venv/bin/python -c "import pydantic; print('pydantic=', pydantic.__version__)"
+```
+
+如果上述检查通过，后续所有 Python 命令统一使用：
+
+```bash
+./.venv/bin/python -m py_compile ...
+./.venv/bin/python tests/xxx.py
+./.venv/bin/python main.py seeds/test1.txt
+```
+
+不得使用裸 `python3` 或 `/usr/bin/python3` 作为默认解释器。
+
+### 13.2 Environment Blocker
+
+如果 `./.venv/bin/python` 不存在、不可执行，或 `pydantic` 缺失：
+
+```text
+1. 标记为 environment_blocker。
+2. 不得判定为源码回归。
+3. 不得要求 Codex 修改源码。
+4. 回传 venv 状态、解释器路径、缺失依赖。
+5. 等待 Control Agent / User 决策。
+```
+
+验收输出中必须包含：
+
+```text
+environment_preflight:
+  workspace:
+  python_executable:
+  python_version:
+  pydantic_available: true / false
+  status: pass / environment_blocker
+```
+
+### 13.3 Result Classification
+
+如果 venv preflight 失败：
+
+```text
+acceptance_result 不得直接写 fail。
+应写 hold / blocked_by_environment。
+failure_type = environment_blocker。
+```
+
+如果 venv preflight 通过，但 import / shim / smoke 失败：
+
+```text
+才可以继续判断是否为 code_regression。
+```
+
+---
+
+## 14. Attempt 策略
+
+### 14.1 默认策略
 
 默认：
 
@@ -637,7 +939,7 @@ attempt-02 默认依赖 attempt-01 通过。
 attempt-01 fail 时，attempt-02 默认不得开始。
 ```
 
-### 12.2 允许并行的条件
+### 14.2 允许并行的条件
 
 只有 iteration document 明确声明以下条件时，才允许并行：
 
@@ -655,7 +957,7 @@ parallel_attempts_allowed = true
 5. Control Agent 明确批准。
 ```
 
-### 12.3 并行输出要求
+### 14.3 并行输出要求
 
 并行 attempt 必须使用不同 attempt_id：
 
@@ -668,7 +970,7 @@ attempt-vX.Y.Z-02
 
 ---
 
-## 13. Iteration Document 规则
+## 15. Iteration Document 规则
 
 正式迭代文档必须使用：
 
@@ -698,9 +1000,9 @@ Codex 不负责生成正式迭代文档，只负责按文档执行。
 
 ---
 
-## 14. TASK_LOG / CHANGELOG 规则
+## 16. TASK_LOG / CHANGELOG 规则
 
-### 14.1 TASK_LOG
+### 16.1 TASK_LOG
 
 TASK_LOG 记录：
 
@@ -716,7 +1018,7 @@ TASK_LOG 记录：
 9. 最新 run_dir
 ```
 
-### 14.2 CHANGELOG
+### 16.2 CHANGELOG
 
 CHANGELOG 记录：
 
@@ -730,7 +1032,7 @@ CHANGELOG 记录：
 7. 已知遗留
 ```
 
-### 14.3 更新权限
+### 16.3 更新权限
 
 ```text
 DS Accept 可以写入 acceptance record。
@@ -739,7 +1041,7 @@ Control Agent / User 确认 closeout 后，才允许将 iteration 状态改为 c
 
 ---
 
-## 15. Closeout Gate
+## 17. Closeout Gate
 
 版本 closeout 必须满足：
 
@@ -774,7 +1076,7 @@ next_version_candidate
 
 ---
 
-## 16. 防漂移规则
+## 18. 防漂移规则
 
 以下情况视为 workflow drift：
 
@@ -801,7 +1103,7 @@ next_version_candidate
 
 ---
 
-## 17. Hook 规则
+## 19. Hook 规则
 
 Hook 只作为低成本预警，不作为验收权威。
 
@@ -816,7 +1118,7 @@ Hook 只作为低成本预警，不作为验收权威。
         "hooks": [
           {
             "type": "command",
-            "command": "cd \"${CLAUDE_PROJECT_DIR}\" && python3 -m py_compile main.py && python3 -m compileall src || echo \"[DS] py_compile / compileall failed\"",
+            "command": "cd \"${CLAUDE_PROJECT_DIR}\" && ./.venv/bin/python -m py_compile main.py && ./.venv/bin/python -m compileall src || echo \"[DS] py_compile / compileall failed\"",
             "timeout": 30,
             "statusMessage": "[DS] Python syntax check..."
           }
@@ -849,7 +1151,7 @@ Hook 只作为低成本预警，不作为验收权威。
 
 ---
 
-## 18. 当前项目阶段规则
+## 20. 当前项目阶段规则
 
 当前项目处于：
 
@@ -879,7 +1181,7 @@ R1 前必须确保：
 
 ---
 
-## 19. 最终原则
+## 21. 最终原则
 
 ```text
 DS 接管审计与验收流水线。

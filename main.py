@@ -63,7 +63,7 @@ def run_phase1(seed_file: str, output_path: Path = None):
         extraction_output: Phase 1 实体提取结果
         entities_file: 保存的文件路径
     """
-    from src.phase1_entity_extraction import extract_entities_from_file, save_entities_output
+    from src.phase1 import extract_entities_from_file, save_entities_output
 
     console.print(Panel("[bold]Phase 1: 实体提取与分类（Analyzer/Generator/Validator 协作）[/bold]", border_style="cyan"))
 
@@ -100,7 +100,7 @@ def run_phase2(
     Returns:
         Phase2Output
     """
-    from src.phase2_topology_builder import (
+    from src.phase2 import (
         build_topology_from_extraction,
         validate_topology,
         save_social_graph
@@ -147,7 +147,7 @@ def run_phase3(
     Returns:
         (tick_logs, x_t_sequence) tuple
     """
-    from src.phase3_tick_simulation import (
+    from src.phase3 import (
         SimulationEngine, save_tick_logs, print_simulation_summary
     )
 
@@ -184,7 +184,7 @@ def run_phase4(
     Returns:
         Phase4Output
     """
-    from src.phase4_report_agent import (
+    from src.phase4 import (
         generate_report_with_llm, save_report, save_markdown_report
     )
 

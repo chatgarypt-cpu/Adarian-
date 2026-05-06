@@ -33,6 +33,32 @@
 3. Hard / Soft Target 全部满足 → pass
 ```
 
+### Project Python Interpreter Rule
+
+如果 DS Verify Report 中：
+
+```text
+environment_preflight.status = environment_blocker
+```
+
+或出现由解释器环境导致的依赖缺失，例如：
+
+```text
+ModuleNotFoundError: No module named 'pydantic'
+```
+
+则：
+
+```text
+1. acceptance_result 不得直接写 fail。
+2. 应写 hold / blocked_by_environment。
+3. failure_type = environment_blocker。
+4. 不得要求 Codex 修改源码。
+5. 必须回传 venv 状态、解释器路径、缺失依赖。
+```
+
+只有当 venv preflight 通过，且 import / shim / smoke 仍失败时，才可以继续判断是否为 code_regression。
+
 ---
 
 ## 可更新
@@ -64,6 +90,13 @@ carry_over:
   - item 2
 closeout_recommendation:
   - allow_closeout / hold / require_fix
+environment_preflight:
+  workspace:
+  python_executable:
+  python_version:
+  pydantic_available: true / false
+  status: pass / environment_blocker
+failure_type: environment_blocker / code_regression / unknown / N/A
 ```
 
 ---
