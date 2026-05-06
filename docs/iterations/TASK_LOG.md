@@ -53,7 +53,7 @@ carry_over:
 - attempt_id: attempt-v1.2.4-01
 - acceptance_id: accept-v1.2.4-01
 
-**本轮结果**：pass
+**本轮结果**：pass_with_known_issues
 
 **本轮任务性质**：
 - pre-R1 hardening
