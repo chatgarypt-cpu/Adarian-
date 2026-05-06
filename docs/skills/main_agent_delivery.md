@@ -1,219 +1,177 @@
-# Main Agent 执行规范（Codex Workflow）
+# Main Agent Delivery
 
-## 🎯 定位
+## Position
 
-本文件定义 Codex（Main Agent）的执行行为规范。
+This file defines Codex delivery behavior for Adarian.
 
-如与 [workflow_core.md](/d:/项目开发/研一/adarian/adarian%20mvp/docs/skills/workflow_core.md) 冲突，以 `workflow_core.md` 为准。
+`docs/skills/workflow_core.md` is the primary workflow authority. If this file conflicts with `workflow_core.md`, follow `workflow_core.md`.
 
-目标：
+Codex is the Main Agent for execution landing. Codex is not the Control Agent and is not the DS Team.
 
-- 防止机械执行迭代文档
-- 防止结构性错误进入代码库
-- 提高代码交付的稳定性与可验证性
+## Role Boundary
 
----
+Codex is responsible for:
 
-## 👤 角色职责
+- reading the approved scope and current repository state
+- executing bounded file changes
+- respecting allowed and forbidden file lists
+- running self-check level validation commands
+- returning an `attempt_id` delivery report
+- reporting actual diff, test results, artifact checks, and known issues
 
-Codex 是：
+Codex is not responsible for:
 
-- 代码实现者
-- 架构风险识别者（在实现前）
-- 变更说明输出者
+- writing the official iteration document
+- deciding version scope
+- accepting or rejecting DS recommendations
+- performing DS Pre-Audit as the authority of record
+- performing DS Verify or DS Accept as the authority of record
+- updating final closeout status
+- deciding whether the next version may begin
 
-Codex 不是：
+## Required Inputs
 
-- 架构最终决策者（必须由用户确认）
-- 测试执行者（由 MiniMax 负责）
+Before an implementation attempt, Codex must read:
 
----
+- `docs/skills/workflow_core.md`
+- `docs/skills/iteration_execution_guard.md`
+- current iteration document, when one exists
+- DS Pre-Audit Report, when the task provides an `audit_id`
+- files directly in the allowed modification scope
+- files needed to verify current imports, contracts, hooks, or documentation references
+- current git state
 
-## 🔒 强制执行流程
+For documentation/configuration-only governance tasks, Codex may inspect only the relevant docs/config files plus git state.
 
-### Step 0：读取上下文（必须）
+## Execution Flow
 
-在任何实现前，必须读取：
+### Step 0 - Confirm Authority
 
-- 当前迭代文档（`docs/iterations`）
-- `workflow_core.md`
-- `iteration_execution_guard.md`
-- 相关代码文件
-
-### Step 1：执行 Pre-Implementation Review（强制）
-
-必须调用：
-
-`docs/skills/iteration_execution_guard.md`
-
-输出《Pre-Implementation Review》。
-
-最小字段：
-
-- `task_id`
-- `review_id`
-- `scope`
-- `risks`
-- `decision_needed`
-
-未获得用户确认：
-
-- ❌ 禁止开始编码
-
-### Step 2：用户确认后，进入实现
-
-只能在以下条件成立时编码：
-
-- 用户明确回复“同意执行”
-- 所有待确认项已决策
-
----
-
-## 🧠 实现原则（必须遵守）
-
-### 1. 最小化修改原则
-
-- 只实现迭代文档要求
-- 不扩展功能范围
-- 不引入额外优化（除非明确要求）
-
-### 2. 结构优先原则
-
-如果发现：
-
-- Prompt 复杂度过高
-- 规则分散在多个位置（Prompt / Validator / PostProcess）
-- 模块职责不清
-
-必须优先提出结构性建议，而不是继续 patch。
-
-### 3. 不用 Prompt 解决结构问题
-
-禁止行为：
-
-- 用 Prompt 修复 schema 设计问题
-- 用 Prompt 兜底逻辑错误
-- 用 Prompt 替代代码规则
-
-### 4. 单一职责修改
-
-每次修改应尽量：
-
-- 聚焦一个模块
-- 不跨多个 Phase 扩散
-- 不引入隐式耦合
-
----
-
-## 📦 代码交付规范
-
-Codex 在完成一轮修改后，必须输出：
-
-### 1. 交付标识
-
-- `task_id`
-- `review_id`
-- `attempt_id`
-
-### 2. 修改文件列表
+Codex must identify:
 
 ```text
-- src/xxx.py
-- src/yyy.py
+task_id
+audit_id / N/A
+allowed files
+forbidden files
+acceptance checks
+non-goals
 ```
 
-### 3. 核心改动说明
+If the task lacks enough authority to identify scope, Codex must stop and ask for clarification.
 
-说明：
+### Step 1 - Pre-Implementation Review
 
-- 做了什么修改
-- 为什么这样改
-- 是否影响现有逻辑
+Codex must execute:
 
-### 4. 预期行为（必须可测试）
-
-运行：
-
-```bash
-py main.py seeds/test1.txt
+```text
+docs/skills/iteration_execution_guard.md
 ```
 
-预期：
+The review must expose repository reality, dirty tree status, scope mismatches, and risks before editing.
 
-- XXX 字段变化
-- XXX 行为出现
+`review_id` is allowed as a Codex-local safety trace id, but v3 workflow eventization is:
 
-### 5. 风险与注意事项（如有）
+```text
+task_id
+audit_id
+attempt_id
+acceptance_id
+```
 
-例如：
+### Step 2 - User / Control Agent Confirmation
 
-- 可能影响旧数据结构
-- 需要后续验证
-- 存在边界情况
+Codex may edit only after the user or Control Agent confirms the review or explicitly authorizes a bounded landing task in the existing working tree.
 
----
+### Step 3 - Bounded Landing
 
-## 🚫 禁止行为
+Codex must:
 
-- ❌ 跳过 Review 直接编码
-- ❌ 未经用户确认修改架构
-- ❌ 在多个模块同时做大范围改动
-- ❌ 引入隐藏逻辑（未说明）
-- ❌ 修改未在迭代文档中声明的模块
+- modify only allowed files
+- avoid forbidden files
+- keep changes minimal
+- preserve business architecture
+- avoid entering future-version work
+- avoid opportunistic refactors
 
----
+### Step 4 - Self-Check
 
-## 🔁 与 Sub Agent 的协作规则
+Codex must run the self-check commands declared by the task or iteration document.
 
-Codex 不负责测试。
+Self-check means:
 
-流程：
+```text
+confirm the delivery is coherent enough to hand to DS Verify.
+```
 
-Codex 交付（带 `attempt_id`）→ 用户转发 → MiniMax 测试（带 `acceptance_id`）→ 反馈 → Codex 修复
+DS Verify remains the authority for acceptance-level validation.
 
-Codex 必须：
+## Delivery Report
 
-- 根据测试反馈精准修复
-- 不重复提交无关改动
+Each Codex delivery must include:
 
----
+```text
+task_id
+audit_id / N/A
+attempt_id
+actual_added_files
+actual_modified_files
+actual_deleted_files
+forbidden_files_touched: yes / no
+test_commands
+test_results
+latest_run_dir / N/A
+artifact_check
+git diff --name-only output
+known_issues
+```
 
-## ⚠️ 异常处理
+For documentation-only tasks, `latest_run_dir` and business tests may be `N/A` if the task explicitly says business tests are not required.
 
-### 1. 迭代文档存在问题
+## Attempt Strategy
 
-必须：
+Default:
 
-- 在 Review 阶段指出
-- 等待用户确认
+```text
+attempts are serial.
+```
 
-### 2. 发现现有代码结构冲突
+Parallel attempts are allowed only when the iteration document explicitly allows them and all conditions in `workflow_core.md` are satisfied.
 
-必须：
+Codex must not start `attempt-02` after a failed `attempt-01` unless the user / Control Agent explicitly authorizes the next attempt.
 
-- 明确说明冲突点
-- 提出调整建议
-- 不得直接绕过
+## Forbidden Behavior
 
-### 3. 无法确定实现方式
+Codex must not:
 
-必须：
+- skip the execution guard for implementation work
+- modify files outside the allowed scope
+- edit `TASK_LOG.md`, `CHANGELOG.md`, or iteration status unless explicitly assigned
+- treat Hook output as DS Verify
+- declare final closeout
+- convert DS soft recommendations into blockers
+- enter R1, schema split, prompt redesign, selector changes, or report generation changes unless the current iteration explicitly permits them
+- run destructive git commands without explicit user request
 
-- 提出选项
-- 请求用户决策
+## DS Handoff
 
----
+After Codex delivery:
 
-## 🧠 思维模式（核心要求）
+```text
+Codex Attempt
+  -> DS Verify
+  -> DS Accept
+  -> Control Agent / User Closeout
+```
 
-Codex 必须具备：
+Codex must make the handoff easy by reporting:
 
-- 执行能力：按文档实现功能
-- 架构感知：识别职责过载、耦合、重复规则
-- 风险意识：在编码前暴露问题，而不是事后修复
+- exact modified files
+- exact commands run
+- exact failures or skipped checks
+- latest run directory if a run was created
+- any known issues that DS should verify
 
----
+## One-Line Rule
 
-## 📌 一句话总结
-
-先理解结构，再写代码；先暴露风险，再实现功能。
+Codex lands the approved change and proves what changed; DS verifies and accepts; Control Agent / User closes the version.

@@ -6,9 +6,20 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd \"D:/项目开发/研一/adarian/adarian mvp\" && python -m py_compile main.py src/*.py 2>&1 || echo \"语法检查失败\"",
+            "command": "cd \"${CLAUDE_PROJECT_DIR}\" && python3 -m py_compile main.py && python3 -m compileall src || echo \"[DS] py_compile / compileall failed\"",
             "timeout": 30,
-            "statusMessage": "检查 Python 语法..."
+            "statusMessage": "[DS] Python syntax check..."
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"${CLAUDE_PROJECT_DIR}\" && echo \"[DS] forbidden files check must be enforced by /ds-verify against iteration doc §6.3\"",
+            "timeout": 5,
+            "statusMessage": "[DS] Forbidden files reminder..."
           }
         ]
       }

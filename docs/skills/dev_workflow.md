@@ -1,4 +1,12 @@
-# Adarian MVP 开发规范与工作流程（Claude Code 操作手册）
+# ⛔ DEPRECATED — 已废弃
+
+**本文件已被 `workflow_core.md` v3.0 取代，不再作为权威源。**
+
+所有流程规则以 `docs/skills/workflow_core.md` 为准。本文件仅保留作为历史参考，不得用于指导当前开发。
+
+---
+
+# Adarian MVP 开发规范与工作流程（Claude Code 操作手册）[历史存档]
 
 ## 文档概述
 

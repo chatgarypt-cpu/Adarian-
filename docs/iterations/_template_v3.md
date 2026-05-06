@@ -8,7 +8,7 @@
 - **当前阶段**：exploration / audit / execution / validation / closeout
 - **状态**：draft / under_review / approved / executing / validating / closed
 - **task_id**：task-vX.X.X-<topic>
-- **review_id**：review-vX.X.X-01
+- **audit_id**：audit-vX.X.X-01
 - **attempt_id**：
   - attempt-vX.X.X-01
   - attempt-vX.X.X-02
@@ -578,7 +578,7 @@ Codex 完成后必须回传：
 ```text
 iteration: vX.X.X
 task_id: task-vX.X.X-<topic>
-review_id: review-vX.X.X-01
+audit_id: audit-vX.X.X-01
 attempt_id:
 - attempt-vX.X.X-01
 - attempt-vX.X.X-02
