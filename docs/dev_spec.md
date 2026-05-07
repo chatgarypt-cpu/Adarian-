@@ -232,7 +232,7 @@ whitebox/artifact_check.json
 源码模块：
 
 ```text
-src/phase1_entity_extraction.py
+src/phase1/extraction.py
 ```
 
 职责：
@@ -287,7 +287,7 @@ entities_and_relations.json
 源码模块：
 
 ```text
-src/phase2_topology_builder.py
+src/phase2/topology_builder.py
 ```
 
 职责：
@@ -326,7 +326,7 @@ social_graph.json
 源码模块：
 
 ```text
-src/phase3_tick_simulation.py
+src/phase3/tick_simulation.py
 src/phase3/speaker_selector.py
 src/phase3/context_builder.py
 src/phase3/simulation_card.py
@@ -398,7 +398,7 @@ v1.2.2 的方向是 speaker behavior observability，而不是改变调度策略
 源码模块：
 
 ```text
-src/phase4_report_agent.py
+src/phase4/report_agent.py
 ```
 
 职责：

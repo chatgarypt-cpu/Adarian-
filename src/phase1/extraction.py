@@ -18,8 +18,7 @@ Phase 1: 实体提取与分类模块（Analyzer/Generator/Validator 协作架构
 修改于：v1.1.10（LLM1/2/3 → Analyzer/Generator/Validator）
 """
 
-# v1.2.5 源码事实：当前文件是 Phase 1 package 主入口。
-# legacy root-level import path is preserved by src/phase1_entity_extraction.py.
+# v1.2.5.1 源码事实：Phase 1 package entrypoint is src.phase1.
 # 后续如进入 R1 Parser / Compiler / Validator Skeleton，必须以 v1.2.3 contract 为准。
 
 import json

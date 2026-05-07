@@ -4,6 +4,65 @@
 
 ---
 
+## v1.2.5.1 (2026-05-07)
+
+**主题**：Source Tree Governance Completion
+
+### 新增
+
+- [docs/_archive/legacy/README.md] 说明 v1.2.5.1 归档的 legacy source files。
+
+### 归档
+
+- [docs/_archive/legacy/phase0_entity_extraction.py] 从 `src/` 归档历史 Phase 0 文件。
+- [docs/_archive/legacy/phase1_persona_engine.py] 从 `src/` 归档历史 persona engine 文件。
+- [docs/_archive/legacy/agent_quality_analyzer.py] 从 `src/` 归档历史 Agent quality analyzer 文件。
+
+### 删除
+
+- [src/phase1_entity_extraction.py] 删除无活跃消费者的 Phase 1 legacy shim。
+- [src/phase2_topology_builder.py] 删除无活跃消费者的 Phase 2 legacy shim。
+- [src/phase3_tick_simulation.py] 删除无活跃消费者的 Phase 3 legacy shim。
+- [src/phase4_report_agent.py] 删除无活跃消费者的 Phase 4 legacy shim。
+- [tests/test_legacy_shim_imports.py] 删除与 package import 测试重叠的旧 shim import 测试。
+
+### 修改
+
+- [src/phase1/__init__.py] 导出 `_normalize_unescaped_quotes_inside_string_values`。
+- [profiling/prompts.py] 迁移到 `src.phase1` package import。
+- [scripts/probes/p1a_prompt_probe.py] 迁移到 `src.phase1` package import。
+- [scripts/probes/p1g_prompt_probe.py] 迁移到 `src.phase1` package import。
+- [tests/test_json_parser.py] 迁移到 `src.phase1` package import。
+- [tests/test_json_parser_quote_tolerance.py] 迁移到 `src.phase1` package import。
+- [tests/test_phase_package_imports.py] 补入 `ANALYZER_SYSTEM_PROMPT` 非空导出断言。
+- [README.md] 更新 `src/` 树为 phase package 结构。
+- [docs/dev_spec.md] 将 Phase 1-4 源码路径更新为 package 内路径。
+- [src/__init__.py] 更新模块说明并将 `__version__` 调整为 `1.2.5.1`。
+- [src/phase1/extraction.py] 清理旧 shim 注释。
+- [src/phase1/prompts.py] 清理旧迁移注释，不改 prompt 内容。
+
+### 验收结果
+
+```text
+.venv/bin/python -m py_compile main.py
+.venv/bin/python -m py_compile src/phase1/__init__.py src/phase1/extraction.py src/phase1/prompts.py
+.venv/bin/python -m py_compile src/phase2/__init__.py src/phase2/topology_builder.py
+.venv/bin/python -m py_compile src/phase3/__init__.py src/phase3/tick_simulation.py
+.venv/bin/python -m py_compile src/phase4/__init__.py src/phase4/report_agent.py
+.venv/bin/python -m pytest tests/ -v
+.venv/bin/python main.py seeds/test1.txt
+```
+
+结果：通过。
+
+最新 run_dir：`outputs/runs/test1_20260507_170557`
+
+### 历史记录勘误
+
+- [实际执行: v1.2.5.1] 2026-04-08 记录中关于 `phase0_entity_extraction.py`、`phase1_persona_engine.py`、`agent_quality_analyzer.py` 已删除，以及 `README.md` / `src/__init__.py` / `docs/dev_spec.md` 已同步的描述，与 v1.2.5.1 执行前源码事实不完全一致；本轮已完成实际归档、phase package 路径同步和 shim 删除。
+
+---
+
 ## v1.2.5 (2026-05-06)（attempt-02 delivered）
 
 **主题**：Source Tree Governance & Whitebox Artifact Shell
@@ -89,6 +148,8 @@ whitebox/artifact_check.json missing_artifacts: []
 | `src/__init__.py` | 更新模块说明，明确 `phase0_entity_extraction.py`、`phase1_persona_engine.py`、`agent_quality_analyzer.py` 为历史脚本或未接入主流程工具 |
 | `docs/dev_spec.md` | 同步当前文件结构与验收项，移除已删除历史脚本在现行技术规格中的引用 |
 | `docs/technical_analysis_agent_speaking_logic.md` | 增加归档说明，明确该文档基于旧架构，不再作为当前实现依据 |
+
+> 勘误 [实际执行: v1.2.5.1]：上述 `README.md` / `src/__init__.py` / `docs/dev_spec.md` 同步声明在 v1.2.5.1 执行前仍有事实漂移；实际同步已在 v1.2.5.1 完成。
 
 ### 2026-03-30
 
@@ -617,6 +678,8 @@ v1.2.0 不解决的问题，全部延后至 v1.2.1：
 - [src] 删除 `phase0_entity_extraction.py`
 - [src] 删除 `phase1_persona_engine.py`
 - [src] 删除 `agent_quality_analyzer.py`
+
+> 勘误 [实际执行: v1.2.5.1]：上述三项在 v1.2.5.1 执行前仍存在于 `src/`；本轮已归档至 `docs/_archive/legacy/`，未作为 runtime / tests / profiling 主链文件保留。
 
 ### 说明
 - 当前运行主链路确认为：`main.py -> phase1_entity_extraction.py -> phase2_topology_builder.py -> phase3_tick_simulation.py -> phase4_report_agent.py`

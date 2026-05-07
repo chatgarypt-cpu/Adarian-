@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from src.phase1_entity_extraction import (
+from src.phase1 import (
     GENERATOR_SYSTEM_PROMPT,
     GENERATOR_USER_PROMPT,
     VALIDATOR_SYSTEM_PROMPT,

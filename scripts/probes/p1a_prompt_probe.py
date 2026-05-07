@@ -20,7 +20,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.llm_client import LLMClient
-from src.phase1_entity_extraction import ANALYZER_SYSTEM_PROMPT, ANALYZER_USER_PROMPT
+from src.phase1 import ANALYZER_SYSTEM_PROMPT, ANALYZER_USER_PROMPT
 
 RUNS_ROOT = PROJECT_ROOT / "profiling" / "output" / "runs"
 BASELINE_MANIFEST_PATH = (

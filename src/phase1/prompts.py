@@ -1,7 +1,4 @@
-"""Phase 1 prompt constants.
-
-Moved from src.phase1_entity_extraction without content changes.
-"""
+"""Phase 1 prompt constants exposed through src.phase1."""
 
 # =============================================================================
 # Analyzer: 设置事件温度和烈度
@@ -247,5 +244,4 @@ VALIDATOR_USER_PROMPT = """请校验以下 JSON：
 【待校验 JSON】
 {json_content}
 """
-
 

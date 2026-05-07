@@ -13,7 +13,7 @@ import os
 # 添加项目路径
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.phase1_entity_extraction import _normalize_inner_cjk_quotes, _parse_json_candidate
+from src.phase1 import _normalize_inner_cjk_quotes, _parse_json_candidate
 
 
 def run_tests():

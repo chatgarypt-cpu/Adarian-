@@ -41,6 +41,81 @@ carry_over:
 
 ---
 
+## [2026-05-07 已收口] v1.2.5.1 - Source Tree Governance Completion
+
+**执行者**：Codex
+**基于版本 / Commit**：`acf8e7e chore: close out v1.2.5 whitebox artifact shell`
+**任务性质**：v1.2.5 closeout completion patch，不扩大到 v1.2.6。
+
+**记录标识**：
+```text
+task_id: task-v1.2.5.1-source-tree-governance-completion
+review_id: review-v1.2.5.1-01
+attempt_id:
+- attempt-v1.2.5.1-01
+- attempt-v1.2.5.1-02
+- attempt-v1.2.5.1-03
+- attempt-v1.2.5.1-04
+acceptance_id: accept-v1.2.5.1-01
+acceptance_result: pass
+carry_over:
+- Schema Split 延后至 v1.2.6
+```
+
+**实际归档文件**：
+- `docs/_archive/legacy/phase0_entity_extraction.py`
+- `docs/_archive/legacy/phase1_persona_engine.py`
+- `docs/_archive/legacy/agent_quality_analyzer.py`
+
+**实际删除文件**：
+- `src/phase1_entity_extraction.py`
+- `src/phase2_topology_builder.py`
+- `src/phase3_tick_simulation.py`
+- `src/phase4_report_agent.py`
+- `tests/test_legacy_shim_imports.py`
+
+**实际修改 / 新增文件**：
+- `src/phase1/__init__.py`
+- `profiling/prompts.py`
+- `scripts/probes/p1a_prompt_probe.py`
+- `scripts/probes/p1g_prompt_probe.py`
+- `tests/test_json_parser.py`
+- `tests/test_json_parser_quote_tolerance.py`
+- `tests/test_phase_package_imports.py`
+- `src/__init__.py`
+- `README.md`
+- `docs/dev_spec.md`
+- `docs/_archive/legacy/README.md`
+- `docs/iterations/CHANGELOG.md`
+- `docs/iterations/TASK_LOG.md`
+- `src/phase1/extraction.py`
+- `src/phase1/prompts.py`
+
+**基本验收结果**：
+- ✅ `.venv/bin/python -m py_compile main.py` 通过。
+- ✅ `.venv/bin/python -m py_compile src/phase1/__init__.py src/phase1/extraction.py src/phase1/prompts.py` 通过。
+- ✅ `.venv/bin/python -m py_compile src/phase2/__init__.py src/phase2/topology_builder.py` 通过。
+- ✅ `.venv/bin/python -m py_compile src/phase3/__init__.py src/phase3/tick_simulation.py` 通过。
+- ✅ `.venv/bin/python -m py_compile src/phase4/__init__.py src/phase4/report_agent.py` 通过。
+- ✅ Phase 1 / 2 / 3 / 4 package import checks 通过。
+- ✅ `profiling.prompts` import 通过。
+- ✅ `scripts.probes.p1a_prompt_probe` / `scripts.probes.p1g_prompt_probe` import 通过。
+- ✅ `.venv/bin/python -m pytest tests/ -v` 通过，`23 passed`。
+- ✅ `.venv/bin/python main.py seeds/test1.txt` 通过。
+
+**运行结果**：
+- 最新 run_dir：`outputs/runs/test1_20260507_170557`
+- 风险等级：`LOW`
+- 最终极化指数：`0.38`
+- Whitebox completeness truncated: `false`
+
+**known_issues**：
+- 第一次 test1 smoke 在沙盒网络中出现 `APIConnectionError`；按执行环境规则使用非沙盒网络重跑后通过。
+- `main.py` 中 phase logger 名称仍保留历史字符串，不属于本轮业务逻辑修改范围。
+- 历史 profiling output archive 中仍保留旧路径字符串，属于历史产物，不参与 runtime / tests / profiling 主链。
+
+---
+
 ## [2026-05-06 attempt delivered] v1.2.5 - Source Tree Governance & Whitebox Artifact Shell
 
 **执行者**：Codex

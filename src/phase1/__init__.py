@@ -2,6 +2,7 @@
 
 from .extraction import (
     _normalize_inner_cjk_quotes,
+    _normalize_unescaped_quotes_inside_string_values,
     _parse_json_candidate,
     analyzer_set_parameters,
     extract_entities,
@@ -28,6 +29,7 @@ __all__ = [
     "VALIDATOR_SYSTEM_PROMPT",
     "VALIDATOR_USER_PROMPT",
     "_normalize_inner_cjk_quotes",
+    "_normalize_unescaped_quotes_inside_string_values",
     "_parse_json_candidate",
     "analyzer_set_parameters",
     "extract_entities",

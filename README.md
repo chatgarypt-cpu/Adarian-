@@ -73,11 +73,24 @@ adarian/
 ├── src/                           # 源代码
 │   ├── schemas.py                 # Pydantic 数据模型
 │   ├── llm_client.py              # LLM 统一调用
-│   ├── phase0_entity_extraction.py # Analyzer/Generator/Validator 实体提取
-│   ├── phase1_persona_engine.py    # Agent 人群生成
-│   ├── phase2_topology_builder.py  # 社交拓扑构建
-│   ├── phase3_tick_simulation.py   # 多轮模拟推演
-│   └── phase4_report_agent.py      # 报告生成
+│   ├── phase1/                    # 实体提取与群体生成 package
+│   │   ├── __init__.py            # Phase 1 package 入口
+│   │   ├── extraction.py          # Analyzer/Generator/Validator 主链
+│   │   └── prompts.py             # Phase 1 prompt 常量
+│   ├── phase2/                    # 社交拓扑构建 package
+│   │   ├── __init__.py
+│   │   └── topology_builder.py
+│   ├── phase3/                    # 多轮模拟推演 package
+│   │   ├── __init__.py
+│   │   ├── tick_simulation.py
+│   │   ├── speaker_selector.py
+│   │   ├── context_builder.py
+│   │   ├── simulation_card.py
+│   │   └── state_updater.py
+│   ├── phase4/                    # 报告生成 package
+│   │   ├── __init__.py
+│   │   └── report_agent.py
+│   └── whitebox/                  # 白盒运行产物检查
 │
 ├── outputs/                       # 运行结果
 │   ├── entities_and_relations.json
@@ -116,12 +129,13 @@ adarian/
 
 ## 当前版本
 
-**v1.1.10** | 详细技术文档：[docs/dev_spec.md](./docs/dev_spec.md)
+**v1.2.5.1** | 详细技术文档：[docs/dev_spec.md](./docs/dev_spec.md)
 
 ### 版本历史
 
 | 版本 | 日期 | 主要变更 |
 |------|------|---------|
+| v1.2.5.1 | 2026-05-07 | Source Tree Governance closeout：归档 legacy 文件、迁移 phase package import、删除旧 shim |
 | v1.1.10 | 2026-03-31 | stance描述修正、LLM角色重命名（Analyzer/Generator/Validator） |
 | v1.1.9 | 2026-03-30 | susceptibility 接入、立场数据修复 |
 | v1.1.8 | 2026-03-29 | 报告 Agent 优化（10章节结构） |
