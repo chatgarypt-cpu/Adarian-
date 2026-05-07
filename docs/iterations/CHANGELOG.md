@@ -4,6 +4,50 @@
 
 ---
 
+## v1.2.5.2 (2026-05-07)
+
+**主题**：LLM-Owned Score Audit & Report Metric Ownership Governance
+
+### 新增
+
+- [tests/test_phase4_markdown_metric_grounding.py] 新增 Phase 4 Markdown metric grounding targeted tests，覆盖 code-owned stance matrix 与空拐点声明。
+
+### 修改
+
+- [src/phase4/report_agent.py] 将 Phase 4 Markdown 报告的 per-agent stance 与 inflection point 来源约束到 code-owned blocks。
+- [src/phase4/report_agent.py] `REPORT_SYSTEM_PROMPT` 明确禁止 LLM 自行重算 per-agent stance、全局指标或使用独立阈值识别拐点。
+- [src/phase4/report_agent.py] `build_full_report_context()` 注入 `CODE_OWNED_AGENT_STANCE_MATRIX` 与 `CODE_OWNED_INFLECTION_POINTS`。
+
+### 验收结果
+
+```text
+.venv/bin/python -m py_compile src/phase4/report_agent.py
+.venv/bin/python -m compileall src
+.venv/bin/python -m pytest tests/test_phase4_markdown_metric_grounding.py -v
+.venv/bin/python -m pytest tests/ -v
+.venv/bin/python main.py seeds/test1.txt
+```
+
+结果：通过。
+
+最新 run_dir：`outputs/runs/test1_20260507_182539`
+
+metric grounding：
+
+```text
+inflection_points_json_count: 0
+inflection_points_markdown_claim: 本轮模拟未发现显著拐点
+per_agent_stance_traceable: yes
+global_metrics_consistent: yes
+```
+
+known issues：
+
+- 原始 DS audit `team_mode_used=false`，本版本按 `closed with process issue` 处理。
+- event_scale / event_controversy 仍不进入 `final_report.json`，可从 `entities_and_relations.json` 追溯。
+
+---
+
 ## v1.2.5.1 (2026-05-07)
 
 **主题**：Source Tree Governance Completion

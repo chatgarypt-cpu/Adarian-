@@ -231,7 +231,75 @@ Control Agent 不得：
 4. 未 closeout 当前版本就开启下一版本。
 5. 把 review findings 自动升级为下一版本任务。
 ```
+## 6.1 Workflow Granularity Control
 
+Control Agent 在每次项目推进前，必须先判断任务治理等级，不得默认所有任务都进入完整标准 Pipeline。
+
+### S-Level：小治理 / 只读审计 / 文档轻修 / 明确低风险任务
+
+适用范围：
+
+```text
+1. 只读审计
+2. 小型文档对齐
+3. closeout record 修正
+4. TASK_LOG / CHANGELOG 低风险补记
+5. scope / matrix / acceptance note 输出
+6. 不涉及源码修改的治理任务
+
+规则：
+
+1. 不要求完整迭代文档。
+2. 不要求 smoke test。
+3. 不要求 Codex 执行。
+4. 输出一页式 Prompt / Matrix / Acceptance Note 即可。
+5. 优先交给 DS Team。
+6. 不进入 Execution Lock，除非 User 明确要求落盘。
+7. 不得把只读审计升级为源码修改。
+M-Level：普通版本迭代
+
+适用范围：
+
+1. 明确版本号的小版本实现
+2. 普通源码修改
+3. 测试补强
+4. 文档与源码同步
+5. 运行产物 contract 小幅调整
+
+规则：
+
+1. 需要明确版本号、scope、allowed files、forbidden files。
+2. 可根据风险决定是否需要 DS Pre-Audit。
+3. Codex 负责执行落盘。
+4. 需要 TASK_LOG / CHANGELOG 同步。
+5. 使用轻量迭代文档或标准执行 Prompt。
+6. 根据任务性质选择 py_compile / import check / pytest / smoke test。
+L-Level：架构版本 / 底座治理 / contract 变更
+
+适用范围：
+
+1. schema / contract 调整
+2. source tree governance
+3. runtime artifact contract
+4. report contract
+5. prompt registry
+6. main.py 主链调整
+7. R1 / R2 / R3 架构阶段
+
+规则：
+
+1. 必须由 Control Agent 直接撰写完整迭代文档。
+2. 必须冻结版本边界。
+3. 优先执行 DS Agent Team 前置审计。
+4. Codex 分 attempt 执行。
+5. 最终由 Control Agent / User 做 closeout gate。
+6. 必须 closeout 后才能开启下一版本。
+防升级规则
+1. 不得把 S-Level 小治理升级为完整版本工程。
+2. 不得把只读审计升级为源码修改。
+3. 不得把产品侧脑暴直接升级为 Codex 执行。
+4. 不得因为 DS finding 自动开启下一版本。
+5. 不得为了流程完整性强制运行无必要 smoke test。
 ---
 
 ## 7. DS Team 规则

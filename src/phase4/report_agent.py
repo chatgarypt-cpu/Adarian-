@@ -6,7 +6,7 @@ Phase 4: 宏观洞察生成器
 v1.1.8 变化：
 - 重构报告结构（概要 → 实体 → 拐点 → 演化 → 洞察 → 风险）
 - 增加 Tick 0 发言展示
-- 增加关键拐点识别（极化变化 > 0.05 或立场偏移 > 1.5）
+- 增加关键拐点识别（以 identify_inflection_points() 的 code-owned 输出为准）
 - 增加 Tick 1-N 演化展示
 - 增加最终立场变化表格
 - 增加极化演化轨迹
@@ -52,9 +52,11 @@ REPORT_SYSTEM_PROMPT = """你是一位资深的社会舆情分析师。你的任
 9. 🎯 舆论态势判断 - 整体极化、矛盾焦点、演化趋势、风险提示
 10. ⚠️ 风险评估 - 具体风险点和建议
 
-【拐点识别标准】
-- 极化指数变化 > 0.05（绝对值）
-- 或某个群体立场偏移 > 1.5（绝对值）
+【指标 Grounding 硬约束】
+- “关键拐点”只能引用输入中的【CODE_OWNED_INFLECTION_POINTS】，不得自行按其他阈值重算或新增拐点。
+- 如果【CODE_OWNED_INFLECTION_POINTS】声明“本轮模拟未发现显著拐点”，报告必须写同一结论，不得声称存在 1 个或多个拐点。
+- “最终立场变化”只能引用输入中的【CODE_OWNED_AGENT_STANCE_MATRIX】，起始值、终值和 delta 必须逐字使用该表数值。
+- 全局 x(t) 均值、标准差、极化指数只能引用输入中的【情绪演化数据】和【x(t) 序列】，不得自行重算。
 
 【立场变化趋势符号】
 - 变化 < -1.0：↓↓
@@ -83,6 +85,7 @@ def build_full_report_context(
     extraction_output: EntityExtractionOutput,
     tick_logs: List[TickLog],
     x_t_sequence: List[float],
+    phase2_output: Phase2Output = None,
 ) -> str:
     """构建完整的报告上下文数据
 
@@ -151,30 +154,86 @@ def build_full_report_context(
         direction = "下降" if change_pct < 0 else "上升"
         lines.append(f"极化指数从 {pol_sequence[0]} 变化到 {pol_sequence[-1]}，{direction} {abs(change_pct):.0f}%")
 
-    # 6. 立场变化数据（用于洞察生成）
-    # v1.1.9 修复：从 tick_log[1]（意见传播者初始）而非 tick_log[0]（事件实体）读取初始立场
-    lines.append("\n【立场变化详情】")
-    if tick_logs and len(tick_logs) >= 2:
-        # tick_log[0] 是事件实体发言，用 tick_log[1] 作为意见传播者初始立场
-        tick_1_entries = {e.agent_id: e for e in tick_logs[1].entries}
-        tick_n_entries = {e.agent_id: e for e in tick_logs[-1].entries}
-        for agent_id in tick_n_entries:
-            if agent_id in tick_1_entries:
-                initial = tick_1_entries[agent_id].current_stance
-                final = tick_n_entries[agent_id].current_stance
-                delta = final - initial
-                group = tick_n_entries[agent_id].group_name
-                lines.append(f"  {group}: {initial:.1f} → {final:.1f} ({delta:+.1f})")
-    elif tick_logs and len(tick_logs) == 1:
-        # 只有一个 tick 的边缘情况，用 tick_log[0] 的数据
-        tick_0_entries = {e.agent_id: e for e in tick_logs[0].entries}
-        for entry in tick_0_entries:
-            lines.append(f"  {entry.group_name}: {entry.current_stance:.1f}（无变化，单 tick 数据）")
+    # 6. code-owned grounding blocks
+    lines.append("\n【CODE_OWNED_AGENT_STANCE_MATRIX】")
+    lines.extend(_format_code_owned_agent_stance_matrix(tick_logs))
+
+    lines.append("\n【CODE_OWNED_INFLECTION_POINTS】")
+    inflection_points = identify_inflection_points(tick_logs, phase2_output) if phase2_output else []
+    lines.extend(_format_code_owned_inflection_points(inflection_points))
 
     # 7. x(t) 序列
     lines.append(f"\n【x(t) 序列】：{' → '.join([f'{x:.2f}' for x in x_t_sequence])}")
 
     return "\n".join(lines)
+
+
+def _build_code_owned_agent_stance_matrix(tick_logs: List[TickLog]) -> List[Dict[str, Any]]:
+    """Build the stance matrix used as the only Markdown source for per-agent values."""
+    if not tick_logs:
+        return []
+
+    start_log = tick_logs[1] if len(tick_logs) >= 2 else tick_logs[0]
+    end_log = tick_logs[-1]
+    start_entries = {entry.agent_id: entry for entry in start_log.entries}
+    end_entries = {entry.agent_id: entry for entry in end_log.entries}
+
+    rows = []
+    for agent_id in sorted(set(start_entries) & set(end_entries)):
+        start_entry = start_entries[agent_id]
+        end_entry = end_entries[agent_id]
+        initial = start_entry.current_stance
+        final = end_entry.current_stance
+        rows.append({
+            "agent_id": agent_id,
+            "group_name": end_entry.group_name,
+            "start_tick": start_log.tick,
+            "end_tick": end_log.tick,
+            "initial_stance": initial,
+            "final_stance": final,
+            "delta": final - initial,
+        })
+
+    return rows
+
+
+def _format_code_owned_agent_stance_matrix(tick_logs: List[TickLog]) -> List[str]:
+    rows = _build_code_owned_agent_stance_matrix(tick_logs)
+    if not rows:
+        return ["无可用 opinion spreader 立场矩阵。"]
+
+    lines = [
+        "以下表格是 Markdown 报告中最终立场变化的唯一数值来源；不得重算。",
+        "| Agent | 群体 | 起始 Tick | 结束 Tick | 起始立场 | 结束立场 | Delta |",
+        "|---|---|---:|---:|---:|---:|---:|",
+    ]
+    for row in rows:
+        lines.append(
+            f"| #{row['agent_id']} | {row['group_name']} | {row['start_tick']} | "
+            f"{row['end_tick']} | {row['initial_stance']:.2f} | "
+            f"{row['final_stance']:.2f} | {row['delta']:+.2f} |"
+        )
+    return lines
+
+
+def _format_code_owned_inflection_points(inflection_points: List[InflectionPoint]) -> List[str]:
+    if not inflection_points:
+        return [
+            "本轮模拟未发现显著拐点。",
+            "Markdown 报告不得声称存在拐点，不得使用其他阈值自行识别拐点。",
+        ]
+
+    lines = [
+        "以下表格是 Markdown 报告中关键拐点的唯一来源；不得新增其他拐点。",
+        "| Tick | Agent | 群体 | 影响 |",
+        "|---:|---:|---|---|",
+    ]
+    for point in inflection_points:
+        lines.append(
+            f"| {point.tick} | #{point.agent_id} | {point.group_name} | "
+            f"{point.impact_description} |"
+        )
+    return lines
 
 
 def build_entity_distribution(extraction_output: EntityExtractionOutput) -> str:
@@ -305,8 +364,17 @@ def generate_report_with_llm(
 
     llm = get_llm_client()
 
+    if phase2_output is None:
+        from src.phase3 import load_phase2_output
+        phase2_output = load_phase2_output()
+
     # 构建完整上下文
-    report_context = build_full_report_context(extraction_output, tick_logs, x_t_sequence)
+    report_context = build_full_report_context(
+        extraction_output,
+        tick_logs,
+        x_t_sequence,
+        phase2_output=phase2_output,
+    )
 
     user_prompt = f"""请根据以下数据生成舆情洞察报告：
 

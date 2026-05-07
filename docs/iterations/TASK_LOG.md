@@ -14,6 +14,72 @@
 
 ---
 
+## 2026-05-07: v1.2.5.2 Phase 4 Markdown Metric Grounding Fix — Codex attempt-02 完成
+
+- **task_id**: task-v1.2.5.2-llm-owned-score-audit
+- **review_id**: review-v1.2.5.2-01
+- **attempt_id**: attempt-v1.2.5.2-02
+- **acceptance_id**: accept-v1.2.5.2-02
+- **acceptance_result**: pass_with_process_issue
+- **类型**: Phase 4 Markdown metric grounding 最小源码修复
+- **状态**: ✅ 已收口；closed with process issue
+
+**实际修改文件**：
+- `src/phase4/report_agent.py`
+- `tests/test_phase4_markdown_metric_grounding.py`
+- `docs/iterations/CHANGELOG.md`
+- `docs/iterations/TASK_LOG.md`
+- `docs/iterations/v1.2.5.2 - LLM-Owned Score Audit & Report Metric Ownership Governance.md`
+
+**基本验收结果**：
+- ✅ `.venv/bin/python -m py_compile src/phase4/report_agent.py` 通过。
+- ✅ `.venv/bin/python -m compileall src` 通过。
+- ✅ `.venv/bin/python -m pytest tests/test_phase4_markdown_metric_grounding.py -v` 通过，`2 passed`。
+- ✅ `.venv/bin/python -m pytest tests/ -v` 通过，`25 passed`。
+- ✅ `.venv/bin/python main.py seeds/test1.txt` 通过。
+
+**运行结果**：
+- 最新 run_dir：`outputs/runs/test1_20260507_182539`
+- risk_level：`MEDIUM`
+- final polarization_index：`0.48`
+- whitebox status：`pass`
+- artifact_check status：`pass`
+- missing_artifacts：`[]`
+
+**metric grounding check**：
+- `inflection_points_json_count`: `0`
+- `inflection_points_markdown_claim`: `本轮模拟未发现显著拐点`
+- `per_agent_stance_traceable`: `yes`
+- `global_metrics_consistent`: `yes`
+
+**known_issues / carry_over**：
+- 原始 DS audit `team_mode_used=false`，本版本不可记为 clean pass。
+- event_scale / event_controversy 仍未进入 `final_report.json`，仅可从 `entities_and_relations.json` 追溯。
+- Prompt 仍嵌在源码中，Prompt Registry / Report Context Contract 延后。
+- 当前 `docs/skills/dev_workflow.md` / `docs/workflow_core.md` dirty files 与本轮无关，未处理。
+
+**closeout_decision**：
+- `v1.2.5.2 closed with process issue`
+- `blocks_v1.2.6: no`
+
+---
+
+## 2026-05-07: v1.2.5.2 LLM-Owned Score Audit — 完成
+
+- **task_id**: task-v1.2.5.2-llm-owned-score-audit
+- **review_id**: review-v1.2.5.2-01
+- **类型**: 只读审计（无代码修改）
+- **状态**: ✅ 已完成
+- **产出**: `audit/phase1大版本审计/v1.2.5.2-llm-owned-score-audit-2026-05-07.md`
+- **审计范围**: Phase 1-4 + whitebox 全部 68 个评分/分类字段
+- **结论**: NO_IMMEDIATE_ACTION_REQUIRED — 2 FINDINGS
+  - Finding #1: Phase 4 Markdown 报告 LLM 独立重生成指标，存在与 JSON 不一致的双路径风险 (LOW)
+  - Finding #2: Phase 2 jitter 导致模拟轨迹不可复现 (LOW, by design)
+- **分数所有权分布**: CODE_OWNED 50% | LLM_OWNED_INITIAL 25% | LLM_OWNED_RUNTIME 1.5% | LLM_OWNED_REPORT 5.9% | SCHEMA_PROPERTY_OWNED 4.4% | HYBRID 4.4% | DEPRECATED_COMPAT 4.4%
+- **DS_verdict**: 可以继续 v1.2.6 Schema Split Governance
+
+---
+
 ## Workflow Record Contract
 
 自本次 workflow governance refactor 起，新的验收记录应至少包含：
