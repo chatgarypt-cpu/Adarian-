@@ -14,6 +14,45 @@
 
 ---
 
+## 2026-05-11: v1.2.6 Schema Split Governance — DS Accept 通过，已收口
+
+- **task_id**: task-v1.2.6-schema-split-governance
+- **audit_id**: audit-v1.2.6-01
+- **attempt_id**: attempt-v1.2.6-02
+- **acceptance_id**: accept-v1.2.6-01
+- **acceptance_result**: pass
+- **类型**: Schema Split Implementation
+- **状态**: ✅ 已收口 — v1.2.6 closed
+
+**实际新增文件**：
+- `src/schemas/__init__.py`
+- `src/schemas/common.py`
+- `src/schemas/phase1.py`
+- `src/schemas/phase2.py`
+- `src/schemas/phase3.py`
+- `src/schemas/phase4.py`
+- `src/schemas/_legacy.py`
+- `tests/test_schema_imports.py`
+
+**实际删除文件**：
+- `src/schemas.py`
+
+**实际修改文件**：
+- `src/__init__.py`
+- `src/phase3/tick_simulation.py`
+- `docs/iterations/v1.2.6 - Schema Split Governance & Contract Library Boundary .md`
+- `docs/iterations/TASK_LOG.md`
+- `docs/iterations/CHANGELOG.md`
+- `docs/dev_spec.md`
+
+**关键记录**：
+- `src/schemas/` package 成为 schema authority。
+- `ConfirmationBiasLevel` 保留为 `src` 与 `src.schemas` public export。
+- `_legacy.py` 收纳 dead/legacy schema types，不从 `src.schemas` 重新导出。
+- 未进入 Parser / Compiler / Validator、Repair Loop、Prompt Library 或 Phase 4 Report Governance。
+
+---
+
 ## 2026-05-07: v1.2.5.2 Phase 4 Markdown Metric Grounding Fix — Codex attempt-02 完成
 
 - **task_id**: task-v1.2.5.2-llm-owned-score-audit

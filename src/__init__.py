@@ -3,7 +3,7 @@ Adarian: 多智能体异步舆情预判系统
 ---
 
 各模块说明：
-- schemas.py: Pydantic 数据模型定义
+- schemas/: Pydantic schema contract library
 - llm_client.py: LLM 统一调用封装
 - phase1/: 实体提取与分类 package (Analyzer/Generator/Validator 协作)
 - phase2/: 微型社交拓扑构建 package
@@ -11,7 +11,7 @@ Adarian: 多智能体异步舆情预判系统
 - phase4/: 宏观洞察生成 package
 """
 
-__version__ = "1.2.5.1"
+__version__ = "1.2.6"
 
 # 导入主要模块方便使用
 from .schemas import (

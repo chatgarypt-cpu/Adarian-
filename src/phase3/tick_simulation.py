@@ -29,7 +29,7 @@ import config
 from src.schemas import (
     Phase2Output, GraphNode, GraphEdge, EntityExtractionOutput,
     Entity, OpinionSpreader,
-    TickLog, AgentEntry, GlobalMetrics, NodeRole
+    TickLog, AgentEntry, GlobalMetrics
 )
 from src.llm_client import get_llm_client
 from src.utils.runtime_logger import get_runtime_logger

@@ -1,9 +1,9 @@
 # Adarian Dev Spec
 
 **文档状态**：当前系统技术规格说明  
-**当前基线**：v1.2.5 - Source Tree Governance & Whitebox Artifact Shell
-**最后更新**：2026-05-06
-**依据来源**：当前源码、v1.2.0-v1.2.5 迭代记录、`outputs/runs/` 下最新运行产物
+**当前基线**：v1.2.6 - Schema Split Governance & Contract Library Boundary
+**最后更新**：2026-05-11
+**依据来源**：当前源码、v1.2.0-v1.2.6 迭代记录、`outputs/runs/` 下最新运行产物
 
 本文档描述当前真实系统状态，用于替代旧 v1.1.x 技术设想残留。未实现的未来方向只作为 roadmap 或 out-of-scope 记录，不作为当前能力描述。
 
@@ -224,6 +224,28 @@ whitebox_summary.json
 whitebox/report_completeness.json
 whitebox/artifact_check.json
 ```
+
+### Schema Contract Library
+
+当前 schema authority 为：
+
+```text
+src/schemas/
+```
+
+分层结构：
+
+```text
+src/schemas/__init__.py  # public re-export, keeps old from src.schemas import X compatible
+src/schemas/common.py    # shared Phase 1/common contracts
+src/schemas/phase1.py    # Phase 1 new-path compatibility re-export
+src/schemas/phase2.py    # Phase 2 contracts
+src/schemas/phase3.py    # Phase 3 contracts
+src/schemas/phase4.py    # Phase 4 contracts
+src/schemas/_legacy.py   # dead/legacy contracts, not re-exported from src.schemas
+```
+
+`EntityExtractionOutput` 仍是 Phase 1 canonical object。`ConfirmationBiasLevel` 保留为 `src` 与 `src.schemas` public export。`_legacy.py` 仅作为 legacy boundary，不代表 v1.2.7 P/C/V 已完成。
 
 ---
 
