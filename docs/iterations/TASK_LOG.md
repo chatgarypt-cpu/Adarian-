@@ -1446,3 +1446,27 @@ E2E: 5/5
 - 或进入 v1.1.2：Agent 个体差异化与确认偏差注入
 
 **状态**：✅ 已完成
+
+---
+
+## task-v1.2.6-schema-split-governance
+
+- **started**: 2026-05-07
+- **audit_id**: audit-v1.2.6-01
+- **audit_report**: audit/v1.2.6-ds-agent-team-review-2026-05-07.md
+- **DS_verdict**: CONDITIONAL_GO_AFTER_DOC_PATCH
+- **status**: doc_patch_applied → ready for attempt-01
+- **base_commit**: acf8e7e
+- **team_mode_used**: true（5 reviewer 并行）
+- **blocks_v1.2.7**: no
+
+**Doc Patch Application**（2026-05-11）:
+- audit_receipt_recovery: audit/v1.2.6-ds-audit-receipt-recovery-2026-05-11.md
+- P1 §1 status/metadata 更新：✅
+- P2 §6.2 允许修改清单更新：✅
+- P3 §5.2 schemas.py 处置策略追加：✅
+- P4 §5.3 类型归属 DS 裁定映射：✅
+- P5 §8.2 Import/Unit Test 修正 + 环境前提：✅
+- P6 §8.1 py_compile 命令修正：✅
+- Audit Receipt 已写回 iteration doc：✅
+- Closeout Record review_id → audit_id：✅
