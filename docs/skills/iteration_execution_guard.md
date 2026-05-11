@@ -51,31 +51,56 @@ Codex must inspect and report:
 
 ```bash
 git status --short --untracked-files=all
+git status --porcelain=v1 -- src tests main.py config.py scripts profiling seeds
+git status --porcelain=v1 -- docs audit
 git branch --show-current
 git log -1 --oneline
 git tag --points-at HEAD
 ```
 
-If the working tree is dirty during an architecture, schema, prompt, pipeline, output-contract, or multi-file change, Codex must return `NEEDS_VERSION_ISOLATION` unless the user has explicitly decided to continue in the dirty tree.
+For implementation attempts, Codex must distinguish source execution dirty state from documentation/audit dirty state.
+
+Default source execution pathspec:
+
+```text
+src tests main.py config.py scripts profiling seeds
+```
+
+If source execution dirty state is non-empty, Codex must return `SOURCE_DIRTY_BLOCKER` / `NEEDS_VERSION_ISOLATION` unless the user or Control Agent explicitly decides to continue.
+
+Dirty entries under `docs/` or `audit/` must be reported and classified, but do not automatically block source implementation unless they affect the current iteration authority, audit evidence, `base_commit`, allowed scope, or acceptance record.
+
+A task prompt or Control Agent gate may override the pathspec for a specific iteration.
 
 Codex must not create commits, branches, stashes, resets, checkouts, restores, or cleanup actions without explicit user confirmation.
 
 ### Dirty Tree Response Protocol
 
-If `git status --short --untracked-files=all` is non-empty before a new iteration, multi-file edit, or quality-gated implementation:
+Before a new iteration, multi-file edit, or quality-gated implementation, Codex must report the full dirty tree and then apply the source execution gate:
 
-1. Stop before editing files.
-2. Report the dirty entries clearly enough for the user to understand the blocking state.
-3. Provide user-runnable git commands for the two safe paths:
+1. Run and report `git status --short --untracked-files=all`.
+2. Run the source execution pathspec check:
+   ```bash
+   git status --porcelain=v1 -- src tests main.py config.py scripts profiling seeds
+   ```
+3. If the source execution check is non-empty, stop before editing files and report `SOURCE_DIRTY_BLOCKER`.
+4. Run and report the documentation/audit classification check:
+   ```bash
+   git status --porcelain=v1 -- docs audit
+   ```
+5. If only `docs/` or `audit/` are dirty, report `DOC_DIRTY_ALLOWED_OR_NEEDS_CLASSIFICATION` and continue only when those entries do not affect the current iteration authority, audit evidence, `base_commit`, allowed scope, or acceptance record.
+6. Provide user-runnable git commands for the two safe paths when isolation is needed:
    - commit the intended preparation / audit / documentation changes
    - stash the dirty work with untracked files included
-4. Do not run commit, stash, restore, reset, cleanup, or destructive commands yourself unless the user explicitly asks for that exact action.
-5. Resume only after `git status --short --untracked-files=all` is empty, or after the user explicitly decides to continue in the dirty tree.
+7. Do not run commit, stash, restore, reset, cleanup, or destructive commands yourself unless the user explicitly asks for that exact action.
+8. Resume only after the source execution pathspec is clean, or after the user / Control Agent explicitly decides to continue with the reported source dirty entries.
 
 Recommended command templates:
 
 ```bash
 git status --short --untracked-files=all
+git status --porcelain=v1 -- src tests main.py config.py scripts profiling seeds
+git status --porcelain=v1 -- docs audit
 git diff --stat
 git diff --cached --stat
 ```

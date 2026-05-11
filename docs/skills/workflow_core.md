@@ -561,6 +561,20 @@ closeout_recommendation:
 
 Codex 是执行 Agent。
 
+### 11.1 Dirty Tree Gate Granularity
+
+对 schema / architecture / multi-file implementation，dirty gate 默认按“源码执行区”判定，而不是把全仓库任意 dirty file 自动视为 blocker。
+
+默认源码执行区：
+
+```text
+src tests main.py config.py scripts profiling seeds
+```
+
+`docs/`、`audit/` dirty entries 必须报告和分类，但不自动阻塞源码实现；只有当它们影响当前 iteration authority、audit evidence、base_commit、allowed scope 或 acceptance record 时，才由 Control Agent 标记为 blocker。
+
+Control Agent 可在具体任务中扩大或缩小 dirty gate pathspec。若 iteration prompt 声明了更严格 pathspec，以该 prompt 为准。
+
 Codex 必须：
 
 ```text

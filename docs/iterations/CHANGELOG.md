@@ -4,6 +4,60 @@
 
 ---
 
+## v1.2.6 (2026-05-11)（✅ 已收口 — DS Accept pass）
+
+**主题**：Schema Split Governance & Contract Library Boundary
+
+### 新增
+
+- [src/schemas/__init__.py] 新增 schema contract library public re-export 入口，保持 `from src.schemas import ...` 兼容。
+- [src/schemas/common.py] 新增 shared/common schema contracts，包含 `EntityExtractionOutput` canonical object 与 `ConfirmationBiasLevel` public export。
+- [src/schemas/phase1.py] 新增 Phase 1 new-path compatibility re-export。
+- [src/schemas/phase2.py] 新增 Phase 2 schema contracts。
+- [src/schemas/phase3.py] 新增 Phase 3 schema contracts。
+- [src/schemas/phase4.py] 新增 Phase 4 schema contracts。
+- [src/schemas/_legacy.py] 新增 dead/legacy schema boundary，不从 `src.schemas` 重新导出。
+- [tests/test_schema_imports.py] 新增 old import surface、new submodule import、`src` public export、legacy direct import 与 legacy non-export checks。
+
+### 删除
+
+- [src/schemas.py] 删除单体 schema 文件，由 `src/schemas/` package 替代。
+
+### 修改
+
+- [src/__init__.py] 更新 schema authority 描述并继续导出当前 public active types，保留 `ConfirmationBiasLevel`。
+- [src/phase3/tick_simulation.py] 移除 unused `NodeRole` import；不改变 Phase 3 行为。
+- [docs/dev_spec.md] 同步当前 schema authority 为 `src/schemas/` package。
+
+### 边界
+
+- 未修改 Phase 1 prompt。
+- 未修改 Phase 3 speaker selector 策略。
+- 未修改 Phase 4 report prompt / generation 语义。
+- 未修改 RuntimeLogger / whitebox 职责。
+- 未改变 `outputs/runs/<run_id>/` artifact contract。
+- 未进入 Parser / Compiler / Validator、Repair Loop、Prompt Library 或 Phase 4 Report Governance。
+
+---
+
+## Workflow Rule Update (2026-05-11)
+
+**主题**：Dirty Tree Gate Granularity 修正
+
+### 修改
+
+- [docs/skills/workflow_core.md] 新增源码执行区 dirty gate 高层原则：schema / architecture / multi-file implementation 默认只以 `src tests main.py config.py scripts profiling seeds` 作为源码执行区 blocker 判定范围。
+- [docs/skills/iteration_execution_guard.md] 将 dirty tree 响应协议改为分层判定：`SOURCE_DIRTY_BLOCKER` 阻塞源码实现，`DOC_DIRTY_ALLOWED_OR_NEEDS_CLASSIFICATION` 只要求报告和分类，不自动阻塞。
+- [docs/skills/iteration_execution_guard.md] 新增标准检查命令，允许 Control Agent 或具体 attempt prompt 覆盖 dirty gate pathspec。
+
+### 边界
+
+- 未修改业务源码。
+- 未修改全局 Codex skill：`/Users/gary/.codex/skills/adarian-iteration-safety-gate/SKILL.md`。
+- 保留 destructive git 操作必须显式授权的规则。
+
+---
+
 ## v1.2.5.2 (2026-05-07)
 
 **主题**：LLM-Owned Score Audit & Report Metric Ownership Governance
