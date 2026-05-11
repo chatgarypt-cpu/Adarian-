@@ -16,7 +16,17 @@ from .phase3 import (
     SpeakerSelectionResult,
     TickLog,
 )
-from .phase4 import EmotionTrajectory, InflectionPoint, Phase4Output, RiskLevel
+from .phase4 import (
+    AudienceMode,
+    EmotionTrajectory,
+    InflectionPoint,
+    Phase4Output,
+    REPORT_TYPE,
+    RISK_LEVEL_LABELS,
+    RISK_TYPE_LABELS,
+    ReportMeta,
+    RiskLevel,
+)
 
 __all__ = [
     "EntityCategory",
@@ -38,5 +48,10 @@ __all__ = [
     "EmotionTrajectory",
     "InflectionPoint",
     "RiskLevel",
+    "AudienceMode",
+    "ReportMeta",
+    "REPORT_TYPE",
+    "RISK_LEVEL_LABELS",
+    "RISK_TYPE_LABELS",
     "Phase4Output",
 ]

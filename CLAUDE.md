@@ -145,35 +145,3 @@
 2. 如不存在，询问用户确认
 3. 不要假设文件位置
 
----
-
-### 自动同步规范
-
-每次运行模拟或代码修改后，**必须自动同步**以下内容到云端：
-
-1. **outputs 文件夹** → 同步到 `BaiduSyncdisk/文件快传/outputs(cloud)/`
-   - `entities_and_relations.json`
-   - `social_graph.json`
-   - `final_report.md`
-   - `agents_profile.json`
-   - `tick_logs/`（整个文件夹）
-
-2. **CHANGELOG.md** → 同步到 `BaiduSyncdisk/文件快传/docx(cloud)/iterations/CHANGELOG.md`
-
-**触发时机**：
-- 运行 `py main.py seeds/*.txt` 后
-- 修改 CHANGELOG 后
-- 任何产生新输出文件的操作后
-
-**同步命令**：
-```bash
-# 同步 outputs
-cp outputs/entities_and_relations.json BaiduSyncdisk/文件快传/outputs(cloud)/
-cp outputs/social_graph.json BaiduSyncdisk/文件快传/outputs(cloud)/
-cp outputs/final_report.md BaiduSyncdisk/文件快传/outputs(cloud)/
-cp outputs/agents_profile.json BaiduSyncdisk/文件快传/outputs(cloud)/
-cp -r outputs/tick_logs/* BaiduSyncdisk/文件快传/outputs(cloud)/tick_logs/
-
-# 同步 CHANGELOG
-cp docs/iterations/CHANGELOG.md BaiduSyncdisk/文件快传/docx(cloud)/iterations/
-```

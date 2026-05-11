@@ -68,22 +68,7 @@ py -m py_compile src/<modified_file>.py
 py main.py seeds/test1.txt
 ```
 
-### 4. 同步输出
-
-运行后同步 outputs 到百度云：
-```bash
-# 同步 outputs
-cp outputs/entities_and_relations.json BaiduSyncdisk/文件快传/outputs(cloud)/
-cp outputs/social_graph.json BaiduSyncdisk/文件快传/outputs(cloud)/
-cp outputs/final_report.md BaiduSyncdisk/文件快传/outputs(cloud)/
-cp outputs/agents_profile.json BaiduSyncdisk/文件快传/outputs(cloud)/
-cp -r outputs/tick_logs/* BaiduSyncdisk/文件快传/outputs(cloud)/tick_logs/
-
-# 同步 CHANGELOG
-cp docs/iterations/CHANGELOG.md BaiduSyncdisk/文件快传/docx(cloud)/iterations/
-```
-
-### 5. 记录
+### 4. 记录
 
 - 在 `TASK_LOG.md` 中记录任务开始和完成
 - 在 `CHANGELOG.md` 中追加变更记录

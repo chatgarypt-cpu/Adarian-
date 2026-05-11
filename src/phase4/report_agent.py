@@ -17,6 +17,7 @@ v1.1.8 变化：
 """
 
 import json
+from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Any
 from rich.console import Console
@@ -25,11 +26,203 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 import config
 from src.schemas import (
     EntityExtractionOutput, Phase2Output, TickLog,
-    Phase4Output, EmotionTrajectory, InflectionPoint, RiskLevel
+    AudienceMode, Phase4Output, EmotionTrajectory, InflectionPoint,
+    ReportMeta, RiskLevel, REPORT_TYPE, RISK_LEVEL_LABELS, RISK_TYPE_LABELS
 )
 from src.llm_client import get_llm_client
 
 console = Console()
+
+
+LAW_ENFORCEMENT_KEYWORDS = ("公安", "交警", "派出所", "执法", "警方")
+REGULATOR_KEYWORDS = ("市监局", "市场监督管理局", "监管部门", "食药监")
+PUBLIC_MANAGEMENT_KEYWORDS = ("教育局", "卫健委", "住建局", "属地政府", "街道办")
+
+
+def _generate_report_timestamp(now: datetime = None) -> str:
+    """Generate code-owned report timestamp."""
+    current = now or datetime.now().astimezone()
+    return current.strftime("%Y年%m月%d日 %H:%M")
+
+
+def _current_timezone_label(now: datetime = None) -> str:
+    current = now or datetime.now().astimezone()
+    if current.tzinfo is None:
+        return "local"
+    return current.tzname() or str(current.utcoffset()) or "local"
+
+
+def _infer_simulation_run_id(output_path: Path = None) -> str:
+    if output_path is None:
+        return "unknown"
+    parent_name = Path(output_path).parent.name
+    return parent_name or "unknown"
+
+
+def _collect_audience_text(
+    extraction_output: EntityExtractionOutput,
+    risk_assessment: str = "",
+) -> str:
+    parts = [
+        extraction_output.event_summary,
+        extraction_output.event_type,
+        risk_assessment,
+    ]
+    for entity in extraction_output.event_entities:
+        parts.extend([
+            entity.name,
+            entity.role,
+            entity.original_statement or "",
+            entity.can_speak_reason or "",
+        ])
+    for spreader in extraction_output.opinion_spreaders:
+        parts.extend([
+            spreader.group_name,
+            spreader.related_event_entity,
+            spreader.description,
+            spreader.communication_style,
+        ])
+    for relation in extraction_output.relations:
+        parts.extend([relation.source, relation.target, relation.type])
+    return "\n".join(part for part in parts if part)
+
+
+def determine_audience_mode(
+    extraction_output: EntityExtractionOutput,
+    risk_assessment: str = "",
+) -> AudienceMode:
+    """Determine audience mode using minimal deterministic keyword rules."""
+    text = _collect_audience_text(extraction_output, risk_assessment)
+    if any(keyword in text for keyword in LAW_ENFORCEMENT_KEYWORDS):
+        return AudienceMode.LAW_ENFORCEMENT_FACING
+    if any(keyword in text for keyword in REGULATOR_KEYWORDS):
+        return AudienceMode.REGULATOR_FACING
+    if any(keyword in text for keyword in PUBLIC_MANAGEMENT_KEYWORDS):
+        return AudienceMode.PUBLIC_MANAGEMENT_FACING
+    return AudienceMode.GENERIC_GOVERNMENT
+
+
+def risk_level_label_for(risk_level: RiskLevel) -> str:
+    return RISK_LEVEL_LABELS[risk_level.value]
+
+
+def select_primary_risk_types(
+    audience_mode: AudienceMode,
+    risk_assessment: str,
+    tick_logs: List[TickLog],
+) -> List[str]:
+    """Select lightweight whitelisted risk types without a full classifier."""
+    selected: List[str] = []
+
+    def add(risk_type: str):
+        if risk_type in RISK_TYPE_LABELS and risk_type not in selected:
+            selected.append(risk_type)
+
+    if audience_mode == AudienceMode.LAW_ENFORCEMENT_FACING:
+        add("law_enforcement_trust_risk")
+    elif audience_mode == AudienceMode.REGULATOR_FACING:
+        add("regulatory_accountability_risk")
+    elif audience_mode == AudienceMode.PUBLIC_MANAGEMENT_FACING:
+        add("local_governance_pressure_risk")
+
+    keyword_map = [
+        (("事实", "争议", "真相"), "fact_dispute_risk"),
+        (("程序", "流程"), "procedure_dispute_risk"),
+        (("回应", "滞后", "延迟"), "response_delay_risk"),
+        (("信息", "透明", "公开"), "information_opacity_risk"),
+        (("负面", "批评", "质疑"), "negative_narrative_risk"),
+        (("谣言", "不实"), "rumor_spread_risk"),
+        (("境外", "海外"), "overseas_amplification_risk"),
+        (("形象", "公信力"), "institution_image_risk"),
+    ]
+    for keywords, risk_type in keyword_map:
+        if any(keyword in risk_assessment for keyword in keywords):
+            add(risk_type)
+
+    if tick_logs and tick_logs[-1].global_metrics.polarization_index >= 0.5:
+        add("group_polarization_risk")
+
+    if not selected:
+        add("negative_narrative_risk")
+    return selected[:3]
+
+
+def _risk_type_labels(primary_risk_types: List[str]) -> List[str]:
+    return [RISK_TYPE_LABELS[risk_type] for risk_type in primary_risk_types]
+
+
+def build_report_meta(
+    extraction_output: EntityExtractionOutput,
+    tick_logs: List[TickLog],
+    output_path: Path = None,
+    generated_at: str = None,
+) -> ReportMeta:
+    return ReportMeta(
+        generated_at=generated_at or _generate_report_timestamp(),
+        timezone=_current_timezone_label(),
+        report_type=REPORT_TYPE,
+        event_name=extraction_output.event_summary,
+        total_ticks=len(tick_logs),
+        simulation_run_id=_infer_simulation_run_id(output_path),
+    )
+
+
+def _build_phase4_output(
+    extraction_output: EntityExtractionOutput,
+    tick_logs: List[TickLog],
+    x_t_sequence: List[float],
+    emotion_trajectory: List[EmotionTrajectory],
+    inflection_points: List[InflectionPoint],
+    risk_level: RiskLevel,
+    risk_assessment: str,
+    stakeholder_map: str,
+) -> Phase4Output:
+    audience_mode = determine_audience_mode(extraction_output, risk_assessment)
+    primary_risk_types = select_primary_risk_types(audience_mode, risk_assessment, tick_logs)
+    return Phase4Output(
+        report_meta=build_report_meta(extraction_output, tick_logs),
+        event_summary=extraction_output.event_summary,
+        stakeholder_map=stakeholder_map,
+        emotion_trajectory=emotion_trajectory,
+        inflection_points=inflection_points,
+        risk_level=risk_level,
+        risk_level_label=risk_level_label_for(risk_level),
+        audience_mode=audience_mode,
+        primary_risk_types=primary_risk_types,
+        risk_type_labels=_risk_type_labels(primary_risk_types),
+        risk_assessment=risk_assessment,
+        x_t_sequence=x_t_sequence,
+    )
+
+
+def _align_report_meta_to_output_path(phase4_output: Phase4Output, output_path: Path = None) -> Phase4Output:
+    run_id = _infer_simulation_run_id(output_path)
+    if run_id != "unknown":
+        phase4_output.report_meta.simulation_run_id = run_id
+    return phase4_output
+
+
+def _metadata_header(phase4_output: Phase4Output) -> str:
+    meta = phase4_output.report_meta
+    return "\n".join([
+        f"# {meta.event_name}舆情风险研判报告",
+        "",
+        f"报告类型：{meta.report_type}",
+        f"生成时间：{meta.generated_at}",
+        f"模拟轮次：{meta.total_ticks}轮",
+        f"风险等级：{phase4_output.risk_level_label}",
+        f"阅读模式：{phase4_output.audience_mode.value}",
+        "",
+        "---",
+        "",
+    ])
+
+
+def _ensure_metadata_header(markdown: str, phase4_output: Phase4Output) -> str:
+    generated_at = phase4_output.report_meta.generated_at
+    if generated_at in markdown[:800]:
+        return markdown
+    return _metadata_header(phase4_output) + markdown.lstrip()
 
 
 # =============================================================================
@@ -461,14 +654,15 @@ def parse_llm_report_response(
     spreaders_str = ", ".join([s.group_name for s in extraction_output.opinion_spreaders])
     stakeholder_map = f"事件实体: {event_entities_str} | 传播者: {spreaders_str}"
 
-    return Phase4Output(
-        event_summary=extraction_output.event_summary,
-        stakeholder_map=stakeholder_map,
+    return _build_phase4_output(
+        extraction_output=extraction_output,
+        tick_logs=tick_logs,
+        x_t_sequence=x_t_sequence,
         emotion_trajectory=emotion_trajectory,
         inflection_points=inflection_points,
         risk_level=risk_level,
         risk_assessment=risk_assessment,
-        x_t_sequence=x_t_sequence,
+        stakeholder_map=stakeholder_map,
     )
 
 
@@ -515,14 +709,15 @@ def generate_fallback_report(
     spreaders_str = ", ".join([s.group_name for s in extraction_output.opinion_spreaders])
     stakeholder_map = f"事件实体: {event_entities_str} | 传播者: {spreaders_str}"
 
-    return Phase4Output(
-        event_summary=extraction_output.event_summary,
-        stakeholder_map=stakeholder_map,
+    return _build_phase4_output(
+        extraction_output=extraction_output,
+        tick_logs=tick_logs,
+        x_t_sequence=x_t_sequence,
         emotion_trajectory=emotion_trajectory,
         inflection_points=inflection_points,
         risk_level=risk_level,
         risk_assessment=risk_assessment,
-        x_t_sequence=x_t_sequence,
+        stakeholder_map=stakeholder_map,
     )
 
 
@@ -543,10 +738,6 @@ def generate_markdown_report(phase4_output: Phase4Output, extraction_output: Ent
     discussed_entities = [e for e in extraction_output.event_entities if not e.can_speak]
 
     lines = [
-        "# 舆情演化洞察报告",
-        "",
-        "---",
-        "",
         "## 一、事件概述",
         "",
         extraction_output.event_summary,
@@ -623,7 +814,8 @@ def generate_markdown_report(phase4_output: Phase4Output, extraction_output: Ent
         "",
         "## 五、风险评估",
         "",
-        f"**风险等级**: {phase4_output.risk_level.value.upper()}",
+        f"**风险等级**: {phase4_output.risk_level_label}",
+        f"**主要风险类型**: {'、'.join(phase4_output.risk_type_labels)}",
         "",
         phase4_output.risk_assessment,
         "",
@@ -632,7 +824,7 @@ def generate_markdown_report(phase4_output: Phase4Output, extraction_output: Ent
         "*本报告由 Adarian 多智能体舆情预判系统自动生成*",
     ])
 
-    return "\n".join(lines)
+    return _metadata_header(phase4_output) + "\n".join(lines)
 
 
 def save_report(phase4_output: Phase4Output, output_path: Path = None):
@@ -644,6 +836,7 @@ def save_report(phase4_output: Phase4Output, output_path: Path = None):
     """
     output_path = output_path or config.FINAL_REPORT_PATH.with_suffix(".json")
     output_path.parent.mkdir(parents=True, exist_ok=True)
+    phase4_output = _align_report_meta_to_output_path(phase4_output, output_path)
 
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(phase4_output.model_dump(), f, ensure_ascii=False, indent=2)
@@ -665,14 +858,17 @@ def save_markdown_report(
     """
     global _llm_generated_markdown
 
+    md_path = output_path or config.FINAL_REPORT_PATH.with_suffix(".md")
+    phase4_output = _align_report_meta_to_output_path(phase4_output, md_path)
+
     # 如果有 LLM 生成的 Markdown（长度 > 100），直接使用
     if _llm_generated_markdown and len(_llm_generated_markdown) > 100:
         md_content = _llm_generated_markdown
     else:
         # 否则生成默认格式
         md_content = generate_markdown_report(phase4_output, extraction_output)
+    md_content = _ensure_metadata_header(md_content, phase4_output)
 
-    md_path = output_path or config.FINAL_REPORT_PATH.with_suffix(".md")
     md_path.parent.mkdir(parents=True, exist_ok=True)
     with open(md_path, "w", encoding="utf-8") as f:
         f.write(md_content)
