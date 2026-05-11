@@ -14,6 +14,72 @@
 
 ---
 
+## 2026-05-12: v1.2.7 Phase 4 Report Product Governance Sprint — 已完成，DS Accept pass
+
+- **task_id**: task-v1.2.7-phase4-report-product-governance
+- **audit_id**: audit-v1.2.7-01
+- **attempt_id**:
+  - attempt-v1.2.7-01
+  - attempt-v1.2.7-02
+  - attempt-v1.2.7-closeout-patch
+- **acceptance_id**: accept-v1.2.7-01
+- **acceptance_result**: pass
+- **类型**: Phase 4 Report Product Governance R0
+- **状态**: ✅ 已完成 — v1.2.7 closed
+
+**实际新增文件**：
+- `src/phase4/report_prompts.py` — 静态 prompt asset（无函数/类/IO/LLM 调用）
+- `tests/test_report_product_contract.py` — 5 targeted tests（generated_at 一致性、audience_mode、risk_level_label、metadata header、dual-path）
+- `tests/test_report_markdown_grounding.py` — 7 targeted tests（五章模板、风险表达、forbidden phrases、policy boundaries、whitebox alignment、report_prompts AST）
+- `audit/phase4大版本改造/v1.2.7-attempt-01-ds-verify-2026-05-11.md`
+- `audit/phase4大版本改造/v1.2.7-attempt-02-ds-verify-2026-05-11.md`
+- `audit/phase4大版本改造/v1.2.7-prompt-quality-review-2026-05-11.md`
+- `audit/phase4大版本改造/v1.2.7-test8-smoke-test-ds-report-2026-05-11.md`
+- `audit/phase4大版本改造/v1.2.7-test8-smoke-rerun-after-risk-contract-patch-2026-05-11.md`
+
+**实际修改文件**：
+- `src/schemas/phase4.py` — REPORT_TYPE、RISK_LEVEL_LABELS、RISK_TYPE_LABELS、AudienceMode enum、ReportMeta model
+- `src/schemas/__init__.py` — 更新 re-exports
+- `src/phase4/report_agent.py` — determine_audience_mode()、select_primary_risk_types()、build_report_meta()、_ensure_metadata_header()、五章 fallback markdown、save_markdown_report() normalizer、risk-contract-consistency-patch
+- `src/whitebox/report_completeness.py` — section headings 对齐五章模板
+- `docs/dev_spec.md` — baseline、Phase 4 section
+- `docs/iterations/TASK_LOG.md` — v1.2.7 completion record
+- `docs/iterations/CHANGELOG.md` — v1.2.7 entry
+- `docs/iterations/v1.2.7 - Phase 4 Report Product Governance Sprint - prompt reprosity.md` — closeout、final acceptance
+
+**基本验收结果**：
+```text
+命令：.venv/bin/python main.py seeds/test8.txt
+退出码：0
+run_dir：outputs/runs/test8_20260512_023822
+总耗时：324.9s
+风险等级：low
+16 targeted tests 全部通过
+5 DS review reports 全部 PASS
+risk-contract-consistency-patch 验证通过（3 LLM compliance issues 全部修复）
+```
+
+**已知遗留（15 known issues，全部 defer 至 v1.2.12）**：
+1. `_llm_generated_markdown` 模块级全局
+2. EmotionTrajectory key_event 格式 gap
+3. report_prompts.py governance constants 未由 report_agent.py import
+4. 无 runtime LLM output validation（prompt-only enforcement）
+5. v1.1.8 docstrings + dead `build_entity_distribution()`
+6. Prompt Quality R1（few-shot）与 R3（quote fabrication boundary）
+7. audience routing 独立模块化
+8. risk taxonomy 独立模块化
+9. markdown prefill loader
+10. representative quote grounding
+11. inflection grounding
+12. Phase 4 architecture hardening
+13. Section 2.4 拐点识别 empty（minor residual）
+14. detailed report quality（~35/100）
+15. prompt governance / group quality
+
+**closeout_decision**：pass / can_enter_closeout_patch
+
+---
+
 ## 2026-05-11: v1.2.6 Schema Split Governance — DS Accept 通过，已收口
 
 - **task_id**: task-v1.2.6-schema-split-governance

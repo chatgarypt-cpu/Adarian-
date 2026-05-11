@@ -17,6 +17,7 @@ v1.1.8 变化：
 """
 
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Any
@@ -30,6 +31,13 @@ from src.schemas import (
     ReportMeta, RiskLevel, REPORT_TYPE, RISK_LEVEL_LABELS, RISK_TYPE_LABELS
 )
 from src.llm_client import get_llm_client
+from .report_prompts import (
+    INTERNAL_CODE_OWNED_LABELS,
+    RAW_METRIC_FIELD_NAMES,
+    REPORT_SYSTEM_PROMPT,
+    REPORT_USER_PROMPT_SUFFIX,
+    SIMULATION_DISCLAIMER,
+)
 
 console = Console()
 
@@ -225,53 +233,76 @@ def _ensure_metadata_header(markdown: str, phase4_output: Phase4Output) -> str:
     return _metadata_header(phase4_output) + markdown.lstrip()
 
 
-# =============================================================================
-# Prompt 模板
-# =============================================================================
+def _code_owned_risk_section(phase4_output: Phase4Output) -> str:
+    risk_lines = [
+        "## 三、风险研判",
+        "",
+        f"风险等级：{phase4_output.risk_level_label}",
+        "",
+        "主要风险类型：",
+    ]
+    for index, risk_type in enumerate(phase4_output.risk_type_labels, start=1):
+        risk_lines.append(f"{index}. {risk_type}")
+    if not phase4_output.risk_type_labels:
+        risk_lines.append("1. 负面叙事聚合风险")
 
-REPORT_SYSTEM_PROMPT = """你是一位资深的社会舆情分析师。你的任务是根据舆情模拟数据，生成一份专业的舆情洞察报告。
+    risk_lines.extend([
+        "",
+        "风险解释：",
+        _risk_explanation(phase4_output),
+    ])
+    return "\n".join(risk_lines)
 
-报告面向决策者，需要结论先行，每个章节使用 emoji 提升可读性。
 
-【报告结构】
-1. 📊 事件概要 - 一句话总结 + 核心指标
-2. 🗺️ 实体图谱 - 事件实体和意见传播者列表
-3. 🎬 Tick 0 · 事件实体发言 - 展示事件实体初始发言
-4. 🔥 关键拐点 - 识别 1-2 个最关键的拐点
-5. 📈 Tick 1-N · 意见演化 - 首尾 Tick 代表性发言对比
-6. 📊 最终立场变化 - 各群体 Tick 0 → Tick N 的立场变化
-7. 📉 极化演化轨迹 - 文字版极化指数可视化
-8. 💡 关键洞察 - 3-6 条核心发现
-9. 🎯 舆论态势判断 - 整体极化、矛盾焦点、演化趋势、风险提示
-10. ⚠️ 风险评估 - 具体风险点和建议
+def _replace_risk_section_with_code_owned(markdown: str, phase4_output: Phase4Output) -> str:
+    risk_section = _code_owned_risk_section(phase4_output)
+    risk_heading_pattern = r"(?m)^##\s*三[、.．]\s*风险研判\s*$"
+    next_heading_pattern = r"(?m)^##\s*四[、.．]\s*对策建议\s*$"
+    risk_match = re.search(risk_heading_pattern, markdown)
 
-【指标 Grounding 硬约束】
-- “关键拐点”只能引用输入中的【CODE_OWNED_INFLECTION_POINTS】，不得自行按其他阈值重算或新增拐点。
-- 如果【CODE_OWNED_INFLECTION_POINTS】声明“本轮模拟未发现显著拐点”，报告必须写同一结论，不得声称存在 1 个或多个拐点。
-- “最终立场变化”只能引用输入中的【CODE_OWNED_AGENT_STANCE_MATRIX】，起始值、终值和 delta 必须逐字使用该表数值。
-- 全局 x(t) 均值、标准差、极化指数只能引用输入中的【情绪演化数据】和【x(t) 序列】，不得自行重算。
+    if risk_match:
+        next_match = re.search(next_heading_pattern, markdown[risk_match.end():])
+        if next_match:
+            next_start = risk_match.end() + next_match.start()
+            return markdown[:risk_match.start()] + risk_section + "\n\n" + markdown[next_start:]
+        return markdown[:risk_match.start()] + risk_section
 
-【立场变化趋势符号】
-- 变化 < -1.0：↓↓
-- 变化 -1.0 ~ -0.5：↓
-- 变化 -0.5 ~ +0.5：→
-- 变化 +0.5 ~ +1.0：↑
-- 变化 > +1.0：↑↑
-- 变化 > +2.0：↑↑↑
+    next_match = re.search(next_heading_pattern, markdown)
+    if next_match:
+        return markdown[:next_match.start()] + risk_section + "\n\n" + markdown[next_match.start():]
 
-【关键洞察要求】
-- 每条 30-50 字
-- 包含现象描述 + 数据支撑
-- 按重要性排序
+    return markdown.rstrip() + "\n\n" + risk_section
 
-【舆论态势判断维度】
-- 整体极化：<0.3 温和，0.3-0.5 中等，>0.5 高对立
-- 矛盾焦点：识别对立双方的核心争议点
-- 演化趋势：描述立场变化的主要方向
-- 风险提示：根据批评者立场和比例给出预警
 
-输出格式：直接输出完整 Markdown 报告，500-800 行。
-"""
+def _strip_internal_code_owned_labels(markdown: str) -> str:
+    lines = []
+    for line in markdown.splitlines():
+        if any(label in line for label in INTERNAL_CODE_OWNED_LABELS):
+            continue
+        lines.append(line)
+    return "\n".join(lines)
+
+
+def _replace_raw_metric_field_names(markdown: str) -> str:
+    replacements = {
+        "event_scale": "模拟影响范围",
+        "event_controversy": "模拟争议强度",
+        "polarization_index": "群体分化水平",
+        "stance_delta": "立场变化幅度",
+        "risk_score": "综合风险判断",
+    }
+    normalized = markdown
+    for field_name in RAW_METRIC_FIELD_NAMES:
+        normalized = normalized.replace(field_name, replacements[field_name])
+    return normalized
+
+
+def _normalize_saved_markdown(markdown: str, phase4_output: Phase4Output) -> str:
+    normalized = _ensure_metadata_header(markdown, phase4_output)
+    normalized = _strip_internal_code_owned_labels(normalized)
+    normalized = _replace_raw_metric_field_names(normalized)
+    normalized = _replace_risk_section_with_code_owned(normalized, phase4_output)
+    return normalized
 
 
 def build_full_report_context(
@@ -569,11 +600,11 @@ def generate_report_with_llm(
         phase2_output=phase2_output,
     )
 
-    user_prompt = f"""请根据以下数据生成舆情洞察报告：
+    user_prompt = f"""请根据以下数据生成舆情风险研判报告：
 
 {report_context}
 
-请生成完整的 Markdown 格式报告。报告应面向决策者，结论先行，包含所有章节（概要、实体图谱、Tick 0发言、关键拐点、意见演化、立场变化、极化轨迹、关键洞察、舆论态势、风险评估）。"""
+{REPORT_USER_PROMPT_SUFFIX}"""
 
     console.print("[cyan]正在调用 LLM 生成报告...[/cyan]")
 
@@ -721,6 +752,102 @@ def generate_fallback_report(
     )
 
 
+def _scale_description(value: float) -> str:
+    if value >= 0.75:
+        return "模拟影响范围较广，相关讨论可能跨越单一群体扩散。"
+    if value >= 0.45:
+        return "模拟影响范围处于中等水平，讨论可能集中在主要相关群体之间。"
+    return "模拟影响范围相对有限，讨论更可能停留在直接相关群体内部。"
+
+
+def _controversy_description(value: float) -> str:
+    if value >= 0.75:
+        return "争议强度较高，事实认知和处置程序容易成为持续追问点。"
+    if value >= 0.45:
+        return "争议强度中等，后续回应节奏会影响讨论是否继续升温。"
+    return "争议强度相对可控，讨论更依赖后续信息补充。"
+
+
+def _trajectory_description(phase4_output: Phase4Output) -> str:
+    if not phase4_output.emotion_trajectory:
+        return "本轮模拟缺少足够的演化轨迹，暂不形成趋势判断。"
+
+    first = phase4_output.emotion_trajectory[0]
+    last = phase4_output.emotion_trajectory[-1]
+    stance_change = last.mean_stance - first.mean_stance
+    polarization_change = last.polarization_index - first.polarization_index
+
+    if stance_change > 0.3:
+        stance_text = "整体态度在模拟后段呈缓和方向移动。"
+    elif stance_change < -0.3:
+        stance_text = "整体态度在模拟后段呈更谨慎或更质疑的方向移动。"
+    else:
+        stance_text = "整体态度在模拟过程中变化不大。"
+
+    if polarization_change > 0.1:
+        polarization_text = "不同群体之间的立场分化有所加深，需要关注负面叙事聚合。"
+    elif polarization_change < -0.1:
+        polarization_text = "不同群体之间的分化有所收敛，讨论张力出现缓和迹象。"
+    else:
+        polarization_text = "不同群体之间的分化水平整体保持稳定。"
+
+    return f"{stance_text}{polarization_text}"
+
+
+def _inflection_markdown_lines(phase4_output: Phase4Output) -> List[str]:
+    if not phase4_output.inflection_points:
+        return ["本轮模拟未发现显著拐点。"]
+
+    lines = [
+        "本轮模拟中，以下变化点来自代码侧拐点识别结果，仅用于解释模拟轨迹：",
+        "",
+        "| 轮次 | 群体 | 模拟变化说明 |",
+        "|------|------|--------------|",
+    ]
+    for point in phase4_output.inflection_points:
+        lines.append(f"| Tick {point.tick} | {point.group_name} | {point.impact_description} |")
+    return lines
+
+
+def _stance_summary_lines(phase4_output: Phase4Output) -> List[str]:
+    if not phase4_output.emotion_trajectory:
+        return ["- 暂无足够轨迹数据形成群体分化判断。"]
+
+    last = phase4_output.emotion_trajectory[-1]
+    if last.polarization_index >= 0.5:
+        return [
+            "- 模拟后段群体分化较为明显，负面叙事存在继续聚合的风险。",
+            "- 回应节奏和事实链完整度将影响后续讨论是否继续围绕责任、程序和透明度展开。",
+        ]
+    if last.polarization_index >= 0.3:
+        return [
+            "- 模拟后段群体分化处于中等水平，核心争议仍可能随新增信息变化。",
+            "- 需要避免回应口径前后不一致，防止讨论焦点从事实争议转向程序质疑。",
+        ]
+    return [
+        "- 模拟后段群体分化相对温和，当前更适合通过事实补充降低误解空间。",
+        "- 后续应继续观察高敏群体关切，避免局部质疑被放大。",
+    ]
+
+
+def _risk_explanation(phase4_output: Phase4Output) -> str:
+    risk_types = "、".join(phase4_output.risk_type_labels) if phase4_output.risk_type_labels else "负面叙事聚合风险"
+    if phase4_output.risk_level in {RiskLevel.HIGH, RiskLevel.CRITICAL}:
+        return (
+            f"本轮模拟显示，事件讨论可能围绕{risk_types}继续扩散。"
+            "若后续事实链补充不足或回应节奏滞后，相关讨论可能进一步转向程序透明度、责任主体和公信力问题。"
+        )
+    if phase4_output.risk_level == RiskLevel.MEDIUM:
+        return (
+            f"本轮模拟显示，事件已出现{risk_types}相关苗头。"
+            "当前风险尚未进入失控状态，但仍需要通过稳定、透明、可核验的回应降低误读空间。"
+        )
+    return (
+        f"本轮模拟显示，事件暂处于{risk_types}可控阶段。"
+        "后续重点是持续补充事实信息，避免局部疑问演化为更大范围的程序争议。"
+    )
+
+
 def generate_markdown_report(phase4_output: Phase4Output, extraction_output: EntityExtractionOutput) -> str:
     """生成 Markdown 格式报告
 
@@ -731,97 +858,120 @@ def generate_markdown_report(phase4_output: Phase4Output, extraction_output: Ent
     Returns:
         Markdown 格式字符串
     """
-    spreader_count = len(extraction_output.opinion_spreaders)
-
-    # v1.1.6: Split entities into speaking and discussed
     speaking_entities = [e for e in extraction_output.event_entities if e.can_speak]
     discussed_entities = [e for e in extraction_output.event_entities if not e.can_speak]
+    risk_types = "、".join(phase4_output.risk_type_labels) if phase4_output.risk_type_labels else "未归类风险"
 
     lines = [
-        "## 一、事件概述",
+        "## 一、舆情概要",
+        "",
+        SIMULATION_DISCLAIMER,
+        "",
+        "### 事件概况",
         "",
         extraction_output.event_summary,
+        f"事件类型：{extraction_output.event_type}",
+        _scale_description(extraction_output.event_scale),
+        _controversy_description(extraction_output.event_controversy),
         "",
-        f"**事件类型**: {extraction_output.event_type}",
-        f"**事件规模**: {extraction_output.event_scale:.2f}",
-        f"**事件争议性**: {extraction_output.event_controversy:.2f}",
+        "### 涉及主体",
         "",
-        "## 二、利益相关方图谱",
-        "",
-        "### 发言实体（{}个）".format(len(speaking_entities)),
-        "",
-        "| 实体 | 角色 | Tick 0 发言 |",
-        "|------|------|------------|",
     ]
 
-    for entity in speaking_entities:
-        statement = entity.original_statement if entity.original_statement else "（无原始发言）"
-        lines.append(f"| {entity.name} | {entity.role} | {statement} |")
-
-    lines.extend([
-        "",
-        "### 被讨论实体（{}个）".format(len(discussed_entities)),
-        "",
-        "| 实体 | 角色 | 说明 |",
-        "|------|------|------|",
-    ])
-
-    for entity in discussed_entities:
-        reason = entity.can_speak_reason if entity.can_speak_reason else "不可发言"
-        lines.append(f"| {entity.name} | {entity.role} | {reason} |")
-
-    lines.extend([
-        "",
-        "### 意见传播者（评论者）",
-        "",
-        "| 群体 | 关联实体 | 立场分 | 确认偏差 |",
-        "|------|---------|--------|----------|",
-    ])
-
-    for spreader in extraction_output.opinion_spreaders:
-        lines.append(f"| {spreader.group_name} | {spreader.related_event_entity} | {spreader.stance_score} | {spreader.confirmation_bias_level} |")
-
-    lines.extend([
-        "",
-        "## 三、情绪演化轨迹",
-        "",
-        "| Tick | x(t)均值 | 标准差 | 极化指数 | 关键事件 |",
-        "|------|----------|--------|---------|---------|",
-    ])
-
-    for traj in phase4_output.emotion_trajectory:
-        lines.append(f"| {traj.tick} | {traj.mean_stance:.2f} | {traj.std_stance:.2f} | {traj.polarization_index:.2f} | {traj.key_event} |")
-
-    lines.extend([
-        "",
-        f"**x(t) 序列**: {' → '.join([f'{x:.2f}' for x in phase4_output.x_t_sequence])}",
-        "",
-        "## 四、拐点分析",
-        "",
-    ])
-
-    if phase4_output.inflection_points:
-        lines.extend([
-            "| Tick | Agent | 群体 | 关键发言 | 影响 |",
-            "|------|-------|------|---------|------|",
-        ])
-        for ip in phase4_output.inflection_points:
-            lines.append(f"| {ip.tick} | #{ip.agent_id} | {ip.group_name} | {ip.pivotal_comment[:30]}... | {ip.impact_description} |")
+    if speaking_entities:
+        for entity in speaking_entities:
+            statement = entity.original_statement if entity.original_statement else "暂无可引用原始表述"
+            lines.append(f"- {entity.name}（{entity.role}）：{statement}")
     else:
-        lines.append("（本轮模拟未发现显著拐点）")
+        lines.append("- 本轮输入中未提供可直接发言的事件主体。")
+
+    if discussed_entities:
+        lines.append("")
+        lines.append("### 被讨论主体")
+        lines.append("")
+        for entity in discussed_entities:
+            reason = entity.can_speak_reason if entity.can_speak_reason else "作为被讨论对象进入模拟"
+            lines.append(f"- {entity.name}（{entity.role}）：{reason}")
 
     lines.extend([
         "",
-        "## 五、风险评估",
+        "## 二、演化分析",
         "",
-        f"**风险等级**: {phase4_output.risk_level_label}",
-        f"**主要风险类型**: {'、'.join(phase4_output.risk_type_labels)}",
+        "### 模拟演化判断",
         "",
-        phase4_output.risk_assessment,
+        _trajectory_description(phase4_output),
+        "",
+        "### 群体分化观察",
+        "",
+    ])
+
+    lines.extend(_stance_summary_lines(phase4_output))
+
+    lines.extend([
+        "",
+        "### 关键变化点",
+        "",
+    ])
+
+    lines.extend(_inflection_markdown_lines(phase4_output))
+
+    lines.extend([
+        "",
+        "## 三、风险研判",
+        "",
+        f"风险等级：{phase4_output.risk_level_label}",
+        "",
+        "主要风险类型：",
+    ])
+
+    for index, risk_type in enumerate(phase4_output.risk_type_labels, start=1):
+        lines.append(f"{index}. {risk_type}")
+
+    lines.extend([
+        "",
+        "风险解释：",
+        _risk_explanation(phase4_output),
+        "",
+        "## 四、对策建议",
+        "",
+        "1. 补齐事实链，优先澄清时间线、处置依据、已完成和待完成事项。",
+        "2. 统一回应口径，避免前后表述不一致引发新的程序质疑。",
+        "3. 明确调查或核查节点，以阶段性进展回应高敏群体关切。",
+        "4. 公开程序依据和信息来源边界，减少将模拟争议误读为现实结论的空间。",
+        "5. 避免刺激性、辩解性或甩锅式表达，将回应重点放在事实、程序和改进动作上。",
+        "",
+        "## 五、附录",
+        "",
+        "### 模拟口径说明",
+        "",
+        SIMULATION_DISCLAIMER,
+        "",
+        "### 数据来源边界",
+        "",
+        "- 本报告仅使用输入材料、模拟轨迹和代码侧结构化结果。",
+        "- 未接入外部检索、政策知识库或真实全网监测数据。",
+        "- 风险等级和主要风险类型来自代码侧结果，正文只做解释性表达。",
+        "- 拐点表达以代码侧识别结果为准，不在正文中重新计算或补造拐点。",
+        "",
+        "### 传播者分组参考",
+        "",
+    ])
+
+    if extraction_output.opinion_spreaders:
+        for spreader in extraction_output.opinion_spreaders:
+            lines.append(f"- {spreader.group_name}：关注{spreader.related_event_entity}，表达风格为{spreader.communication_style}。")
+    else:
+        lines.append("- 本轮输入中未提供意见传播者分组。")
+
+    lines.extend([
+        "",
+        "### 风险类型来源",
+        "",
+        f"本轮报告使用的主要风险类型为：{risk_types}。",
         "",
         "---",
         "",
-        "*本报告由 Adarian 多智能体舆情预判系统自动生成*",
+        "*本报告由 Adarian 多智能体舆情预判系统基于模拟结果自动生成。*",
     ])
 
     return _metadata_header(phase4_output) + "\n".join(lines)
@@ -867,7 +1017,7 @@ def save_markdown_report(
     else:
         # 否则生成默认格式
         md_content = generate_markdown_report(phase4_output, extraction_output)
-    md_content = _ensure_metadata_header(md_content, phase4_output)
+    md_content = _normalize_saved_markdown(md_content, phase4_output)
 
     md_path.parent.mkdir(parents=True, exist_ok=True)
     with open(md_path, "w", encoding="utf-8") as f:

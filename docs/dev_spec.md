@@ -1,8 +1,8 @@
 # Adarian Dev Spec
 
 **文档状态**：当前系统技术规格说明  
-**当前基线**：v1.2.6 - Schema Split Governance & Contract Library Boundary
-**最后更新**：2026-05-11
+**当前基线**：v1.2.7 - Phase 4 Report Product Governance Sprint
+**最后更新**：2026-05-12
 **依据来源**：当前源码、v1.2.0-v1.2.6 迭代记录、`outputs/runs/` 下最新运行产物
 
 本文档描述当前真实系统状态，用于替代旧 v1.1.x 技术设想残留。未实现的未来方向只作为 roadmap 或 out-of-scope 记录，不作为当前能力描述。
@@ -132,6 +132,26 @@ v1.2.2 明确不做：
 - 不接 MCP / Web Search / RAG。
 - 不做 logging migration。
 - 不改 speaker selector 策略。
+
+### v1.2.7 Phase 4 Report Product Governance Sprint
+
+```text
+v1.2.7 = Phase 4 Report Product Governance R0
+```
+
+含义：
+
+- Phase 4 报告产品化 R0 闭环完成。
+- final_report.md 是业务可读 Markdown，采用五章模板（舆情概要/演化分析/风险研判/对策建议/附录）。
+- final_report.md 明确标注"模拟推演型舆情风险研判报告"及模拟推演口径。
+- final_report.json 是结构化追溯与工程验收来源。
+- generated_at 为代码侧生成（非 LLM 生成）。
+- risk_level / risk_type_labels 为 code-owned（非 LLM 自由发明）。
+- report_prompts.py 为静态 prompt asset（无函数/类/IO/LLM 调用/业务逻辑）。
+- whitebox/report_completeness.py section headings 已对齐五章模板。
+- 当前报告为 contract R0 合规骨架，详尽版产品表达质量约 35/100。
+
+后续 detailed report quality / prompt governance / group quality 属于 carry_over（详见 v1.2.7 迭代文档 §14）。
 
 ---
 
@@ -449,6 +469,25 @@ v1.2.1 报告契约：
 - JSON 和 Markdown 不得互相覆盖。
 - `main.py` 主链显式传入 run_dir 内的两个输出路径。
 - 主链可直接把 `phase2_output` 传给报告生成逻辑，减少对 root `social_graph.json` 的隐式依赖。
+
+### v1.2.7 Report Product Governance
+
+```text
+v1.2.7 = Phase 4 Report Product Governance R0
+```
+
+v1.2.7 报告产品化 R0 闭环变更：
+
+- final_report.md 采用五章模板（舆情概要/演化分析/风险研判/对策建议/附录）。
+- final_report.md 明确标注"模拟推演型舆情风险研判报告"及模拟推演口径。
+- final_report.json 新增 report_meta（generated_at / timezone / report_type / event_name / total_ticks / simulation_run_id）。
+- generated_at 为代码侧生成（非 LLM 生成）。
+- risk_level / risk_type_labels 为 code-owned（非 LLM 自由发明），risk_type_labels 受轻量白名单约束。
+- audience_mode 支持最小关键词路由（generic_government / law_enforcement_facing / regulator_facing / public_management_facing）。
+- 新增 src/phase4/report_prompts.py 作为静态 prompt asset（无函数/类/IO/LLM 调用/业务逻辑）。
+- whitebox/report_completeness.py section headings 已对齐五章模板。
+
+报告产品表达质量约 35/100，后续 detailed report quality / prompt governance 属于 carry_over。
 
 ---
 

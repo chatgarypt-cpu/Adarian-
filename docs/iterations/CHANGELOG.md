@@ -4,6 +4,58 @@
 
 ---
 
+## v1.2.7 (2026-05-12)（✅ 已完成 — DS Accept pass）
+
+**主题**：Phase 4 Report Product Governance Sprint
+
+### 新增
+
+- [src/phase4/report_prompts.py] 新增静态 prompt asset — FIVE_CHAPTER_HEADINGS、SIMULATION_DISCLAIMER、FORBIDDEN_REALITY_PHRASES、MARKDOWN_GROUNDING_RULES、RISK_EXPRESSION_RULES、REPORT_SYSTEM_PROMPT、REPORT_USER_PROMPT_SUFFIX。AST 验证为纯数据（无函数/类/导入/调用）。
+- [tests/test_report_product_contract.py] 新增 5 targeted tests — generated_at 一致性、audience_mode 关键词路由、risk_level_label 白名单、metadata header 注入、dual-path generated_at。
+- [tests/test_report_markdown_grounding.py] 新增 7 targeted tests — 五章模板、风险表达结构、forbidden phrases、policy boundaries、whitebox section alignment、report_prompts AST 静态检查、dual-path generated_at。
+
+### 修改
+
+- [src/schemas/phase4.py] 新增 REPORT_TYPE、RISK_LEVEL_LABELS、RISK_TYPE_LABELS（13-type 白名单）、AudienceMode enum、ReportMeta model、Phase4Output validators。
+- [src/schemas/__init__.py] 更新 re-exports：AudienceMode、ReportMeta、REPORT_TYPE、RISK_LEVEL_LABELS、RISK_TYPE_LABELS。
+- [src/phase4/report_agent.py] 新增 determine_audience_mode()（关键词路由）、select_primary_risk_types()（确定性 keyword matching）、build_report_meta()、_ensure_metadata_header()、_metadata_header()、generate_markdown_report()（五章 fallback）、save_markdown_report() normalizer（risk-contract-consistency-patch）。generated_at 为 code-owned，audience_mode 支持 4 级枚举，risk_type_labels 受白名单约束。
+- [src/whitebox/report_completeness.py] REQUIRED_SECTION_GROUPS 与 FINAL_SECTION_HEADINGS 对齐五章模板（舆情概要/演化分析/风险研判/对策建议/附录）。
+
+### 功能
+
+- ✅ final_report.md 采用五章模板，明确标注"模拟推演型舆情风险研判报告"及模拟推演口径
+- ✅ final_report.json 新增 report_meta（generated_at / timezone / report_type / event_name / total_ticks / simulation_run_id）
+- ✅ generated_at 为代码侧生成，Markdown 与 JSON 一致
+- ✅ audience_mode 支持最小关键词路由（generic_government / law_enforcement_facing / regulator_facing / public_management_facing）
+- ✅ risk_level_label 映射（低风险 / 中风险 / 高风险 / 重大风险）
+- ✅ primary_risk_types 来自 13-type 轻量白名单，LLM 不得自由发明
+- ✅ report_prompts.py 为纯 prompt asset，不含业务逻辑
+- ✅ whitebox section headings 对齐五章模板
+- ✅ 禁止 8 个新架构模块、禁止 6 个 forbidden phrases
+- ✅ risk-contract-consistency-patch 通过 smoke rerun 验证
+
+### 已知遗留
+
+- 15 known issues 全部 defer 至 v1.2.12 Phase 4 Report Architecture Hardening
+- 报告产品表达质量约 35/100（contract R0 骨架完成，详尽版叙事质量待提升）
+
+### 兼容性
+
+- ✅ 不修改 Phase 1-3
+- ✅ 不修改 RuntimeLogger / speaker selector
+- ✅ run artifact contract 保持不变
+- ✅ 16 targeted tests + 2 regression tests 全部通过
+
+**DS Review 证据**：
+- attempt-01 DS Verify: PASS
+- attempt-02 DS Verify: PASS + ACCEPTABLE_WITH_RECOMMENDATIONS
+- Prompt Quality Review: PASS
+- test8 Smoke Test: PASS_WITH_ISSUES → risk-contract-patch → PASS
+- test8 Smoke Rerun: PASS（3 LLM compliance issues 全部修复）
+- Closeout Record Patch: PASS
+
+---
+
 ## v1.2.6 (2026-05-11)（✅ 已收口 — DS Accept pass）
 
 **主题**：Schema Split Governance & Contract Library Boundary
