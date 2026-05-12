@@ -1,4 +1,4 @@
-"""Targeted Phase 4 report product contract checks for v1.2.7 attempt-01."""
+"""Targeted Phase 4 report product contract checks for v1.2.8 attempt-01."""
 
 import json
 from pathlib import Path
@@ -13,6 +13,7 @@ if str(PROJECT_ROOT) not in sys.path:
 from src.phase4 import report_agent
 from src.phase4.report_agent import (
     _ensure_metadata_header,
+    _normalized_report_title,
     determine_audience_mode,
     generate_fallback_report,
     save_markdown_report,
@@ -137,6 +138,10 @@ def _phase2_output(entity_name="某品牌") -> Phase2Output:
     )
 
 
+def _section(markdown: str, start: str, end: str) -> str:
+    return markdown.split(start, 1)[1].split(end, 1)[0]
+
+
 def test_report_meta_json_and_markdown_generated_at_are_consistent(tmp_path):
     extraction = _extraction(summary="市监局介入的消费争议事件", entity_name="市监局")
     tick_logs = [_tick(0, 0.2), _tick(1, 0.55)]
@@ -201,7 +206,7 @@ def test_llm_markdown_path_gets_code_owned_metadata_header():
 
     with_header = _ensure_metadata_header(llm_markdown, output)
 
-    assert with_header.startswith(f"# {output.report_meta.event_name}舆情风险研判报告")
+    assert with_header.startswith(f"# {_normalized_report_title(output.report_meta.event_name)}")
     assert f"生成时间：{output.report_meta.generated_at}" in with_header
     assert "报告类型：模拟推演型舆情风险研判报告" in with_header
     assert "# LLM 自生成报告" in with_header
@@ -231,3 +236,67 @@ def test_save_markdown_llm_path_and_fallback_path_share_metadata(tmp_path):
     assert f"生成时间：{output.report_meta.generated_at}" in llm_markdown
     assert "报告类型：模拟推演型舆情风险研判报告" in fallback_markdown
     assert "报告类型：模拟推演型舆情风险研判报告" in llm_markdown
+
+
+def test_fallback_markdown_has_v128_government_facing_narrative(tmp_path):
+    extraction = _extraction(
+        summary="OPPO母亲节营销海报引发价值观争议和平台讨论",
+        entity_name="OPPO",
+    )
+    output = generate_fallback_report(
+        extraction,
+        [_tick(0, 0.2), _tick(1, 0.58), _tick(2, 0.62)],
+        [5.0, 4.6, 4.4],
+        phase2_output=_phase2_output("OPPO"),
+    )
+
+    path = tmp_path / "run_007" / "final_report.md"
+    report_agent._llm_generated_markdown = ""
+    save_markdown_report(output, extraction, path)
+
+    markdown = path.read_text(encoding="utf-8")
+    title = markdown.splitlines()[0].removeprefix("# ")
+    evolution_section = _section(markdown, "## 二、演化分析", "## 三、风险研判")
+    risk_section = _section(markdown, "## 三、风险研判", "## 四、对策建议")
+    recommendation_section = _section(markdown, "## 四、对策建议", "## 五、附录")
+
+    assert title.endswith("舆情风险研判报告")
+    assert len(title) <= 25
+    assert "OPPO" in title
+    assert "第一阶段" in evolution_section
+    assert "第二阶段" in evolution_section
+    assert "Tick 1" not in evolution_section
+    assert "Tick 2" not in evolution_section
+    assert "Tick 3" not in evolution_section
+    assert "结构性风险点一" in risk_section
+    assert "结构性风险点二" in risk_section
+    assert "品牌声誉风险" not in risk_section
+    assert "舆论极化风险" not in risk_section
+    assert "衍生争议风险" not in risk_section
+    assert any(
+        word in recommendation_section
+        for word in ("关注", "研判", "跟踪", "协调", "督促", "预置", "提示", "监测", "引导", "避免过度介入")
+    )
+    for forbidden in ("建议OPPO", "建议品牌方", "建议品牌", "建议企业", "建议涉事企业", "贵司", "贵校", "危机公关", "品牌修复", "舆情洗白"):
+        assert forbidden not in markdown
+
+
+def test_empty_inflection_and_quote_raw_metric_guards_in_saved_markdown(tmp_path):
+    extraction = _extraction()
+    output = generate_fallback_report(
+        extraction,
+        [_tick(0, 0.2)],
+        [4.8],
+        phase2_output=_phase2_output(),
+    )
+
+    path = tmp_path / "run_008" / "final_report.md"
+    save_markdown_report(output, extraction, path)
+
+    markdown = path.read_text(encoding="utf-8")
+    assert "本轮模拟未发现显著拐点" in markdown
+    assert "待评估" not in markdown
+    for field_name in ("event_scale", "event_controversy", "polarization_index", "stance_delta", "risk_score"):
+        assert field_name not in markdown
+    for quote_pattern in ("有网民表示：", "据网友反映：", "一位市民说：", "部分网友称：", "有评论指出："):
+        assert quote_pattern not in markdown

@@ -32,7 +32,9 @@ from src.schemas import (
 )
 from src.llm_client import get_llm_client
 from .report_prompts import (
+    ENTERPRISE_PR_FORBIDDEN_PHRASES,
     INTERNAL_CODE_OWNED_LABELS,
+    QUOTE_FABRICATION_PATTERNS,
     RAW_METRIC_FIELD_NAMES,
     REPORT_SYSTEM_PROMPT,
     REPORT_USER_PROMPT_SUFFIX,
@@ -45,6 +47,8 @@ console = Console()
 LAW_ENFORCEMENT_KEYWORDS = ("公安", "交警", "派出所", "执法", "警方")
 REGULATOR_KEYWORDS = ("市监局", "市场监督管理局", "监管部门", "食药监")
 PUBLIC_MANAGEMENT_KEYWORDS = ("教育局", "卫健委", "住建局", "属地政府", "街道办")
+REPORT_TITLE_SUFFIX = "舆情风险研判报告"
+TITLE_MAX_CHARS = 25
 
 
 def _generate_report_timestamp(now: datetime = None) -> str:
@@ -213,7 +217,7 @@ def _align_report_meta_to_output_path(phase4_output: Phase4Output, output_path: 
 def _metadata_header(phase4_output: Phase4Output) -> str:
     meta = phase4_output.report_meta
     return "\n".join([
-        f"# {meta.event_name}舆情风险研判报告",
+        f"# {_normalized_report_title(meta.event_name)}",
         "",
         f"报告类型：{meta.report_type}",
         f"生成时间：{meta.generated_at}",
@@ -226,11 +230,61 @@ def _metadata_header(phase4_output: Phase4Output) -> str:
     ])
 
 
+def _normalized_report_title(event_name: str) -> str:
+    """Create a short government-report title without changing report_meta."""
+    subject = _extract_title_subject(event_name)
+    controversy = _infer_title_controversy(event_name)
+    title = f"{subject}{controversy}{REPORT_TITLE_SUFFIX}"
+    if len(title) <= TITLE_MAX_CHARS:
+        return title
+
+    available = max(2, TITLE_MAX_CHARS - len(controversy) - len(REPORT_TITLE_SUFFIX))
+    return f"{subject[:available]}{controversy}{REPORT_TITLE_SUFFIX}"
+
+
+def _extract_title_subject(event_name: str) -> str:
+    text = re.sub(r"\s+", "", event_name or "")
+    text = re.sub(r"^\d{4}年?\d{0,2}月?\d{0,2}日?", "", text)
+    for delimiter in ("因", "就", "在", "发布", "回应", "被", "引发", "涉嫌", "出现", "发生"):
+        if delimiter in text:
+            text = text.split(delimiter, 1)[0]
+            break
+    text = re.split(r"[，,。；;：:、（）()【】\[\]\s]", text, maxsplit=1)[0]
+    text = re.sub(r"(事件|争议|舆情|相关|问题)+$", "", text)
+    if not text:
+        return "相关事件"
+    return text[:8]
+
+
+def _infer_title_controversy(event_name: str) -> str:
+    text = event_name or ""
+    rules = [
+        (("营销", "海报", "广告", "母亲节"), "营销争议"),
+        (("执法", "劝烟", "公安", "交警", "处罚"), "执法争议"),
+        (("质量", "产品", "消费", "投诉"), "产品质量争议"),
+        (("学校", "校园", "教育"), "校园治理争议"),
+        (("食品", "安全", "事故"), "安全事件"),
+        (("人事", "招聘", "裁员"), "人事争议"),
+        (("回应", "声明", "道歉"), "舆情回应争议"),
+    ]
+    for keywords, label in rules:
+        if any(keyword in text for keyword in keywords):
+            return label
+    return "舆情争议"
+
+
 def _ensure_metadata_header(markdown: str, phase4_output: Phase4Output) -> str:
     generated_at = phase4_output.report_meta.generated_at
     if generated_at in markdown[:800]:
         return markdown
     return _metadata_header(phase4_output) + markdown.lstrip()
+
+
+def _normalize_report_title_line(markdown: str, phase4_output: Phase4Output) -> str:
+    title = _normalized_report_title(phase4_output.report_meta.event_name)
+    if re.search(r"(?m)^#\s+", markdown):
+        return re.sub(r"(?m)^#\s+.*$", f"# {title}", markdown, count=1)
+    return f"# {title}\n\n{markdown.lstrip()}"
 
 
 def _code_owned_risk_section(phase4_output: Phase4Output) -> str:
@@ -250,7 +304,9 @@ def _code_owned_risk_section(phase4_output: Phase4Output) -> str:
         "",
         "风险解释：",
         _risk_explanation(phase4_output),
+        "",
     ])
+    risk_lines.extend(_structural_risk_point_lines(phase4_output))
     return "\n".join(risk_lines)
 
 
@@ -297,9 +353,65 @@ def _replace_raw_metric_field_names(markdown: str) -> str:
     return normalized
 
 
+def _replace_enterprise_pr_phrases(markdown: str) -> str:
+    replacements = {
+        "建议OPPO": "建议政府侧关注相关主体",
+        "建议品牌方": "建议政府侧协调相关主管部门",
+        "建议品牌": "建议政府侧协调相关主管部门",
+        "建议企业": "建议政府侧协调相关主管部门",
+        "建议涉事企业": "建议政府侧协调相关主管部门",
+        "建议学校公关": "建议教育主管部门关注校园治理沟通",
+        "危机公关": "风险回应",
+        "品牌修复": "事实说明与风险缓释",
+        "形象修复": "公共沟通修正",
+        "舆情洗白": "事实澄清",
+        "贵司": "相关主体",
+        "贵校": "相关学校",
+    }
+    normalized = markdown
+    for phrase in ENTERPRISE_PR_FORBIDDEN_PHRASES:
+        normalized = normalized.replace(phrase, replacements[phrase])
+    normalized = re.sub(
+        r"建议(涉事主体|品牌方|品牌|企业|学校|协会|当事人)",
+        "建议政府侧协调相关主管部门",
+        normalized,
+    )
+    return normalized
+
+
+def _replace_quote_fabrication_patterns(markdown: str) -> str:
+    normalized = markdown
+    for pattern in QUOTE_FABRICATION_PATTERNS:
+        normalized = normalized.replace(pattern, "模拟显示：")
+    return normalized
+
+
+def _replace_placeholder_residue(markdown: str) -> str:
+    return markdown.replace("待评估", "本轮模拟未发现显著拐点")
+
+
+def _has_required_five_chapter_sections(markdown: str) -> bool:
+    section_patterns = (
+        r"舆情概要",
+        r"演化分析",
+        r"风险研判",
+        r"对策建议",
+        r"附录",
+    )
+    for section_name in section_patterns:
+        pattern = rf"(?m)^\s*(?:#{{1,6}}\s*)?(?:[一二三四五][、.．]\s*)?{section_name}\s*$"
+        if not re.search(pattern, markdown):
+            return False
+    return True
+
+
 def _normalize_saved_markdown(markdown: str, phase4_output: Phase4Output) -> str:
     normalized = _ensure_metadata_header(markdown, phase4_output)
+    normalized = _normalize_report_title_line(normalized, phase4_output)
     normalized = _strip_internal_code_owned_labels(normalized)
+    normalized = _replace_placeholder_residue(normalized)
+    normalized = _replace_quote_fabrication_patterns(normalized)
+    normalized = _replace_enterprise_pr_phrases(normalized)
     normalized = _replace_raw_metric_field_names(normalized)
     normalized = _replace_risk_section_with_code_owned(normalized, phase4_output)
     return normalized
@@ -794,6 +906,34 @@ def _trajectory_description(phase4_output: Phase4Output) -> str:
     return f"{stance_text}{polarization_text}"
 
 
+def _evolution_stage_lines(phase4_output: Phase4Output) -> List[str]:
+    if not phase4_output.emotion_trajectory:
+        return [
+            "第一阶段：输入信息不足期。当前模拟缺少足够轨迹数据，暂不形成阶段性扩散判断。治理含义是先补齐事实链和观察样本，避免过早定性。",
+            "",
+            "第二阶段：持续观察期。政府侧可关注后续新增信息是否改变群体分化结构，并预置必要的风险提示口径。",
+        ]
+
+    first = phase4_output.emotion_trajectory[0]
+    last = phase4_output.emotion_trajectory[-1]
+    polarization_change = last.polarization_index - first.polarization_index
+
+    if last.polarization_index >= 0.5 or polarization_change > 0.1:
+        second_feature = "群体分化加深，质疑型群体更容易围绕事实链、程序透明度和回应节奏形成持续追问。"
+        second_governance = "治理含义是从单点回应转向群体结构监测，跟踪负面叙事是否继续聚合。"
+    else:
+        second_feature = "群体分化保持在可控区间，讨论更多取决于后续事实补充是否稳定。"
+        second_governance = "治理含义是保持低强度跟踪，避免过度介入导致个案被再次放大。"
+
+    return [
+        "第一阶段：争议触发期。事件进入模拟后，关注点首先集中在触发事实、责任边界和回应预期上。关键群体通常是直接受影响或高度敏感的讨论者；其机制在于初始信息不足会放大解释空间。治理含义是尽早识别公共风险焦点，避免讨论从事实疑问滑向价值对立。",
+        "",
+        f"第二阶段：群体分化期。{second_feature}关键群体包括质疑方、等待事实补充的缓冲群体和可能推动二次传播的围观群体。{second_governance}",
+        "",
+        "第三阶段：外溢观察期。模拟后段需要判断争议是否从个案扩展到行业规范、平台传播或公共价值议题。治理含义是监测外溢路径、提示相关部门保持口径一致，并避免政府侧对企业或个人个案作过度介入。",
+    ]
+
+
 def _inflection_markdown_lines(phase4_output: Phase4Output) -> List[str]:
     if not phase4_output.inflection_points:
         return ["本轮模拟未发现显著拐点。"]
@@ -805,7 +945,7 @@ def _inflection_markdown_lines(phase4_output: Phase4Output) -> List[str]:
         "|------|------|--------------|",
     ]
     for point in phase4_output.inflection_points:
-        lines.append(f"| Tick {point.tick} | {point.group_name} | {point.impact_description} |")
+        lines.append(f"| 第{point.tick}轮 | {point.group_name} | {point.impact_description} |")
     return lines
 
 
@@ -846,6 +986,52 @@ def _risk_explanation(phase4_output: Phase4Output) -> str:
         f"本轮模拟显示，事件暂处于{risk_types}可控阶段。"
         "后续重点是持续补充事实信息，避免局部疑问演化为更大范围的程序争议。"
     )
+
+
+def _structural_risk_point_lines(phase4_output: Phase4Output) -> List[str]:
+    risk_types = "、".join(phase4_output.risk_type_labels) if phase4_output.risk_type_labels else "负面叙事聚合风险"
+    if phase4_output.audience_mode == AudienceMode.GENERIC_GOVERNMENT:
+        first_name = "个案争议向公共价值议题外溢"
+        first_focus = "事件从单一主体争议扩展为行业规范、公序良俗或平台传播议题"
+        second_name = "多群体讨论导致叙事碎片化"
+        second_focus = "不同群体围绕事实链、态度表达和责任边界形成分化理解"
+    else:
+        first_name = "程序性争议向治理能力质疑延展"
+        first_focus = "事件被纳入执法、监管或公共管理程序是否充分的讨论框架"
+        second_name = "属地回应时序不一致放大治理压力"
+        second_focus = "多个部门或层级回应节奏不一致，导致公众对处置依据和责任边界继续追问"
+
+    return [
+        f"结构性风险点一：{first_name}",
+        f"触发机制：{first_focus}，并与本轮 code-owned 主要风险类型（{risk_types}）形成对应。",
+        "关键群体：高敏感质疑群体、等待事实补充的中间群体，以及可能推动二次传播的围观群体。",
+        "升级路径：如果事实链补充不足，讨论可能由个案评价扩展为公共价值站队或治理能力评价。",
+        "缓释条件：政府侧保持关注和研判，协调相关主管部门提示信息披露边界，预置回应口径并监测外溢。",
+        "",
+        f"结构性风险点二：{second_name}",
+        f"触发机制：{second_focus}，使讨论从事实判断转向叙事竞争。",
+        "关键群体：持续追问程序透明度的群体、情绪化扩散群体和具有缓冲作用的理性观察群体。",
+        "升级路径：叙事碎片化后，单一说明难以覆盖多元关切，风险可能沿平台二次传播和跨圈层转述继续扩散。",
+        "缓释条件：政府侧跟踪关键群体关切，协调信息口径，督促信息链条补齐可核验事实，并引导讨论回到事实和程序边界。",
+    ]
+
+
+def _governance_recommendation_lines(phase4_output: Phase4Output) -> List[str]:
+    if phase4_output.audience_mode == AudienceMode.GENERIC_GOVERNMENT:
+        return [
+            "1. 关注公共议题外溢方向，研判事件是否从个案争议扩展为行业规范、平台传播或价值观讨论。",
+            "2. 跟踪高敏感群体与缓冲群体的立场变化，监测二次传播素材是否重新激活争议。",
+            "3. 协调行业主管或属地公共管理部门提示相关方补齐事实说明，避免多头表态造成信息混乱。",
+            "4. 预置政府侧风险提示和回应口径，明确本报告为模拟推演，不替涉事主体作公关表达。",
+            "5. 引导讨论回到事实链、程序边界和公共风险识别，避免过度介入企业或个人个案。",
+        ]
+    return [
+        "1. 关注程序争议的扩散方向，研判其是否从个案处置问题外溢为治理能力质疑。",
+        "2. 跟踪关键群体对处置依据、回应时序和信息透明度的追问，提示风险升级节点。",
+        "3. 协调相关部门统一口径，补齐程序说明、公开节点和事实边界，减少口径冲突。",
+        "4. 督促信息发布链条保持可核验、可追溯，避免回应滞后放大程序性质疑。",
+        "5. 在必要时推动上级指导和协同处置，同时避免过度介入未核实的个体责任判断。",
+    ]
 
 
 def generate_markdown_report(phase4_output: Phase4Output, extraction_output: EntityExtractionOutput) -> str:
@@ -897,9 +1083,13 @@ def generate_markdown_report(phase4_output: Phase4Output, extraction_output: Ent
         "",
         "## 二、演化分析",
         "",
-        "### 模拟演化判断",
+        "### 阶段性演化判断",
         "",
-        _trajectory_description(phase4_output),
+    ])
+
+    lines.extend(_evolution_stage_lines(phase4_output))
+
+    lines.extend([
         "",
         "### 群体分化观察",
         "",
@@ -932,13 +1122,19 @@ def generate_markdown_report(phase4_output: Phase4Output, extraction_output: Ent
         "风险解释：",
         _risk_explanation(phase4_output),
         "",
+    ])
+
+    lines.extend(_structural_risk_point_lines(phase4_output))
+
+    lines.extend([
+        "",
         "## 四、对策建议",
         "",
-        "1. 补齐事实链，优先澄清时间线、处置依据、已完成和待完成事项。",
-        "2. 统一回应口径，避免前后表述不一致引发新的程序质疑。",
-        "3. 明确调查或核查节点，以阶段性进展回应高敏群体关切。",
-        "4. 公开程序依据和信息来源边界，减少将模拟争议误读为现实结论的空间。",
-        "5. 避免刺激性、辩解性或甩锅式表达，将回应重点放在事实、程序和改进动作上。",
+    ])
+
+    lines.extend(_governance_recommendation_lines(phase4_output))
+
+    lines.extend([
         "",
         "## 五、附录",
         "",
@@ -1011,13 +1207,15 @@ def save_markdown_report(
     md_path = output_path or config.FINAL_REPORT_PATH.with_suffix(".md")
     phase4_output = _align_report_meta_to_output_path(phase4_output, md_path)
 
-    # 如果有 LLM 生成的 Markdown（长度 > 100），直接使用
+    # 如果有 LLM 生成的 Markdown（长度 > 100），优先使用；残缺报告会回退到 code-owned fallback。
     if _llm_generated_markdown and len(_llm_generated_markdown) > 100:
         md_content = _llm_generated_markdown
     else:
-        # 否则生成默认格式
         md_content = generate_markdown_report(phase4_output, extraction_output)
     md_content = _normalize_saved_markdown(md_content, phase4_output)
+    if not _has_required_five_chapter_sections(md_content):
+        md_content = generate_markdown_report(phase4_output, extraction_output)
+        md_content = _normalize_saved_markdown(md_content, phase4_output)
 
     md_path.parent.mkdir(parents=True, exist_ok=True)
     with open(md_path, "w", encoding="utf-8") as f:

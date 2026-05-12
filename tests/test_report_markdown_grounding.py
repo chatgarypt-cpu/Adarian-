@@ -1,4 +1,4 @@
-"""Targeted Markdown grounding checks for v1.2.7 attempt-02."""
+"""Targeted Markdown grounding checks for v1.2.8 attempt-01."""
 
 import ast
 import json
@@ -14,12 +14,28 @@ if str(PROJECT_ROOT) not in sys.path:
 from src.phase4 import report_agent
 from src.phase4.report_agent import generate_fallback_report, save_markdown_report, save_report
 from src.phase4.report_prompts import (
+    ENTERPRISE_PR_FORBIDDEN_PHRASES,
+    EVOLUTION_STAGE_NARRATIVE_RULES,
     FIVE_CHAPTER_HEADINGS,
     FORBIDDEN_REALITY_PHRASES,
+    GOVERNANCE_RECOMMENDATION_RULES,
+    GOVERNMENT_ACTOR_PRESSURE_RULES,
+    GOVERNMENT_FACING_PERSPECTIVE_RULES,
     INTERNAL_CODE_OWNED_LABELS,
+    METRIC_BUSINESS_LABEL_MAP,
+    METRIC_BUSINESS_LABEL_RULES,
     NON_WHITELISTED_RISK_TYPE_EXAMPLES,
     POLICY_BOUNDARY_FORBIDDEN_PHRASES,
+    QUOTE_FABRICATION_PATTERNS,
+    QUOTE_FABRICATION_RULES,
     RAW_METRIC_FIELD_NAMES,
+    REPORT_RULE_PRIORITY,
+    REPORT_SUMMARY_NARRATIVE_RULES,
+    REPORT_SYSTEM_PROMPT,
+    REPORT_TITLE_RULES,
+    RISK_ANALYSIS_EXPANSION_RULES,
+    SECTION_LEVEL_FEWSHOT_EVOLUTION,
+    SECTION_LEVEL_FEWSHOT_RISK_ANALYSIS,
     SIMULATION_DISCLAIMER,
 )
 from src.schemas import (
@@ -168,6 +184,11 @@ def _risk_section(markdown: str) -> str:
     return markdown.split("## 三、风险研判", 1)[1].split("## 四、对策建议", 1)[0]
 
 
+def _assert_five_chapters(markdown: str):
+    for heading in FIVE_CHAPTER_HEADINGS:
+        assert f"## {heading}" in markdown
+
+
 def test_markdown_contains_five_chapter_template_and_simulation_disclaimer(tmp_path):
     markdown = _markdown(tmp_path)
 
@@ -236,6 +257,45 @@ def test_report_prompts_module_is_static_only():
         node for node in ast.walk(tree)
         if isinstance(node, forbidden_nodes)
     ]
+
+
+def test_v128_prompt_assets_exist_and_metric_label_map_is_complete():
+    required_assets = [
+        REPORT_RULE_PRIORITY,
+        GOVERNMENT_FACING_PERSPECTIVE_RULES,
+        GOVERNMENT_ACTOR_PRESSURE_RULES,
+        REPORT_TITLE_RULES,
+        REPORT_SUMMARY_NARRATIVE_RULES,
+        EVOLUTION_STAGE_NARRATIVE_RULES,
+        RISK_ANALYSIS_EXPANSION_RULES,
+        GOVERNANCE_RECOMMENDATION_RULES,
+        METRIC_BUSINESS_LABEL_RULES,
+        QUOTE_FABRICATION_RULES,
+        SECTION_LEVEL_FEWSHOT_EVOLUTION,
+        SECTION_LEVEL_FEWSHOT_RISK_ANALYSIS,
+    ]
+
+    assert all(asset for asset in required_assets)
+    assert METRIC_BUSINESS_LABEL_MAP["event_scale"]["0.0-0.3"] == "区域性热点事件"
+    assert METRIC_BUSINESS_LABEL_MAP["event_scale"]["0.3-0.7"] == "全国性舆情事件"
+    assert METRIC_BUSINESS_LABEL_MAP["event_scale"]["0.7-1.0"] == "全国重大舆情事件"
+    assert METRIC_BUSINESS_LABEL_MAP["event_controversy"]["0.3-0.7"] == "中等争议"
+    assert METRIC_BUSINESS_LABEL_MAP["polarization_index"]["0.7-1.0"] == "高冲突 / 高分化"
+    assert METRIC_BUSINESS_LABEL_MAP["stance_delta"]["0.2-0.5"] == "显著立场迁移"
+
+
+def test_report_prompt_priority_places_t0_t1_before_quality_rules():
+    for tier in ("T0", "T1", "T2", "T3"):
+        assert tier in REPORT_RULE_PRIORITY
+
+    priority_index = REPORT_SYSTEM_PROMPT.index("【规则优先级】")
+    disclaimer_index = REPORT_SYSTEM_PROMPT.index(SIMULATION_DISCLAIMER)
+    title_index = REPORT_SYSTEM_PROMPT.index("【标题规则】")
+    fewshot_index = REPORT_SYSTEM_PROMPT.index("【演化分析参考写法")
+
+    assert priority_index < disclaimer_index < title_index < fewshot_index
+    assert REPORT_SYSTEM_PROMPT.index("T0") < REPORT_SYSTEM_PROMPT.index("T2")
+    assert REPORT_SYSTEM_PROMPT.index("T1") < REPORT_SYSTEM_PROMPT.index("T3")
 
 
 def test_generated_at_consistent_in_json_fallback_and_llm_paths(tmp_path):
@@ -349,3 +409,116 @@ def test_llm_saved_markdown_hides_internal_labels_and_raw_metric_fields(tmp_path
         assert label not in markdown
     for field_name in RAW_METRIC_FIELD_NAMES:
         assert field_name not in markdown
+
+
+def test_saved_markdown_removes_enterprise_pr_phrases_and_fabricated_quotes(tmp_path):
+    extraction, output = _output()
+    path = tmp_path / "run_006" / "final_report.md"
+
+    report_agent._llm_generated_markdown = (
+        "# OPPO品牌在母亲节发布争议海报引发多方讨论舆情风险研判报告\n\n"
+        "报告类型：模拟推演型舆情风险研判报告\n"
+        f"生成时间：{output.report_meta.generated_at}\n\n"
+        "## 一、舆情概要\n\n"
+        "有网民表示：这是需要危机公关的事件，贵司应重视。\n\n"
+        "## 二、演化分析\n\n"
+        "待评估。\n\n"
+        "## 三、风险研判\n\n"
+        "风险等级：中等偏高\n\n"
+        "主要风险类型：\n1. 品牌声誉风险\n\n"
+        "风险解释：品牌修复压力较高。\n\n"
+        "## 四、对策建议\n\n"
+        "建议OPPO说明情况。建议品牌方开展舆情洗白。建议企业做好形象修复。贵校也应参考。\n\n"
+        "## 五、附录\n\n"
+        "event_scale risk_score\n"
+    )
+    save_markdown_report(output, extraction, path)
+    report_agent._llm_generated_markdown = ""
+
+    markdown = path.read_text(encoding="utf-8")
+    for phrase in ENTERPRISE_PR_FORBIDDEN_PHRASES:
+        assert phrase not in markdown
+    for pattern in QUOTE_FABRICATION_PATTERNS:
+        assert pattern not in markdown
+    for field_name in RAW_METRIC_FIELD_NAMES:
+        assert field_name not in markdown
+    assert "待评估" not in markdown
+    assert "本轮模拟未发现显著拐点" in markdown
+    assert "结构性风险点一" in markdown
+    assert "结构性风险点二" in markdown
+
+
+def test_incomplete_llm_markdown_rebuilds_to_five_chapter_fallback(tmp_path):
+    extraction, output = _output()
+    path = tmp_path / "run_007" / "final_report.md"
+
+    report_agent._llm_generated_markdown = (
+        "# 残缺 LLM 报告\n\n"
+        "## 三、风险研判\n\n"
+        "风险等级：中等偏高\n\n"
+        "主要风险类型：\n1. 品牌声誉风险\n\n"
+        "风险解释：event_scale、event_controversy、polarization_index、stance_delta、risk_score。"
+        "建议OPPO开展危机公关。有网民表示：待评估。\n\n"
+    )
+    save_markdown_report(output, extraction, path)
+    report_agent._llm_generated_markdown = ""
+
+    markdown = path.read_text(encoding="utf-8")
+    _assert_five_chapters(markdown)
+    assert "中等偏高" not in _risk_section(markdown)
+    assert f"风险等级：{output.risk_level_label}" in _risk_section(markdown)
+    for risk_type in output.risk_type_labels:
+        assert risk_type in _risk_section(markdown)
+    for phrase in list(RAW_METRIC_FIELD_NAMES) + ["建议OPPO", "建议品牌方", "建议品牌", "建议企业", "有网民表示：", "据网友反映：", "待评估"]:
+        assert phrase not in markdown
+
+
+def test_question_style_llm_markdown_rebuilds_to_five_chapter_fallback(tmp_path):
+    extraction, output = _output()
+    path = tmp_path / "run_008" / "final_report.md"
+
+    report_agent._llm_generated_markdown = (
+        "我注意到输入数据中缺少 risk_level_label 和 risk_type_labels 这两个关键字段。"
+        "请补充 risk_level_label / risk_type_labels 后再生成报告。"
+        "当前不能自行发明风险等级和主要风险类型，因此无法输出完整报告。"
+    )
+    save_markdown_report(output, extraction, path)
+    report_agent._llm_generated_markdown = ""
+
+    markdown = path.read_text(encoding="utf-8")
+    _assert_five_chapters(markdown)
+    assert "请补充 risk_level_label" not in markdown
+    assert "无法输出完整报告" not in markdown
+    assert f"风险等级：{output.risk_level_label}" in markdown
+    for risk_type in output.risk_type_labels:
+        assert risk_type in markdown
+
+
+def test_complete_five_chapter_llm_markdown_is_not_unconditionally_replaced(tmp_path):
+    extraction, output = _output()
+    path = tmp_path / "run_009" / "final_report.md"
+
+    report_agent._llm_generated_markdown = (
+        "# LLM 完整报告\n\n"
+        "## 一、舆情概要\n\n"
+        "LLM_UNIQUE_SUMMARY_MARKER\n\n"
+        "## 二、演化分析\n\n"
+        "第一阶段：争议触发期。\n\n第二阶段：群体分化期。\n\n"
+        "## 三、风险研判\n\n"
+        f"风险等级：{output.risk_level_label}\n\n"
+        "主要风险类型：\n"
+        + "\n".join(f"{index}. {label}" for index, label in enumerate(output.risk_type_labels, start=1))
+        + "\n\n风险解释：LLM 风险解释。\n\n"
+        "## 四、对策建议\n\n"
+        "LLM_UNIQUE_RECOMMENDATION_MARKER\n\n"
+        "## 五、附录\n\n"
+        "LLM_UNIQUE_APPENDIX_MARKER\n"
+    )
+    save_markdown_report(output, extraction, path)
+    report_agent._llm_generated_markdown = ""
+
+    markdown = path.read_text(encoding="utf-8")
+    _assert_five_chapters(markdown)
+    assert "LLM_UNIQUE_SUMMARY_MARKER" in markdown
+    assert "LLM_UNIQUE_RECOMMENDATION_MARKER" in markdown
+    assert "LLM_UNIQUE_APPENDIX_MARKER" in markdown
