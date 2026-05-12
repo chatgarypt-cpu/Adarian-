@@ -12,7 +12,9 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from src.phase4 import report_agent
 from src.phase4.report_agent import (
+    _build_code_owned_report_contract_block,
     _ensure_metadata_header,
+    _normalize_saved_markdown,
     _normalized_report_title,
     determine_audience_mode,
     generate_fallback_report,
@@ -212,6 +214,49 @@ def test_llm_markdown_path_gets_code_owned_metadata_header():
     assert "# LLM 自生成报告" in with_header
 
 
+def test_report_title_hygiene_removes_marketing_connector_duplication():
+    assert _normalized_report_title("OPPO母亲节营销海报引发价值观争议") == "OPPO母亲节营销争议舆情风险研判报告"
+    assert _normalized_report_title("OPPO母亲节文案营销争议引发讨论") == "OPPO母亲节营销争议舆情风险研判报告"
+    assert "营营销" not in _normalized_report_title("OPPO母亲节营销争议")
+    assert "文营销" not in _normalized_report_title("OPPO母亲节文案营销争议")
+
+
+def test_llm_user_prompt_injects_code_owned_report_contract(monkeypatch):
+    extraction = _extraction(summary="OPPO母亲节营销海报引发价值观争议", entity_name="OPPO")
+    tick_logs = [_tick(0, 0.2), _tick(1, 0.58)]
+    captured = {}
+
+    class FakeLLM:
+        def generate(self, system, user, response_model=None):
+            captured["system"] = system
+            captured["user"] = user
+            return (
+                "# 模拟报告\n\n"
+                "## 一、舆情概要\n\n内容足够长。\n\n"
+                "## 二、演化分析\n\n第一阶段：争议触发期。\n\n"
+                "## 三、风险研判\n\n风险等级：中风险\n\n主要风险类型：\n1. 群体对立风险\n\n风险解释：模拟内容。\n\n"
+                "## 四、对策建议\n\n治理动作：关注。\n\n"
+                "## 五、附录\n\n模拟说明。"
+            )
+
+    monkeypatch.setattr(report_agent, "get_llm_client", lambda: FakeLLM())
+    report_agent.generate_report_with_llm(
+        extraction,
+        tick_logs,
+        [5.0, 5.2],
+        phase2_output=_phase2_output("OPPO"),
+    )
+    report_agent._llm_generated_markdown = ""
+
+    expected_block = _build_code_owned_report_contract_block(extraction, tick_logs, [5.0, 5.2])
+    assert expected_block in captured["user"]
+    assert "【CODE_OWNED_REPORT_CONTRACT】" in captured["user"]
+    assert "risk_level_label:" in captured["user"]
+    assert "risk_type_labels:" in captured["user"]
+    assert "audience_mode:" in captured["user"]
+    assert "primary_risk_types:" in captured["user"]
+
+
 def test_save_markdown_llm_path_and_fallback_path_share_metadata(tmp_path):
     extraction = _extraction()
     output = generate_fallback_report(
@@ -263,16 +308,40 @@ def test_fallback_markdown_has_v128_government_facing_narrative(tmp_path):
     assert title.endswith("舆情风险研判报告")
     assert len(title) <= 25
     assert "OPPO" in title
+    assert "营营销" not in title
+    assert title == "OPPO母亲节营销争议舆情风险研判报告"
+    for subheading in (
+        "### （一）主体与发声结构分析",
+        "### （二）关键群体变化分析",
+        "### （三）阶段演化分析",
+        "### （四）关键洞察",
+    ):
+        assert subheading in evolution_section
     assert "第一阶段" in evolution_section
     assert "第二阶段" in evolution_section
+    assert "关键洞察" in evolution_section
     assert "Tick 1" not in evolution_section
     assert "Tick 2" not in evolution_section
     assert "Tick 3" not in evolution_section
+    for subheading in (
+        "### （一）矛盾焦点分析",
+        "### （二）结构性风险点一",
+        "### （三）结构性风险点二",
+        "### （四）结构性风险点三",
+        "### （五）短中期态势判断",
+    ):
+        assert subheading in risk_section
     assert "结构性风险点一" in risk_section
     assert "结构性风险点二" in risk_section
+    assert "结构性风险点三" in risk_section
+    assert "矛盾焦点分析" in risk_section
     assert "品牌声誉风险" not in risk_section
     assert "舆论极化风险" not in risk_section
     assert "衍生争议风险" not in risk_section
+    assert recommendation_section.count("治理动作：") >= 5
+    assert recommendation_section.count("触发条件：") >= 5
+    assert recommendation_section.count("介入边界：") >= 5
+    assert recommendation_section.count("预期效果：") >= 5
     assert any(
         word in recommendation_section
         for word in ("关注", "研判", "跟踪", "协调", "督促", "预置", "提示", "监测", "引导", "避免过度介入")
@@ -300,3 +369,30 @@ def test_empty_inflection_and_quote_raw_metric_guards_in_saved_markdown(tmp_path
         assert field_name not in markdown
     for quote_pattern in ("有网民表示：", "据网友反映：", "一位市民说：", "部分网友称：", "有评论指出："):
         assert quote_pattern not in markdown
+
+
+def test_h1_hygiene_removes_body_h1_without_dropping_five_chapters():
+    output = generate_fallback_report(
+        _extraction(summary="OPPO母亲节营销海报引发价值观争议", entity_name="OPPO"),
+        [_tick(0), _tick(1)],
+        [5.0, 5.2],
+        phase2_output=_phase2_output("OPPO"),
+    )
+    markdown = (
+        "# 旧标题\n\n"
+        "报告类型：模拟推演型舆情风险研判报告\n"
+        f"生成时间：{output.report_meta.generated_at}\n\n"
+        "# Body H1 Should Be Removed\n\n"
+        "## 一、舆情概要\n\n内容\n\n"
+        "## 二、演化分析\n\n内容\n\n"
+        "## 三、风险研判\n\n内容\n\n"
+        "## 四、对策建议\n\n内容\n\n"
+        "## 五、附录\n\n内容\n"
+    )
+
+    normalized = _normalize_saved_markdown(markdown, output)
+
+    assert len([line for line in normalized.splitlines() if line.startswith("# ")]) == 1
+    assert "Body H1 Should Be Removed" not in normalized
+    for heading in ("## 一、舆情概要", "## 二、演化分析", "## 三、风险研判", "## 四、对策建议", "## 五、附录"):
+        assert heading in normalized

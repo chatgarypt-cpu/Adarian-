@@ -15,13 +15,20 @@ from src.phase4 import report_agent
 from src.phase4.report_agent import generate_fallback_report, save_markdown_report, save_report
 from src.phase4.report_prompts import (
     ENTERPRISE_PR_FORBIDDEN_PHRASES,
+    DATA_TO_JUDGMENT_RULES,
+    ELABORATION_CHAIN_RULES,
     EVOLUTION_STAGE_NARRATIVE_RULES,
+    EVOLUTION_SECTION_EXPANSION_RULES,
     FIVE_CHAPTER_HEADINGS,
     FORBIDDEN_REALITY_PHRASES,
+    GOVERNANCE_RECOMMENDATION_DEPTH_RULES,
     GOVERNANCE_RECOMMENDATION_RULES,
     GOVERNMENT_ACTOR_PRESSURE_RULES,
     GOVERNMENT_FACING_PERSPECTIVE_RULES,
+    H1_HYGIENE_RULES,
     INTERNAL_CODE_OWNED_LABELS,
+    KEY_INSIGHT_RULES,
+    MAIN_BODY_LENGTH_BUDGET_RULES,
     METRIC_BUSINESS_LABEL_MAP,
     METRIC_BUSINESS_LABEL_RULES,
     NON_WHITELISTED_RISK_TYPE_EXAMPLES,
@@ -33,6 +40,7 @@ from src.phase4.report_prompts import (
     REPORT_SUMMARY_NARRATIVE_RULES,
     REPORT_SYSTEM_PROMPT,
     REPORT_TITLE_RULES,
+    RISK_CONFLICT_ANALYSIS_RULES,
     RISK_ANALYSIS_EXPANSION_RULES,
     SECTION_LEVEL_FEWSHOT_EVOLUTION,
     SECTION_LEVEL_FEWSHOT_RISK_ANALYSIS,
@@ -270,6 +278,14 @@ def test_v128_prompt_assets_exist_and_metric_label_map_is_complete():
         RISK_ANALYSIS_EXPANSION_RULES,
         GOVERNANCE_RECOMMENDATION_RULES,
         METRIC_BUSINESS_LABEL_RULES,
+        MAIN_BODY_LENGTH_BUDGET_RULES,
+        DATA_TO_JUDGMENT_RULES,
+        ELABORATION_CHAIN_RULES,
+        EVOLUTION_SECTION_EXPANSION_RULES,
+        KEY_INSIGHT_RULES,
+        RISK_CONFLICT_ANALYSIS_RULES,
+        GOVERNANCE_RECOMMENDATION_DEPTH_RULES,
+        H1_HYGIENE_RULES,
         QUOTE_FABRICATION_RULES,
         SECTION_LEVEL_FEWSHOT_EVOLUTION,
         SECTION_LEVEL_FEWSHOT_RISK_ANALYSIS,
@@ -282,6 +298,24 @@ def test_v128_prompt_assets_exist_and_metric_label_map_is_complete():
     assert METRIC_BUSINESS_LABEL_MAP["event_controversy"]["0.3-0.7"] == "中等争议"
     assert METRIC_BUSINESS_LABEL_MAP["polarization_index"]["0.7-1.0"] == "高冲突 / 高分化"
     assert METRIC_BUSINESS_LABEL_MAP["stance_delta"]["0.2-0.5"] == "显著立场迁移"
+
+
+def test_patch02_prompt_rules_are_in_system_prompt():
+    required_fragments = [
+        "【主体正文篇幅预算】",
+        "3500-4500 中文字",
+        "【数据转判断规则】",
+        "数据只能作为判断依据",
+        "【展开链规则】",
+        "判断 → 依据 → 机制 → 治理含义 → 观察信号",
+        "【关键洞察规则】",
+        "【矛盾焦点与风险展开规则】",
+        "【对策建议四要素规则】",
+        "【H1 标题卫生规则】",
+    ]
+
+    for fragment in required_fragments:
+        assert fragment in REPORT_SYSTEM_PROMPT
 
 
 def test_report_prompt_priority_places_t0_t1_before_quality_rules():
@@ -390,6 +424,9 @@ def test_llm_saved_markdown_hides_internal_labels_and_raw_metric_fields(tmp_path
 
     report_agent._llm_generated_markdown = (
         "# LLM 报告\n\n"
+        "【CODE_OWNED_REPORT_CONTRACT】\n"
+        "risk_level_label: 高风险\n"
+        "risk_type_labels: 品牌声誉风险\n\n"
         "## 二、演化分析\n\n"
         "【CODE_OWNED_AGENT_STANCE_MATRIX】\n"
         "event_scale、event_controversy、polarization_index、stance_delta、risk_score。\n"
@@ -407,6 +444,8 @@ def test_llm_saved_markdown_hides_internal_labels_and_raw_metric_fields(tmp_path
     markdown = path.read_text(encoding="utf-8")
     for label in INTERNAL_CODE_OWNED_LABELS:
         assert label not in markdown
+    assert "risk_level_label:" not in markdown
+    assert "risk_type_labels:" not in markdown
     for field_name in RAW_METRIC_FIELD_NAMES:
         assert field_name not in markdown
 
