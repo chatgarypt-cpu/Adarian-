@@ -1,9 +1,9 @@
-# 迭代记录：vX.X.X - <Title>
+# 迭代记录：vX.X.X - title
 
 ## 1. Version Info
 
 - **版本号**：vX.X.X
-- **版本名称**：<Title>
+- **版本名称**：Title
 - **基于版本**：vX.X.X - <Previous Title>
 - **当前阶段**：exploration / audit / execution / validation / closeout
 - **状态**：draft / under_review / approved / executing / validating / closed

@@ -14,6 +14,134 @@
 
 ---
 
+## 2026-05-13: v1.2.8 Government-facing Detailed Report Narrative — checkpoint created before quality patch
+
+- **task_id**: task-v1.2.8-government-facing-detailed-report-narrative-prompt-governance
+- **attempt_id**:
+  - attempt-v1.2.8-01
+  - v1.2.8-five-chapter-markdown-fallback-patch
+- **checkpoint_commit**: `cd59c235da4e01a1339282f69f85e482ed76e10c`
+- **类型**: Phase 4 Report Product Governance / government-facing detailed narrative framework
+- **状态**: ✅ checkpoint created — ready for narrative persuasiveness patch
+
+**实际修改文件**：
+- `src/phase4/report_prompts.py` — v1.2.8 静态 prompt assets：规则优先级、政府治理视角、政府承压主体识别、标题/概要/演化/风险/对策规则、指标业务标签映射、禁止虚构引语、企业品牌事件 section-level few-shot。
+- `src/phase4/report_agent.py` — 标题短化、saved Markdown normalization、企业 PR 句式防护、raw metric field 防护、虚构引语格式防护、结构性风险点、政府治理动作建议、五章 fallback rebuild。
+- `tests/test_report_markdown_grounding.py` — prompt 静态边界、priority、指标映射、PR/quote/raw metric 防护、残缺/询问式 LLM Markdown fallback rebuild、完整五章 LLM Markdown 保留。
+- `tests/test_report_product_contract.py` — generated_at/metadata contract、短标题、阶段叙事、结构性风险点、政府治理动作语言、禁用表达回归。
+
+**基本验收结果**：
+```text
+.venv/bin/python -m py_compile src/phase4/report_agent.py src/phase4/report_prompts.py
+.venv/bin/python -m pytest tests/test_report_product_contract.py tests/test_report_markdown_grounding.py -v
+  result: 24 passed
+.venv/bin/python -m pytest tests/test_phase4_markdown_metric_grounding.py tests/test_schema_imports.py -v
+  result: 4 passed
+git diff --check -- src/phase4/report_agent.py src/phase4/report_prompts.py tests/test_report_markdown_grounding.py tests/test_report_product_contract.py
+  result: passed
+```
+
+**test8 smoke 结果**：
+```text
+command: .venv/bin/python main.py seeds/test8.txt
+exit_code: 0
+run_dir: outputs/runs/test8_20260512_235016
+artifact_check: pass
+whitebox_summary: pass
+whitebox_completeness_score: 1.0
+final_report_words: 2505
+risk_level_label: 低风险
+risk_type_labels: 负面叙事聚合风险
+audience_mode: generic_government
+```
+
+**机械检查结果**：
+```text
+five_chapter_template: yes
+enterprise_pr_phrases: clean
+raw_metric_fields: clean
+fabricated_quote_patterns: clean
+待评估: clean
+generated_at_json_markdown_consistent: yes
+risk_labels_code_owned: yes
+```
+
+**已知问题 / 下一步**：
+- 报告仍偏数据解释，说服力和段落展开不足，后续进入 narrative persuasiveness & section length budget patch。
+- latest smoke Markdown 顶部出现双 H1 标题，且 code-normalized 标题存在“营营销”重复字样，后续小补丁处理。
+- 当前 checkpoint 可用于回滚到 v1.2.8 详尽版框架基线。
+
+**rollback hint**：
+```text
+git revert cd59c235da4e01a1339282f69f85e482ed76e10c
+```
+
+---
+
+## 2026-05-13: v1.2.8 patch-02 — Main Body Expansion & Data-to-Judgment Elaboration Patch + H1 Hygiene
+
+- **task_id**: task-v1.2.8-government-facing-detailed-report-narrative-prompt-governance
+- **patch_id**: v1.2.8-main-body-expansion-data-to-judgment-h1-hygiene-patch
+- **类型**: Phase 4 Report Product Governance / main body expansion & data-to-judgment elaboration
+- **状态**: ✅ completed — smoke passed / ready for Owner product review or DS verify
+
+**实际修改文件**：
+- `src/phase4/report_prompts.py` — 新增正文篇幅预算、数据转判断、展开链、演化分析二级结构、关键洞察、矛盾焦点、对策建议四要素、H1 hygiene 规则常量。
+- `src/phase4/report_agent.py` — 在 `generate_report_with_llm()` user prompt 中显式注入 `CODE_OWNED_REPORT_CONTRACT`（risk_level_label / risk_type_labels / audience_mode / primary_risk_types）；fallback Markdown 升级为详尽二级结构；保存前 H1 去重与标题 hygiene 修复。
+- `tests/test_report_markdown_grounding.py` — 新增 prompt 常量覆盖、篇幅预算、数据转判断、展开链、关键洞察、矛盾焦点、对策建议四要素、H1 hygiene、runtime CODE_OWNED_REPORT_CONTRACT 注入、fallback 二级结构、正文长度不作为 hard gate 等 targeted tests。
+- `tests/test_report_product_contract.py` — 保持 contract 回归覆盖。
+
+**基本验收结果**：
+```text
+.venv/bin/python -m py_compile src/phase4/report_agent.py src/phase4/report_prompts.py
+  pass
+
+.venv/bin/python -m pytest tests/test_report_product_contract.py tests/test_report_markdown_grounding.py -v
+  28 passed
+
+.venv/bin/python -m pytest tests/test_phase4_markdown_metric_grounding.py tests/test_schema_imports.py -v
+  4 passed
+
+git diff --check -- src/phase4/report_agent.py src/phase4/report_prompts.py tests/test_report_markdown_grounding.py tests/test_report_product_contract.py docs/iterations/v1.2.8-Government-facing-Detailed-Report-Narrative-Prompt-Governance.md
+  pass
+```
+
+**test8 smoke 结果**：
+```text
+command: .venv/bin/python main.py seeds/test8.txt
+exit_code: 0
+run_dir: outputs/runs/test8_20260513_012401
+artifact_check: pass
+whitebox_summary: pass
+whitebox_completeness_score: 1.0
+final_report_words: 5375
+main_body_estimated_words: 4813
+appendix_estimated_words: 268
+five_chapter_template: yes
+single_h1: yes
+title: OPPO母亲节营销争议舆情风险研判报告
+title_hygiene: clean（无"营营销"）
+contains_key_insight: yes
+contains_conflict_focus_analysis: yes
+structural_risk_points: 3
+recommendations: 5
+recommendation_four_elements: yes
+enterprise_pr_phrases: clean
+raw_metric_fields: clean
+fabricated_quote_patterns: clean
+待评估: clean
+```
+
+**已知问题 / carry-over**：
+1. final report 产品质量仍需 Owner review。
+2. 可能需要下一小补丁：Interpretive Tables & Event-specific Grounding Patch。
+3. 报告仍需进一步增强"数据解释表 / 关键群体解释表 / 矛盾焦点—风险路径表"。
+4. Phase 1 group generation quality debt 仍未处理。
+5. Report Asset Library / ReportContext / Prompt Registry 未进入本版本。
+6. 不修改 Phase 1-3 / schema / whitebox。
+
+---
+
 ## 2026-05-12: v1.2.7 Phase 4 Report Product Governance Sprint — 已完成，DS Accept pass
 
 - **task_id**: task-v1.2.7-phase4-report-product-governance
