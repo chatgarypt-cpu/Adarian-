@@ -14,6 +14,60 @@
 
 ---
 
+## 2026-05-15: v1.2.9 Phase 4 Report Agent Decoupling R0 — Closeout
+
+- **task_id**: task-v1.2.9-phase4-report-agent-decoupling-r0
+- **audit_id**: audit-v1.2.9-01
+- **acceptance_id**: accept-v1.2.9-01
+- **acceptance_result**: pass_with_known_issues
+- **closeout_status**: closed
+- **closeout_decision**: closeout_pass_with_known_issues
+- **blocks_next_version**: no
+
+**Actual added files**：
+- `src/phase4/report_normalizer.py`
+- `src/phase4/report_narrative.py`
+- `src/phase4/report_title.py`
+- `tests/test_phase4_report_normalizer.py`
+- `tests/test_phase4_report_agent_decoupling.py`
+
+**Actual modified files**：
+- `src/phase4/report_agent.py`
+- `src/phase4/__init__.py`
+- `docs/iterations/v1.2.9-Phase-4-Report-Agent-Decoupling-R0.md`
+- `docs/iterations/TASK_LOG.md`
+- `docs/iterations/CHANGELOG.md`
+
+**Verification**：
+- compileall src: pass
+- tests/: 83 passed
+- test8 smoke: pass
+
+**Run dir**：
+- `outputs/runs/test8_20260515_184351/run_964791_45220`
+
+**DS acceptance**：
+- team_mode_used: true
+- coupling_verdict: MODERATE_COUPLING_ACCEPTABLE_WITH_KNOWN_ISSUES
+- whether_1000_lines_is_blocker: false
+- hard_blockers: none
+- forbidden_files_touched: false
+- audit_dirty_tree_mixed: false
+- DS_report: `audit/phase4大版本改造/DS_Agent_Team_Verify_Accept_Report_v1.2.9_2026-05-15.md`
+
+**Known issues**：
+- 风险阈值仍是工程初始阈值，待后续多 seed 标定。
+- 模拟极化指数仍是工程 proxy。
+- 模拟关键变化点仍未完整升级为多信号 framework。
+- `external_risk_adjustment` 仅作为 future hook。
+- `select_primary_risk_types()` 仍依赖 `risk_assessment` 文本 keyword matching。
+- `single_run_summary` / `parallel_world_synthesis` / `batch_synthesis_context` 未实现。
+- risk calculation 仍留在 `report_agent.py`，待后续 risk engine 解耦。
+- `report_template.py` / `report_writer.py` R1 后续处理。
+- `parse_llm_report_response` / `generate_fallback_report` 存在 DRY 重复，后续处理。
+
+---
+
 ## 2026-05-15: v1.2.9 Phase 4 Report Agent Decoupling R0
 
 - **task_id**: task-v1.2.9-phase4-report-agent-decoupling-r0

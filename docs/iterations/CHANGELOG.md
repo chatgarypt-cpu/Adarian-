@@ -4,6 +4,39 @@
 
 ---
 
+## v1.2.9 (2026-05-15) — Closeout
+
+**主题**：Phase 4 Report Agent Decoupling R0
+
+### 新增
+
+- `src/phase4/report_normalizer.py`
+- `src/phase4/report_narrative.py`
+- `src/phase4/report_title.py`
+- `tests/test_phase4_report_normalizer.py`
+- `tests/test_phase4_report_agent_decoupling.py`
+
+### 修改
+
+- `report_agent.py` 降级为 Phase 4 façade / orchestrator。
+- `src/phase4/__init__.py` 精简 re-export。
+- closeout hygiene cleanup 执行 A1-A6。
+
+### 验收结果
+
+- tests/: 83 passed
+- test8 smoke passed
+- forbidden_files_touched: false
+- audit_dirty_tree_mixed: false
+- coupling_verdict: MODERATE_COUPLING_ACCEPTABLE_WITH_KNOWN_ISSUES
+
+### Closeout
+
+- closed / pass_with_known_issues
+- blocks_next_version: no
+
+---
+
 ## v1.2.9 (2026-05-15) — Phase 4 Report Agent Decoupling R0
 
 **主题**：Phase 4 Report Agent 解耦 R0
