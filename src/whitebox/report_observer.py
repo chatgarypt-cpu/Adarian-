@@ -21,6 +21,20 @@ def _relative_to_run_dir(path: Path, run_dir: Path) -> str:
         return path.as_posix()
 
 
+def _read_final_report_json(final_report_path: Path) -> Dict[str, object] | None:
+    json_path = final_report_path.with_suffix(".json")
+    if not json_path.exists():
+        return None
+    try:
+        with open(json_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return None
+    if isinstance(data, dict):
+        return data
+    return None
+
+
 def write_report_completeness_summary(run_dir: Path, final_report_path: Path) -> Dict[str, object]:
     """Check final_report.md and write whitebox/report_completeness.json."""
     run_dir = Path(run_dir)
@@ -31,7 +45,8 @@ def write_report_completeness_summary(run_dir: Path, final_report_path: Path) ->
     with open(final_report_path, "r", encoding="utf-8") as f:
         markdown_text = f.read()
 
-    result = check_report_completeness(markdown_text)
+    final_report_data = _read_final_report_json(final_report_path)
+    result = check_report_completeness(markdown_text, final_report_data)
     status = "fail" if result["report_truncated"] else "pass"
     detail_path = whitebox_dir / DETAIL_FILENAME
     payload = {

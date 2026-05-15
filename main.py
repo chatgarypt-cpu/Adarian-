@@ -25,6 +25,7 @@ v1.1.4 架构变化：
 import sys
 import time
 import json
+import os
 import shutil
 from datetime import datetime
 from pathlib import Path
@@ -212,9 +213,12 @@ def run_phase4(
 
 def build_run_paths(seed_file: Path) -> dict:
     """Create the run directory and return all authoritative output paths."""
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    run_id = f"{seed_file.stem}_{timestamp}"
-    run_dir = config.OUTPUTS_DIR / "runs" / run_id
+    now = datetime.now()
+    batch_id = f"{seed_file.stem}_{now.strftime('%Y%m%d_%H%M%S')}"
+    run_id = f"run_{now.strftime('%f')}_{os.getpid()}"
+    batch_dir = config.OUTPUTS_DIR / "runs" / batch_id
+    batch_dir.mkdir(parents=True, exist_ok=True)
+    run_dir = batch_dir / run_id
     run_dir.mkdir(parents=True, exist_ok=False)
     whitebox_dir = run_dir / "whitebox"
     whitebox_dir.mkdir(parents=True, exist_ok=True)
@@ -236,6 +240,8 @@ def build_run_paths(seed_file: Path) -> dict:
     }
 
     return {
+        "batch_id": batch_id,
+        "batch_dir": batch_dir,
         "run_id": run_id,
         "run_dir": run_dir,
         "seed_copy": seed_copy,
@@ -247,6 +253,8 @@ def write_run_meta(run_context: dict, seed_file: Path, status: str, started_at: 
     """Write run metadata for replay and acceptance checks."""
     outputs = run_context["outputs"]
     payload = {
+        "batch_id": run_context.get("batch_id"),
+        "batch_dir": str(run_context.get("batch_dir")) if run_context.get("batch_dir") else None,
         "run_id": run_context["run_id"],
         "seed_file": str(seed_file),
         "seed_copy": str(run_context["seed_copy"]),

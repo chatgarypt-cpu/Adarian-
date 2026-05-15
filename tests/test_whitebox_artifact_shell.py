@@ -122,11 +122,78 @@ def test_whitebox_summary_index_shape() -> None:
         }
 
 
+def test_report_completeness_inflection_consistency_empty_match() -> None:
+    markdown = (
+        "## 一、舆情概要\n\n内容。\n\n"
+        "## 二、演化分析\n\n本轮模拟未发现显著模拟关键变化点。\n\n"
+        "## 三、风险研判\n\n内容。\n\n"
+        "## 四、对策建议\n\n内容。\n\n"
+        "## 五、附录\n\n" + ("补充说明。" * 120)
+    )
+
+    result = check_report_completeness(markdown, {"inflection_points": []})
+
+    assert result["inflection_points_json_count"] == 0
+    assert result["empty_inflection_text_present"] is True
+    assert result["inflection_points_markdown_claim"] == "empty_claim"
+    assert result["inflection_points_consistency"] == "match"
+    assert result["reality_inflection_claim_detected"] is False
+
+
+def test_report_completeness_inflection_consistency_reality_mismatch() -> None:
+    markdown = (
+        "## 一、舆情概要\n\n内容。\n\n"
+        "## 二、演化分析\n\n第3轮现实舆情已经出现拐点。\n\n"
+        "## 三、风险研判\n\n内容。\n\n"
+        "## 四、对策建议\n\n内容。\n\n"
+        "## 五、附录\n\n" + ("补充说明。" * 120)
+    )
+
+    result = check_report_completeness(markdown, {"inflection_points": []})
+
+    assert result["inflection_points_json_count"] == 0
+    assert result["reality_inflection_claim_detected"] is True
+    assert result["inflection_points_markdown_claim"] == "reality_claim_detected"
+    assert result["inflection_points_consistency"] == "mismatch"
+    assert result["inflection_consistency_issue"]
+
+
+def test_report_completeness_inflection_consistency_non_empty_match() -> None:
+    markdown = (
+        "## 一、舆情概要\n\n内容。\n\n"
+        "## 二、演化分析\n\n第1轮出现值得关注的模拟关键变化点。\n\n"
+        "## 三、风险研判\n\n内容。\n\n"
+        "## 四、对策建议\n\n内容。\n\n"
+        "## 五、附录\n\n" + ("补充说明。" * 120)
+    )
+    final_report_data = {
+        "inflection_points": [
+            {
+                "tick": 1,
+                "agent_id": 8,
+                "group_name": "质疑群体",
+                "pivotal_comment": "需要说明",
+                "impact_description": "模拟极化指数变化 0.15",
+            }
+        ]
+    }
+
+    result = check_report_completeness(markdown, final_report_data)
+
+    assert result["inflection_points_json_count"] == 1
+    assert result["inflection_points_markdown_claim"] == "non_empty_claim"
+    assert result["inflection_points_consistency"] == "match"
+    assert result["reality_inflection_claim_detected"] is False
+
+
 def main() -> None:
     test_whitebox_imports()
     test_artifact_check_temp_run_dir()
     test_artifact_check_does_not_modify_business_files()
     test_whitebox_summary_index_shape()
+    test_report_completeness_inflection_consistency_empty_match()
+    test_report_completeness_inflection_consistency_reality_mismatch()
+    test_report_completeness_inflection_consistency_non_empty_match()
 
 
 if __name__ == "__main__":

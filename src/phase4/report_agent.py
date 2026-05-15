@@ -465,24 +465,48 @@ def _replace_report_metric_terms(markdown: str) -> str:
         body = markdown
         appendix = ""
 
-    replacements = (
-        ("情绪均值", "模拟立场均值"),
-        ("x(t)均值", "模拟立场均值"),
-        ("x(t)", "模拟立场均值"),
-        ("极化指数", "模拟极化指数"),
-        ("关键拐点", "模拟关键变化点"),
-        ("拐点", "模拟关键变化点"),
-        ("Tick", "轮次"),
-    )
-    for source, target in replacements:
-        body = body.replace(source, target)
+    def replace_terms(text: str) -> str:
+        normalized = text
+        normalized = normalized.replace("情绪均值", "模拟立场均值")
+        normalized = normalized.replace("x(t)均值", "模拟立场均值")
+        normalized = normalized.replace("x(t)", "模拟立场均值")
+        normalized = re.sub(r"(?<!模拟)立场均值", "模拟立场均值", normalized)
+        normalized = re.sub(r"(?<!模拟)极化指数", "模拟极化指数", normalized)
+        normalized = normalized.replace("关键拐点", "模拟关键变化点")
+        normalized = re.sub(r"(?<!模拟)关键变化点", "模拟关键变化点", normalized)
+        normalized = normalized.replace("拐点", "模拟关键变化点")
+        normalized = normalized.replace("Tick", "轮次")
+        return normalized
 
-    appendix = appendix.replace("情绪均值", "模拟立场均值")
-    appendix = appendix.replace("极化指数", "模拟极化指数")
-    appendix = appendix.replace("关键拐点", "模拟关键变化点")
-    appendix = appendix.replace("拐点", "模拟关键变化点")
-    appendix = appendix.replace("Tick", "轮次")
+    body = replace_terms(body)
+    appendix = replace_terms(appendix)
     return body + appendix
+
+
+def _replace_reality_claims_about_inflection(markdown: str) -> str:
+    boundary = (
+        "本轮模拟显示出值得关注的模拟关键变化点。"
+        "该节点仅代表本轮模拟设定下的演化特征，不等同于现实舆情传播中的真实转折。"
+    )
+    reality_patterns = (
+        r"现实舆情已经出现拐点",
+        r"现实舆情出现拐点",
+        r"全网舆情发生转折",
+        r"全网舆情已经转向",
+        r"公众态度已经改变",
+        r"公众态度发生转折",
+        r"舆情已经发生转折",
+        r"传播拐点已经出现",
+        r"真实舆情拐点",
+        r"现实传播拐点",
+        r"第[一二三四五六七八九十\d]+轮出现现实舆情拐点",
+        r"第[一二三四五六七八九十\d]+轮公众态度已经改变",
+        r"第[一二三四五六七八九十\d]+轮现实舆情已经出现拐点",
+    )
+    normalized = markdown
+    for pattern in reality_patterns:
+        normalized = re.sub(pattern, boundary, normalized)
+    return normalized
 
 
 def _remove_metric_explanation_sections(markdown: str) -> str:
@@ -570,6 +594,7 @@ def _normalize_saved_markdown(markdown: str, phase4_output: Phase4Output) -> str
     normalized = _normalize_report_title_line(normalized, phase4_output)
     normalized = _strip_internal_code_owned_labels(normalized)
     normalized = _replace_placeholder_residue(normalized)
+    normalized = _replace_reality_claims_about_inflection(normalized)
     normalized = _replace_quote_fabrication_patterns(normalized)
     normalized = _replace_enterprise_pr_phrases(normalized)
     normalized = _replace_raw_metric_field_names(normalized)

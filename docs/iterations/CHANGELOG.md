@@ -4,6 +4,86 @@
 
 ---
 
+## v1.2.8.1.1 (2026-05-15) — Inflection Point Output Guard & Whitebox Alignment Patch
+
+**主题**：模拟关键变化点输出安全与现有 whitebox 对齐
+
+### 新增
+
+- Inflection point reality-claim post-processing guard。
+- `tests/test_inflection_point_output_guard.py`：正向 inflection_points 测试、现实化拐点表达拦截测试、重复“模拟模拟...”前缀回归测试、LLM 不得自行现实化生成拐点测试。
+- `tests/test_run_dir_concurrency.py`：验证同秒快速连续创建 run_dir 时共享 batch 文件夹且子目录不撞名。
+- 现有 whitebox report completeness 中的 inflection_points 一致性轻量检查。
+
+### 修改
+
+- [src/phase4/report_agent.py] Markdown normalizer 对现实化拐点表述进行模拟口径改写。
+- [src/phase4/report_agent.py] 术语替换避免重复前缀：`模拟模拟极化指数`、`模拟模拟关键变化点`、`模拟模拟立场均值`。
+- [src/whitebox/report_completeness.py] report_completeness detail 增加 inflection_points 相关检查字段。
+- [src/whitebox/report_observer.py] 读取同目录 `final_report.json` 并传入 report completeness 检查；读取失败时 graceful degrade。
+- [main.py] Owner-approved infra hotfix：同秒并发运行归入同一 batch 文件夹，并用 `run_{microseconds}_{pid}` 子目录隔离产物，修复并发 run_dir 秒级时间戳撞名，同时保留子目录 `exist_ok=False` 防覆盖。
+- [tests/test_whitebox_artifact_shell.py] 增加 JSON / Markdown inflection consistency cases。
+
+### 不变
+
+- InflectionPoint schema 不变。
+- identify_inflection_points() 算法不升级，仍保持 `polarization_delta > 0.1`、最多返回 3 个。
+- final_report.json contract 不变。
+- whitebox_summary 顶层 contract 不变。
+- 不新增 whitebox artifact 文件。
+- 不新增 whitebox 文件。
+
+### 验收
+
+```text
+.venv/bin/python -m py_compile src/phase4/report_agent.py src/whitebox/report_completeness.py src/whitebox/report_observer.py
+  pass
+
+.venv/bin/python -m pytest tests/test_inflection_point_output_guard.py -v
+  5 passed
+
+.venv/bin/python -m pytest tests/test_report_product_contract.py tests/test_report_markdown_grounding.py tests/test_phase4_markdown_metric_grounding.py tests/test_risk_assessment_directionality.py -v
+  41 passed
+
+.venv/bin/python -m pytest tests/test_whitebox_artifact_shell.py -v
+  7 passed
+
+.venv/bin/python -m py_compile main.py
+  pass
+
+.venv/bin/python -m pytest tests/test_run_dir_concurrency.py -v
+  1 passed
+
+.venv/bin/python -m pytest tests/test_inflection_point_output_guard.py tests/test_whitebox_artifact_shell.py tests/test_run_dir_concurrency.py -v
+  13 passed
+```
+
+### Smoke
+
+```text
+venv preflight: `.venv/bin/python -c "import rich; import config; print('OK')"` -> OK
+5 次并发 test8 smoke 已复测。
+command: .venv/bin/python main.py seeds/test8.txt
+log_dir: /private/tmp/v12811_test8_parallel_grouped_venv_20260515_174955
+run_dir collision: 未复现。
+batch_dir: outputs/runs/test8_20260515_174956
+created child run_dirs: run_124186_28033 / run_124186_28035 / run_124188_28031 / run_124356_28030 / run_124670_28028
+结果：5/5 均因 Phase 1 LLM APIConnectionError 阻塞，未进入白盒汇总。
+```
+
+### 已知遗留
+
+- identify_inflection_points() 仍只使用 polarization_delta 单一信号。
+- 未实现 stance_mean_delta。
+- 未实现 key_group_stance_shift。
+- 未实现 risk_level_changed。
+- 未实现 risk_type_changed。
+- single_run_summary.json 仍未实现。
+- 有 code-owned inflection_points 时，Markdown 与 JSON 数量严格一致性仍待后续框架治理。
+- whitebox 只做轻量一致性检查，不做完整 Inflection Framework validation。
+
+---
+
 ## v1.2.8.1 (2026-05-15) — Closeout
 
 主题：Risk Assessment Directionality & Metric Explanation Patch

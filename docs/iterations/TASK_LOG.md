@@ -14,6 +14,77 @@
 
 ---
 
+## 2026-05-15: v1.2.8.1.1 Inflection Point Output Guard & Whitebox Alignment Patch
+
+- **task_id**: task-v1.2.8.1.1-inflection-point-output-guard-whitebox-alignment
+- **attempt_id**: attempt-v1.2.8.1.1-01
+- **acceptance_id**: accept-v1.2.8.1.1-01
+- **base_commit**: `f71f9aff9922be57ab26555a001b294e9bd9f82e`
+- **类型**: v1.2.8.1 post-acceptance follow-up patch / inflection output safety
+- **status**: attempt_delivered / pending DS verify
+
+**实际新增文件**：
+- `docs/iterations/v1.2.8.1.1-Inflection-Point-Output-Guard-Whitebox-Alignment-Patch.md`
+- `tests/test_inflection_point_output_guard.py`
+- `tests/test_run_dir_concurrency.py`
+
+**实际修改文件**：
+- `src/phase4/report_agent.py` — 新增现实化拐点表达 post-processing guard；修复“模拟模拟...”重复前缀风险。
+- `src/whitebox/report_completeness.py` — 在现有 detail result 中增加 inflection_points / Markdown 声明一致性轻量检查字段。
+- `src/whitebox/report_observer.py` — 读取同目录 `final_report.json` 并传入 report completeness 检查，读取失败时 graceful degrade。
+- `main.py` — Owner-approved infra hotfix：同秒并发运行归入同一 batch 文件夹，并用 `run_{microseconds}_{pid}` 子目录隔离产物，修复并发 run_dir 秒级时间戳撞名。
+- `tests/test_whitebox_artifact_shell.py` — 增加 whitebox inflection consistency 三个 case。
+- `docs/iterations/TASK_LOG.md`
+- `docs/iterations/CHANGELOG.md`
+
+**测试结果**：
+```text
+.venv/bin/python -m py_compile src/phase4/report_agent.py src/whitebox/report_completeness.py src/whitebox/report_observer.py
+  pass
+
+.venv/bin/python -m pytest tests/test_inflection_point_output_guard.py -v
+  5 passed
+
+.venv/bin/python -m pytest tests/test_report_product_contract.py tests/test_report_markdown_grounding.py tests/test_phase4_markdown_metric_grounding.py tests/test_risk_assessment_directionality.py -v
+  41 passed
+
+.venv/bin/python -m pytest tests/test_whitebox_artifact_shell.py -v
+  7 passed
+
+.venv/bin/python -m py_compile main.py
+  pass
+
+.venv/bin/python -m pytest tests/test_run_dir_concurrency.py -v
+  1 passed
+
+.venv/bin/python -m pytest tests/test_inflection_point_output_guard.py tests/test_whitebox_artifact_shell.py tests/test_run_dir_concurrency.py -v
+  13 passed
+```
+
+**并发 smoke 复测**：
+```text
+venv preflight: `.venv/bin/python -c "import rich; import config; print('OK')"` -> OK
+5 次并发 `.venv/bin/python main.py seeds/test8.txt`
+log_dir: /private/tmp/v12811_test8_parallel_grouped_venv_20260515_174955
+结果：5/5 均在 Phase 1 LLM 调用处因 APIConnectionError 失败。
+run_dir collision: 未复现。
+batch_dir: outputs/runs/test8_20260515_174956
+5 个进程均生成独立子目录：run_124186_28033 / run_124186_28035 / run_124188_28031 / run_124356_28030 / run_124670_28028。
+whitebox summary: 未生成，原因是所有运行均在 Phase 1 失败，未进入报告生成。
+```
+
+**known issues**：
+- identify_inflection_points() 仍只使用 polarization_delta 单一信号。
+- 未实现 stance_mean_delta。
+- 未实现 key_group_stance_shift。
+- 未实现 risk_level_changed。
+- 未实现 risk_type_changed。
+- single_run_summary.json 仍未实现。
+- 有 code-owned inflection_points 时，Markdown 与 JSON 数量严格一致性仍待后续框架治理。
+- whitebox 只做轻量一致性检查，不做完整 Inflection Framework validation。
+
+---
+
 ## 2026-05-15: v1.2.8.1 Risk Assessment Directionality & Metric Explanation Patch — Closeout
 
 task_id: task-v1.2.8.1-risk-assessment-directionality-metric-explanation
