@@ -31,6 +31,7 @@ from src.phase4.report_prompts import (
     MAIN_BODY_LENGTH_BUDGET_RULES,
     METRIC_BUSINESS_LABEL_MAP,
     METRIC_BUSINESS_LABEL_RULES,
+    METRIC_EXPLANATION_PREFILL,
     NON_WHITELISTED_RISK_TYPE_EXAMPLES,
     POLICY_BOUNDARY_FORBIDDEN_PHRASES,
     QUOTE_FABRICATION_PATTERNS,
@@ -279,6 +280,7 @@ def test_v128_prompt_assets_exist_and_metric_label_map_is_complete():
         GOVERNANCE_RECOMMENDATION_RULES,
         METRIC_BUSINESS_LABEL_RULES,
         MAIN_BODY_LENGTH_BUDGET_RULES,
+        METRIC_EXPLANATION_PREFILL,
         DATA_TO_JUDGMENT_RULES,
         ELABORATION_CHAIN_RULES,
         EVOLUTION_SECTION_EXPANSION_RULES,
@@ -482,7 +484,7 @@ def test_saved_markdown_removes_enterprise_pr_phrases_and_fabricated_quotes(tmp_
     for field_name in RAW_METRIC_FIELD_NAMES:
         assert field_name not in markdown
     assert "待评估" not in markdown
-    assert "本轮模拟未发现显著拐点" in markdown
+    assert "本轮模拟未发现显著模拟关键变化点" in markdown
     assert "结构性风险点一" in markdown
     assert "结构性风险点二" in markdown
 

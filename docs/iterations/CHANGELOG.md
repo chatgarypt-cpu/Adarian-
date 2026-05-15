@@ -4,6 +4,95 @@
 
 ---
 
+## v1.2.8.1 (2026-05-15) — Closeout
+
+主题：Risk Assessment Directionality & Metric Explanation Patch
+
+### 新增
+
+- `tests/test_risk_assessment_directionality.py`
+- `METRIC_EXPLANATION_PREFILL`
+
+### 修改
+
+- `assess_risk()` 风险方向性逻辑
+- `prior_floor` 引入 `event_scale` / `event_controversy`
+- `max_negative_shift` 关键群体负向迁移计算
+- `final_report.md` 指标解释 code-owned 拼接
+- 指标术语映射：模拟立场均值 / 模拟极化指数 / 模拟关键变化点
+- 相关 targeted / regression tests
+
+### 验收
+
+- 43/43 tests passed
+- 3 次 test8 smoke passed
+- DS verdict: PASS
+- acceptance_result: pass_with_known_issues
+- DS_report: `audit/phase4大版本改造/DS_Agent_Team_Session_Full_Audit_Export_v1.2.8.1_2026-05-15.md`
+
+### 已知遗留
+
+- 风险阈值仍是工程初始阈值，待后续多 seed 标定。
+- 模拟极化指数仍是工程 proxy。
+- 模拟关键变化点仍未完整升级为多信号 framework。
+- `external_risk_adjustment` 仅作为 future hook，未实现、未接入、未进入报告产物。
+- `select_primary_risk_types()` 仍依赖 `risk_assessment` 文本 keyword matching，存在匹配盲区；后续应基于 `extraction_output` / `audience_mode` / `event_scale` / `event_controversy` / `tick_logs` / risk metrics 改为 code-owned signal source。
+- `main.py:218` 存在并发 run_dir 撞名问题，原因是秒级时间戳 + `exist_ok=False`；这是既有基础设施问题，不属于 v1.2.8.1 回归。
+- `_replace_report_metric_terms()` 存在“模拟模拟极化指数”重复前缀 bug；建议后续 Phase 4 normalizer 解耦时修复。
+
+---
+
+## v1.2.8.1 (2026-05-15) — Risk Assessment Directionality & Metric Explanation Patch
+
+**主题**：Phase 4 风险等级方向性修复与指标解释可信化
+
+### 新增
+
+- [src/phase4/report_prompts.py] 新增 `METRIC_EXPLANATION_PREFILL`，由代码侧稳定拼接进 `final_report.md` 附录，不让 LLM 自由生成指标解释。
+- [tests/test_risk_assessment_directionality.py] 新增 targeted tests，覆盖低模拟立场均值、负向趋势、模拟极化指数、关键群体负向迁移、event_scale/event_controversy prior floor、HIGH/CRITICAL 防误触发、OPPO 不误升 CRITICAL、risk labels code-owned、prompt 风险等级约束、metric prefill 去重与术语映射。
+
+### 修改
+
+- [src/phase4/report_agent.py] `assess_risk()` 新签名为 `def assess_risk(x_t_sequence, tick_logs, *, extraction_output=None) -> tuple`，三处调用点均同步传入 `extraction_output`。
+- [src/phase4/report_agent.py] 风险等级逻辑从“final_x 高值升风险”改为低模拟立场均值、负向趋势、模拟极化指数、关键群体最大负向迁移和高敏先验综合判定。
+- [src/phase4/report_agent.py] `event_scale` / `event_controversy` 仅从 `extraction_output` 读取并作为 code-owned MEDIUM floor，不写入新 JSON 字段，不接入外部数据源。
+- [src/phase4/report_agent.py] `max_negative_shift` 复用 `_build_code_owned_agent_stance_matrix()` 的首尾立场矩阵逻辑；无足够 tick 或无共同 agent 时返回 `None` 并不参与计算。
+- [src/phase4/report_agent.py] saved Markdown 输出层映射术语：情绪均值 / x(t) → 模拟立场均值，极化指数 → 模拟极化指数，拐点 → 模拟关键变化点，Tick → 轮次。
+- [src/phase4/report_prompts.py] Prompt 术语同步更新为模拟立场均值、模拟极化指数、模拟关键变化点和轮次。
+
+### 验收结果
+
+```text
+.venv/bin/python -m py_compile src/phase4/report_agent.py src/phase4/report_prompts.py
+  pass
+
+.venv/bin/python -m pytest tests/test_risk_assessment_directionality.py -v
+  11 passed
+
+.venv/bin/python -m pytest tests/test_report_product_contract.py tests/test_report_markdown_grounding.py -v
+  28 passed
+
+.venv/bin/python -m pytest tests/test_phase4_markdown_metric_grounding.py tests/test_schema_imports.py -v
+  4 passed
+```
+
+### 兼容性
+
+- ✅ 不修改 Phase 1 / Phase 2 / Phase 3
+- ✅ 不修改 schemas / whitebox / main.py / seeds / outputs
+- ✅ 不新增风险类型、不新增 `risk_taxonomy.py`
+- ✅ 不接入外部态势感知、不写入 `external_risk_adjustment`
+- ✅ `risk_level_label` / `risk_type_labels` 继续 code-owned
+
+### 已知遗留
+
+- 风险阈值仍是工程初始阈值，待后续多 seed 标定。
+- 模拟极化指数仍是工程 proxy。
+- 模拟关键变化点仍未完整升级为多信号 framework。
+- `external_risk_adjustment` 仅作为 future hook，未实现、未接入、未进入报告产物。
+
+---
+
 ## v1.2.8 (2026-05-13)（checkpoint — before narrative persuasiveness patch）
 
 **主题**：Government-facing Detailed Report Narrative & Prompt Governance

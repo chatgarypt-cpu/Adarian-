@@ -363,7 +363,7 @@ def test_empty_inflection_and_quote_raw_metric_guards_in_saved_markdown(tmp_path
     save_markdown_report(output, extraction, path)
 
     markdown = path.read_text(encoding="utf-8")
-    assert "本轮模拟未发现显著拐点" in markdown
+    assert "本轮模拟未发现显著模拟关键变化点" in markdown
     assert "待评估" not in markdown
     for field_name in ("event_scale", "event_controversy", "polarization_index", "stance_delta", "risk_score"):
         assert field_name not in markdown

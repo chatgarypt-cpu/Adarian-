@@ -14,6 +14,96 @@
 
 ---
 
+## 2026-05-15: v1.2.8.1 Risk Assessment Directionality & Metric Explanation Patch — Closeout
+
+task_id: task-v1.2.8.1-risk-assessment-directionality-metric-explanation
+review_id: review-v1.2.8.1-01
+attempt_id: attempt-v1.2.8.1-01
+acceptance_id: accept-v1.2.8.1-01
+acceptance_result: pass_with_known_issues
+状态: closed
+
+实际新增文件:
+- tests/test_risk_assessment_directionality.py
+
+实际修改文件:
+- src/phase4/report_agent.py
+- src/phase4/report_prompts.py
+- tests/test_report_product_contract.py
+- tests/test_report_markdown_grounding.py
+- tests/test_phase4_markdown_metric_grounding.py
+- docs/iterations/v1.2.8.1-Risk-Assessment-Directionality-Metric-Explanation-Patch_repaired.md
+- docs/iterations/TASK_LOG.md
+- docs/iterations/CHANGELOG.md
+
+验收结果:
+- 43/43 tests passed
+- 3 次 test8 smoke passed
+- risk_level: MEDIUM / 中风险
+- forbidden_files_touched: no
+
+DS verdict:
+- PASS
+- recommended_closeout_decision: closeout_pass_with_known_issues
+- DS_report: audit/phase4大版本改造/DS_Agent_Team_Session_Full_Audit_Export_v1.2.8.1_2026-05-15.md
+
+known issues:
+- 风险阈值仍是工程初始阈值，待后续多 seed 标定。
+- 模拟极化指数仍是工程 proxy。
+- 模拟关键变化点仍未完整升级为多信号 framework。
+- external_risk_adjustment 仅作为 future hook，未实现、未接入、未进入报告产物。
+- select_primary_risk_types() 仍依赖 risk_assessment 文本 keyword matching，存在匹配盲区；后续应基于 extraction_output / audience_mode / event_scale / event_controversy / tick_logs / risk metrics 改为 code-owned signal source。
+- main.py:218 存在并发 run_dir 撞名问题，原因是秒级时间戳 + exist_ok=False；这是既有基础设施问题，不属于 v1.2.8.1 回归。
+- _replace_report_metric_terms() 存在“模拟模拟极化指数”重复前缀 bug；建议后续 Phase 4 normalizer 解耦时修复。
+
+---
+
+## 2026-05-15: v1.2.8.1 Risk Assessment Directionality & Metric Explanation Patch — Codex execution complete
+
+- **task_id**: task-v1.2.8.1-risk-assessment-directionality-metric-explanation
+- **attempt_id**: attempt-v1.2.8.1-01
+- **基准文档**: `docs/iterations/v1.2.8.1-Risk-Assessment-Directionality-Metric-Explanation-Patch_repaired.md`
+- **base_commit**: `df94ac002f05ae94046ba00cfdfc456277232ca8`
+- **final_commit**: not created by Codex
+- **类型**: Phase 4 risk assessment directionality / metric explanation patch
+- **状态**: ✅ Codex execution complete — pending DS verify
+
+**实际新增文件**：
+- `tests/test_risk_assessment_directionality.py` — targeted tests 覆盖低模拟立场均值、负向趋势、模拟极化指数、关键群体负向迁移、prior floor、OPPO 不误升 CRITICAL、metric explanation prefill 与术语映射。
+
+**实际修改文件**：
+- `src/phase4/report_agent.py` — `assess_risk()` 扩展 `extraction_output` keyword-only 参数；风险方向改为负向压力、趋势、模拟极化、关键群体迁移和高敏先验综合判定；保存层拼接 code-owned 指标解释并做术语映射。
+- `src/phase4/report_prompts.py` — 新增 `METRIC_EXPLANATION_PREFILL`，并将 prompt 术语从旧“拐点 / Tick / 情绪均值”口径更新为“模拟关键变化点 / 轮次 / 模拟立场均值”。
+- `tests/test_report_product_contract.py` — 更新空变化点断言为“模拟关键变化点”。
+- `tests/test_report_markdown_grounding.py` — 增加 `METRIC_EXPLANATION_PREFILL` prompt asset 覆盖并更新术语断言。
+- `tests/test_phase4_markdown_metric_grounding.py` — 更新 code-owned inflection block 术语断言。
+- `docs/iterations/v1.2.8.1-Risk-Assessment-Directionality-Metric-Explanation-Patch_repaired.md` — 记录 Codex execution update。
+- `docs/iterations/TASK_LOG.md` — 记录本轮执行日志。
+- `docs/iterations/CHANGELOG.md` — 记录本轮变更日志。
+
+**基本验收结果**：
+```text
+.venv/bin/python -m py_compile src/phase4/report_agent.py src/phase4/report_prompts.py
+  pass
+
+.venv/bin/python -m pytest tests/test_risk_assessment_directionality.py -v
+  11 passed
+
+.venv/bin/python -m pytest tests/test_report_product_contract.py tests/test_report_markdown_grounding.py -v
+  28 passed
+
+.venv/bin/python -m pytest tests/test_phase4_markdown_metric_grounding.py tests/test_schema_imports.py -v
+  4 passed
+```
+
+**已知问题 / carry-over**：
+- 风险阈值仍是工程初始阈值，待后续多 seed 标定。
+- 模拟极化指数仍是工程 proxy。
+- 模拟关键变化点仍未完整升级为多信号 framework。
+- `external_risk_adjustment` 仅作为 future hook，未实现、未接入、未进入报告产物。
+
+---
+
 ## 2026-05-13: v1.2.8 Government-facing Detailed Report Narrative — checkpoint created before quality patch
 
 - **task_id**: task-v1.2.8-government-facing-detailed-report-narrative-prompt-governance

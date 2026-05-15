@@ -34,6 +34,7 @@ from src.llm_client import get_llm_client
 from .report_prompts import (
     ENTERPRISE_PR_FORBIDDEN_PHRASES,
     INTERNAL_CODE_OWNED_LABELS,
+    METRIC_EXPLANATION_PREFILL,
     QUOTE_FABRICATION_PATTERNS,
     RAW_METRIC_FIELD_NAMES,
     REPORT_SYSTEM_PROMPT,
@@ -49,6 +50,16 @@ REGULATOR_KEYWORDS = ("市监局", "市场监督管理局", "监管部门", "食
 PUBLIC_MANAGEMENT_KEYWORDS = ("教育局", "卫健委", "住建局", "属地政府", "街道办")
 REPORT_TITLE_SUFFIX = "舆情风险研判报告"
 TITLE_MAX_CHARS = 25
+SENSITIVE_PRIOR_RISK_TYPES = (
+    "law_enforcement_trust_risk",
+    "regulatory_accountability_risk",
+    "local_governance_pressure_risk",
+    "information_opacity_risk",
+    "response_delay_risk",
+    "rumor_spread_risk",
+    "overseas_amplification_risk",
+    "group_polarization_risk",
+)
 
 
 def _generate_report_timestamp(now: datetime = None) -> str:
@@ -212,7 +223,11 @@ def _build_code_owned_report_contract_block(
     tick_logs: List[TickLog],
     x_t_sequence: List[float],
 ) -> str:
-    risk_level, risk_assessment = assess_risk(x_t_sequence, tick_logs)
+    risk_level, risk_assessment = assess_risk(
+        x_t_sequence,
+        tick_logs,
+        extraction_output=extraction_output,
+    )
     audience_mode = determine_audience_mode(extraction_output, risk_assessment)
     primary_risk_types = select_primary_risk_types(audience_mode, risk_assessment, tick_logs)
     risk_type_labels = _risk_type_labels(primary_risk_types)
@@ -430,7 +445,7 @@ def _replace_raw_metric_field_names(markdown: str) -> str:
     replacements = {
         "event_scale": "模拟影响范围",
         "event_controversy": "模拟争议强度",
-        "polarization_index": "群体分化水平",
+        "polarization_index": "模拟群体分化水平",
         "stance_delta": "立场变化幅度",
         "risk_score": "综合风险判断",
     }
@@ -438,6 +453,64 @@ def _replace_raw_metric_field_names(markdown: str) -> str:
     for field_name in RAW_METRIC_FIELD_NAMES:
         normalized = normalized.replace(field_name, replacements[field_name])
     return normalized
+
+
+def _replace_report_metric_terms(markdown: str) -> str:
+    """Map legacy metric wording in the readable body while keeping appendix fields stable."""
+    appendix_match = re.search(r"(?m)^##\s*五[、.．]\s*附录\s*$", markdown)
+    if appendix_match:
+        body = markdown[:appendix_match.start()]
+        appendix = markdown[appendix_match.start():]
+    else:
+        body = markdown
+        appendix = ""
+
+    replacements = (
+        ("情绪均值", "模拟立场均值"),
+        ("x(t)均值", "模拟立场均值"),
+        ("x(t)", "模拟立场均值"),
+        ("极化指数", "模拟极化指数"),
+        ("关键拐点", "模拟关键变化点"),
+        ("拐点", "模拟关键变化点"),
+        ("Tick", "轮次"),
+    )
+    for source, target in replacements:
+        body = body.replace(source, target)
+
+    appendix = appendix.replace("情绪均值", "模拟立场均值")
+    appendix = appendix.replace("极化指数", "模拟极化指数")
+    appendix = appendix.replace("关键拐点", "模拟关键变化点")
+    appendix = appendix.replace("拐点", "模拟关键变化点")
+    appendix = appendix.replace("Tick", "轮次")
+    return body + appendix
+
+
+def _remove_metric_explanation_sections(markdown: str) -> str:
+    metric_heading_pattern = (
+        r"(?m)^###\s*(?:模拟参数说明|指标解释|指标说明|模拟指标说明|模拟参数解释)\s*$"
+    )
+    next_heading_pattern = r"(?m)^#{2,6}\s+"
+    normalized = markdown
+    while True:
+        match = re.search(metric_heading_pattern, normalized)
+        if not match:
+            return normalized
+        next_match = re.search(next_heading_pattern, normalized[match.end():])
+        section_end = match.end() + next_match.start() if next_match else len(normalized)
+        normalized = normalized[:match.start()].rstrip() + "\n\n" + normalized[section_end:].lstrip()
+
+
+def _ensure_metric_explanation_prefill(markdown: str) -> str:
+    normalized = _remove_metric_explanation_sections(markdown)
+    if METRIC_EXPLANATION_PREFILL in normalized:
+        return normalized
+
+    appendix_match = re.search(r"(?m)^##\s*五[、.．]\s*附录\s*$", normalized)
+    metric_block = f"### 指标解释\n\n{METRIC_EXPLANATION_PREFILL}\n\n"
+    if appendix_match:
+        insert_at = appendix_match.end()
+        return normalized[:insert_at] + "\n\n" + metric_block + normalized[insert_at:].lstrip()
+    return normalized.rstrip() + "\n\n## 五、附录\n\n" + metric_block.rstrip()
 
 
 def _replace_enterprise_pr_phrases(markdown: str) -> str:
@@ -474,7 +547,7 @@ def _replace_quote_fabrication_patterns(markdown: str) -> str:
 
 
 def _replace_placeholder_residue(markdown: str) -> str:
-    return markdown.replace("待评估", "本轮模拟未发现显著拐点")
+    return markdown.replace("待评估", "本轮模拟未发现显著模拟关键变化点")
 
 
 def _has_required_five_chapter_sections(markdown: str) -> bool:
@@ -501,6 +574,8 @@ def _normalize_saved_markdown(markdown: str, phase4_output: Phase4Output) -> str
     normalized = _replace_enterprise_pr_phrases(normalized)
     normalized = _replace_raw_metric_field_names(normalized)
     normalized = _replace_risk_section_with_code_owned(normalized, phase4_output)
+    normalized = _replace_report_metric_terms(normalized)
+    normalized = _ensure_metric_explanation_prefill(normalized)
     return normalized
 
 
@@ -526,8 +601,6 @@ def build_full_report_context(
     lines.append("【事件概要】")
     lines.append(f"事件摘要：{extraction_output.event_summary}")
     lines.append(f"事件类型：{extraction_output.event_type}")
-    lines.append(f"事件规模：{extraction_output.event_scale:.2f}（0-1，1=全社会）")
-    lines.append(f"事件争议性：{extraction_output.event_controversy:.2f}（0-1，1=高度对立）")
 
     # 2. 实体图谱
     lines.append("\n【实体图谱】")
@@ -542,17 +615,17 @@ def build_full_report_context(
         lines.append(f"  - {spreader.group_name}")
         lines.append(f"    关联实体：{spreader.related_event_entity}，立场：{spreader.stance_score}，偏差：{spreader.confirmation_bias_level}，占比：{spreader.estimated_percentage}%")
 
-    # 3. Tick 0 发言
-    lines.append("\n【Tick 0 事件实体发言】")
+    # 3. 轮次 0 发言
+    lines.append("\n【轮次 0 事件实体发言】")
     tick_0_log = tick_logs[0] if tick_logs else None
     if tick_0_log:
         for entry in tick_0_log.entries:
             if entry.comment:
                 lines.append(f"  [{entry.group_name}]: {entry.comment[:80]}...")
 
-    # 4. 情绪演化数据
-    lines.append("\n【情绪演化数据】")
-    lines.append("Tick | x(t)均值 | 标准差 | 极化指数 | 关键变化")
+    # 4. 模拟立场演化数据
+    lines.append("\n【模拟立场演化数据】")
+    lines.append("轮次 | 模拟立场均值 | 标准差 | 模拟极化指数 | 关键变化")
     lines.append("-" * 70)
     prev_pol = None
     for log in tick_logs:
@@ -566,8 +639,8 @@ def build_full_report_context(
         lines.append(f"{log.tick:4d} | {log.global_metrics.mean_stance:5.2f} | {log.global_metrics.std_stance:5.2f} | {pol:5.2f} {pol_change:8s} | #{max_entry.agent_id} {max_entry.group_name[:10]}: {max_entry.stance_delta:+.1f}")
         prev_pol = pol
 
-    # 5. 极化演化轨迹
-    lines.append("\n【极化演化轨迹】")
+    # 5. 模拟极化演化轨迹
+    lines.append("\n【模拟极化演化轨迹】")
     pol_sequence = [f"{log.global_metrics.polarization_index:.2f}" for log in tick_logs if log.entries]
     lines.append(" → ".join(pol_sequence))
     if len(pol_sequence) >= 2:
@@ -575,7 +648,7 @@ def build_full_report_context(
         last_pol = float(pol_sequence[-1])
         change_pct = (last_pol - first_pol) / first_pol * 100 if first_pol > 0 else 0
         direction = "下降" if change_pct < 0 else "上升"
-        lines.append(f"极化指数从 {pol_sequence[0]} 变化到 {pol_sequence[-1]}，{direction} {abs(change_pct):.0f}%")
+        lines.append(f"模拟极化指数从 {pol_sequence[0]} 变化到 {pol_sequence[-1]}，{direction} {abs(change_pct):.0f}%")
 
     # 6. code-owned grounding blocks
     lines.append("\n【CODE_OWNED_AGENT_STANCE_MATRIX】")
@@ -585,8 +658,8 @@ def build_full_report_context(
     inflection_points = identify_inflection_points(tick_logs, phase2_output) if phase2_output else []
     lines.extend(_format_code_owned_inflection_points(inflection_points))
 
-    # 7. x(t) 序列
-    lines.append(f"\n【x(t) 序列】：{' → '.join([f'{x:.2f}' for x in x_t_sequence])}")
+    # 7. 模拟立场均值序列
+    lines.append(f"\n【模拟立场均值序列】：{' → '.join([f'{x:.2f}' for x in x_t_sequence])}")
 
     return "\n".join(lines)
 
@@ -627,7 +700,7 @@ def _format_code_owned_agent_stance_matrix(tick_logs: List[TickLog]) -> List[str
 
     lines = [
         "以下表格是 Markdown 报告中最终立场变化的唯一数值来源；不得重算。",
-        "| Agent | 群体 | 起始 Tick | 结束 Tick | 起始立场 | 结束立场 | Delta |",
+        "| Agent | 群体 | 起始轮次 | 结束轮次 | 起始立场 | 结束立场 | Delta |",
         "|---|---|---:|---:|---:|---:|---:|",
     ]
     for row in rows:
@@ -642,13 +715,13 @@ def _format_code_owned_agent_stance_matrix(tick_logs: List[TickLog]) -> List[str
 def _format_code_owned_inflection_points(inflection_points: List[InflectionPoint]) -> List[str]:
     if not inflection_points:
         return [
-            "本轮模拟未发现显著拐点。",
-            "Markdown 报告不得声称存在拐点，不得使用其他阈值自行识别拐点。",
+            "本轮模拟未发现显著模拟关键变化点。",
+            "Markdown 报告不得声称存在模拟关键变化点，不得使用其他阈值自行识别模拟关键变化点。",
         ]
 
     lines = [
-        "以下表格是 Markdown 报告中关键拐点的唯一来源；不得新增其他拐点。",
-        "| Tick | Agent | 群体 | 影响 |",
+        "以下表格是 Markdown 报告中模拟关键变化点的唯一来源；不得新增其他模拟关键变化点。",
+        "| 轮次 | Agent | 群体 | 影响 |",
         "|---:|---:|---|---|",
     ]
     for point in inflection_points:
@@ -681,11 +754,11 @@ def build_entity_distribution(extraction_output: EntityExtractionOutput) -> str:
 
 
 def identify_inflection_points(tick_logs: List[TickLog], phase2_output: Phase2Output) -> List[InflectionPoint]:
-    """识别拐点
+    """识别模拟关键变化点
 
     算法：
     1. 计算每轮的极化指数变化
-    2. 极化指数变化最大的轮次为拐点
+    2. 极化指数变化最大的轮次为模拟关键变化点
     3. 找出该轮次中立场变化最大的 Agent
 
     Args:
@@ -707,7 +780,7 @@ def identify_inflection_points(tick_logs: List[TickLog], phase2_output: Phase2Ou
         curr_pol = tick_logs[i].global_metrics.polarization_index
         pol_delta = abs(curr_pol - prev_pol)
 
-        # 如果极化指数变化超过阈值，认为是拐点
+        # 如果极化指数变化超过阈值，认为是模拟关键变化点
         if pol_delta > 0.1 and tick_logs[i].entries:
             # 找出本轮立场变化最大的 Agent
             max_entry = max(tick_logs[i].entries, key=lambda e: abs(e.stance_delta))
@@ -719,46 +792,132 @@ def identify_inflection_points(tick_logs: List[TickLog], phase2_output: Phase2Ou
                 agent_id=max_entry.agent_id,
                 group_name=node.group_name if node else "未知",
                 pivotal_comment=max_entry.comment[:50],
-                impact_description=f"极化指数变化 {pol_delta:.2f}，立场偏移 {max_entry.stance_delta:+.1f}",
+                impact_description=f"模拟极化指数变化 {pol_delta:.2f}，立场偏移 {max_entry.stance_delta:+.1f}",
             ))
 
-    # 限制最多 3 个拐点
+    # 限制最多 3 个模拟关键变化点
     return inflection_points[:3]
 
 
-def assess_risk(x_t_sequence: List[float], tick_logs: List[TickLog]) -> tuple:
-    """评估舆情风险等级
+def _max_negative_shift_from_stance_matrix(tick_logs: List[TickLog]) -> float | None:
+    if len(tick_logs) < 2:
+        return None
 
-    算法：
-    1. x(t) 持续上升 > 7.0 → 高风险
-    2. x(t) > 5.0 且极化指数 > 0.5 → 中高风险
-    3. x(t) > 5.0 → 中风险
-    4. x(t) < 5.0 → 低风险
+    rows = _build_code_owned_agent_stance_matrix(tick_logs)
+    if not rows:
+        return None
 
-    Args:
-        x_t_sequence: x(t) 序列
-        tick_logs: TickLog 列表
+    return max(max(0.0, row["initial_stance"] - row["final_stance"]) for row in rows)
 
-    Returns:
-        (risk_level, risk_assessment) tuple
-    """
+
+def _sensitive_prior_risk_types(
+    extraction_output: EntityExtractionOutput = None,
+    tick_logs: List[TickLog] = None,
+) -> List[str]:
+    if extraction_output is None:
+        return []
+
+    audience_mode = determine_audience_mode(extraction_output, "")
+    primary_risk_types = select_primary_risk_types(audience_mode, "", tick_logs or [])
+    return [
+        risk_type
+        for risk_type in primary_risk_types
+        if risk_type in SENSITIVE_PRIOR_RISK_TYPES and risk_type in RISK_TYPE_LABELS
+    ]
+
+
+def assess_risk(
+    x_t_sequence: List[float],
+    tick_logs: List[TickLog],
+    *,
+    extraction_output: EntityExtractionOutput = None,
+) -> tuple:
+    """评估舆情风险等级，方向上以负向立场压力和群体分化为风险信号。"""
     if not x_t_sequence:
         return RiskLevel.LOW, "数据不足，无法评估"
 
+    start_x = x_t_sequence[0]
     final_x = x_t_sequence[-1]
-    final_pol = tick_logs[-1].global_metrics.polarization_index if tick_logs else 0
+    negative_pressure = max(0.0, 5.0 - final_x)
+    negative_trend = max(0.0, start_x - final_x) if len(x_t_sequence) > 1 else 0.0
+    final_pol = tick_logs[-1].global_metrics.polarization_index if tick_logs else 0.0
+    max_negative_shift = _max_negative_shift_from_stance_matrix(tick_logs)
 
-    # 计算趋势
-    trend = final_x - x_t_sequence[0] if len(x_t_sequence) > 1 else 0
+    event_scale = extraction_output.event_scale if extraction_output is not None else 0.0
+    event_controversy = extraction_output.event_controversy if extraction_output is not None else 0.0
+    high_sensitive_prior = event_scale >= 0.7 and event_controversy >= 0.7
+    sensitive_risk_types = _sensitive_prior_risk_types(extraction_output, tick_logs)
+    sensitive_prior_hit = bool(sensitive_risk_types)
 
-    if final_x > 7.5 or (final_x > 7.0 and trend > 1.0):
-        return RiskLevel.CRITICAL, f"舆情危机状态，x(t)达{final_x:.1f}，极化严重"
-    elif final_x > 6.5 or (final_x > 5.5 and final_pol > 0.5):
-        return RiskLevel.HIGH, f"高风险舆情，x(t)={final_x:.1f}，需重点关注"
-    elif final_x > 5.0 or (final_x > 4.5 and trend > 0.5):
-        return RiskLevel.MEDIUM, f"中等风险，x(t)={final_x:.1f}，趋势需关注"
+    material_negative_shift = (
+        max_negative_shift is not None and max_negative_shift >= 1.2
+    )
+    strong_negative_shift = (
+        max_negative_shift is not None and max_negative_shift >= 2.0
+    )
+    critical_negative_shift = (
+        max_negative_shift is not None and max_negative_shift >= 2.5
+    )
+
+    medium_signals = [
+        final_x <= 4.7,
+        negative_trend >= 0.4,
+        final_pol >= 0.30,
+        material_negative_shift,
+        high_sensitive_prior,
+        sensitive_prior_hit,
+    ]
+    high_signals = [
+        final_pol >= 0.45 and (negative_trend >= 0.4 or material_negative_shift),
+        strong_negative_shift and sensitive_prior_hit,
+        final_x <= 4.0 and negative_trend >= 0.5,
+        high_sensitive_prior and final_pol >= 0.40,
+    ]
+    critical_ready = (
+        final_x <= 3.0
+        and final_pol >= 0.45
+        and critical_negative_shift
+        and (
+            event_scale >= 0.7
+            or event_controversy >= 0.8
+            or sensitive_prior_hit
+        )
+    )
+
+    if critical_ready:
+        risk_level = RiskLevel.CRITICAL
+    elif any(high_signals):
+        risk_level = RiskLevel.HIGH
+    elif any(medium_signals):
+        risk_level = RiskLevel.MEDIUM
     else:
-        return RiskLevel.LOW, f"舆情平稳，x(t)={final_x:.1f}，风险较低"
+        risk_level = RiskLevel.LOW
+
+    signal_parts = [
+        f"模拟立场均值={final_x:.1f}",
+        f"负向趋势={negative_trend:.1f}",
+        f"模拟极化指数={final_pol:.2f}",
+    ]
+    if max_negative_shift is not None:
+        signal_parts.append(f"关键群体最大负向迁移={max_negative_shift:.1f}")
+    else:
+        signal_parts.append("关键群体负向迁移数据不足")
+    if high_sensitive_prior:
+        signal_parts.append("高敏事件先验达到中风险下限")
+    if sensitive_prior_hit:
+        labels = _risk_type_labels(sensitive_risk_types)
+        signal_parts.append(f"敏感风险类型命中：{'、'.join(labels)}")
+
+    if risk_level == RiskLevel.CRITICAL:
+        prefix = "重大风险，低模拟立场均值、高模拟极化、关键群体负向迁移和高敏先验同时出现"
+    elif risk_level == RiskLevel.HIGH:
+        prefix = "高风险，多个负向压力信号叠加，需重点关注"
+    elif risk_level == RiskLevel.MEDIUM:
+        prefix = "中等风险，已出现负向压力、分化或高敏先验信号"
+    else:
+        prefix = "低风险，未发现明显负向压力、分化压力、群体跃迁或高敏先验"
+
+    return risk_level, f"{prefix}（{'; '.join(signal_parts)}）"
 
 
 # 模块级变量，用于存储 LLM 生成的 Markdown 报告
@@ -884,7 +1043,11 @@ def parse_llm_report_response(
     inflection_points = identify_inflection_points(tick_logs, phase2_output)
 
     # 风险评估
-    risk_level, risk_assessment = assess_risk(x_t_sequence, tick_logs)
+    risk_level, risk_assessment = assess_risk(
+        x_t_sequence,
+        tick_logs,
+        extraction_output=extraction_output,
+    )
 
     # 利益相关方图谱
     event_entities_str = ", ".join([e.name for e in extraction_output.event_entities])
@@ -927,7 +1090,11 @@ def generate_fallback_report(
     inflection_points = identify_inflection_points(tick_logs, phase2_output)
 
     # 风险评估
-    risk_level, risk_assessment = assess_risk(x_t_sequence, tick_logs)
+    risk_level, risk_assessment = assess_risk(
+        x_t_sequence,
+        tick_logs,
+        extraction_output=extraction_output,
+    )
 
     # 构建情绪轨迹
     emotion_trajectory = [
@@ -1103,10 +1270,10 @@ def _key_insight_lines(
 
 def _inflection_markdown_lines(phase4_output: Phase4Output) -> List[str]:
     if not phase4_output.inflection_points:
-        return ["本轮模拟未发现显著拐点。"]
+        return ["本轮模拟未发现显著模拟关键变化点。"]
 
     lines = [
-        "本轮模拟中，以下变化点来自代码侧拐点识别结果，仅用于解释模拟轨迹：",
+        "本轮模拟中，以下变化点来自代码侧模拟关键变化点识别结果，仅用于解释模拟轨迹：",
         "",
         "| 轮次 | 群体 | 模拟变化说明 |",
         "|------|------|--------------|",
@@ -1355,6 +1522,10 @@ def generate_markdown_report(phase4_output: Phase4Output, extraction_output: Ent
         "",
         "## 五、附录",
         "",
+        "### 指标解释",
+        "",
+        METRIC_EXPLANATION_PREFILL,
+        "",
         "### 模拟口径说明",
         "",
         SIMULATION_DISCLAIMER,
@@ -1364,7 +1535,7 @@ def generate_markdown_report(phase4_output: Phase4Output, extraction_output: Ent
         "- 本报告仅使用输入材料、模拟轨迹和代码侧结构化结果。",
         "- 未接入外部检索、政策知识库或真实全网监测数据。",
         "- 风险等级和主要风险类型来自代码侧结果，正文只做解释性表达。",
-        "- 拐点表达以代码侧识别结果为准，不在正文中重新计算或补造拐点。",
+        "- 模拟关键变化点表达以代码侧识别结果为准，不在正文中重新计算或补造模拟关键变化点。",
         "",
         "### 传播者分组参考",
         "",

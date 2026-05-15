@@ -65,5 +65,5 @@ def test_empty_code_owned_inflection_block_forbids_markdown_claims():
     lines = _format_code_owned_inflection_points([])
     text = "\n".join(lines)
 
-    assert "本轮模拟未发现显著拐点" in text
-    assert "不得声称存在拐点" in text
+    assert "本轮模拟未发现显著模拟关键变化点" in text
+    assert "不得声称存在模拟关键变化点" in text
