@@ -4,6 +4,122 @@
 
 ---
 
+## v1.2.9 (2026-05-15) — Phase 4 Report Agent Decoupling R0
+
+**主题**：Phase 4 Report Agent 解耦 R0
+
+### 新增
+
+- `src/phase4/report_normalizer.py`：承接 Markdown normalizer pipeline、risk section code-owned 注入、指标术语替换、metric explanation prefill 拼接、现实化拐点表达拦截和 prompt/code-owned 指令泄漏过滤。
+- `src/phase4/report_narrative.py`：承接 LLM 叙事生成与 prompt context 组装。
+- `src/phase4/report_title.py`：承接报告标题生成、标题规范化和 metadata header helper。
+- `tests/test_phase4_report_normalizer.py`：normalizer extraction / prefix guard / prompt leakage / metric prefill targeted tests。
+- `tests/test_phase4_report_agent_decoupling.py`：Phase 4 facade、required functions、narrative/title/normalizer import boundary tests。
+
+### 修改
+
+- [src/phase4/report_agent.py] 保持 Phase 4 facade / orchestrator，对旧测试 import 的 helper 保留 re-export / wrapper。
+- [src/phase4/report_agent.py] `generate_report_with_llm()` 仍作为对外入口，但 LLM 叙事生成实现迁入 `report_narrative.py`。
+- [src/phase4/report_agent.py] `_normalize_saved_markdown()`、`_code_owned_risk_section()`、`_replace_report_metric_terms()` 等 normalizer helper 改由 `report_normalizer.py` 提供。
+- [src/phase4/report_agent.py] `_ensure_metadata_header()`、`_normalize_report_title_line()`、`_normalized_report_title()` 改由 `report_title.py` 提供。
+- [src/phase4/report_agent.py] closeout hygiene：移除 DS 标记 SAFE_TO_REMOVE 的 3 个死函数和 2 个冗余依赖项。
+- [src/phase4/__init__.py] closeout hygiene：移除 4 个无外部消费者的 package-level re-export，保留主入口 re-export。
+- [docs/iterations/v1.2.9-Phase-4-Report-Agent-Decoupling-R0.md] 更新执行与验证证据。
+- [docs/iterations/TASK_LOG.md] 记录 v1.2.9 attempt 结果。
+- [docs/iterations/CHANGELOG.md] 记录 v1.2.9 变更。
+
+### 不变
+
+- `main.py` 未修改。
+- `src/phase4/report_prompts.py` 未修改，prompt 语义未改变。
+- `config.py` / `src/llm_client.py` 未修改。
+- `src/schemas/` 未修改，`final_report.json` contract 未改变。
+- `src/whitebox/` 未修改，whitebox artifact contract 未改变。
+- Phase 1 / Phase 2 / Phase 3 未修改。
+- `assess_risk()` / `select_primary_risk_types()` / `identify_inflection_points()` / `parse_llm_report_response()` / `generate_fallback_report()` / `_llm_generated_markdown` 仍保留在 `report_agent.py`。
+- 风险算法语义未改变。
+- `final_report.md` 五章结构未改变。
+- 未新增 runtime artifact contract。
+
+### 验收
+
+```text
+.venv/bin/python -m py_compile src/phase4/report_agent.py src/phase4/report_normalizer.py
+  pass
+
+.venv/bin/python -m pytest tests/test_phase4_report_normalizer.py -v
+  4 passed
+
+.venv/bin/python -m pytest tests/test_inflection_point_output_guard.py -v
+  5 passed
+
+.venv/bin/python -m pytest tests/test_report_markdown_grounding.py tests/test_phase4_markdown_metric_grounding.py -v
+  20 passed
+
+.venv/bin/python -m py_compile src/phase4/report_agent.py src/phase4/report_narrative.py src/phase4/report_title.py src/phase4/report_normalizer.py
+  pass
+
+.venv/bin/python -m pytest tests/test_phase4_report_agent_decoupling.py -v
+  4 passed
+
+.venv/bin/python -m pytest tests/test_report_product_contract.py tests/test_report_markdown_grounding.py tests/test_phase4_markdown_metric_grounding.py tests/test_risk_assessment_directionality.py tests/test_inflection_point_output_guard.py -v
+  46 passed
+
+.venv/bin/python -m compileall src
+  pass
+
+.venv/bin/python -m pytest tests/ -v
+  83 passed
+
+.venv/bin/python main.py seeds/test8.txt
+  pass
+
+.venv/bin/python -m pytest tests/test_phase4_report_normalizer.py tests/test_phase4_report_agent_decoupling.py -v
+  8 passed after closeout hygiene
+
+.venv/bin/python -m pytest tests/test_report_markdown_grounding.py tests/test_report_product_contract.py -v
+  28 passed after closeout hygiene
+
+.venv/bin/python -m pytest tests/test_phase4_markdown_metric_grounding.py tests/test_risk_assessment_directionality.py tests/test_inflection_point_output_guard.py -v
+  18 passed after closeout hygiene
+
+.venv/bin/python -m pytest tests/test_run_dir_concurrency.py tests/test_whitebox_artifact_shell.py -v
+  8 passed after closeout hygiene
+
+.venv/bin/python -m pytest tests/ -v
+  83 passed after closeout hygiene
+```
+
+### Smoke
+
+```text
+latest_run_dir: outputs/runs/test8_20260515_184351/run_964791_45220
+final_report.json: exists
+final_report.md: exists
+whitebox_summary.json: exists
+risk_level: high
+risk_level_label: 高风险
+primary_risk_types: group_polarization_risk
+whitebox report_completeness: pass
+whitebox artifact_check: pass
+final_report.md 五章结构: pass
+模拟模拟极化指数: not found
+模拟模拟关键变化点: not found
+prompt / code-owned instruction leakage: not found
+```
+
+### 已知遗留
+
+- 风险阈值仍是工程初始阈值，待后续多 seed 标定。
+- 模拟极化指数仍是工程 proxy。
+- 模拟关键变化点仍未完整升级为多信号 framework。
+- `external_risk_adjustment` 仅作为 future hook，未实现、未接入、未进入报告产物。
+- `select_primary_risk_types()` 仍依赖 `risk_assessment` 文本 keyword matching。
+- `single_run_summary` / `parallel_world_synthesis` / `batch_synthesis_context` 未实现。
+- risk calculation 仍留在 `report_agent.py`，待后续 risk engine 解耦。
+
+---
+
 ## v1.2.8.1.1 (2026-05-15) — Inflection Point Output Guard & Whitebox Alignment Patch
 
 **主题**：模拟关键变化点输出安全与现有 whitebox 对齐

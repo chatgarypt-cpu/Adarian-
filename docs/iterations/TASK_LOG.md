@@ -14,6 +14,144 @@
 
 ---
 
+## 2026-05-15: v1.2.9 Phase 4 Report Agent Decoupling R0
+
+- **task_id**: task-v1.2.9-phase4-report-agent-decoupling-r0
+- **attempt_id**: attempt-v1.2.9-01 / attempt-v1.2.9-02 / attempt-v1.2.9-closeout
+- **acceptance_id**: accept-v1.2.9-01
+- **base_commit**: `0c4f2c2 fix: guard inflection output and group concurrent runs`
+- **类型**: Phase 4 Report Agent 解耦 R0
+- **status**: attempt_delivered / pending DS verify
+
+**实际新增文件**：
+- `src/phase4/report_normalizer.py`
+- `src/phase4/report_narrative.py`
+- `src/phase4/report_title.py`
+- `tests/test_phase4_report_normalizer.py`
+- `tests/test_phase4_report_agent_decoupling.py`
+
+**实际修改文件**：
+- `src/phase4/report_agent.py` — 保持 Phase 4 facade / orchestrator，拆出 Markdown normalizer、LLM 叙事生成和标题处理实现。
+- `src/phase4/__init__.py` — closeout hygiene：移除 4 个无外部消费者的 package-level re-export。
+- `docs/iterations/v1.2.9-Phase-4-Report-Agent-Decoupling-R0.md`
+- `docs/iterations/TASK_LOG.md`
+- `docs/iterations/CHANGELOG.md`
+
+**未修改**：
+- `main.py`
+- `src/phase4/report_prompts.py`
+- `config.py`
+- `src/llm_client.py`
+- `src/schemas/`
+- `src/whitebox/`
+- `src/phase1/`
+- `src/phase2/`
+- `src/phase3/`
+- `audit/`
+
+**测试结果**：
+```text
+.venv/bin/python -m py_compile src/phase4/report_agent.py src/phase4/report_normalizer.py
+  pass
+
+.venv/bin/python -m pytest tests/test_phase4_report_normalizer.py -v
+  4 passed
+
+.venv/bin/python -m pytest tests/test_inflection_point_output_guard.py -v
+  5 passed
+
+.venv/bin/python -m pytest tests/test_report_markdown_grounding.py tests/test_phase4_markdown_metric_grounding.py -v
+  20 passed
+
+.venv/bin/python -m py_compile src/phase4/report_agent.py src/phase4/report_narrative.py src/phase4/report_title.py src/phase4/report_normalizer.py
+  pass
+
+.venv/bin/python -m pytest tests/test_phase4_report_agent_decoupling.py -v
+  4 passed
+
+.venv/bin/python -m pytest tests/test_report_product_contract.py tests/test_report_markdown_grounding.py tests/test_phase4_markdown_metric_grounding.py tests/test_risk_assessment_directionality.py tests/test_inflection_point_output_guard.py -v
+  46 passed
+
+.venv/bin/python -m compileall src
+  pass
+
+.venv/bin/python -m pytest tests/ -v
+  83 passed
+
+.venv/bin/python main.py seeds/test8.txt
+  pass
+```
+
+**closeout hygiene cleanup**：
+```text
+basis: audit/phase4大版本改造/DS_Agent_Team_Dependency_Hygiene_Audit_v1.2.9_2026-05-15.md
+scope: SAFE_TO_REMOVE A class only
+A1: removed unused _normalize_report_title_line import from report_agent.py
+A2: removed dead build_entity_distribution() from report_agent.py
+A3: removed dead _trajectory_description() from report_agent.py
+A4: removed dead _stance_summary_lines() from report_agent.py
+A5: removed duplicate local TickLog import in load_tick_logs()
+A6: removed build_full_report_context / load_tick_logs / parse_llm_report_response / generate_markdown_report from src/phase4/__init__.py re-export layer
+B/C/D class touched: no
+```
+
+**hygiene verification**：
+```text
+.venv/bin/python -m compileall src
+  pass
+
+.venv/bin/python -m pytest tests/test_phase4_report_normalizer.py tests/test_phase4_report_agent_decoupling.py -v
+  8 passed
+
+.venv/bin/python -m pytest tests/test_report_markdown_grounding.py tests/test_report_product_contract.py -v
+  28 passed
+
+.venv/bin/python -m pytest tests/test_phase4_markdown_metric_grounding.py tests/test_risk_assessment_directionality.py tests/test_inflection_point_output_guard.py -v
+  18 passed
+
+.venv/bin/python -m pytest tests/test_run_dir_concurrency.py tests/test_whitebox_artifact_shell.py -v
+  8 passed
+
+.venv/bin/python -m pytest tests/ -v
+  83 passed
+```
+
+**Smoke evidence**：
+```text
+latest_run_dir: outputs/runs/test8_20260515_184351/run_964791_45220
+final_report.json: outputs/runs/test8_20260515_184351/run_964791_45220/final_report.json
+final_report.md: outputs/runs/test8_20260515_184351/run_964791_45220/final_report.md
+whitebox_summary.json: outputs/runs/test8_20260515_184351/run_964791_45220/whitebox_summary.json
+risk_level: high
+risk_level_label: 高风险
+primary_risk_types: group_polarization_risk
+whitebox report_completeness: pass
+whitebox artifact_check: pass
+```
+
+**contract preservation**：
+- prompt 语义未修改，`src/phase4/report_prompts.py` 未触碰。
+- risk algorithm 语义未修改，`assess_risk()` 留在 `report_agent.py`。
+- `select_primary_risk_types()` 留在 `report_agent.py`。
+- `identify_inflection_points()` 留在 `report_agent.py`。
+- `parse_llm_report_response()` / `generate_fallback_report()` 留在 `report_agent.py`。
+- `_llm_generated_markdown` 留在 `report_agent.py`。
+- `final_report.json` contract 未修改。
+- `final_report.md` 五章结构保持。
+- 未新增 runtime artifact contract。
+- 未混入 `audit/` dirty tree。
+
+**known issues / carry-over**：
+- 风险阈值仍是工程初始阈值，待后续多 seed 标定。
+- 模拟极化指数仍是工程 proxy。
+- 模拟关键变化点仍未完整升级为多信号 framework。
+- `external_risk_adjustment` 仅作为 future hook，未实现、未接入、未进入报告产物。
+- `select_primary_risk_types()` 仍依赖 `risk_assessment` 文本 keyword matching。
+- `single_run_summary` / `parallel_world_synthesis` / `batch_synthesis_context` 未实现。
+- risk calculation 仍留在 `report_agent.py`，待后续 risk engine 解耦。
+
+---
+
 ## 2026-05-15: v1.2.8.1.1 Inflection Point Output Guard & Whitebox Alignment Patch
 
 - **task_id**: task-v1.2.8.1.1-inflection-point-output-guard-whitebox-alignment
