@@ -1,0 +1,70 @@
+agent_instruction_files:
+- CLAUDE.md
+- .claude/SKILLS.md
+- docs/skills/main_agent_delivery.md
+- docs/skills/iteration_execution_guard.md
+assets_found_count: 72
+blockers: []
+constitution_files:
+- docs/skills/workflow_core.md
+- docs/workflow_core.md
+- CLAUDE.md
+historical_files:
+- docs/workflow_core.md
+- docs/_archive/history_used/2026-04-08_phase1_prompt_benchmark_handoff.md
+- docs/audit/workflow/workflow_governance_refactor_acceptance_package.md
+hook_files:
+- .claude/settings.json
+- .claude/settings.local.json
+log_files:
+- docs/iterations/TASK_LOG.md
+- docs/iterations/CHANGELOG.md
+- docs/workflow_changelog.md
+- audit/hermes_tasks/workflow-governance-path-inventory-r0/relay_progress.md
+mcp_used: true
+missing_referenced_files:
+- audit/workflow/
+- audit/general/
+- docs/iterations/BENCHMARK_LOG.md
+protocol_files:
+- audit/product_side_structured_delivery_protocol_v0.1_revised.md
+- audit/productside_review/技术任务卡_风险类型信号映射与风险-对策映射表_v0.2.md
+- audit/productside_review/政府治理视角舆情风险分层与等级映射清单_v0.2.md
+- audit/phase4大版本改造/Adarian_Report_Product_Contract_PRD_v0.1.md
+- audit/phase4大版本改造/Adarian_模拟关键变化点_产品解释规则与计算口径建议_v0.3.md
+- docs/contracts/phase1-output-contract-freeze-v1.2.3.md
+- audit/hermes_tasks/hermes-agent-call-capability-check-r0/mock_receipt.json
+- audit/hermes_tasks/hermes-agent-call-capability-check-r0/mock_receipt_raw.json
+- audit/hermes_tasks/hermes-agent-call-capability-check-r0/mock_upgrade_receipt.json
+- audit/hermes_tasks/hermes-agent-call-capability-check-r0/mock_upgrade_result.md
+- audit/hermes_tasks/hermes-agent-call-capability-check-r0/mock_relay_result.md
+- audit/hermes_tasks/workflow-governance-path-inventory-r0/ds_dispatch.md
+- audit/hermes_tasks/workflow-governance-path-inventory-r0/ds_system_prompt.md
+- audit/hermes_tasks/workflow-governance-path-inventory-r0/relay_runner.py
+- audit/hermes_tasks/workflow-governance-path-inventory-r0/relay_progress.md
+- audit/hermes_tasks/workflow-governance-path-inventory-r0/relay_heartbeat.txt
+- audit/hermes_tasks/workflow-governance-path-inventory-r0/subprocess_relay_result.json
+- audit/hermes_tasks/workflow-governance-path-inventory-r0/subprocess_relay_summary.md
+- audit/hermes_tasks/workflow-governance-path-inventory-r0/ds_raw_result.json
+- audit/hermes_tasks/workflow-governance-path-inventory-control-r0/ds_receipt.yaml
+recommended_next_action: 将路径清单交给 Owner-Control，用于 workflow_core.md v3.1 分节修订。
+report_path: audit/hermes_tasks/workflow-governance-path-inventory-r0/ds_audit.md
+review_id: audit-path-inventory-2026-05-18-01
+skill_files:
+- docs/skills/workflow_core.md
+- docs/skills/iteration_execution_guard.md
+- docs/skills/main_agent_delivery.md
+- docs/skills/ds_pre_audit.md
+- docs/skills/ds_verify.md
+- docs/skills/ds_accept.md
+- audit/phase4大版本改造/SKILL.md
+task_id: workflow-governance-path-inventory-r0
+team_mode_used: true
+template_files:
+- docs/iterations/_template.md
+- docs/iterations/_template_v2.md
+- docs/iterations/_template_v3.md
+unknown_files:
+- audit/productside_review/change_point_detection.py
+verdict: PATH_INVENTORY_COMPLETE
+workflow_core_path: docs/skills/workflow_core.md

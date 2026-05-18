@@ -16,6 +16,20 @@
 
 **Why：** wrong_approach 是最高频摩擦来源（12次），避免在架构决策上返工。
 
+### Python 运行环境
+
+本项目使用虚拟环境，**所有 Python 命令必须使用 `.venv/bin/python`**，禁止使用系统 Python（`/usr/bin/python3`，缺少 `rich` 等项目依赖）。
+
+```bash
+# 正确
+.venv/bin/python main.py seeds/test8.txt
+.venv/bin/python -m py_compile src/phase4/report_agent.py
+
+# 错误（系统 Python 缺依赖，会直接导入失败）
+python3 main.py seeds/test8.txt
+/usr/bin/python3 main.py seeds/test8.txt
+```
+
 ### Pre-Flight 检查
 
 **每次运行 Python 代码之前**，先用 `pre-flight` skill 检查文件：
@@ -24,14 +38,14 @@
 - 是否有 unsafe patterns（os.system / eval / exec）
 - 是否混用了 threading（需用 concurrent.futures）
 
-**触发时机**：执行 `py ... .py` 或 `python ... .py` 之前自动调用 `/pre-flight`。
+**触发时机**：执行 `.venv/bin/python ... .py` 之前自动调用 `/pre-flight`。
 
 ### Code Verification（代码验证规范）
 
 每次代码修改后，必须运行验证：
 
-1. **Python 文件修改** → 运行 `py -3 -m py_compile {file}` 验证语法
-2. **新增 import** → 运行 `py -3 -c "import xxx"` 验证导入
+1. **Python 文件修改** → 运行 `.venv/bin/python -m py_compile {file}` 验证语法
+2. **新增 import** → 运行 `.venv/bin/python -c "import xxx"` 验证导入
 3. **配置修改** → 运行模拟验证配置生效
 4. **修复 bug** → 运行模拟验证问题已解决
 
@@ -133,7 +147,7 @@
 
 | Skill 名称 | 命令 | 用途 |
 |-----------|------|------|
-| `/test1` | 运行 `py main.py seeds/test1.txt` | 运行 test1 模拟 |
+| `/test1` | 运行 `.venv/bin/python main.py seeds/test1.txt` | 运行 test1 模拟 |
 | `/verify` | 运行模拟并验证输出质量 | 验证修改是否正确 |
 | `/profiling-validate` | 运行 profiling pipeline 验证 | 迭代完成后检查 profiling 结果 |
 | `/pre-flight` | 运行 pre-flight 代码检查 | 执行 Python 前检查语法/导入/安全 |

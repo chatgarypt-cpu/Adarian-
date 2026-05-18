@@ -1497,3 +1497,54 @@ Phase 1 的关键修订是：
 ```
 
 这就是后续系统建设的主线。
+
+## 23. DS Review 后边界确认补充
+
+基于 DS Agent Team 对本远期规划 v0.3 的审查反馈，当前路线判断补充确认如下：
+
+```text
+远期路线：通过。
+建设顺序：合理。
+动态态势感知方向：保留，但不立即进入主链实现。
+Phase 1 Draft Format 收敛层：合理。
+JSON runtime authority：继续保留。
+当前优先级：先修报告可信度，再修 Phase 1 生成稳定性，再接真实态势。
+本次审查确认，v0.3 的核心路线不需要重新设计。后续推进应避免将 DS finding 自动升级为新版本范围，也不应因为已获得微博数据样本而提前启动动态态势感知主链实现。
+
+需要特别标注的边界如下：
+
+1. Validator deterministic pass/fail 是目标能力，不代表当前代码已经完全实现。
+   当前文档中关于 Parser / Compiler / Validator 的描述，均属于后续 Phase 1 Generation Governance 的规划能力。
+
+2. YAML-like / Markdown structured block 只作为 LLM-facing draft format。
+   JSON 仍是 runtime authority / canonical artifact。
+   不做 JSON → YAML 全系统迁移。
+
+3. v1.2.8.1 仍只聚焦拐点识别可信度修复。
+   不扩展 InflectionPoint 完整 schema。
+   不实现完整 5 型变化点框架。
+   不进入 Phase 1 Repair Loop。
+   不接微博数据、MCP、Web Search 或动态态势感知主链。
+
+4. 产品侧 v0.3 中关于变化点类型、证据强度、指标解释的内容，可作为术语与设计参考。
+   但不得直接作为 Codex 工程实现依据。
+   任何产品侧建议进入工程前，必须由 Control Agent 转译为正式迭代文档和 scope。
+
+5. 当前 whitebox 仍处于阶段性检查能力。
+   远期 11 项 whitebox 检查属于目标清单，不代表当前 runtime artifact 已全部具备。
+
+6. InflectionPoint schema 扩展、batch synthesis、situational_snapshot、parallel_runs 等能力，均按后续版本路线推进。
+   不得回塞进 v1.2.8.1。
+
+因此，本规划 v0.3 的最终状态更新为：
+
+status: reviewed / route_validated / minor_boundary_notes_added
+gate: PASS_WITH_MINOR_BOUNDARY_NOTES
+next_action: return_to_v1.2.8.1_inflection_detection_logic_hardening
+
+Control Agent closeout judgment：
+
+本远期规划 v0.3 已完成路线合理性验证。
+后续不再围绕主路线反复讨论。
+当前主线回到 v1.2.8.1：拐点识别逻辑可信度修复。
+```
