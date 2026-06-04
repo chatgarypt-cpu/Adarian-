@@ -1,0 +1,119 @@
+task_id: pm-runtime-communication-substrate-mvp
+task_title: PM Runtime Communication Substrate MVP
+executor: codex
+started_at: "2026-05-22T22:45:00+08:00"
+completed_at: "2026-05-22T23:01:26+08:00"
+elapsed_sec: 986
+status: completed
+verdict: pass_with_known_issues
+team_mode_used: "N/A"
+mcp_used: false
+input_files:
+  - docs/iterations/v0.1.0-pm-runtime-communication-substrate-mvp.md
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/dispatch/codex_taskbook.md
+  - tools/pm_runtime/templates/dispatch.template.yaml
+  - tools/pm_runtime/templates/receipt.template.yaml
+output_files:
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/codex/codex_receipt.yaml
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/codex/codex_handoff.md
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/summary/pm_runtime_summary.md
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task/summary/pm_runtime_summary.md
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task/runtime/registry_events.jsonl
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task/logs/stdout.log
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task/logs/stderr.log
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task/logs/raw_output.jsonl
+modified_files: []
+created_files:
+  - tools/pm_runtime/__init__.py
+  - tools/pm_runtime/relay/__init__.py
+  - tools/pm_runtime/relay/cli.py
+  - tools/pm_runtime/relay/relay_runner.py
+  - tools/pm_runtime/relay/extractors.py
+  - tools/pm_runtime/relay/recovery.py
+  - tools/pm_runtime/templates/task_config.yaml
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/codex/codex_receipt.yaml
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/codex/codex_handoff.md
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/summary/pm_runtime_summary.md
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task/dispatch/task_config.yaml
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task/runtime/pre_action_check.yaml
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task/runtime/task_state.yaml
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task/runtime/registry_events.jsonl
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task/runtime/heartbeat.json
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task/runtime/progress.yaml
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task/runtime/failure_classification.yaml
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task/runtime/recovery_summary.md
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task/logs/stdout.log
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task/logs/stderr.log
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task/logs/raw_output.jsonl
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task/logs/stdout.partial.log
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task/logs/stderr.partial.log
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task/logs/raw_output.partial.jsonl
+changed_files:
+  - tools/pm_runtime/__init__.py
+  - tools/pm_runtime/relay/__init__.py
+  - tools/pm_runtime/relay/cli.py
+  - tools/pm_runtime/relay/relay_runner.py
+  - tools/pm_runtime/relay/extractors.py
+  - tools/pm_runtime/relay/recovery.py
+  - tools/pm_runtime/templates/task_config.yaml
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/codex/codex_receipt.yaml
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/codex/codex_handoff.md
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/summary/pm_runtime_summary.md
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task/**
+commands_run:
+  - sed -n '1,240p' /Users/gary/.codex/skills/adarian-iteration-safety-gate/SKILL.md
+  - sed -n '1,260p' docs/iterations/v0.1.0-pm-runtime-communication-substrate-mvp.md
+  - git status --short
+  - git branch --show-current
+  - git log -1 --oneline
+  - find tools/pm_runtime audit/tasks/active/pm-runtime-governance/communication-substrate-mvp -maxdepth 4 -type f
+  - .venv/bin/python -m py_compile tools/pm_runtime/relay/cli.py
+  - .venv/bin/python -m py_compile tools/pm_runtime/relay/relay_runner.py
+  - .venv/bin/python -m py_compile tools/pm_runtime/relay/extractors.py
+  - .venv/bin/python -m py_compile tools/pm_runtime/relay/recovery.py
+  - .venv/bin/python -c "from tools.pm_runtime.relay import cli; print('import OK')"
+  - .venv/bin/python -m tools.pm_runtime.relay.cli init --config tools/pm_runtime/templates/task_config.yaml
+  - .venv/bin/python -m tools.pm_runtime.relay.cli run --task-dir audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task
+  - .venv/bin/python -m tools.pm_runtime.relay.cli summary --task-dir audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task
+  - .venv/bin/python -m tools.pm_runtime.relay.cli recover --task-dir audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task
+  - sidecar read-only review of PM Runtime relay implementation and scope
+test_results:
+  - command: .venv/bin/python -m py_compile tools/pm_runtime/relay/cli.py
+    result: pass
+  - command: .venv/bin/python -m py_compile tools/pm_runtime/relay/relay_runner.py
+    result: pass
+  - command: .venv/bin/python -m py_compile tools/pm_runtime/relay/extractors.py
+    result: pass
+  - command: .venv/bin/python -m py_compile tools/pm_runtime/relay/recovery.py
+    result: pass
+  - command: .venv/bin/python -c "from tools.pm_runtime.relay import cli; print('import OK')"
+    result: pass
+  - command: local_echo sandbox demo init/run/summary/recover
+    result: pass
+  - command: sidecar read-only review
+    result: findings patched or recorded
+known_issues:
+  - Current adarian-iteration-safety-gate needs a later patch for Hermes-dispatched infrastructure_creation_lane support.
+  - Runtime state values intentionally overlap task_status for MVP compatibility.
+  - MVP is single-task only; no daemon, queue, dashboard, database, worker pool, auto approval, or auto closeout.
+  - Minimal YAML fallback is not a general YAML parser.
+  - Py_compile generated __pycache__ files under allowed tools/pm_runtime package paths.
+  - Pre-existing generic templates under tools/pm_runtime/templates and pre-existing dispatch/ds/scripts/relay_logs task evidence were observed but not modified by Codex.
+  - Classification branches cover all required labels at MVP level; production policy mapping should still be verified by DS and Owner-Control.
+blockers: []
+next_recommendation: PM Runtime / Hermes / DS verification, then Owner-Control review; patch safety gate infrastructure_creation_lane support in a separate task.
+report_path: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/codex/codex_handoff.md
+receipt_path: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/codex/codex_receipt.yaml
+summary_path: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/summary/pm_runtime_summary.md
+run_dir: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task
+diff_summary: Created stdlib-only PM Runtime relay MVP, reusable task_config template, sandbox local_echo demo artifacts, summary, receipt, and handoff.
+process_issues:
+  - Owner override was used only to allow new untracked PM Runtime infrastructure files under approved roots.
+  - No closeout was claimed.
+handoff_path: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/codex/codex_handoff.md
+commit_status: no_commit
+forbidden_files_touched: []
+runtime_contract_deviations: []
+python_interpreter: /Users/gary/项目开发/AdarianMigration/adarian mvp/.venv/bin/python
+owner_override_used: true
+owner_override_reason: infrastructure_creation_lane_not_supported_by_current_safety_gate

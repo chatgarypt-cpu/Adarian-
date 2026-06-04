@@ -1,0 +1,12 @@
+{
+  "report_completeness": {
+    "report_char_count": 8630,
+    "report_truncated": false,
+    "truncation_reason": "",
+    "report_ends_cleanly": true,
+    "missing_required_sections": [
+      "舆情态势"
+    ],
+    "report_completeness_score": 0.85
+  }
+}

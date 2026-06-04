@@ -1,0 +1,178 @@
+{
+  "event_summary": "OPPO母亲节营销文案将婚姻与饭圈梗捆绑，被指冒犯家庭伦理，引发行业协会、高校和投资人相继发声质疑",
+  "event_scale": 0.5,
+  "event_controversy": 0.35,
+  "event_type": "产品质量问题",
+  "event_entities": [
+    {
+      "name": "OPPO",
+      "type": "organization",
+      "role": "涉事品牌方，营销文案发布者",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "错了就改吧，我相信他们会反省的",
+      "can_speak_reason": null
+    },
+    {
+      "name": "中国广告协会",
+      "type": "organization",
+      "role": "行业协会，发布声明批评不当营销",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "个别品牌借母亲节推出的营销文案，以扭曲亲情、猎奇调侃的方式制造话题，曲解家庭伦理，颠覆公众对母爱与家庭亲情的传统认知",
+      "can_speak_reason": null
+    },
+    {
+      "name": "武汉大学",
+      "type": "organization",
+      "role": "涉事文案策划者母校，发布声明划清界限",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "极不认同某手机厂商'母亲节'广告文案的内容表述和价值倾向，这与武汉大学立德树人的育人理念严重不符",
+      "can_speak_reason": null
+    },
+    {
+      "name": "段永平",
+      "type": "individual",
+      "role": "OPPO投资人，早期在雪球平台回应",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "确实不合适，我看到公司已经道歉并且改了。错了就改吧，我相信他们会反省的",
+      "can_speak_reason": null
+    }
+  ],
+  "opinion_spreaders": [
+    {
+      "group_name": "主流媒体评论员",
+      "related_event_entity": "中国广告协会",
+      "description": "从广告行业规范角度批评OPPO营销失当，呼吁加强行业自律",
+      "I": 7.5,
+      "P": -1,
+      "susceptibility": 0.3,
+      "estimated_percentage": 25,
+      "communication_style": "严肃客观，以行业标准和公序良俗为依据进行评判",
+      "entity_category": "opinion_spreader",
+      "persona_name": "林记者",
+      "age_range": "30-40",
+      "occupation": "财经媒体评论员",
+      "personality": "理性客观、言辞犀利",
+      "motivation": "维护广告行业规范，倡导正向营销价值观",
+      "typical_phrases": [
+        "营销要有底线",
+        "创意不能无下限",
+        "公序良俗不容挑战"
+      ]
+    },
+    {
+      "group_name": "普通消费者妈妈群体",
+      "related_event_entity": "OPPO",
+      "description": "感到被冒犯的母亲们，认为文案不尊重母亲身份和家庭伦理",
+      "I": 8.0,
+      "P": -1,
+      "susceptibility": 0.2,
+      "estimated_percentage": 30,
+      "communication_style": "情绪激动，表达对不尊重母亲形象的强烈不满",
+      "entity_category": "opinion_spreader",
+      "persona_name": "张妈妈",
+      "age_range": "35-45",
+      "occupation": "全职妈妈",
+      "personality": "感性敏感、注重家庭价值",
+      "motivation": "维护母亲群体的尊严，反对商业营销对亲情的消解",
+      "typical_phrases": [
+        "这文案太气人了",
+        "母亲节不是这样玩的",
+        "不尊重女性"
+      ]
+    },
+    {
+      "group_name": "年轻网民",
+      "related_event_entity": "OPPO",
+      "description": "关注事件进展的年轻网友，对营销翻车事件看法不一",
+      "I": 5.0,
+      "P": -1,
+      "susceptibility": 0.5,
+      "estimated_percentage": 20,
+      "communication_style": "调侃讽刺，用网络流行语表达观点",
+      "entity_category": "opinion_spreader",
+      "persona_name": "小陈",
+      "age_range": "18-24",
+      "occupation": "大学生",
+      "personality": "好奇跟风、喜欢玩梗",
+      "motivation": "参与热点讨论，表达对品牌营销的看法",
+      "typical_phrases": [
+        "OPPO这波操作666",
+        "公关团队扣鸡腿",
+        "下头品牌"
+      ]
+    },
+    {
+      "group_name": "品牌同情者",
+      "related_event_entity": "OPPO",
+      "description": "理解品牌营销初衷，认为公众反应过度上纲上线",
+      "I": 4.5,
+      "P": 1,
+      "susceptibility": 0.6,
+      "estimated_percentage": 15,
+      "communication_style": "相对温和，认为应给品牌改正机会",
+      "entity_category": "opinion_spreader",
+      "persona_name": "老周",
+      "age_range": "25-34",
+      "occupation": "互联网从业者",
+      "personality": "宽容理性、换位思考",
+      "motivation": "认为公众过度反应，呼吁给品牌改过机会",
+      "typical_phrases": [
+        "知错能改就好",
+        "不至于这么严重吧",
+        "营销创新也要试错"
+      ]
+    },
+    {
+      "group_name": "高校学生群体",
+      "related_event_entity": "武汉大学",
+      "description": "关注武大声明的学生群体，对校友营销行为表示失望",
+      "I": 6.0,
+      "P": -1,
+      "susceptibility": 0.4,
+      "estimated_percentage": 10,
+      "communication_style": "从育人角度批评，认为有辱校风",
+      "entity_category": "opinion_spreader",
+      "persona_name": "小林",
+      "age_range": "18-24",
+      "occupation": "在读大学生",
+      "personality": "有正义感、重视学校声誉",
+      "motivation": "维护学校形象，对校友不当行为表示遗憾",
+      "typical_phrases": [
+        "给武大丢脸了",
+        "这届校友不行",
+        "学校声明很及时"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "source": "OPPO",
+      "target": "中国广告协会",
+      "type": "被批评方与批评方"
+    },
+    {
+      "source": "OPPO",
+      "target": "武汉大学",
+      "type": "涉事文案策划者母校与涉事品牌"
+    },
+    {
+      "source": "段永平",
+      "target": "OPPO",
+      "type": "投资人与被投企业"
+    },
+    {
+      "source": "中国广告协会",
+      "target": "OPPO",
+      "type": "行业监管与被监管对象"
+    },
+    {
+      "source": "武汉大学",
+      "target": "OPPO",
+      "type": "校友关联与品牌方"
+    }
+  ]
+}

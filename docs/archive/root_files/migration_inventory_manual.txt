@@ -1,0 +1,603 @@
+﻿===== Migration Manual Inventory =====
+Generated: 04/27/2026 15:36:22
+
+===== 1. Root Top Level: adarian =====
+
+Mode   Length LastWriteTime         FullName                                                             
+----   ------ -------------         --------                                                             
+d-----        29/3/2026 下午 6:32:27  D:\项目开发\研一\adarian\.claude                                           
+d--h--        27/4/2026 上午 11:27:57 D:\项目开发\研一\adarian\.git                                              
+d-----        27/4/2026 下午 3:30:44  D:\项目开发\研一\adarian\adarian mvp                                       
+d-----        24/4/2026 下午 3:13:03  D:\项目开发\研一\adarian\adarian mvp-a8c95ea-copy                          
+d-----        24/4/2026 下午 3:12:50  D:\项目开发\研一\adarian\adarian mvp-backup-baseline-test1-e2e-runnable    
+d-----        24/4/2026 下午 3:40:03  D:\项目开发\研一\adarian\adarian mvp-phase3-recovery                       
+d-----        27/4/2026 下午 2:46:41  D:\项目开发\研一\adarian\audit                                             
+dar--l        20/6/2023 下午 11:05:23 D:\项目开发\研一\adarian\BaiduSyncdisk                                     
+d-----        24/4/2026 下午 2:14:34  D:\项目开发\研一\adarian\case                                              
+d-----        29/3/2026 下午 5:11:31  D:\项目开发\研一\adarian\models                                            
+d-----        20/4/2026 下午 4:04:20  D:\项目开发\研一\adarian\multica                                           
+d-----        29/3/2026 下午 5:11:30  D:\项目开发\研一\adarian\paper                                             
+d-----        16/4/2026 下午 12:02:22 D:\项目开发\研一\adarian\pre_restore_backup_2026-04-16_1                   
+d-----        16/4/2026 上午 11:58:19 D:\项目开发\研一\adarian\recovered_from_stash_2026-04-16_1                 
+-a---- 1079   16/4/2026 下午 4:06:44  D:\项目开发\研一\adarian\adarian mvp - 快捷方式.lnk                            
+-a---- 740280 24/4/2026 下午 3:14:03  D:\项目开发\研一\adarian\adarian mvp-a8c95ea-copy.zip                      
+-a---- 837782 24/4/2026 下午 4:13:31  D:\项目开发\研一\adarian\adarian mvp-backup-baseline-test1-e2e-runnable.zip
+-a---- 26683  27/4/2026 上午 11:18:07 D:\项目开发\研一\adarian\black box design.md                               
+-a---- 13027  27/4/2026 上午 10:56:26 D:\项目开发\研一\adarian\case.md                                           
+-a---- 19167  27/4/2026 上午 11:14:06 D:\项目开发\研一\adarian\former report audit.md                            
+-a---- 14074  25/3/2026 下午 6:16:14  D:\项目开发\研一\adarian\projectSKILLS.md                                  
+-a---- 5394   27/4/2026 上午 10:56:39 D:\项目开发\研一\adarian\report schema.md                                  
+-a---- 5967   29/3/2026 下午 3:39:16  D:\项目开发\研一\adarian\远期改造3_28.md                                       
+-a---- 22186  26/3/2026 下午 3:42:23  D:\项目开发\研一\adarian\远期规划3_26.md                                       
+
+
+
+
+===== 2. Resume Top Level =====
+
+Mode    Length LastWriteTime          FullName                                                 
+----    ------ -------------          --------                                                 
+-a---- 1892626 18/12/2025 下午 8:35:53  D:\项目开发\研一\实习\简历\chinatravel总表v2.2.xlsx                  
+-a----     249 17/4/2026 下午 4:27:03   D:\项目开发\研一\实习\简历\README.md                               
+-a---- 3582025 15/12/2025 下午 3:29:59  D:\项目开发\研一\实习\简历\youtube_parse.xlsx                      
+-a---- 1281760 21/1/2026 下午 1:20:01   D:\项目开发\研一\实习\简历\“China Travel”洋网红的画像指标建构与案例分析报告(1).docx 
+-a----  194483 17/4/2026 下午 6:00:45   D:\项目开发\研一\实习\简历\中文简历 .pdf                               
+-a----    1852 17/4/2026 下午 5:12:02   D:\项目开发\研一\实习\简历\主项目_Adarian_简历表述_v2.md                  
+-a----    2125 17/4/2026 下午 5:13:31   D:\项目开发\研一\实习\简历\主项目_Adarian_简历表述_v3_完整链路负责人.md          
+-a----    2932 17/4/2026 下午 5:14:30   D:\项目开发\研一\实习\简历\主项目_Adarian_简历表述_v4_系统工程导向.md           
+-a----    3065 17/4/2026 下午 5:18:38   D:\项目开发\研一\实习\简历\主项目_Adarian_简历表述_v5_系统工程导向_含benchmark.md
+-a----    2367 17/4/2026 下午 5:39:07   D:\项目开发\研一\实习\简历\主项目_Adarian_简历表述_v6_含最新benchmark.md     
+-a----    2547 17/4/2026 下午 5:45:40   D:\项目开发\研一\实习\简历\主项目_Adarian_简历表述_v7_AI产品经理版.md          
+-a----    1992 17/4/2026 下午 6:34:30   D:\项目开发\研一\实习\简历\内容产品经理.md                               
+-a----  208688 2/4/2026 上午 10:24:50   D:\项目开发\研一\实习\简历\刘浩宇-暨南大学-个人简历.pdf                       
+-a----     866 17/4/2026 下午 6:15:14   D:\项目开发\研一\实习\简历\子项目表述.md                                
+-a----    2025 17/4/2026 下午 6:34:42   D:\项目开发\研一\实习\简历\市场产品经理.md                               
+-a----    2852 17/4/2026 下午 6:32:03   D:\项目开发\研一\实习\简历\技术产品经理.md                               
+-a----    2485 17/4/2026 下午 6:50:42   D:\项目开发\研一\实习\简历\技术产品经理.txt                              
+-a----    2025 17/4/2026 下午 6:50:32   D:\项目开发\研一\实习\简历\新建文本文档.txt                              
+-a----    4718 17/12/2025 上午 11:02:14 D:\项目开发\研一\实习\简历\标准v2.1.md                               
+
+
+
+
+===== 3. adarian Subdir Size =====
+
+Path                                                               SizeMB LastWriteTime        
+----                                                               ------ -------------        
+D:\项目开发\研一\adarian\case                                           1171.12 24/4/2026 下午 2:14:34 
+D:\项目开发\研一\adarian\.git                                             74.72 27/4/2026 上午 11:27:57
+D:\项目开发\研一\adarian\multica                                          56.49 20/4/2026 下午 4:04:20 
+D:\项目开发\研一\adarian\BaiduSyncdisk                                     7.37 20/6/2023 下午 11:05:23
+D:\项目开发\研一\adarian\adarian mvp                                       5.66 27/4/2026 下午 3:30:44 
+D:\项目开发\研一\adarian\paper                                             4.98 29/3/2026 下午 5:11:30 
+D:\项目开发\研一\adarian\models                                            4.58 29/3/2026 下午 5:11:31 
+D:\项目开发\研一\adarian\adarian mvp-backup-baseline-test1-e2e-runnable    2.55 24/4/2026 下午 3:12:50 
+D:\项目开发\研一\adarian\adarian mvp-a8c95ea-copy                          2.33 24/4/2026 下午 3:13:03 
+D:\项目开发\研一\adarian\adarian mvp-phase3-recovery                       2.33 24/4/2026 下午 3:40:03 
+D:\项目开发\研一\adarian\recovered_from_stash_2026-04-16_1                 1.11 16/4/2026 上午 11:58:19
+D:\项目开发\研一\adarian\pre_restore_backup_2026-04-16_1                   0.03 16/4/2026 下午 12:02:22
+D:\项目开发\研一\adarian\audit                                             0.03 27/4/2026 下午 2:46:41 
+D:\项目开发\研一\adarian\.claude                                              0 29/3/2026 下午 6:32:27 
+
+
+
+
+===== 4. Git Status =====
+Branch:
+master
+Status:
+## master
+ M "docs/iterations/v1.2.2 - White-box Observability for Speaker Behavior.md"
+ M outputs/runs/test7_1_20260427_151119/final_report.md
+ M src/phase1_entity_extraction.py
+?? tests/
+Last Commit:
+b54a62a 1.2.1.1
+Remote:
+
+===== 5. Key Project Files =====
+
+FullName                                                                                Length LastWriteTime       
+--------                                                                                ------ -------------       
+D:\项目开发\研一\adarian\adarian mvp\requirements.txt                                            513 26/3/2026 下午 3:10:05
+D:\项目开发\研一\adarian\adarian mvp\outputs\runs\test7_1_20260427_150354\run.log                619 27/4/2026 下午 3:04:01
+D:\项目开发\研一\adarian\adarian mvp\outputs\runs\test7_1_20260427_150354\timing_summary.json    974 27/4/2026 下午 3:04:01
+D:\项目开发\研一\adarian\adarian mvp\outputs\runs\test7_1_20260427_151006\run.log                608 27/4/2026 下午 3:10:12
+D:\项目开发\研一\adarian\adarian mvp\outputs\runs\test7_1_20260427_151006\timing_summary.json    964 27/4/2026 下午 3:10:12
+D:\项目开发\研一\adarian\adarian mvp\outputs\runs\test7_1_20260427_151119\run.log               8770 27/4/2026 下午 3:17:04
+D:\项目开发\研一\adarian\adarian mvp\outputs\runs\test7_1_20260427_151119\timing_summary.json   9661 27/4/2026 下午 3:17:04
+D:\项目开发\研一\adarian\adarian mvp\outputs\runs\test7_20260425_160152\run.log                10038 25/4/2026 下午 4:06:33
+D:\项目开发\研一\adarian\adarian mvp\outputs\runs\test7_20260425_160152\timing_summary.json    10794 25/4/2026 下午 4:06:33
+
+
+
+
+===== 6. Sensitive Candidate Paths Only =====
+
+FullName                                                                                                                                                         Length LastWriteTime       
+--------                                                                                                                                                         ------ -------------       
+D:\项目开发\研一\adarian\adarian mvp\.env                                                                                                                                 256 8/4/2026 下午 7:47:13 
+D:\项目开发\研一\adarian\adarian mvp\.env.example                                                                                                                         248 25/3/2026 下午 4:33:36
+D:\项目开发\研一\adarian\adarian mvp-a8c95ea-copy\.env.example                                                                                                            259 24/4/2026 下午 3:13:03
+D:\项目开发\研一\adarian\adarian mvp-backup-baseline-test1-e2e-runnable\.env                                                                                              256 8/4/2026 下午 7:47:13 
+D:\项目开发\研一\adarian\adarian mvp-backup-baseline-test1-e2e-runnable\.env.example                                                                                      248 25/3/2026 下午 4:33:36
+D:\项目开发\研一\adarian\adarian mvp-phase3-recovery\.env.example                                                                                                         259 24/4/2026 下午 3:40:02
+D:\项目开发\研一\adarian\case\GraphRAG-Example-master\node_modules\postcss\lib\tokenize.js                                                                               6538 29/3/2026 下午 3:14:47
+D:\项目开发\研一\adarian\case\GraphRAG-Example-master\node_modules\sql.js\AUTHORS                                                                                         133 29/3/2026 下午 3:14:43
+D:\项目开发\研一\adarian\case\GraphRAG-Example-master\src\utils\textTokenizer.js                                                                                         2645 22/2/2026 下午 5:57:05
+D:\项目开发\研一\adarian\case\MiroFish-main\.env                                                                                                                          745 17/3/2026 下午 6:13:44
+D:\项目开发\研一\adarian\case\MiroFish-main\.env.example                                                                                                                  714 6/3/2026 上午 12:30:31
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\astor-0.8.1.dist-info\AUTHORS                                                                 679 17/3/2026 下午 5:02:52
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\beautifulsoup4-4.14.3.dist-info\licenses\AUTHORS                                             2201 17/3/2026 下午 5:02:51
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\camel\terminators\token_limit_terminator.py                                                  2118 17/3/2026 下午 5:02:53
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\camel\utils\token_counting.py                                                               18809 17/3/2026 下午 5:02:53
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\camel\utils\__pycache__\token_counting.cpython-312.pyc                                      18499 17/3/2026 下午 6:23:59
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\certifi\cacert.pem                                                                         283932 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\cffi-2.0.0.dist-info\licenses\AUTHORS                                                         208 17/3/2026 下午 5:39:12
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\emoji\tokenizer.py                                                                          12120 17/3/2026 下午 5:02:49
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\httpx\_auth.py                                                                              11891 17/3/2026 下午 5:02:51
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\httpx\__pycache__\_auth.cpython-312.pyc                                                     15621 17/3/2026 下午 5:40:08
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\huggingface_hub\_oauth.py                                                                   18714 17/3/2026 下午 5:02:49
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\huggingface_hub\cli\auth.py                                                                  7317 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\huggingface_hub\inference\_generated\types\token_classification.py                           1915 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\huggingface_hub\utils\_auth.py                                                               8286 17/3/2026 下午 5:02:51
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\huggingface_hub\utils\_git_credential.py                                                     4619 17/3/2026 下午 5:02:51
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\huggingface_hub\utils\__pycache__\_auth.cpython-312.pyc                                      8867 17/3/2026 下午 6:24:06
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\huggingface_hub\utils\__pycache__\_git_credential.cpython-312.pyc                            5178 17/3/2026 下午 6:24:06
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\mcp\client\auth\oauth2.py                                                                   27638 17/3/2026 下午 5:02:49
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\mcp\client\auth\extensions\client_credentials.py                                            20897 17/3/2026 下午 5:02:49
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\mcp\server\auth\handlers\authorize.py                                                        9728 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\mcp\server\auth\handlers\token.py                                                           10223 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\mcp\server\auth\middleware\auth_context.py                                                   1696 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\mcp\server\auth\middleware\bearer_auth.py                                                    4423 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\mcp\server\auth\middleware\client_auth.py                                                    4723 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\mcp\server\auth\middleware\__pycache__\auth_context.cpython-312.pyc                          2623 17/3/2026 下午 6:24:23
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\mcp\server\auth\middleware\__pycache__\bearer_auth.cpython-312.pyc                           6527 17/3/2026 下午 6:24:23
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\mcp\shared\auth.py                                                                           6446 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\mcp\shared\auth_utils.py                                                                     3006 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\mcp\shared\__pycache__\auth.cpython-312.pyc                                                  8578 17/3/2026 下午 6:24:23
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\neo4j\auth_management.py                                                                     1444 17/3/2026 下午 5:02:51
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\neo4j\_auth_management.py                                                                   10205 17/3/2026 下午 5:02:51
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\neo4j\_async\auth_management.py                                                             14189 17/3/2026 下午 5:02:51
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\neo4j\_async\__pycache__\auth_management.cpython-312.pyc                                    17545 17/3/2026 下午 6:24:26
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\neo4j\_sync\auth_management.py                                                              13826 17/3/2026 下午 5:02:52
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\neo4j\_sync\__pycache__\auth_management.cpython-312.pyc                                     16458 17/3/2026 下午 6:24:26
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\neo4j\__pycache__\auth_management.cpython-312.pyc                                             840 17/3/2026 下午 6:24:26
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\neo4j\__pycache__\_auth_management.cpython-312.pyc                                          11902 17/3/2026 下午 6:24:26
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\nltk\test\tokenize.doctest                                                                  22147 17/3/2026 下午 5:02:53
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\nltk\test\unit\test_tokenize.py                                                             31048 17/3/2026 下午 5:02:53
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\nltk\test\unit\test_twitter_auth.py                                                          2432 17/3/2026 下午 5:02:53
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\nltk-3.9.2.dist-info\licenses\AUTHORS.md                                                     8005 17/3/2026 下午 5:02:53
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\nodeenv-1.9.1.dist-info\AUTHORS                                                              1723 17/3/2026 下午 5:02:52
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\oauthlib\oauth1\rfc5849\endpoints\access_token.py                                            9347 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\oauthlib\oauth1\rfc5849\endpoints\authorization.py                                           6724 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\oauthlib\oauth1\rfc5849\endpoints\request_token.py                                           9291 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\oauthlib\oauth2\rfc6749\tokens.py                                                           11015 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\oauthlib\oauth2\rfc6749\endpoints\authorization.py                                           4584 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\oauthlib\oauth2\rfc6749\endpoints\token.py                                                   4595 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\oauthlib\oauth2\rfc6749\grant_types\authorization_code.py                                   26086 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\oauthlib\oauth2\rfc6749\grant_types\client_credentials.py                                    5051 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\oauthlib\oauth2\rfc6749\grant_types\refresh_token.py                                         6077 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\oauthlib\oauth2\rfc6749\grant_types\resource_owner_password_credentials.py                   8484 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\oauthlib\oauth2\rfc8628\endpoints\device_authorization.py                                    9721 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\oauthlib\openid\connect\core\tokens.py                                                       1558 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\oauthlib\openid\connect\core\grant_types\authorization_code.py                               1441 17/3/2026 下午 5:02:51
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\oauthlib\openid\connect\core\grant_types\refresh_token.py                                    1035 17/3/2026 下午 5:02:51
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\openai\resources\realtime\client_secrets.py                                                  7700 17/3/2026 下午 5:02:51
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\openai\types\chat\chat_completion_token_logprob.py                                           1769 17/3/2026 下午 5:02:53
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\openai\types\chat\__pycache__\chat_completion_token_logprob.cpython-312.pyc                  1102 17/3/2026 下午 5:40:09
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\openai\types\realtime\client_secret_create_params.py                                         1674 17/3/2026 下午 5:02:54
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\openai\types\realtime\client_secret_create_response.py                                        932 17/3/2026 下午 5:02:54
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\openai\types\realtime\realtime_response_usage_input_token_details.py                         1244 17/3/2026 下午 5:02:54
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\openai\types\realtime\realtime_response_usage_output_token_details.py                         459 17/3/2026 下午 5:02:54
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\openai\types\realtime\realtime_session_client_secret.py                                       583 17/3/2026 下午 5:02:54
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\packaging\_tokenizer.py                                                                      5310 17/3/2026 下午 5:02:51
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\pycparser\ply\ctokens.py                                                                     3177 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\pydantic_settings\sources\providers\nested_secrets.py                                        6622 17/3/2026 下午 5:02:52
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\pydantic_settings\sources\providers\secrets.py                                               4303 17/3/2026 下午 5:02:52
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\pydantic_settings\sources\providers\__pycache__\nested_secrets.cpython-312.pyc               7988 17/3/2026 下午 6:24:23
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\pydantic_settings\sources\providers\__pycache__\secrets.cpython-312.pyc                      5810 17/3/2026 下午 6:24:23
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\PyJWT-2.10.1.dist-info\AUTHORS.rst                                                            322 17/3/2026 下午 5:02:52
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\pytest-8.2.0.dist-info\AUTHORS                                                               6693 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\requests\auth.py                                                                            10186 17/3/2026 下午 5:02:51
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\requests\__pycache__\auth.cpython-312.pyc                                                   13953 17/3/2026 下午 6:23:59
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\requests_oauthlib\oauth1_auth.py                                                             3604 17/3/2026 下午 5:02:52
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\requests_oauthlib\oauth1_session.py                                                         16942 17/3/2026 下午 5:02:52
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\requests_oauthlib\oauth2_auth.py                                                             1508 17/3/2026 下午 5:02:52
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\requests_oauthlib\oauth2_session.py                                                         23932 17/3/2026 下午 5:02:52
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\requests_toolbelt\auth\_digest_auth_compat.py                                                 910 17/3/2026 下午 5:02:52
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\requests_toolbelt-1.0.0.dist-info\AUTHORS.rst                                                 986 17/3/2026 下午 5:02:52
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\rfc3339_validator-0.1.4.dist-info\AUTHORS.rst                                                 162 17/3/2026 下午 5:02:51
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\ruamel\yaml\tokens.py                                                                       11704 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\sentence_transformers\models\tokenizer\PhraseTokenizer.py                                    4688 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\sentence_transformers\models\tokenizer\WhitespaceTokenizer.py                                2447 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\sentence_transformers\models\tokenizer\WordTokenizer.py                                      5789 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\sentence_transformers\models\tokenizer\__pycache__\PhraseTokenizer.cpython-312.pyc           6642 17/3/2026 下午 6:24:21
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\sentence_transformers\models\tokenizer\__pycache__\WhitespaceTokenizer.cpython-312.pyc       4155 17/3/2026 下午 6:24:21
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\sentence_transformers\models\tokenizer\__pycache__\WordTokenizer.cpython-312.pyc             4087 17/3/2026 下午 6:24:21
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\setuptools\_vendor\packaging\_tokenizer.py                                                   5273 17/3/2026 下午 5:02:52
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\setuptools\_vendor\wheel\vendored\packaging\_tokenizer.py                                    5292 17/3/2026 下午 5:02:53
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\sse_starlette-3.0.4.dist-info\licenses\AUTHORS                                                395 17/3/2026 下午 5:02:51
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\starlette\authentication.py                                                                  4750 17/3/2026 下午 5:02:51
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\starlette\middleware\authentication.py                                                       1800 17/3/2026 下午 5:02:51
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\starlette\middleware\__pycache__\authentication.cpython-312.pyc                              2935 17/3/2026 下午 6:24:23
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\starlette\__pycache__\authentication.cpython-312.pyc                                         7752 17/3/2026 下午 6:24:23
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\sympy-1.14.0.dist-info\licenses\AUTHORS                                                     55779 17/3/2026 下午 5:02:57
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\test_unstructured\nlp\test_tokenize.py                                                       2731 17/3/2026 下午 5:02:50
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\tiktoken\_tiktoken.cp312-win_amd64.pyd                                                    2122752 17/3/2026 下午 5:39:13
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\tokenizers\tokenizers.pyd                                                                 7642112 17/3/2026 下午 5:02:54
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\tokenizers\implementations\base_tokenizer.py                                                16250 17/3/2026 下午 5:02:49
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\tokenizers\implementations\__pycache__\base_tokenizer.cpython-312.pyc                       21016 17/3/2026 下午 6:24:08
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\torch\export\_remove_effect_tokens_pass.py                                                   6502 17/3/2026 下午 5:39:14
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\torch\export\__pycache__\_remove_effect_tokens_pass.cpython-312.pyc                          8084 17/3/2026 下午 6:24:04
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\torch\include\ATen\ops\_make_dep_token.h                                                     1578 17/3/2026 下午 5:39:16
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\torch\include\ATen\ops\_make_dep_token_cpu_dispatch.h                                        1054 17/3/2026 下午 5:39:16
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\torch\include\ATen\ops\_make_dep_token_native.h                                               706 17/3/2026 下午 5:39:16
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\torch\include\ATen\ops\_make_dep_token_ops.h                                                 1593 17/3/2026 下午 5:39:16
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\torch\include\google\protobuf\io\tokenizer.h                                                17170 17/3/2026 下午 5:39:19
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\convert_slow_tokenizer.py                                                      68698 17/3/2026 下午 5:31:40
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\convert_slow_tokenizers_checkpoints_to_fast.py                                  5061 17/3/2026 下午 5:31:40
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\tokenization_mistral_common.py                                                 91444 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\tokenization_utils.py                                                          47780 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\tokenization_utils_base.py                                                    217765 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\tokenization_utils_fast.py                                                     41383 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\integrations\tiktoken.py                                                        1627 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\albert\tokenization_albert.py                                           13391 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\albert\tokenization_albert_fast.py                                       7609 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\auto\tokenization_auto.py                                               58505 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\auto\__pycache__\tokenization_auto.cpython-312.pyc                      45073 17/3/2026 下午 6:24:21
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\bart\tokenization_bart.py                                               16265 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\bart\tokenization_bart_fast.py                                          11275 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\barthez\tokenization_barthez.py                                         12160 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\barthez\tokenization_barthez_fast.py                                     7721 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\bartpho\tokenization_bartpho.py                                         13619 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\bert\tokenization_bert.py                                               19766 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\bert\tokenization_bert_fast.py                                           6557 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\bert\tokenization_bert_tf.py                                            12060 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\bert\__pycache__\tokenization_bert.cpython-312.pyc                      21262 17/3/2026 下午 6:24:22
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\bertweet\tokenization_bertweet.py                                       27007 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\bert_generation\tokenization_bert_generation.py                          7179 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\bert_japanese\tokenization_bert_japanese.py                             37815 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\big_bird\tokenization_big_bird.py                                       13249 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\big_bird\tokenization_big_bird_fast.py                                   8946 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\biogpt\tokenization_biogpt.py                                           12157 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\blenderbot\tokenization_blenderbot.py                                   18223 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\blenderbot\tokenization_blenderbot_fast.py                              12448 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\blenderbot_small\tokenization_blenderbot_small.py                        7945 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\blenderbot_small\tokenization_blenderbot_small_fast.py                   3361 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\bloom\tokenization_bloom_fast.py                                         6277 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\byt5\tokenization_byt5.py                                               10046 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\camembert\tokenization_camembert.py                                     14075 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\camembert\tokenization_camembert_fast.py                                 8159 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\canine\tokenization_canine.py                                            8194 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\clip\tokenization_clip.py                                               20554 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\clip\tokenization_clip_fast.py                                           6766 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\clvp\tokenization_clvp.py                                               14808 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\codegen\tokenization_codegen.py                                         15365 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\codegen\tokenization_codegen_fast.py                                     9650 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\code_llama\tokenization_code_llama.py                                   19314 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\code_llama\tokenization_code_llama_fast.py                              15832 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\cohere\tokenization_cohere_fast.py                                      28790 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\convbert\tokenization_convbert.py                                       20170 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\convbert\tokenization_convbert_fast.py                                   6686 17/3/2026 下午 5:31:41
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\cpm\tokenization_cpm.py                                                 15125 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\cpm\tokenization_cpm_fast.py                                            10310 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\cpmant\tokenization_cpmant.py                                            9744 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\ctrl\tokenization_ctrl.py                                                8080 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\deberta\tokenization_deberta.py                                         15951 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\deberta\tokenization_deberta_fast.py                                     9121 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\deberta_v2\tokenization_deberta_v2.py                                   19731 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\deberta_v2\tokenization_deberta_v2_fast.py                               8593 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\deprecated\ernie_m\tokenization_ernie_m.py                              16250 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\deprecated\gptsan_japanese\tokenization_gptsan_japanese.py              23341 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\deprecated\jukebox\tokenization_jukebox.py                              17366 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\deprecated\realm\tokenization_realm.py                                  21995 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\deprecated\realm\tokenization_realm_fast.py                              9858 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\deprecated\retribert\tokenization_retribert.py                          19536 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\deprecated\retribert\tokenization_retribert_fast.py                      6730 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\deprecated\speech_to_text_2\tokenization_speech_to_text_2.py             8424 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\deprecated\tapex\tokenization_tapex.py                                  64396 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\deprecated\transfo_xl\tokenization_transfo_xl.py                        32193 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\deprecated\xlm_prophetnet\tokenization_xlm_prophetnet.py                13153 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\dia\tokenization_dia.py                                                  4511 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\distilbert\tokenization_distilbert.py                                   20999 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\distilbert\tokenization_distilbert_fast.py                               6827 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\dpr\tokenization_dpr.py                                                 15834 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\dpr\tokenization_dpr_fast.py                                            16215 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\electra\tokenization_electra.py                                         20108 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\electra\tokenization_electra_fast.py                                     6590 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\esm\tokenization_esm.py                                                  5379 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\fastspeech2_conformer\tokenization_fastspeech2_conformer.py              6258 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\flaubert\tokenization_flaubert.py                                       20970 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\fnet\tokenization_fnet.py                                               13537 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\fnet\tokenization_fnet_fast.py                                           6841 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\fsmt\tokenization_fsmt.py                                               17944 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\funnel\tokenization_funnel.py                                           22685 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\funnel\tokenization_funnel_fast.py                                       8666 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\gemma\tokenization_gemma.py                                             14229 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\gemma\tokenization_gemma_fast.py                                         8097 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\gpt2\tokenization_gpt2.py                                               13154 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\gpt2\tokenization_gpt2_fast.py                                           5274 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\gpt2\tokenization_gpt2_tf.py                                             4071 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\gpt_neox\tokenization_gpt_neox_fast.py                                   8986 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\gpt_neox_japanese\tokenization_gpt_neox_japanese.py                     16938 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\gpt_sw3\tokenization_gpt_sw3.py                                         12565 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\herbert\tokenization_herbert.py                                         23808 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\herbert\tokenization_herbert_fast.py                                     4919 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\layoutlm\tokenization_layoutlm.py                                       20141 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\layoutlm\tokenization_layoutlm_fast.py                                   6691 17/3/2026 下午 5:31:42
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\layoutlmv2\tokenization_layoutlmv2.py                                   72137 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\layoutlmv2\tokenization_layoutlmv2_fast.py                              37064 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\layoutlmv3\tokenization_layoutlmv3.py                                   73235 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\layoutlmv3\tokenization_layoutlmv3_fast.py                              39917 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\layoutxlm\tokenization_layoutxlm.py                                     58329 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\layoutxlm\tokenization_layoutxlm_fast.py                                40471 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\led\tokenization_led.py                                                 19843 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\led\tokenization_led_fast.py                                            14170 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\llama\tokenization_llama.py                                             18729 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\llama\tokenization_llama_fast.py                                        10965 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\longformer\tokenization_longformer.py                                   16818 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\longformer\tokenization_longformer_fast.py                              11230 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\luke\tokenization_luke.py                                               85643 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\lxmert\tokenization_lxmert.py                                           20165 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\lxmert\tokenization_lxmert_fast.py                                       6625 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\m2m_100\tokenization_m2m_100.py                                         16416 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\marian\tokenization_marian.py                                           16868 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\markuplm\tokenization_markuplm.py                                       70151 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\markuplm\tokenization_markuplm_fast.py                                  43320 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\mbart\tokenization_mbart.py                                             14200 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\mbart\tokenization_mbart_fast.py                                        10880 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\mbart50\tokenization_mbart50.py                                         16403 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\mbart50\tokenization_mbart50_fast.py                                    11479 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\mgp_str\tokenization_mgp_str.py                                          3793 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\mluke\tokenization_mluke.py                                             82153 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\mobilebert\tokenization_mobilebert.py                                   20149 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\mobilebert\tokenization_mobilebert_fast.py                               6703 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\mpnet\tokenization_mpnet.py                                             22442 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\mpnet\tokenization_mpnet_fast.py                                         9180 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\mt5\tokenization_mt5.py                                                   746 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\mt5\tokenization_mt5_fast.py                                              762 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\mvp\tokenization_mvp.py                                                 16206 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\mvp\tokenization_mvp_fast.py                                            11819 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\myt5\tokenization_myt5.py                                               15535 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\nllb\tokenization_nllb.py                                               19158 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\nllb\tokenization_nllb_fast.py                                          15822 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\nougat\tokenization_nougat_fast.py                                      24560 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\openai\tokenization_openai.py                                           15159 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\openai\tokenization_openai_fast.py                                       2553 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\parakeet\tokenization_parakeet_fast.py                                   1946 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\pegasus\tokenization_pegasus.py                                         13231 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\pegasus\tokenization_pegasus_fast.py                                     9833 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\perceiver\tokenization_perceiver.py                                      8034 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\phobert\tokenization_phobert.py                                         13111 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\plbart\tokenization_plbart.py                                           18910 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\pop2piano\tokenization_pop2piano.py                                     32803 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\prophetnet\tokenization_prophetnet.py                                   20154 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\qwen2\tokenization_qwen2.py                                             13935 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\qwen2\tokenization_qwen2_fast.py                                         5210 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\rag\tokenization_rag.py                                                  4610 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\reformer\tokenization_reformer.py                                        6823 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\reformer\tokenization_reformer_fast.py                                   4137 17/3/2026 下午 5:31:43
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\rembert\tokenization_rembert.py                                          9566 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\rembert\tokenization_rembert_fast.py                                     8747 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\roberta\tokenization_roberta.py                                         16469 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\roberta\tokenization_roberta_fast.py                                    10978 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\roc_bert\tokenization_roc_bert.py                                       49487 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\roformer\tokenization_roformer.py                                       20858 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\roformer\tokenization_roformer_fast.py                                   5584 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\roformer\tokenization_utils.py                                           2625 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\seamless_m4t\tokenization_seamless_m4t.py                               26076 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\seamless_m4t\tokenization_seamless_m4t_fast.py                          19774 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\siglip\tokenization_siglip.py                                           16047 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\speecht5\tokenization_speecht5.py                                        9009 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\speech_to_text\tokenization_speech_to_text.py                           11501 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\splinter\tokenization_splinter.py                                       20948 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\splinter\tokenization_splinter_fast.py                                   8590 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\squeezebert\tokenization_squeezebert.py                                 20092 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\squeezebert\tokenization_squeezebert_fast.py                             6724 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\t5\tokenization_t5.py                                                   19952 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\t5\tokenization_t5_fast.py                                              10048 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\tapas\tokenization_tapas.py                                            118445 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\udop\tokenization_udop.py                                               71827 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\udop\tokenization_udop_fast.py                                          49663 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\vits\tokenization_vits.py                                                9369 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\wav2vec2\tokenization_wav2vec2.py                                       38782 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\wav2vec2_phoneme\tokenization_wav2vec2_phoneme.py                       23217 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\whisper\tokenization_whisper.py                                         58409 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\whisper\tokenization_whisper_fast.py                                    30284 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\xglm\tokenization_xglm.py                                               12576 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\xglm\tokenization_xglm_fast.py                                           7470 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\xlm\tokenization_xlm.py                                                 23408 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\xlm_roberta\tokenization_xlm_roberta.py                                 12804 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\xlm_roberta\tokenization_xlm_roberta_fast.py                             7808 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\xlnet\tokenization_xlnet.py                                             15800 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\models\xlnet\tokenization_xlnet_fast.py                                         9247 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\pipelines\token_classification.py                                              30829 17/3/2026 下午 5:31:44
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\utils\dummy_sentencepiece_and_tokenizers_objects.py                              286 17/3/2026 下午 5:31:45
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\utils\dummy_tokenizers_objects.py                                                304 17/3/2026 下午 5:31:45
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\utils\__pycache__\dummy_sentencepiece_and_tokenizers_objects.cpython-312.pyc     590 17/3/2026 下午 6:24:07
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\__pycache__\convert_slow_tokenizer.cpython-312.pyc                             85088 17/3/2026 下午 6:24:08
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\__pycache__\tokenization_utils.cpython-312.pyc                                 44708 17/3/2026 下午 6:24:14
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\__pycache__\tokenization_utils_base.cpython-312.pyc                           198187 17/3/2026 下午 6:24:08
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\transformers\__pycache__\tokenization_utils_fast.cpython-312.pyc                            39765 17/3/2026 下午 6:24:21
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\unstructured\nlp\tokenize.py                                                                 2090 17/3/2026 下午 5:02:53
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\unstructured_client\models\shared\secretreference.py                                          466 17/3/2026 下午 5:02:51
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\websockets\auth.py                                                                            586 17/3/2026 下午 5:39:12
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\websockets\legacy\auth.py                                                                    6721 17/3/2026 下午 5:39:12
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\werkzeug\datastructures\auth.py                                                             10055 17/3/2026 下午 5:02:49
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\werkzeug\datastructures\__pycache__\auth.cpython-312.pyc                                    14487 17/3/2026 下午 5:40:07
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\win32\Demos\NetValidatePasswordPolicy.py                                                     3635 17/3/2026 下午 5:39:14
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\win32\Demos\security\GetTokenInformation.py                                                  3823 17/3/2026 下午 5:39:14
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\win32\Demos\security\sspi\simple_auth.py                                                     2917 17/3/2026 下午 5:39:14
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\win32\Demos\security\sspi\validate_password.py                                               1164 17/3/2026 下午 5:39:14
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\win32comext\authorization\authorization.pyd                                                 29184 17/3/2026 下午 5:39:15
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\yaml\tokens.py                                                                               2573 17/3/2026 下午 5:39:12
+D:\项目开发\研一\adarian\case\MiroFish-main\backend\.venv\Lib\site-packages\yaml\__pycache__\tokens.cpython-312.pyc                                                      5823 17/3/2026 下午 6:24:06
+D:\项目开发\研一\adarian\case\MiroFish-main\frontend\node_modules\axios\lib\cancel\CancelToken.js                                                                        2789 17/3/2026 下午 5:02:40
+D:\项目开发\研一\adarian\case\MiroFish-main\frontend\node_modules\postcss\lib\tokenize.js                                                                                6538 17/3/2026 下午 5:02:38
+D:\项目开发\研一\adarian\case\MiroFish-main\node_modules\yargs-parser\build\lib\tokenize-arg-string.js                                                                   1092 17/3/2026 下午 5:02:30
+D:\项目开发\研一\adarian\multica\.env                                                                                                                                    1298 20/4/2026 下午 4:04:20
+D:\项目开发\研一\adarian\multica\.env.example                                                                                                                            3446 20/4/2026 下午 4:03:21
+D:\项目开发\研一\adarian\multica\apps\desktop\.env.production                                                                                                             580 20/4/2026 下午 4:03:21
+D:\项目开发\研一\adarian\multica\apps\web\features\auth\auth-cookie.ts                                                                                                    272 20/4/2026 下午 4:03:21
+D:\项目开发\研一\adarian\multica\apps\web\features\landing\components\redirect-if-authenticated.tsx                                                                      1661 20/4/2026 下午 4:03:21
+D:\项目开发\研一\adarian\multica\e2e\auth.spec.ts                                                                                                                        1684 20/4/2026 下午 4:03:21
+D:\项目开发\研一\adarian\multica\packages\core\platform\auth-initializer.tsx                                                                                             3042 20/4/2026 下午 4:03:21
+D:\项目开发\研一\adarian\multica\packages\ui\styles\tokens.css                                                                                                           5761 20/4/2026 下午 4:03:21
+D:\项目开发\研一\adarian\multica\packages\views\runtimes\components\charts\daily-token-chart.tsx                                                                         4195 20/4/2026 下午 4:03:21
+D:\项目开发\研一\adarian\multica\packages\views\settings\components\tokens-tab.tsx                                                                                       9160 20/4/2026 下午 4:03:21
+D:\项目开发\研一\adarian\multica\server\cmd\multica\cmd_auth.go                                                                                                         11742 20/4/2026 下午 4:03:21
+D:\项目开发\研一\adarian\multica\server\cmd\multica\cmd_auth_test.go                                                                                                     1805 20/4/2026 下午 4:03:21
+D:\项目开发\研一\adarian\multica\server\internal\handler\auth.go                                                                                                        16436 20/4/2026 下午 4:03:21
+D:\项目开发\研一\adarian\multica\server\internal\handler\auth_signup_test.go                                                                                             3435 20/4/2026 下午 4:03:21
+D:\项目开发\研一\adarian\multica\server\internal\handler\personal_access_token.go                                                                                        3508 20/4/2026 下午 4:03:21
+D:\项目开发\研一\adarian\multica\server\internal\middleware\auth.go                                                                                                      3824 20/4/2026 下午 4:03:21
+D:\项目开发\研一\adarian\multica\server\internal\middleware\auth_test.go                                                                                                 5980 20/4/2026 下午 4:03:21
+D:\项目开发\研一\adarian\multica\server\internal\middleware\daemon_auth.go                                                                                               4085 20/4/2026 下午 4:03:21
+D:\项目开发\研一\adarian\multica\server\migrations\011_personal_access_tokens.down.sql                                                                                     45 20/4/2026 下午 4:03:21
+D:\项目开发\研一\adarian\multica\server\migrations\011_personal_access_tokens.up.sql                                                                                      558 20/4/2026 下午 4:03:21
+D:\项目开发\研一\adarian\multica\server\migrations\029_daemon_token.down.sql                                                                                               36 20/4/2026 下午 4:03:22
+D:\项目开发\研一\adarian\multica\server\migrations\029_daemon_token.up.sql                                                                                                475 20/4/2026 下午 4:03:22
+D:\项目开发\研一\adarian\multica\server\pkg\db\generated\daemon_token.sql.go                                                                                             2473 20/4/2026 下午 4:03:22
+D:\项目开发\研一\adarian\multica\server\pkg\db\generated\personal_access_token.sql.go                                                                                    3798 20/4/2026 下午 4:03:22
+D:\项目开发\研一\adarian\multica\server\pkg\db\queries\daemon_token.sql                                                                                                   487 20/4/2026 下午 4:03:22
+D:\项目开发\研一\adarian\multica\server\pkg\db\queries\personal_access_token.sql                                                                                          760 20/4/2026 下午 4:03:22
+
+
+
+
+===== 7. AI Tool Config Paths Exists =====
+
+Path                                         Exists
+----                                         ------
+C:\Users\jnuuser\.codex                        True
+C:\Users\jnuuser\.agents                       True
+C:\Users\jnuuser\.claude                       True
+C:\Users\jnuuser\AppData\Roaming\Claude       False
+C:\Users\jnuuser\AppData\Roaming\Code\User     True
+C:\Users\jnuuser\AppData\Roaming\Cursor\User   True
+
+
+
+
+===== 8. Dev Environment Versions =====
+
+> python --version
+Python 3.13.5
+
+> py --version
+Python 3.13.9
+
+> conda --version
+conda 25.5.1
+
+> uv --version
+uv 0.10.11 (006b56b12 2026-03-16)
+
+> node --version
+v25.8.1
+
+> npm --version
+11.11.0
+
+> pnpm --version
+cmd : 'pnpm' 不是内部或外部命令，也不是可运行的程序
+所在位置 行:98 字符: 3
++   cmd /c $c 2>&1 | Out-File $Out -Append -Encoding utf8
++   ~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ('pnpm' 不是内部或外部命令，也不是可运行的程序:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+或批处理文件。
+
+> yarn --version
+cmd : 'yarn' 不是内部或外部命令，也不是可运行的程序
+所在位置 行:98 字符: 3
++   cmd /c $c 2>&1 | Out-File $Out -Append -Encoding utf8
++   ~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ('yarn' 不是内部或外部命令，也不是可运行的程序:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+或批处理文件。
+
+> git --version
+git version 2.53.0.windows.2
+
+> docker --version
+Docker version 29.3.1, build c2be9cc
+
+> wsl --status
+貫R裇:   d o c k e r - d e s k t o p 
+ 
+ 貫Hr,g:   2 
+ 
+ 
+
+===== 9. SSH Key Paths Only =====
+
+
+===== 10. Output / Logs / Profiling Candidate Dirs =====
+
+Path                                                                                                   SizeMB LastWriteTime       
+----                                                                                                   ------ -------------       
+D:\项目开发\研一\adarian\adarian mvp\profiling                                                                 1.11 22/4/2026 下午 3:15:27
+D:\项目开发\研一\adarian\adarian mvp\profiling\output                                                          0.97 22/4/2026 下午 3:15:27
+D:\项目开发\研一\adarian\adarian mvp\outputs                                                                   0.56 27/4/2026 下午 3:03:53
+D:\项目开发\研一\adarian\adarian mvp\outputs\outputs_test2                                                     0.06 22/4/2026 下午 3:15:27
+D:\项目开发\研一\adarian\adarian mvp\outputs\output1                                                           0.04 22/4/2026 下午 3:15:27
+D:\项目开发\研一\adarian\adarian mvp\outputs\outputs_test3                                                     0.04 22/4/2026 下午 3:15:27
+D:\项目开发\研一\adarian\adarian mvp\profiling\output\runs_archive\run_20260413_174758_235918_25244\raw_logs   0.03 22/4/2026 下午 3:15:27
+D:\项目开发\研一\adarian\adarian mvp\profiling\output\runs_archive\run_20260413_174044_836728_23824\raw_logs   0.03 22/4/2026 下午 3:15:27
+D:\项目开发\研一\adarian\adarian mvp\profiling\output\runs_archive\run_20260413_174758_273475_18932\raw_logs   0.03 22/4/2026 下午 3:15:27
+D:\项目开发\研一\adarian\adarian mvp\profiling\output\runs_archive\run_20260413_174758_263015_23108\raw_logs   0.03 22/4/2026 下午 3:15:27
+D:\项目开发\研一\adarian\adarian mvp\profiling\output\runs_archive\run_20260413_174044_264035_9324\raw_logs    0.03 22/4/2026 下午 3:15:27
+D:\项目开发\研一\adarian\adarian mvp\outputs\outputs_test2\tick_logs                                           0.03 22/4/2026 下午 3:15:27
+D:\项目开发\研一\adarian\adarian mvp\outputs\outputs_test5                                                     0.03 22/4/2026 下午 3:15:27
+D:\项目开发\研一\adarian\adarian mvp\profiling\output\runs_archive\run_20260413_173917_441503_9324\raw_logs    0.03 22/4/2026 下午 3:15:27
+D:\项目开发\研一\adarian\adarian mvp\outputs\outputs_test2_v1.1.6                                              0.03 22/4/2026 下午 3:15:27
+D:\项目开发\研一\adarian\adarian mvp\profiling\output\runs_archive\run_20260413_174758_285330_27524\raw_logs   0.03 22/4/2026 下午 3:15:27
+D:\项目开发\研一\adarian\adarian mvp\profiling\output\runs_archive\run_20260413_175148_230026_5852\raw_logs    0.03 22/4/2026 下午 3:15:27
+D:\项目开发\研一\adarian\adarian mvp\profiling\output\runs_archive\run_20260413_175148_222361_22548\raw_logs   0.03 22/4/2026 下午 3:15:27
+D:\项目开发\研一\adarian\adarian mvp\profiling\output\runs_archive\run_20260413_175148_230587_26736\raw_logs   0.03 22/4/2026 下午 3:15:27
+D:\项目开发\研一\adarian\adarian mvp\profiling\output\runs_archive\run_20260413_175148_243941_3336\raw_logs    0.03 22/4/2026 下午 3:15:27
+D:\项目开发\研一\adarian\adarian mvp\profiling\output\runs_archive\run_20260413_175148_174712_24156\raw_logs   0.03 22/4/2026 下午 3:15:27
+D:\项目开发\研一\adarian\adarian mvp\profiling\output\runs_archive\run_20260413_175147_987037_10184\raw_logs   0.03 22/4/2026 下午 3:15:27
+D:\项目开发\研一\adarian\adarian mvp\profiling\output\runs_archive\run_20260413_175148_191360_3188\raw_logs    0.03 22/4/2026 下午 3:15:27
+D:\项目开发\研一\adarian\adarian mvp\profiling\output\runs_archive\run_20260413_175148_187415_11552\raw_logs   0.03 22/4/2026 下午 3:15:27
+D:\项目开发\研一\adarian\adarian mvp\outputs\output1\tick_logs                                                 0.02 22/4/2026 下午 3:15:27
+D:\项目开发\研一\adarian\adarian mvp\.git\logs                                                                 0.02 26/3/2026 下午 5:09:12
+D:\项目开发\研一\adarian\adarian mvp\outputs\outputs_test2_v1.1.6\tick_logs                                    0.01 22/4/2026 下午 3:15:27
+D:\项目开发\研一\adarian\adarian mvp\.git\worktrees\_tmp_last_good_check\logs                                  0.01 22/4/2026 下午 3:11:00
+D:\项目开发\研一\adarian\adarian mvp\outputs\outputs_test5\tick_logs                                           0.01 22/4/2026 下午 3:15:27
+D:\项目开发\研一\adarian\adarian mvp\outputs\outputs_test3\tick_logs                                           0.01 22/4/2026 下午 3:15:27
+D:\项目开发\研一\adarian\adarian mvp\outputs\run_test3_20260424_163044\tick_logs                                  0 24/4/2026 下午 4:30:44
+D:\项目开发\研一\adarian\adarian mvp\profiling\output\raw_logs                                                    0 15/4/2026 下午 5:45:42
+D:\项目开发\研一\adarian\adarian mvp\.git\worktrees\_tmp_last_good_check_oneoff_03230c8\logs                      0 22/4/2026 下午 3:39:09
+D:\项目开发\研一\adarian\adarian mvp\.git\worktrees\_tmp_last_good_check_oneoff_8705706\logs                      0 22/4/2026 下午 3:36:13
+D:\项目开发\研一\adarian\adarian mvp\.git\worktrees\_tmp_last_good_check_oneoff_784ea0f\logs                      0 22/4/2026 下午 3:37:21
+D:\项目开发\研一\adarian\adarian mvp\.git\worktrees\_tmp_last_good_check_oneoff_9312829\logs                      0 22/4/2026 下午 3:38:16
+D:\项目开发\研一\adarian\adarian mvp\.git\worktrees\_tmp_last_good_check_oneoff_a7433e5\logs                      0 22/4/2026 下午 3:37:41
+D:\项目开发\研一\adarian\adarian mvp\.git\worktrees\_tmp_last_good_check_oneoff_938bac7\logs                      0 22/4/2026 下午 3:35:49
+D:\项目开发\研一\adarian\adarian mvp\.git\worktrees\_tmp_last_good_check_oneoff_765fc1a\logs                      0 22/4/2026 下午 3:37:59
+D:\项目开发\研一\adarian\adarian mvp\.git\worktrees\_tmp_last_good_check_oneoff_488e4c3\logs                      0 22/4/2026 下午 3:35:27
+D:\项目开发\研一\adarian\adarian mvp\.git\worktrees\_tmp_last_good_check_oneoff_11ea91d\logs                      0 22/4/2026 下午 3:35:05
+D:\项目开发\研一\adarian\adarian mvp\.git\worktrees\_tmp_last_good_check_oneoff_4e8048f\logs                      0 22/4/2026 下午 3:34:26
+D:\项目开发\研一\adarian\adarian mvp\.git\worktrees\_tmp_last_good_check_oneoff_61f6e51\logs                      0 22/4/2026 下午 3:38:49
+D:\项目开发\研一\adarian\adarian mvp\.git\worktrees\_tmp_last_good_check_oneoff_5661ecf\logs                      0 22/4/2026 下午 3:38:32
+D:\项目开发\研一\adarian\adarian mvp\.git\worktrees\_tmp_last_good_check_oneoff_a9c0a55\logs                      0 22/4/2026 下午 3:34:46
+D:\项目开发\研一\adarian\adarian mvp\.git\worktrees\_tmp_last_good_check_oneoff_f429b83\logs                      0 22/4/2026 下午 3:39:27
+D:\项目开发\研一\adarian\adarian mvp\.git\worktrees\_tmp_last_good_check_oneoff_ebee6be\logs                      0 22/4/2026 下午 3:36:36
+D:\项目开发\研一\adarian\adarian mvp\.git\worktrees\adarian-mvp-phase3-recovery\logs                              0 24/4/2026 下午 3:40:02
+D:\项目开发\研一\adarian\adarian mvp\outputs\tick_logs                                                            0 27/4/2026 下午 3:03:53
+D:\项目开发\研一\adarian\adarian mvp\.git\worktrees\adarian-mvp-a8c95ea-copy\logs                                 0 24/4/2026 下午 3:13:03
+D:\项目开发\研一\adarian\adarian mvp\.git\worktrees\_tmp_last_good_check_oneoff_e57022d\logs                      0 22/4/2026 下午 3:33:24
+D:\项目开发\研一\adarian\adarian mvp\.git\worktrees\_tmp_last_good_check_oneoff_b9af99b\logs                      0 22/4/2026 下午 3:34:02
+D:\项目开发\研一\adarian\adarian mvp\.git\worktrees\_tmp_last_good_check_oneoff_b8588f3\logs                      0 22/4/2026 下午 3:33:41
+D:\项目开发\研一\adarian\adarian mvp\.git\worktrees\_tmp_last_good_check_oneoff_bda30ef\logs                      0 22/4/2026 下午 3:33:02
+D:\项目开发\研一\adarian\adarian mvp\.git\worktrees\_tmp_last_good_check_oneoff_e15ca48\logs                      0 22/4/2026 下午 3:37:02
+D:\项目开发\研一\adarian\adarian mvp\.git\worktrees\_tmp_last_good_check_oneoff_c3cdfe6\logs                      0 22/4/2026 下午 5:16:07
+
+
+
+
+===== DONE =====

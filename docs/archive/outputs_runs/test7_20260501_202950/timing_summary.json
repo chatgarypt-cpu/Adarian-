@@ -1,0 +1,63 @@
+{
+  "run": {
+    "start_time": "2026-05-01 20:29:50",
+    "end_time": "2026-05-01 20:32:53",
+    "elapsed_seconds": 182.63,
+    "status": "failed",
+    "mode": "normal",
+    "seed_file": "/Users/gary/项目开发/AdarianMigration/adarian mvp/seeds/test7.txt",
+    "run_dir": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test7_20260501_202950"
+  },
+  "phases": {
+    "phase1_entity_extraction": {
+      "start_time": "2026-05-01 20:29:50"
+    }
+  },
+  "llm": {
+    "count": 5,
+    "calls": [
+      {
+        "caller": "analyzer_set_parameters",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 15.97,
+        "timestamp": "2026-05-01 20:30:06"
+      },
+      {
+        "caller": "generator_create_entities",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 45.82,
+        "timestamp": "2026-05-01 20:30:52"
+      },
+      {
+        "caller": "generator_create_entities",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 45.34,
+        "timestamp": "2026-05-01 20:31:38"
+      },
+      {
+        "caller": "generator_create_entities",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 43.36,
+        "timestamp": "2026-05-01 20:32:21"
+      },
+      {
+        "caller": "validator_check_format",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 32.06,
+        "timestamp": "2026-05-01 20:32:53"
+      }
+    ]
+  },
+  "persona": {
+    "count": 0,
+    "groups": []
+  },
+  "ticks": [],
+  "errors": [
+    {
+      "stage": "main",
+      "error": "Phase 1 校验失败，超过最大重试次数。 最后一次校验结果: {'pass': False, 'errors': [\"opinion_spreaders 中的 related_event_entity 字段值与 event_entities 中的 name 字段不完全匹配（例如 '劝阻女子' 应对应 '劝阻女子(小野)'，'涉事警方' 应对应 '涉事警方(深圳市公安局)'），请确保精确匹配。\"]}",
+      "timestamp": "2026-05-01 20:32:53"
+    }
+  ]
+}

@@ -1,0 +1,387 @@
+{
+  "nodes": [
+    {
+      "id": 0,
+      "group_name": "OPPO",
+      "archetype_index": -1,
+      "related_entity": "OPPO",
+      "role": "core",
+      "stance_score": 4.84,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 1,
+      "group_name": "中国广告协会",
+      "archetype_index": -1,
+      "related_entity": "中国广告协会",
+      "role": "core",
+      "stance_score": 5.13,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 2,
+      "group_name": "武汉大学",
+      "archetype_index": -1,
+      "related_entity": "武汉大学",
+      "role": "core",
+      "stance_score": 4.77,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 3,
+      "group_name": "段永平",
+      "archetype_index": -1,
+      "related_entity": "段永平",
+      "role": "core",
+      "stance_score": 4.89,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 4,
+      "group_name": "余校友",
+      "archetype_index": -1,
+      "related_entity": "余校友",
+      "role": "core",
+      "stance_score": 4.83,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 5,
+      "group_name": "道德消费者群体",
+      "archetype_index": -2,
+      "related_entity": "OPPO",
+      "role": "periphery",
+      "stance_score": 2.15,
+      "susceptibility": 0.19,
+      "confirmation_bias_level": "strong",
+      "entity_category": "opinion_spreader",
+      "persona_name": "王女士",
+      "age_range": "35-45",
+      "occupation": "全职妈妈",
+      "personality": "传统保守、冲动易怒",
+      "motivation": "维护家庭伦理和母亲形象不被商业化亵渎",
+      "typical_phrases": [
+        "这文案太恶心了",
+        "根本不尊重母亲",
+        "必须道歉"
+      ]
+    },
+    {
+      "id": 6,
+      "group_name": "理性分析网民",
+      "archetype_index": -2,
+      "related_entity": "中国广告协会",
+      "role": "periphery",
+      "stance_score": 5.12,
+      "susceptibility": 0.31,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "张老师",
+      "age_range": "30-40",
+      "occupation": "广告策划",
+      "personality": "冷静理性、追求专业",
+      "motivation": "维护广告行业专业标准和道德底线",
+      "typical_phrases": [
+        "创意要有底线",
+        "这个边界确实过了",
+        "行业规范很重要"
+      ]
+    },
+    {
+      "id": 7,
+      "group_name": "家庭价值观维护者",
+      "archetype_index": -2,
+      "related_entity": "武汉大学",
+      "role": "periphery",
+      "stance_score": 3.88,
+      "susceptibility": 0.28,
+      "confirmation_bias_level": "strong",
+      "entity_category": "opinion_spreader",
+      "persona_name": "陈阿姨",
+      "age_range": "50-55",
+      "occupation": "退休职工",
+      "personality": "保守传统、重家庭",
+      "motivation": "捍卫传统家庭价值观和母亲形象",
+      "typical_phrases": [
+        "母亲节不是这样用的",
+        "尊重长辈很难吗",
+        "这种营销太过分了"
+      ]
+    },
+    {
+      "id": 8,
+      "group_name": "饭圈文化爱好者",
+      "archetype_index": -2,
+      "related_entity": "OPPO",
+      "role": "periphery",
+      "stance_score": 4.39,
+      "susceptibility": 0.52,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "小林",
+      "age_range": "18-24",
+      "occupation": "大学生",
+      "personality": "开放活跃、追逐潮流",
+      "motivation": "为饭圈文化正名，认为创意被过度解读",
+      "typical_phrases": [
+        "路人反应过度了吧",
+        "饭圈梗而已至于吗",
+        "其实没那么严重"
+      ]
+    },
+    {
+      "id": 9,
+      "group_name": "年轻消费者群体",
+      "archetype_index": -2,
+      "related_entity": "OPPO",
+      "role": "periphery",
+      "stance_score": 4.5,
+      "susceptibility": 0.72,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "小美",
+      "age_range": "20-28",
+      "occupation": "职场新人",
+      "personality": "感性冲动、追求新颖",
+      "motivation": "给品牌改正机会，注重产品本身",
+      "typical_phrases": [
+        "知错能改就好啦",
+        "产品好用就行",
+        "没必要上纲上线"
+      ]
+    },
+    {
+      "id": 10,
+      "group_name": "中立观察者",
+      "archetype_index": -2,
+      "related_entity": "中国广告协会",
+      "role": "periphery",
+      "stance_score": 5.87,
+      "susceptibility": 0.62,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "老周",
+      "age_range": "30-40",
+      "occupation": "自媒体运营",
+      "personality": "圆滑世故、善于调和",
+      "motivation": "维护网络理性讨论氛围",
+      "typical_phrases": [
+        "两边都有道理",
+        "其实可以好好说",
+        "舆论别太极端"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": 0,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 0,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 0,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 0,
+      "target": 4,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 4,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 4,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 4,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 4,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 4,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 4,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 4,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 5,
+      "target": 0,
+      "type": "follows"
+    },
+    {
+      "source": 6,
+      "target": 1,
+      "type": "follows"
+    },
+    {
+      "source": 7,
+      "target": 2,
+      "type": "follows"
+    },
+    {
+      "source": 8,
+      "target": 0,
+      "type": "follows"
+    },
+    {
+      "source": 9,
+      "target": 0,
+      "type": "follows"
+    },
+    {
+      "source": 10,
+      "target": 1,
+      "type": "follows"
+    },
+    {
+      "source": 5,
+      "target": 6,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 5,
+      "target": 8,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 5,
+      "target": 9,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 6,
+      "target": 7,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 7,
+      "target": 9,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 8,
+      "target": 9,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 8,
+      "target": 10,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 9,
+      "target": 10,
+      "type": "follows_cross_group"
+    }
+  ]
+}

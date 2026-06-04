@@ -1,0 +1,432 @@
+{
+  "nodes": [
+    {
+      "id": 0,
+      "group_name": "花西子",
+      "archetype_index": -1,
+      "related_entity": "花西子",
+      "role": "core",
+      "stance_score": 4.86,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 1,
+      "group_name": "李佳琦",
+      "archetype_index": -1,
+      "related_entity": "李佳琦",
+      "role": "core",
+      "stance_score": 5.03,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 2,
+      "group_name": "李佳琦前助理",
+      "archetype_index": -1,
+      "related_entity": "李佳琦前助理",
+      "role": "core",
+      "stance_score": 4.88,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 3,
+      "group_name": "理性消费者",
+      "archetype_index": -2,
+      "related_entity": "花西子",
+      "role": "periphery",
+      "stance_score": 5.42,
+      "susceptibility": 0.36,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "小林",
+      "age_range": "25-34",
+      "occupation": "白领",
+      "personality": "冷静理性",
+      "motivation": "追求合理价格和高性价比",
+      "typical_phrases": [
+        "成分表才是硬道理",
+        "79元到底值不值",
+        "支持国货但不是冤大头"
+      ]
+    },
+    {
+      "id": 4,
+      "group_name": "打工人群体",
+      "archetype_index": -2,
+      "related_entity": "李佳琦",
+      "role": "periphery",
+      "stance_score": 2.24,
+      "susceptibility": 0.18,
+      "confirmation_bias_level": "strong",
+      "entity_category": "opinion_spreader",
+      "persona_name": "小王",
+      "age_range": "25-34",
+      "occupation": "上班族",
+      "personality": "冲动易怒",
+      "motivation": "维护自身尊严，反对精英主义",
+      "typical_phrases": [
+        "你赚够了就开始教育人",
+        "打工人的钱不是大风刮来的",
+        "果然成了资本家"
+      ]
+    },
+    {
+      "id": 5,
+      "group_name": "国货支持者",
+      "archetype_index": -2,
+      "related_entity": "花西子",
+      "role": "periphery",
+      "stance_score": 8.09,
+      "susceptibility": 0.28,
+      "confirmation_bias_level": "strong",
+      "entity_category": "opinion_spreader",
+      "persona_name": "阿敏",
+      "age_range": "18-24",
+      "occupation": "大学生",
+      "personality": "热情感性",
+      "motivation": "支持民族品牌发展",
+      "typical_phrases": [
+        "国货不容易，且行且珍惜",
+        "给国货一点时间",
+        "我们一起支持国货"
+      ]
+    },
+    {
+      "id": 6,
+      "group_name": "李佳琦粉丝",
+      "archetype_index": -2,
+      "related_entity": "李佳琦",
+      "role": "periphery",
+      "stance_score": 6.06,
+      "susceptibility": 0.26,
+      "confirmation_bias_level": "strong",
+      "entity_category": "opinion_spreader",
+      "persona_name": "佳佳",
+      "age_range": "18-24",
+      "occupation": "主播助理",
+      "personality": "忠诚护主",
+      "motivation": "维护喜欢的主播形象",
+      "typical_phrases": [
+        "佳琦不是那个意思",
+        "他都道歉了还要怎样",
+        "主播也不容易"
+      ]
+    },
+    {
+      "id": 7,
+      "group_name": "美妆从业者",
+      "archetype_index": -2,
+      "related_entity": "花西子",
+      "role": "periphery",
+      "stance_score": 5.38,
+      "susceptibility": 0.53,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "陈老师",
+      "age_range": "35-45",
+      "occupation": "美妆培训师",
+      "personality": "专业客观",
+      "motivation": "普及行业知识，澄清误区",
+      "typical_phrases": [
+        "彩妆定价有它的逻辑",
+        "研发成本确实不低",
+        "这个价格其实很正常"
+      ]
+    },
+    {
+      "id": 8,
+      "group_name": "吃瓜群众",
+      "archetype_index": -2,
+      "related_entity": "李佳琦",
+      "role": "periphery",
+      "stance_score": 7.73,
+      "susceptibility": 0.92,
+      "confirmation_bias_level": "none",
+      "entity_category": "opinion_spreader",
+      "persona_name": "老张",
+      "age_range": "25-34",
+      "occupation": "自由职业",
+      "personality": "爱凑热闹",
+      "motivation": "参与热点话题，获取社交谈资",
+      "typical_phrases": [
+        "花西子币来了",
+        "79元买黄金不香吗",
+        "这波操作太下头了"
+      ]
+    },
+    {
+      "id": 9,
+      "group_name": "品牌危机公关专家",
+      "archetype_index": -2,
+      "related_entity": "花西子",
+      "role": "periphery",
+      "stance_score": 4.67,
+      "susceptibility": 0.4,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "周总监",
+      "age_range": "35-45",
+      "occupation": "公关经理",
+      "personality": "理性分析",
+      "motivation": "从专业角度提供建议",
+      "typical_phrases": [
+        "公关声明写得太官方",
+        "应该直接回应价格问题",
+        "这个道歉没有诚意"
+      ]
+    },
+    {
+      "id": 10,
+      "group_name": "中年消费者",
+      "archetype_index": -2,
+      "related_entity": "李佳琦",
+      "role": "periphery",
+      "stance_score": 4.55,
+      "susceptibility": 0.31,
+      "confirmation_bias_level": "strong",
+      "entity_category": "opinion_spreader",
+      "persona_name": "老陈",
+      "age_range": "35-45",
+      "occupation": "企业中层",
+      "personality": "务实稳重",
+      "motivation": "表达生活不易，反对道德绑架",
+      "typical_phrases": [
+        "涨工资哪有那么容易",
+        "努力工作就能涨薪吗",
+        "各有各的难处"
+      ]
+    },
+    {
+      "id": 11,
+      "group_name": "学生群体",
+      "archetype_index": -2,
+      "related_entity": "花西子",
+      "role": "periphery",
+      "stance_score": 5.6,
+      "susceptibility": 0.55,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "小美",
+      "age_range": "18-24",
+      "occupation": "大学生",
+      "personality": "感性直率",
+      "motivation": "希望用到性价比高的化妆品",
+      "typical_phrases": [
+        "79够我吃一周饭了",
+        "学生党太难了",
+        "能不能便宜点"
+      ]
+    },
+    {
+      "id": 12,
+      "group_name": "品牌合作方",
+      "archetype_index": -2,
+      "related_entity": "花西子",
+      "role": "periphery",
+      "stance_score": 7.51,
+      "susceptibility": 0.22,
+      "confirmation_bias_level": "strong",
+      "entity_category": "opinion_spreader",
+      "persona_name": "薇姐",
+      "age_range": "25-34",
+      "occupation": "美妆博主",
+      "personality": "精明能干",
+      "motivation": "维护商业合作关系",
+      "typical_phrases": [
+        "产品真的很好用",
+        "用了很久才推荐的",
+        "支持国货之光"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": 0,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 0,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 0,
+      "type": "follows"
+    },
+    {
+      "source": 4,
+      "target": 1,
+      "type": "follows"
+    },
+    {
+      "source": 5,
+      "target": 0,
+      "type": "follows"
+    },
+    {
+      "source": 6,
+      "target": 1,
+      "type": "follows"
+    },
+    {
+      "source": 7,
+      "target": 0,
+      "type": "follows"
+    },
+    {
+      "source": 8,
+      "target": 1,
+      "type": "follows"
+    },
+    {
+      "source": 9,
+      "target": 0,
+      "type": "follows"
+    },
+    {
+      "source": 10,
+      "target": 1,
+      "type": "follows"
+    },
+    {
+      "source": 11,
+      "target": 0,
+      "type": "follows"
+    },
+    {
+      "source": 12,
+      "target": 0,
+      "type": "follows"
+    },
+    {
+      "source": 3,
+      "target": 5,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 3,
+      "target": 6,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 3,
+      "target": 10,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 3,
+      "target": 12,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 4,
+      "target": 6,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 4,
+      "target": 8,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 4,
+      "target": 9,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 4,
+      "target": 10,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 4,
+      "target": 12,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 5,
+      "target": 8,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 5,
+      "target": 11,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 6,
+      "target": 9,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 6,
+      "target": 10,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 7,
+      "target": 10,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 8,
+      "target": 12,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 9,
+      "target": 11,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 10,
+      "target": 11,
+      "type": "follows_cross_group"
+    }
+  ]
+}

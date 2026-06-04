@@ -1,0 +1,11 @@
+{
+  "exit_code": 0,
+  "subtype": "success",
+  "session_id": "a5118e2f-9e8c-4c44-aced-9e4ba4a25e1c",
+  "num_turns": 19,
+  "stop_reason": "end_turn",
+  "permission_denials_count": 6,
+  "total_cost_usd": 1.529582,
+  "duration_ms": 446665,
+  "elapsed_seconds": 452
+}

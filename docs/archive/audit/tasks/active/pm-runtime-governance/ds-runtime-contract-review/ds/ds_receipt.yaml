@@ -1,0 +1,84 @@
+task_id: ds-review-pm-runtime-communication-substrate-runtime-contract-20260522
+review_type: focused_runtime_contract_review
+team_mode_used: false
+mcp_used: false
+acceptance_verdict: pass_with_known_issues
+
+p0_repair_status:
+  P0-1_yaml_directory: partially_addressed
+  P0-2_pre_action_gate: fully_addressed
+  P0-3_registry_status: partially_addressed
+  P0-4_partial_output: fully_addressed
+  P0-5_authority_vacuum: fully_addressed
+  P0-6_anti_tamper: fully_addressed
+  P0-7_evidence_fidelity: fully_addressed
+
+findings:
+  P0:
+  - P0-A: runtime_state枚举Contract(21)vsYAML(10)严重不一致
+  - P0-B: allowed_files/forbidden_files为空占位符
+  - P0-C: YAML目录策略未实际执行patch
+  P1: []
+  P2: []
+  P3: []
+
+task_card_readiness_assessment:
+  sufficient: false
+  status: needs_clarification
+  gaps:
+  - Contract提供护栏但缺地图，需搭配v0.3 Plan+YAML compact+CLAUDE.md
+  - allowed_files/forbidden_files为空，需在迭代任务书中具体化
+
+iteration_doc_format_recommendation:
+  suitable: true
+  task_domain: pm-runtime-infrastructure
+  version_suggestion: v1.2.9-communication-substrate-mvp
+  allowed_files:
+  - pm_runtime/relay/cli.py
+  - pm_runtime/relay/relay_runner.py
+  - pm_runtime/relay/extractors.py
+  - pm_runtime/relay/recovery.py
+  - pm_runtime/templates/task_config.yaml
+  forbidden_files:
+  - src/**
+  - main.py
+  - config.py
+  - tests/**
+  - docs/skills/workflow_core.md
+  - docs/skills/workflow_v4.0/**
+  - audit/tasks/active/**
+  required_checks:
+  - ".venv/bin/python -m py_compile pm_runtime/relay/cli.py"
+  - ".venv/bin/python -m py_compile pm_runtime/relay/relay_runner.py"
+  - ".venv/bin/python -m py_compile pm_runtime/relay/extractors.py"
+  - ".venv/bin/python -m py_compile pm_runtime/relay/recovery.py"
+  - ".venv/bin/python -c \"from pm_runtime.relay import cli; print('import OK')\""
+  receipt_fields:
+  - executor
+  - changed_files
+  - commands_run
+  - test_results
+  - diff_summary
+  - receipt_path
+  - handoff_path
+  - commit_status
+  - forbidden_files_touched
+  - known_issues
+  notes: |
+    本次迭代属于 PM Runtime substrate infrastructure，不属于 Adarian 业务源码迭代。
+    Codex 安全门不应按业务源码规则放行，也不应因非 src/ 路径而忽略。
+    建议在迭代任务书 §0 显式标注 task_domain: pm-runtime-infrastructure。
+
+process_issues:
+- 报告以纯文本Markdown输出在result字段，而非relay_runner期望的嵌套JSON
+- Agent team降级为单agent模式，同一agent完成双角色
+
+blockers: []
+recommended_next_action:
+- Owner接受Contract方向
+- 出YAML v0.3.3 patch（目录策略+runtime_state对齐）
+- Control Agent起草迭代任务书
+- Codex实现
+
+report_path: audit/tasks/active/pm-runtime-governance/ds-runtime-contract-review/ds/ds_runtime_contract_review.md
+receipt_path: audit/tasks/active/pm-runtime-governance/ds-runtime-contract-review/ds/ds_receipt.yaml

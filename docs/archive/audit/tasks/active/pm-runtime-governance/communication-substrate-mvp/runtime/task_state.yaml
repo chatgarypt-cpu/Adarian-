@@ -1,0 +1,9 @@
+{
+  "task_id": "ds-verify-pm-runtime-communication-substrate-mvp-20260522",
+  "task_status": "running",
+  "runtime_state": "launching",
+  "pid": 2823,
+  "started_at": "2026-05-22T23:09:56+08:00",
+  "executor": "ds_team",
+  "execution_mode": "managed_relay_session"
+}

@@ -1,0 +1,59 @@
+{
+  "event_summary": "20岁游戏代练「胖猫」与女友谭竹分手后转账6.6万余元，跳江自尽。其姐网上维权引发关注，警方认定非诈骗。",
+  "stakeholder_map": "事件实体: 胖猫（刘杰）, 谭竹, 胖猫姐姐, 胖猫父亲, 重庆警方, 外卖品牌商家 | 传播者: 同情胖猫的网友, 游戏圈主播, 质疑姐姐的网友, 支持谭竹的网友, 关注空包事件的网友, 中立吃瓜群众",
+  "emotion_trajectory": [
+    {
+      "tick": 0,
+      "mean_stance": 4.56,
+      "std_stance": 0.8,
+      "polarization_index": 0.18,
+      "key_event": "Agent #0 发言"
+    },
+    {
+      "tick": 1,
+      "mean_stance": 4.63,
+      "std_stance": 0.94,
+      "polarization_index": 0.2,
+      "key_event": "Agent #10 发言"
+    },
+    {
+      "tick": 2,
+      "mean_stance": 4.81,
+      "std_stance": 1.11,
+      "polarization_index": 0.23,
+      "key_event": "Agent #9 发言"
+    },
+    {
+      "tick": 3,
+      "mean_stance": 4.98,
+      "std_stance": 1.32,
+      "polarization_index": 0.26,
+      "key_event": "Agent #9 发言"
+    },
+    {
+      "tick": 4,
+      "mean_stance": 5.15,
+      "std_stance": 1.53,
+      "polarization_index": 0.3,
+      "key_event": "Agent #9 发言"
+    },
+    {
+      "tick": 5,
+      "mean_stance": 5.11,
+      "std_stance": 1.57,
+      "polarization_index": 0.31,
+      "key_event": "Agent #8 发言"
+    }
+  ],
+  "inflection_points": [],
+  "risk_level": "medium",
+  "risk_assessment": "中等风险，x(t)=5.1，趋势需关注",
+  "x_t_sequence": [
+    4.56,
+    4.63,
+    4.81,
+    4.98,
+    5.15,
+    5.11
+  ]
+}

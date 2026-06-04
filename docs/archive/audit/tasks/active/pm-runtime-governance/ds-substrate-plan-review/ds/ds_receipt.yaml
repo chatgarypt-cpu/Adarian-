@@ -1,0 +1,70 @@
+acceptance_verdict: patch_required
+anti_drift_skill_relationship_assessment: 关系不清晰。v0.1.1是事后检测层，v0.2 platform是事中运行层，两者互补。但v0.2未明确v0.1.1是保留、替换还是吸收。v0.1.1的§7.7(Execution
+  Drift)依赖v0.2 platform的结构化输出；v0.1.1的§7.8(Configuration Drift)与v0.2 Phase 6 MCP preflight存在循环依赖——需要在v0.2中明确标记此关系。建议：v0.2
+  Phase 6的'anti-drift skill'条目应指向对v0.1.1的升级而非新建
+blockers:
+- YAML目录策略不一致：两级vs单级，需Owner决策统一方向
+- Pre-action Gate需提升至Phase 0/1：不能在Phase 6才做基本护栏
+- Task Registry状态枚举需对齐YAML权威task_status
+- 角色卡核心约束需前移至Phase 1：避免Phase 2-3权威真空
+- Recovery机制需增加证据保真约束和防篡改audit log
+findings:
+  P0:
+  - YAML目录策略不一致 — v0.2使用两级目录(task_domain/short_task)，YAML task_directory_policy使用单级(task_id)，必须统一
+  - Pre-action Gate推迟到Phase 6过早 — 四项Hermes失败全部源于缺少pre-action Gate，应提升至Phase 0/1
+  - Task Registry状态与YAML task_status不对齐 — 9个registry状态中有5个与YAML权威枚举不一致
+  - Timeout时Partial Output保留机制缺失 — relay_runner.py真实bug，v0.1计划未明确修复方案
+  - Phase 2-3间存在权威真空窗口 — Platform先于Role Cards建成，Hermes拥有平台能力而无正式角色约束
+  - Task Registry缺少防篡改机制 — Hermes可修改registry中的状态/时间戳/路径来抹除越界证据，无可追溯记录
+  - Recovery缺少证据保真约束 — 二次提取可能覆盖原始失败证据，recovery输出未强制标记为recovered
+  P1:
+  - §3.1表格中Contract/Platform排序歧义 — 表格暗示Platform先于Contract，但Phase排序是Contract先于Platform
+  - v0.1缺少stderr独立保存 — 当前仅在失败时截取stderr尾部500字符
+  - MCP工具上下文检查完全缺失 — v0.2未定义pre-scan路径可达性自检
+  - v0.1缺少preflight机制 — 30-40行Python即可在relay启动前做工具/文件检测
+  - Relay_runner复制模式的过渡路径不明确 — 未说明v0.1中是继续复制还是集中化
+  - Failure classification与YAML runtime_state双层结构缺失 — 应区分process级和detail级
+  - Registry缺executor实例ID和parent_task_id — 影响recovery精确定位和子任务依赖链
+  - Hermes Profile禁止项不完整 — §6.3只有5条，v0.1.3有16+条，且未声明继承关系
+  - CLI缺少权限模型 — 可绕过dispatch、approval和聊天上下文约束
+  - Anti-drift skill v0.1.1与v0.2的关系未定义 — 互补但割裂，未明确保留/替换/吸收
+  P2:
+  - v0.1模块数量可精简 — failure_classifier.py和task_registry.py可内联到主模块
+  - Anti-drift skill依赖关系应文档化 — 包括与v0.2的循环依赖点(§7.8 ↔ Phase 6 MCP preflight)
+  - relay_state.yaml概念过早 — 当前heartbeat+progress+result已满足监控
+  - Registry并发写入安全 — 集中文件需文件锁或每任务独立文件
+  - MCP工具上下文缺口未纳入plan — 失败4的根因在v0.2中完全没有涉及
+  - Platform代码治理归属不明确 — 未定义platform代码是否属于禁止Hermes修改的范畴
+  - 渐进式扩权缺少检测机制 — Hermes可跨版本渐进扩权
+  - Failure classification存在自我分类漏洞 — classifier输出需包含分类依据
+  P3:
+  - 三个executor profile的required字段可提取为共享runtime_contract
+  - 12种失败分类在v0.1可缩减为6-7种核心分类
+  - 版本兼容声明缺失 — Runtime Contract应声明compatible_workflow_core_version
+  - Go迁移路线图 — Python v0.1应记录未来Go迁移时的接口保留清单
+  - 模板修改缺少审批流程
+  - Platform缺少独立的健康检查/断路器
+  - Recovery与Closeout之间的边界模糊 — recovery summary应强制加入非closeout声明
+four_failures_prevention_assessment:
+  artifact_path_missing: v0.2无法防御。platform定义了写文件的能力，但未定义'必须写文件才能声明完成'的约束。artifact
+    path gate安排在Phase 6
+  mcp_tool_context_gap: v0.2未覆盖。plan中完全没有讨论pre-scan工具能力自检。Phase 6提到的'MCP preflight'未展开具体含义
+  role_boundary_violation: v0.2无法防御。§6.3的声明式禁止('#2 DS-level audit')是Hermes在2026-05-22已违反的同类规则。缺少pre-action强制自检Gate
+  task_domain_routing_error: v0.2部分防御。如果使用platform的task creation功能(§5.1)，domain路由可被正确执行。但如果Hermes绕过platform手动创建目录，检查不会触发
+mcp_used: false
+process_issues:
+- MCP filesystem工具不可用 — 本会话中无mcp__filesystem__*工具，使用Read工具作为替代读取全部6个输入文件
+- MCP要求未完全满足 — 任务书要求使用MCP filesystem工具，因filesystem MCP服务器不可用，通过Read工具替代实现
+receipt_path: audit/tasks/active/pm-runtime-governance/ds-substrate-plan-review/ds/ds_receipt.yaml
+recommended_next_action:
+- Owner裁决：接受/驳回本审查结论
+- 若接受：Control Agent出v0.3修正版plan，整合本审查7项P0+10项P1
+- v0.3中：将pre-action Gate提升至Phase 0/1，作为runtime contract必备内容
+- v0.3中：在Phase 1同时固化角色卡核心禁止项(至少v0.1.3完整列表)
+- v0.3中：统一YAML目录策略为两级格式
+- v0.3获批后：按Runtime Contract → Python MVP任务卡 → Codex实现 → 角色卡 → Bootstrap上线顺序推进
+report_path: audit/tasks/active/pm-runtime-governance/ds-substrate-plan-review/ds/ds_substrate_plan_review.md
+review_type: read_only_architecture_plan_review
+scope_compliance: issue
+task_id: ds-review-pm-runtime-communication-substrate-plan-20260522
+team_mode_used: true

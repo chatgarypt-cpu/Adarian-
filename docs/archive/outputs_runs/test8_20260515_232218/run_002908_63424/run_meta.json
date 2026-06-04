@@ -1,0 +1,36 @@
+{
+  "batch_id": "test8_20260515_232218",
+  "batch_dir": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test8_20260515_232218",
+  "run_id": "run_002908_63424",
+  "seed_file": "/Users/gary/项目开发/AdarianMigration/adarian mvp/seeds/test8.txt",
+  "seed_copy": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test8_20260515_232218/run_002908_63424/seed_input.txt",
+  "run_dir": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test8_20260515_232218/run_002908_63424",
+  "started_at": "2026-05-15 23:22:18",
+  "provider": "qwen",
+  "model": "minimax",
+  "status": "success",
+  "outputs": {
+    "entities": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test8_20260515_232218/run_002908_63424/entities_and_relations.json",
+    "social_graph": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test8_20260515_232218/run_002908_63424/social_graph.json",
+    "tick_logs": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test8_20260515_232218/run_002908_63424/tick_logs.json",
+    "final_report_json": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test8_20260515_232218/run_002908_63424/final_report.json",
+    "final_report_md": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test8_20260515_232218/run_002908_63424/final_report.md",
+    "whitebox_summary": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test8_20260515_232218/run_002908_63424/whitebox_summary.json",
+    "whitebox_dir": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test8_20260515_232218/run_002908_63424/whitebox",
+    "run_log": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test8_20260515_232218/run_002908_63424/run.log",
+    "timing_summary": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test8_20260515_232218/run_002908_63424/timing_summary.json",
+    "run_meta": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test8_20260515_232218/run_002908_63424/run_meta.json"
+  },
+  "completed_at": "2026-05-15 23:31:32",
+  "elapsed_seconds": 554.0,
+  "x_t_sequence": [
+    4.66,
+    4.54,
+    4.42,
+    4.49,
+    4.47,
+    4.62
+  ],
+  "final_polarization_index": 0.39,
+  "risk_level": "medium"
+}

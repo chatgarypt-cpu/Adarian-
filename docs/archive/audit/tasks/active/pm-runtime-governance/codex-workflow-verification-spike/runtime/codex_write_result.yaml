@@ -1,0 +1,15 @@
+agent_message: 'Created [codex_probe.txt](/Users/gary/项目开发/AdarianMigration/adarian%20mvp/audit/tasks/active/pm-runtime-governance/codex-workflow-verification-spike/sandbox/codex_probe.txt)
+  with exactly:
+
+
+  ```text
+
+  codex_probe_ok
+
+  ```'
+exit_code: 0
+file_content: codex_probe_ok
+file_created: true
+stderr_bytes: 39
+stdout_bytes: 3031
+stdout_lines: 16

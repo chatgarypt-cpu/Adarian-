@@ -1,0 +1,5 @@
+[2026-05-01 20:02:21] RUN START mode=normal seed=/Users/gary/项目开发/AdarianMigration/adarian mvp/seeds/test7.txt run_dir=/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test7_20260501_200221
+[2026-05-01 20:02:21] PHASE START name=phase1_entity_extraction
+[2026-05-01 20:02:21] LLM START caller=analyzer_set_parameters model=qwen35-122b-a10b
+[2026-05-01 20:15:41] ERROR stage=llm:analyzer_set_parameters error=Error code: 502 - {'error': {'message': 'Bad Gateway', 'type': 'api_error'}}
+[2026-05-01 20:15:42] LLM START caller=analyzer_set_parameters model=qwen35-122b-a10b

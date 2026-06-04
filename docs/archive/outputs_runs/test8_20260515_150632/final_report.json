@@ -1,0 +1,75 @@
+{
+  "report_meta": {
+    "generated_at": "2026年05月15日 15:12",
+    "timezone": "CST",
+    "report_type": "模拟推演型舆情风险研判报告",
+    "event_name": "OPPO母亲节文案将婚姻与饭圈梗捆绑，被指冒犯家庭伦理，虽已道歉但公众质疑其'辩解大于认错'，中国广告协会和武汉大学相继发声批评。",
+    "total_ticks": 6,
+    "simulation_run_id": "test8_20260515_150632"
+  },
+  "event_summary": "OPPO母亲节文案将婚姻与饭圈梗捆绑，被指冒犯家庭伦理，虽已道歉但公众质疑其'辩解大于认错'，中国广告协会和武汉大学相继发声批评。",
+  "stakeholder_map": "事件实体: OPPO, 中国广告协会, 武汉大学, 段永平 | 传播者: 传统家庭伦理派, 广告行业从业者, 年轻消费者群体, 品牌维护派, 中立理性派, 学生群体支持者",
+  "emotion_trajectory": [
+    {
+      "tick": 0,
+      "mean_stance": 4.71,
+      "std_stance": 1.02,
+      "polarization_index": 0.22,
+      "key_event": "Agent #0 发言"
+    },
+    {
+      "tick": 1,
+      "mean_stance": 4.74,
+      "std_stance": 1.25,
+      "polarization_index": 0.26,
+      "key_event": "Agent #7 发言"
+    },
+    {
+      "tick": 2,
+      "mean_stance": 4.74,
+      "std_stance": 1.53,
+      "polarization_index": 0.32,
+      "key_event": "Agent #6 发言"
+    },
+    {
+      "tick": 3,
+      "mean_stance": 4.7,
+      "std_stance": 1.62,
+      "polarization_index": 0.34,
+      "key_event": "Agent #5 发言"
+    },
+    {
+      "tick": 4,
+      "mean_stance": 4.5,
+      "std_stance": 1.52,
+      "polarization_index": 0.34,
+      "key_event": "Agent #7 发言"
+    },
+    {
+      "tick": 5,
+      "mean_stance": 4.49,
+      "std_stance": 1.48,
+      "polarization_index": 0.33,
+      "key_event": "Agent #7 发言"
+    }
+  ],
+  "inflection_points": [],
+  "risk_level": "medium",
+  "risk_level_label": "中风险",
+  "audience_mode": "generic_government",
+  "primary_risk_types": [
+    "negative_narrative_risk"
+  ],
+  "risk_type_labels": [
+    "负面叙事聚合风险"
+  ],
+  "risk_assessment": "中等风险，已出现负向压力、分化或高敏先验信号（模拟立场均值=4.5; 负向趋势=0.2; 模拟极化指数=0.33; 关键群体最大负向迁移=1.3）",
+  "x_t_sequence": [
+    4.71,
+    4.74,
+    4.74,
+    4.7,
+    4.5,
+    4.49
+  ]
+}

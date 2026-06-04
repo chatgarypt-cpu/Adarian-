@@ -1,0 +1,33 @@
+{
+  "run_id": "test2_20260501_203522",
+  "seed_file": "/Users/gary/项目开发/AdarianMigration/adarian mvp/seeds/test2.txt",
+  "seed_copy": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test2_20260501_203522/seed_input.txt",
+  "run_dir": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test2_20260501_203522",
+  "started_at": "2026-05-01 20:35:22",
+  "provider": "qwen",
+  "model": "qwen36-35b",
+  "status": "success",
+  "outputs": {
+    "entities": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test2_20260501_203522/entities_and_relations.json",
+    "social_graph": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test2_20260501_203522/social_graph.json",
+    "tick_logs": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test2_20260501_203522/tick_logs.json",
+    "final_report_json": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test2_20260501_203522/final_report.json",
+    "final_report_md": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test2_20260501_203522/final_report.md",
+    "whitebox_summary": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test2_20260501_203522/whitebox_summary.json",
+    "run_log": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test2_20260501_203522/run.log",
+    "timing_summary": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test2_20260501_203522/timing_summary.json",
+    "run_meta": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test2_20260501_203522/run_meta.json"
+  },
+  "completed_at": "2026-05-01 20:46:48",
+  "elapsed_seconds": 686.37,
+  "x_t_sequence": [
+    6.49,
+    6.39,
+    5.91,
+    5.83,
+    5.84,
+    5.73
+  ],
+  "final_polarization_index": 0.33,
+  "risk_level": "medium"
+}

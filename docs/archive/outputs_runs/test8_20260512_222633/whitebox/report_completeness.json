@@ -1,0 +1,20 @@
+{
+  "whitebox_version": "v1.2.5",
+  "check": "report_completeness",
+  "status": "pass",
+  "raw_source": "final_report.md",
+  "path": "whitebox/report_completeness.json",
+  "result": {
+    "report_char_count": 898,
+    "report_truncated": false,
+    "truncation_reason": "",
+    "report_ends_cleanly": true,
+    "missing_required_sections": [
+      "舆情概要",
+      "演化分析",
+      "对策建议",
+      "附录"
+    ],
+    "report_completeness_score": 0.4
+  }
+}

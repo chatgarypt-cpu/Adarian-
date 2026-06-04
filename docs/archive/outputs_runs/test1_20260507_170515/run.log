@@ -1,0 +1,10 @@
+[2026-05-07 17:05:15] RUN START mode=normal seed=/Users/gary/项目开发/AdarianMigration/adarian mvp/seeds/test1.txt run_dir=/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test1_20260507_170515
+[2026-05-07 17:05:15] PHASE START name=phase1_entity_extraction
+[2026-05-07 17:05:15] LLM START caller=analyzer_set_parameters model=minimax
+[2026-05-07 17:05:17] ERROR stage=llm:analyzer_set_parameters error=Connection error.
+[2026-05-07 17:05:18] LLM START caller=analyzer_set_parameters model=minimax
+[2026-05-07 17:05:19] ERROR stage=llm:analyzer_set_parameters error=Connection error.
+[2026-05-07 17:05:21] LLM START caller=analyzer_set_parameters model=minimax
+[2026-05-07 17:05:22] ERROR stage=llm:analyzer_set_parameters error=Connection error.
+[2026-05-07 17:05:22] ERROR stage=main error=LLM 调用失败，已重试 3 次: Connection error.
+[2026-05-07 17:05:22] RUN END status=failed elapsed=7.17s

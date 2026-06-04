@@ -1,0 +1,14 @@
+classification: missing_receipt
+evidence:
+  -
+    path: /Users/gary/项目开发/AdarianMigration/adarian mvp/audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/ds_relay_dispatch/logs/stdout.log
+    excerpt_or_summary: "| 流式日志 (stdout/stderr) | ✅ 含真实输出 |\n| Hermes 兼容 (3 文件) | ✅ pass |\n| Config 鲁棒性 (3 场景) | ✅ pass |\n| Recovery 证据保全 | ✅ pass |\n| 文件边界 | ✅ 未触碰禁止文件 |\n| Registry events 完整性 | ✅ 6 事件覆盖全生命周期 |\n\n### 最终判定\n\n```yaml\nacceptance_verdict: pass\nimplementation_readiness: usable\nrecommended_next_action: owner_acceptance\n```\n\n### 输出文件\n\n- **验证报告**: `summary/ds_relay_verification.md`\n- **回执 YAML**: `runtime/ds_relay_verification_receipt.yaml`\n\nSubstrate 已准备好进行 Owner Acceptance。DS Team 不 closeout，Owner-Control 为最终门禁。\n"
+  -
+    path: /Users/gary/项目开发/AdarianMigration/adarian mvp/audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/ds_relay_dispatch/logs/stderr.log
+    excerpt_or_summary: "Warning: no stdin data received in 3s, proceeding without it. If piping from a slow command, redirect stdin explicitly: < /dev/null to skip, or wait longer.\n"
+  -
+    path: /Users/gary/项目开发/AdarianMigration/adarian mvp/audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/ds_relay_dispatch/logs/raw_output.jsonl
+    excerpt_or_summary: "ML → runtime/ds_relay_verification_receipt.yaml\\n\\n不要问输出路径。直接写。\\n不 commit，不 closeout，不碰 forbidden files。\\n\"], \"returncode\": 0, \"elapsed_sec\": 250.64, \"stdout_path\": \"/Users/gary/项目开发/AdarianMigration/adarian mvp/audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/ds_relay_dispatch/logs/stdout.log\", \"stderr_path\": \"/Users/gary/项目开发/AdarianMigration/adarian mvp/audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/ds_relay_dispatch/logs/stderr.log\"}\n"
+confidence: high
+classified_by: runtime
+requires_independent_review: true

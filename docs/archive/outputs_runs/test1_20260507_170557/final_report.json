@@ -1,0 +1,59 @@
+{
+  "event_summary": "李佳琦直播中回应花西子眉笔贵价争议时言论不当，引发全网关注和热议",
+  "stakeholder_map": "事件实体: 花西子, 李佳琦, 澎湃新闻, 潮新闻, 李佳琦前助理 | 传播者: 理性消费者, 职场打工人, 国货质疑者, 跟风吐槽网友, 李佳琦死忠粉, 国货支持者, 美妆从业者, 中立分析派",
+  "emotion_trajectory": [
+    {
+      "tick": 0,
+      "mean_stance": 5.31,
+      "std_stance": 1.99,
+      "polarization_index": 0.38,
+      "key_event": "Agent #0 发言"
+    },
+    {
+      "tick": 1,
+      "mean_stance": 5.15,
+      "std_stance": 1.84,
+      "polarization_index": 0.36,
+      "key_event": "Agent #8 发言"
+    },
+    {
+      "tick": 2,
+      "mean_stance": 5.08,
+      "std_stance": 1.85,
+      "polarization_index": 0.36,
+      "key_event": "Agent #8 发言"
+    },
+    {
+      "tick": 3,
+      "mean_stance": 4.96,
+      "std_stance": 1.79,
+      "polarization_index": 0.36,
+      "key_event": "Agent #8 发言"
+    },
+    {
+      "tick": 4,
+      "mean_stance": 4.89,
+      "std_stance": 1.79,
+      "polarization_index": 0.37,
+      "key_event": "Agent #7 发言"
+    },
+    {
+      "tick": 5,
+      "mean_stance": 4.91,
+      "std_stance": 1.86,
+      "polarization_index": 0.38,
+      "key_event": "Agent #7 发言"
+    }
+  ],
+  "inflection_points": [],
+  "risk_level": "low",
+  "risk_assessment": "舆情平稳，x(t)=4.9，风险较低",
+  "x_t_sequence": [
+    5.31,
+    5.15,
+    5.08,
+    4.96,
+    4.89,
+    4.91
+  ]
+}

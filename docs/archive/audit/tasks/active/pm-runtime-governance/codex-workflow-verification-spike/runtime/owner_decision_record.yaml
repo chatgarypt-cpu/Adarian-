@@ -1,0 +1,33 @@
+# Owner Decision Record
+
+request_id: odr-20260522-001
+task_id: hermes-codex-workflow-verification-spike-20260522
+
+# --- Source Event (REAL) ---
+source:
+  test: codex_delete (PID=92101, 2026-05-22)
+  sandbox: read-only
+  action: rm sandbox/temp_delete_test.txt
+  result: "Operation not permitted"
+  file_still_exists: true
+
+# --- Round 1 ---
+round_1:
+  decision: ask_for_more_context
+  gap_discovered: |
+    Current relay_runner (one-shot subprocess.run) cannot relay mid-execution
+    questions back to a running Codex process. This option requires architectural
+    change (persistent PTY or re-invocation).
+
+# --- Simulated Context Response ---
+context:
+  authenticity: hermes_inferred_from_test_context
+  response: "Delete was test-only. File is harmless spike evidence. Recommend keep."
+
+# --- Round 2 (FINAL) ---
+round_2:
+  decision: reject
+  reason: "文件无害且是 spike 测试证据，删除无意义。"
+  effect: "文件保留。spike 在只读模式下继续。sandbox_denied 事件已记录为 relay gap 证据。"
+
+owner_control_required: true

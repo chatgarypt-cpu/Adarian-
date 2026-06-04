@@ -1,0 +1,59 @@
+{
+  "event_summary": "李佳琦直播言论引发舆论风波，花西子品牌被质疑定价过高、是否为日本品牌，品牌方发信回应",
+  "stakeholder_map": "事件实体: 李佳琦, 花西子, 澎湃新闻, 潮新闻 | 传播者: 理性消费者, 国货支持者, 李佳琦粉丝, 打工人群体, 美妆从业者, 品牌研究者, 跟风网友, 黑粉群体",
+  "emotion_trajectory": [
+    {
+      "tick": 0,
+      "mean_stance": 5.09,
+      "std_stance": 2.66,
+      "polarization_index": 0.52,
+      "key_event": "Agent #0 发言"
+    },
+    {
+      "tick": 1,
+      "mean_stance": 5.16,
+      "std_stance": 2.54,
+      "polarization_index": 0.49,
+      "key_event": "Agent #9 发言"
+    },
+    {
+      "tick": 2,
+      "mean_stance": 5.23,
+      "std_stance": 2.45,
+      "polarization_index": 0.47,
+      "key_event": "Agent #9 发言"
+    },
+    {
+      "tick": 3,
+      "mean_stance": 5.27,
+      "std_stance": 2.41,
+      "polarization_index": 0.46,
+      "key_event": "Agent #9 发言"
+    },
+    {
+      "tick": 4,
+      "mean_stance": 5.31,
+      "std_stance": 2.35,
+      "polarization_index": 0.44,
+      "key_event": "Agent #9 发言"
+    },
+    {
+      "tick": 5,
+      "mean_stance": 5.24,
+      "std_stance": 2.24,
+      "polarization_index": 0.43,
+      "key_event": "Agent #9 发言"
+    }
+  ],
+  "inflection_points": [],
+  "risk_level": "medium",
+  "risk_assessment": "中等风险，x(t)=5.2，趋势需关注",
+  "x_t_sequence": [
+    5.09,
+    5.16,
+    5.23,
+    5.27,
+    5.31,
+    5.24
+  ]
+}

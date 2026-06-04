@@ -1,0 +1,227 @@
+{
+  "event_summary": "深圳女子公交站劝阻吸烟反被警方认定涉嫌侮辱拟拘留，吸烟男未被追责，执法标准与程序引发争议",
+  "event_scale": 0.65,
+  "event_controversy": 0.75,
+  "event_type": "官员不当行为",
+  "event_entities": [
+    {
+      "name": "女子",
+      "type": "individual",
+      "role": "劝阻吸烟的当事人",
+      "entity_category": "event_entity",
+      "can_speak": false,
+      "original_statement": null,
+      "can_speak_reason": null
+    },
+    {
+      "name": "吸烟男子",
+      "type": "individual",
+      "role": "在公交站吸烟的当事人",
+      "entity_category": "event_entity",
+      "can_speak": false,
+      "original_statement": null,
+      "can_speak_reason": null
+    },
+    {
+      "name": "深圳市公安局",
+      "type": "organization",
+      "role": "执法机构",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "4月25日回应“正在核查”，尚未公布完整调查结果",
+      "can_speak_reason": null
+    },
+    {
+      "name": "涉事民警",
+      "type": "individual",
+      "role": "处理案件的执法人员",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "“我也抽烟”，公交站不算室内禁烟区",
+      "can_speak_reason": null
+    },
+    {
+      "name": "中国新闻周刊",
+      "type": "organization",
+      "role": "媒体监督方",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": null,
+      "can_speak_reason": null
+    },
+    {
+      "name": "小野的瓜田",
+      "type": "individual",
+      "role": "爆料博主",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "女子因精神崩溃签和解书，吸烟者未受处罚；其微博因“违规”被禁言3天",
+      "can_speak_reason": null
+    }
+  ],
+  "opinion_spreaders": [
+    {
+      "group_name": "女性权益支持者",
+      "related_event_entity": "女子",
+      "description": "关注女性维权事件的年轻女性，认为女子是正当维权却遭受不公对待",
+      "I": 7.5,
+      "P": -1,
+      "susceptibility": 0.3,
+      "estimated_percentage": 30,
+      "communication_style": "情绪激愤，替当事人鸣不平",
+      "entity_category": "opinion_spreader",
+      "persona_name": "小美",
+      "age_range": "25-34",
+      "occupation": "互联网运营",
+      "personality": "富有同理心，冲动易怒",
+      "motivation": "维护女性合法权益，质疑执法不公",
+      "typical_phrases": [
+        "太过分了",
+        "凭什么拘留她",
+        "女性维权怎么这么难"
+      ]
+    },
+    {
+      "group_name": "法律专业人士",
+      "related_event_entity": "深圳市公安局",
+      "description": "律师或法律从业者，从专业角度分析执法程序是否违法",
+      "I": 8.0,
+      "P": -1,
+      "susceptibility": 0.2,
+      "estimated_percentage": 20,
+      "communication_style": "引经据典，理性分析",
+      "entity_category": "opinion_spreader",
+      "persona_name": "陈律师",
+      "age_range": "35-45",
+      "occupation": "执业律师",
+      "personality": "冷静理性，专业严谨",
+      "motivation": "普及法律知识，推动执法规范化",
+      "typical_phrases": [
+        "程序违法",
+        "执法过度",
+        "这明显不符合规定"
+      ]
+    },
+    {
+      "group_name": "普通市民",
+      "related_event_entity": "女子",
+      "description": "关注公共文明的普通民众，担忧日后不敢劝阻不文明行为",
+      "I": 5.5,
+      "P": -1,
+      "susceptibility": 0.5,
+      "estimated_percentage": 20,
+      "communication_style": "朴素直接，表达生活担忧",
+      "entity_category": "opinion_spreader",
+      "persona_name": "老张",
+      "age_range": "45-55",
+      "occupation": "国企职工",
+      "personality": "务实谨慎，关心社会风气",
+      "motivation": "担心公共场所文明倒退",
+      "typical_phrases": [
+        "以后谁还管闲事",
+        "这社会怎么了",
+        "吸烟的没事，劝阻的被抓"
+      ]
+    },
+    {
+      "group_name": "控烟志愿者",
+      "related_event_entity": "吸烟男子",
+      "description": "长期关注控烟工作的人士，批评执法不力导致控烟条例成一纸空文",
+      "I": 6.5,
+      "P": -1,
+      "susceptibility": 0.25,
+      "estimated_percentage": 15,
+      "communication_style": "痛心疾首，呼吁加强执法",
+      "entity_category": "opinion_spreader",
+      "persona_name": "李阿姨",
+      "age_range": "50-60",
+      "occupation": "社区志愿者",
+      "personality": "正直执着，热心公益",
+      "motivation": "推动控烟条例落实，保护公共健康",
+      "typical_phrases": [
+        "最严控烟令成笑话",
+        "执法部门不作为",
+        "二手烟危害多大知道不"
+      ]
+    },
+    {
+      "group_name": "理性分析派",
+      "related_event_entity": "深圳市公安局",
+      "description": "主张客观看待事件，等待官方调查结果再下结论",
+      "I": 6.0,
+      "P": 1,
+      "susceptibility": 0.4,
+      "estimated_percentage": 10,
+      "communication_style": "客观中立，呼吁理性看待",
+      "entity_category": "opinion_spreader",
+      "persona_name": "王老师",
+      "age_range": "30-40",
+      "occupation": "高校教师",
+      "personality": "理性客观，审慎中立",
+      "motivation": "维护网络理性讨论氛围",
+      "typical_phrases": [
+        "等调查结果",
+        "不要过早下结论",
+        "让子弹飞一会儿"
+      ]
+    },
+    {
+      "group_name": "执法理解派",
+      "related_event_entity": "涉事民警",
+      "description": "理解警方执法难处，认为应按程序办事",
+      "I": 5.0,
+      "P": 1,
+      "susceptibility": 0.35,
+      "estimated_percentage": 5,
+      "communication_style": "为执法部门说话",
+      "entity_category": "opinion_spreader",
+      "persona_name": "赵队长",
+      "age_range": "40-50",
+      "occupation": "退休民警",
+      "personality": "维护体制，理解执法复杂",
+      "motivation": "为警方执法行为提供理解视角",
+      "typical_phrases": [
+        "执法有执法程序",
+        "民警也不容易",
+        "双方都有问题"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "source": "女子",
+      "target": "吸烟男子",
+      "type": "冲突关系"
+    },
+    {
+      "source": "女子",
+      "target": "涉事民警",
+      "type": "执法与被执法关系"
+    },
+    {
+      "source": "深圳市公安局",
+      "target": "涉事民警",
+      "type": "隶属关系"
+    },
+    {
+      "source": "小野的瓜田",
+      "target": "女子",
+      "type": "曝光关系"
+    },
+    {
+      "source": "中国新闻周刊",
+      "target": "深圳市公安局",
+      "type": "监督关系"
+    },
+    {
+      "source": "女性权益支持者",
+      "target": "女子",
+      "type": "声援支持关系"
+    },
+    {
+      "source": "控烟志愿者",
+      "target": "吸烟男子",
+      "type": "监督批评关系"
+    }
+  ]
+}

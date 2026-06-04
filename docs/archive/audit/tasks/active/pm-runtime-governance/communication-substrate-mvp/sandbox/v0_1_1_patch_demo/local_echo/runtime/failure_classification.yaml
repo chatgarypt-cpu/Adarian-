@@ -1,0 +1,14 @@
+classification: agent_completed
+evidence:
+  -
+    path: /Users/gary/项目开发/AdarianMigration/adarian mvp/audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/local_echo/logs/stdout.log
+    excerpt_or_summary: "PM Runtime v0.1.1 local_echo stdout\n"
+  -
+    path: /Users/gary/项目开发/AdarianMigration/adarian mvp/audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/local_echo/logs/stderr.log
+    excerpt_or_summary: "PM Runtime v0.1.1 local_echo stderr\n"
+  -
+    path: /Users/gary/项目开发/AdarianMigration/adarian mvp/audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/local_echo/logs/raw_output.jsonl
+    excerpt_or_summary: ".1 local_echo stdout'); print('PM Runtime v0.1.1 local_echo stderr', file=sys.stderr)\"], \"returncode\": 0, \"elapsed_sec\": 0.059, \"stdout_path\": \"/Users/gary/项目开发/AdarianMigration/adarian mvp/audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/local_echo/logs/stdout.log\", \"stderr_path\": \"/Users/gary/项目开发/AdarianMigration/adarian mvp/audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/local_echo/logs/stderr.log\"}\n"
+confidence: high
+classified_by: runtime
+requires_independent_review: false

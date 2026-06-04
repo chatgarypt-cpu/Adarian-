@@ -1,0 +1,9 @@
+{
+  "task_id": "ds-verify-pm-runtime-communication-substrate-mvp-20260522",
+  "pre_action_gate": "go",
+  "checks": {
+    "dispatch_exists": true,
+    "system_prompt_exists": true,
+    "relay_script_exists": true
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "run_id": "test1_20260501_200050",
+  "seed_file": "/Users/gary/项目开发/AdarianMigration/adarian mvp/seeds/test1.txt",
+  "seed_copy": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test1_20260501_200050/seed_input.txt",
+  "run_dir": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test1_20260501_200050",
+  "started_at": "2026-05-01 20:00:50",
+  "provider": "qwen",
+  "model": "qwen35-122b-a10b",
+  "status": "failed",
+  "outputs": {
+    "entities": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test1_20260501_200050/entities_and_relations.json",
+    "social_graph": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test1_20260501_200050/social_graph.json",
+    "tick_logs": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test1_20260501_200050/tick_logs.json",
+    "final_report_json": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test1_20260501_200050/final_report.json",
+    "final_report_md": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test1_20260501_200050/final_report.md",
+    "whitebox_summary": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test1_20260501_200050/whitebox_summary.json",
+    "run_log": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test1_20260501_200050/run.log",
+    "timing_summary": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test1_20260501_200050/timing_summary.json",
+    "run_meta": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test1_20260501_200050/run_meta.json"
+  },
+  "completed_at": "2026-05-01 20:00:57",
+  "elapsed_seconds": 7.24,
+  "error": "LLM 调用失败，已重试 3 次: Connection error."
+}

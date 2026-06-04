@@ -1,0 +1,472 @@
+[
+  {
+    "tick": 0,
+    "entries": [
+      {
+        "agent_id": 0,
+        "group_name": "王某某",
+        "saw_posts_from": [],
+        "previous_stance": 5.0,
+        "current_stance": 5.0,
+        "stance_delta": 0.0,
+        "susceptibility": 0.0,
+        "change_reason": "entity_generated_statement",
+        "comment": "在法定禁烟区域劝阻吸烟是公民责任，我支持公共场所控烟规定。当时情绪激动方式欠妥，感谢警方公正处理。希望更多人理解和支持公共场所禁烟，共同维护文明环境。",
+        "reasoning": "表明控烟立场正当性，承认方式欠妥，支持官方处理结果"
+      },
+      {
+        "agent_id": 1,
+        "group_name": "陈某",
+        "saw_posts_from": [],
+        "previous_stance": 5.0,
+        "current_stance": 5.0,
+        "stance_delta": 0.0,
+        "susceptibility": 0.0,
+        "change_reason": "entity_generated_statement",
+        "comment": "（解析失败）",
+        "reasoning": ""
+      },
+      {
+        "agent_id": 2,
+        "group_name": "光明区联合调查组",
+        "saw_posts_from": [],
+        "previous_stance": 5.0,
+        "current_stance": 5.0,
+        "stance_delta": 0.0,
+        "susceptibility": 0.0,
+        "change_reason": "entity_original_statement",
+        "comment": "双方被带至公安机关执法办案中心调查并接受人身安全检查，当晚22时许自愿和解",
+        "reasoning": "原始发言（从种子材料提取）"
+      },
+      {
+        "agent_id": 3,
+        "group_name": "境外媒体",
+        "saw_posts_from": [],
+        "previous_stance": 5.0,
+        "current_stance": 5.0,
+        "stance_delta": 0.0,
+        "susceptibility": 0.0,
+        "change_reason": "entity_original_statement",
+        "comment": "控烟之城被讽表演型人格",
+        "reasoning": "原始发言（从种子材料提取）"
+      }
+    ],
+    "global_metrics": {
+      "mean_stance": 5.69,
+      "std_stance": 0.65,
+      "polarization_index": 0.11
+    }
+  },
+  {
+    "tick": 1,
+    "entries": [
+      {
+        "agent_id": 4,
+        "group_name": "女性权益关注者",
+        "saw_posts_from": [
+          0
+        ],
+        "previous_stance": 6.2,
+        "current_stance": 6.47,
+        "stance_delta": 0.27,
+        "susceptibility": 0.27,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "支持在法定区域行使公民监督权，王某某的理性回应值得肯定。警方公正处理既保障执法程序，也保护公民正当权益。公共场所禁烟需要更多人参与，但更需避免对维权者的污名化。女性尊严不仅在于被保护，更在于被平等对待。支持姐妹勇敢说，别让维护文明的人寒了心。",
+        "reasoning": "王某某在禁烟区履行公民责任的行为具有正当性，其主动反思方式问题体现理性态度，警方公正处理避免扩大争议。作为女性权益关注者，更应支持公民依法维权不受污名化，维护性别平等视角下的公共参与尊严。"
+      },
+      {
+        "agent_id": 5,
+        "group_name": "公共道德支持者",
+        "saw_posts_from": [
+          0
+        ],
+        "previous_stance": 6.87,
+        "current_stance": 7.84,
+        "stance_delta": 0.97,
+        "susceptibility": 0.45,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "在法定禁烟区域劝阻吸烟是公民责任，王某某的态度值得肯定。公共场所就该守规矩，支持文明行为。当时情绪激动方式欠妥，但初衷是正确的。感谢警方公正处理，希望更多人理解和支持公共场所禁烟，共同维护文明环境。这种风气要支持。",
+        "reasoning": "作为公共道德支持者，我认同在法定禁烟区域劝阻吸烟是公民责任。王某某虽然承认方式欠妥，但其维护公共环境的初衷值得肯定。警方公正处理也体现了执法规范。公共场所控烟是维护公序良俗的重要举措，应当得到支持。"
+      },
+      {
+        "agent_id": 6,
+        "group_name": "执法程序监督者",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 6.09,
+        "current_stance": 5.05,
+        "stance_delta": -1.04,
+        "susceptibility": 0.57,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "程序是否合法？强制带离是否经过法定审批？人身安全检查有无全程录音录像？和解协议签署过程是否自愿？证据链完整吗？别糊弄过去",
+        "reasoning": "执法过程存在程序透明度不足问题：1.未公布具体执法依据条款 2.人身检查程序缺少第三方见证 3.和解时间选择在晚间22时可能影响当事人判断力 4.境外媒体质疑警权边界问题未得到实质性回应"
+      },
+      {
+        "agent_id": 7,
+        "group_name": "质疑王某某行为者",
+        "saw_posts_from": [
+          0
+        ],
+        "previous_stance": 5.85,
+        "current_stance": 5.0,
+        "stance_delta": -0.85,
+        "susceptibility": 0.57,
+        "change_reason": "within_effective_delta",
+        "comment": "作为一个普通市民和教师，我认为这件事需要理性看待问题。王某某在法定禁烟区域劝阻吸烟，初衷是好的，这是公民责任没错。但一个巴掌拍不响，当时情绪激动方式确实欠妥。公共场所纠纷，双方都应保持冷静。警方公正处理值得肯定，但我们也应该思考：这样做合适吗？公民在行使监督权时，是否也需要注意方式方法？希望双方都能从这件事中吸取教训，共同维护文明环境。",
+        "reasoning": "王某某已承认方式欠妥并感谢警方处理，态度较为诚恳，但事件本身仍存在争议空间。作为质疑者，我认可其控烟初衷，但强调执法程序和公民监督方式同样重要，不应过度偏袒任何一方。立场保持中立，既不一味批评也不盲目"
+      },
+      {
+        "agent_id": 8,
+        "group_name": "理性法律群体",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 5.84,
+        "current_stance": 5.86,
+        "stance_delta": 0.02,
+        "susceptibility": 0.48,
+        "change_reason": "silent_exposure_drift",
+        "comment": "（未发言）",
+        "reasoning": "本轮未进入发言队列"
+      }
+    ],
+    "global_metrics": {
+      "mean_stance": 5.62,
+      "std_stance": 0.98,
+      "polarization_index": 0.17
+    }
+  },
+  {
+    "tick": 2,
+    "entries": [
+      {
+        "agent_id": 4,
+        "group_name": "女性权益关注者",
+        "saw_posts_from": [
+          0,
+          5,
+          6
+        ],
+        "previous_stance": 6.47,
+        "current_stance": 6.74,
+        "stance_delta": 0.27,
+        "susceptibility": 0.27,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "在法定禁烟区域劝阻吸烟是公民正当权利，王某某的初衷值得肯定。虽然当时方式可能欠妥，但不能因此否定其维护公共环境的善意。警方处理结果公开透明，我们应理性看待。更重要的是，社会舆论不应让维权者承受不当压力，尤其是女性行使正当权利时，更需避免被污名化或过度审视。支持姐妹勇敢说，别让维护文明的人寒了心。同时也认同监督者的提醒，执法程序的规范化对保护公民权益同样重要。",
+        "reasoning": "支持王某某行使公民监督权的初衷，反对对维权者尤其是女性的污名化倾向。认可警方处理结果的公正性，但认为执法程序透明度仍有提升空间。整体立场偏向支持维权者，同时保持对程序正义的关注。"
+      },
+      {
+        "agent_id": 5,
+        "group_name": "公共道德支持者",
+        "saw_posts_from": [
+          0,
+          7
+        ],
+        "previous_stance": 7.84,
+        "current_stance": 8.5,
+        "stance_delta": 0.66,
+        "susceptibility": 0.45,
+        "change_reason": "within_effective_delta",
+        "comment": "在法定禁烟区域劝阻吸烟是公民责任，王某某的态度值得肯定。公共场所就该守规矩，支持文明行为。当时情绪激动方式欠妥，但初衷是正确的。感谢警方公正处理，希望更多人理解和支持公共场所禁烟，共同维护文明环境。这种风气要支持。",
+        "reasoning": "王某某在禁烟区域劝阻吸烟是履行公民监督责任，符合公共道德要求。虽然情绪激动方式可以改进，但维护公共场所秩序的大方向是正确的。警方公正处理体现了法治精神，这种维护公序良俗的行为应该得到支持，而非被境外媒"
+      },
+      {
+        "agent_id": 6,
+        "group_name": "执法程序监督者",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 5.05,
+        "current_stance": 4.01,
+        "stance_delta": -1.04,
+        "susceptibility": 0.57,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "王某某态度转变很快，从激烈冲突到'感谢警方公正处理'再到'自愿和解'，时间线需要厘清。强制带离到公安机关的审批手续是否齐全？人身安全检查的记录在哪里？晚间22点签署和解协议，当事人是否处于疲劳状态影响判断？程序正义不能因为'双方和解'就一笔带过，证据链必须完整公开。",
+        "reasoning": "联合调查组通报信息过于简略，缺乏关键程序细节。当事人表态与程序合法性不能混为一谈，和解自愿性需要程序保障。作为执法程序监督者，质疑不是否定处理结果，而是要求程序透明可查。"
+      },
+      {
+        "agent_id": 7,
+        "group_name": "质疑王某某行为者",
+        "saw_posts_from": [
+          0
+        ],
+        "previous_stance": 5.0,
+        "current_stance": 5.0,
+        "stance_delta": 0.0,
+        "susceptibility": 0.57,
+        "change_reason": "within_effective_delta",
+        "comment": "作为教师，我认同在法定禁烟区域劝阻吸烟是公民责任，控烟规定值得支持。但王某某承认'方式欠妥'，这点我赞同。一个巴掌拍不响，公共场所纠纷双方都应保持冷静。公民行使监督权时，这样做合适吗？方式方法确实值得注意。警方处理公正，但我们也应思考：善意初衷能否成为情绪失控的理由？理性看待问题，希望双方都能从这件事中吸取教训，共同维护文明环境。",
+        "reasoning": "认同控烟初衷和公民责任，但认为王某某在纠纷中的处理方式确实存在问题，双方都有需要反思的地方，不宜过度偏袒任何一方。"
+      },
+      {
+        "agent_id": 8,
+        "group_name": "理性法律群体",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 5.86,
+        "current_stance": 5.0,
+        "stance_delta": -0.86,
+        "susceptibility": 0.48,
+        "change_reason": "within_effective_delta",
+        "comment": "从法律程序角度分析，此事件涉及三个层面：一是公共场所控烟条例的适用性，二是执法机关处置程序是否合规，三是人身检查的法定依据。光明区联合调查组通报显示双方被带至公安机关并接受人身安全检查后自愿和解，这一过程需要关注程序是否完整告知权利义务、人身检查是否有法定事由。公民在禁烟区域劝阻吸烟确属合法行为，但方式方法应当符合比例原则。期待后续能公布更详细的执法程序记录，以明确法律边界。依法办事，程序正义是法",
+        "reasoning": "作为执业律师，保持中立客观立场。从程序合法性角度审视，既有对公民控烟权利的认可，也有对执法程序合规性的关注，不预设立场，等待完整事实披露后再做法律判断。"
+      }
+    ],
+    "global_metrics": {
+      "mean_stance": 5.51,
+      "std_stance": 1.32,
+      "polarization_index": 0.24
+    }
+  },
+  {
+    "tick": 3,
+    "entries": [
+      {
+        "agent_id": 4,
+        "group_name": "女性权益关注者",
+        "saw_posts_from": [
+          0,
+          5,
+          6
+        ],
+        "previous_stance": 6.74,
+        "current_stance": 7.01,
+        "stance_delta": 0.27,
+        "susceptibility": 0.27,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "支持姐妹勇敢说，别让维护文明的人白受委屈。在禁烟区劝阻吸烟是公民正当权利，王某某愿意承认方式欠妥，这份担当值得肯定。但更想说的是，维权者不该被过度审视和污名化。作为女性，我们行使正当权利时，不应承受比男性更多的道德压力。同时也认同程序监督者的提醒，执法规范化对保护所有公民权益都很重要。女性尊严不仅在于被保护，更在于被平等对待。希望社会能给维权者多一点理解，给执法程序多一点透明。共同维护文明环境，别",
+        "reasoning": "作为女性权益关注者，我支持公民行使正当监督权，尤其反对对女性维权者的污名化。王某某承认方式欠妥体现担当，应给予肯定。同时认同程序正义的重要性，执法规范化是保护所有公民权益的基础。立场保持支持维权者但理"
+      },
+      {
+        "agent_id": 5,
+        "group_name": "公共道德支持者",
+        "saw_posts_from": [
+          0,
+          7
+        ],
+        "previous_stance": 8.5,
+        "current_stance": 9.0,
+        "stance_delta": 0.5,
+        "susceptibility": 0.45,
+        "change_reason": "within_effective_delta",
+        "comment": "在法定禁烟区域劝阻吸烟是公民责任，王某某的态度值得肯定。公共场所就该守规矩，支持文明行为。方式可以改进，但维护公序良俗的初心应当被尊重。感谢警方公正处理，这种风气要支持。希望更多人理解公共场所禁烟的重要性，共同维护文明环境。",
+        "reasoning": "坚持支持公民履行控烟责任的核心立场，肯定王某某维护公共秩序的初衷。虽然承认方式可改进，但更强调公序良俗的优先性。警方处理结果符合公共道德期待，应继续倡导公共场所规则意识。"
+      },
+      {
+        "agent_id": 6,
+        "group_name": "执法程序监督者",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 4.01,
+        "current_stance": 3.5,
+        "stance_delta": -0.51,
+        "susceptibility": 0.57,
+        "change_reason": "within_effective_delta",
+        "comment": "王某某从冲突到'感谢警方'再到'自愿和解'，态度转变过快，需要时间线证据支撑。晚间22点签署和解协议，当事人经过一天调查后是否处于疲劳状态，是否真正理解协议内容？人身安全检查的录音录像记录在哪里？强制带离公安机关的审批手续是否齐全？程序正义不能因为'和解'就一笔带过，证据链必须完整公开，否则无法排除程序瑕疵的合理怀疑。",
+        "reasoning": "对官方调查结论保持审慎态度，核心质疑点在于：1.和解自愿性存疑（晚间22点、疲劳状态）；2.执法程序记录未公开；3.当事人态度转变缺乏合理解释。程序正义需要实质性审查，而非形式化和解。"
+      },
+      {
+        "agent_id": 7,
+        "group_name": "质疑王某某行为者",
+        "saw_posts_from": [
+          0
+        ],
+        "previous_stance": 5.0,
+        "current_stance": 5.0,
+        "stance_delta": 0.0,
+        "susceptibility": 0.57,
+        "change_reason": "within_effective_delta",
+        "comment": "看到王某某的回应，承认方式欠妥这点值得肯定。控烟初衷是好的，但一个巴掌拍不响，公共场所纠纷双方都应保持冷静。作为教师，我常说理性看待问题——善意初衷能否成为情绪失控的理由？公民行使监督权时，这样做合适吗？方式方法确实需要把握。警方处理公正，但我们也应思考：如何在维护公共利益的同时避免激化矛盾？希望双方都能从这件事中吸取教训，共同维护文明环境。",
+        "reasoning": "王某某承认方式欠妥，态度有所改善，但我仍认为需要理性看待问题。双方都有责任，不宜过度偏袒任何一方。公民监督权重要，但方式方法同样关键。"
+      },
+      {
+        "agent_id": 8,
+        "group_name": "理性法律群体",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 5.0,
+        "current_stance": 5.02,
+        "stance_delta": 0.02,
+        "susceptibility": 0.48,
+        "change_reason": "silent_exposure_drift",
+        "comment": "（未发言）",
+        "reasoning": "本轮未进入发言队列"
+      }
+    ],
+    "global_metrics": {
+      "mean_stance": 5.54,
+      "std_stance": 1.57,
+      "polarization_index": 0.28
+    }
+  },
+  {
+    "tick": 4,
+    "entries": [
+      {
+        "agent_id": 4,
+        "group_name": "女性权益关注者",
+        "saw_posts_from": [
+          0,
+          5,
+          6
+        ],
+        "previous_stance": 7.01,
+        "current_stance": 6.74,
+        "stance_delta": -0.27,
+        "susceptibility": 0.27,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "王某某愿意承认方式欠妥，这份坦诚值得肯定。在法定禁烟区域劝阻吸烟是公民正当权利，不应因冲突过程就被否定初衷。认同程序监督者的提醒，执法透明度对保护公民权益至关重要，尤其是晚间签署协议的时间点值得记录完整。女性行使正当权利时，社会舆论不应施加额外的道德审视。支持姐妹勇敢说，别让维护文明的人寒了心。程序正义与公民监督权同样需要被保护，两者并非对立。",
+        "reasoning": "支持王某某行使公民监督权的初衷，但保持中立立场，同时认可程序监督的合理性。作为女性权益关注者，关注舆论对女性维权者的审视压力，同时认同执法程序透明化的重要性。"
+      },
+      {
+        "agent_id": 5,
+        "group_name": "公共道德支持者",
+        "saw_posts_from": [
+          0,
+          7
+        ],
+        "previous_stance": 9.0,
+        "current_stance": 8.5,
+        "stance_delta": -0.5,
+        "susceptibility": 0.45,
+        "change_reason": "within_effective_delta",
+        "comment": "在法定禁烟区域劝阻吸烟是公民责任，王某某的态度值得肯定。公共场所就该守规矩，支持文明行为。虽然当时情绪激动方式欠妥，但维护公序良俗的初心应当被尊重。感谢警方公正处理，这种风气要支持。希望更多人理解公共场所禁烟的重要性，共同维护文明环境。",
+        "reasoning": "作为公共道德支持者，我认为在法定禁烟区域劝阻吸烟是公民应尽的责任。王某某承认方式欠妥体现了理性态度，警方公正处理值得肯定。公共场所遵守规定是基本文明素养，这种维护公序良俗的行为应当得到支持。虽然方式方"
+      },
+      {
+        "agent_id": 6,
+        "group_name": "执法程序监督者",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 3.5,
+        "current_stance": 4.5,
+        "stance_delta": 1.0,
+        "susceptibility": 0.57,
+        "change_reason": "within_effective_delta",
+        "comment": "调查组称'自愿和解'，但关键程序信息依然缺失。强制带离的审批文书在哪里？人身安全检查的完整录像何时公开？晚间22点签署和解协议，当事人经过长时间调查后的精神状态是否有评估记录？和解协议内容是否完全公开？程序正义不是靠'自愿'二字就能证明的，需要实质性的证据支撑。建议调查组公布完整的执法流程记录，包括时间节点、审批文件、录音录像等，让公众能够独立判断程序是否合法合规。",
+        "reasoning": "联合调查组已介入并发布初步信息，但核心程序细节仍不透明。作为程序监督者，在证据链完整公开前无法完全认可处理结果，但也承认调查组已启动程序。保持中立偏质疑立场，继续要求程序信息公开。"
+      },
+      {
+        "agent_id": 7,
+        "group_name": "质疑王某某行为者",
+        "saw_posts_from": [
+          0
+        ],
+        "previous_stance": 5.0,
+        "current_stance": 5.0,
+        "stance_delta": 0.0,
+        "susceptibility": 0.57,
+        "change_reason": "within_effective_delta",
+        "comment": "看到王某某承认方式欠妥，这点值得肯定。控烟初衷是好的，这是公民责任，但一个巴掌拍不响，公共场所纠纷双方都应保持冷静。作为教师，我常说理性看待问题——善意初衷能否成为情绪失控的理由？公民行使监督权时，这样做合适吗？方式方法确实需要把握。警方处理公正，但我们也应思考：如何在维护公共利益的同时避免激化矛盾？希望双方都能从这件事中吸取教训，共同维护文明环境。",
+        "reasoning": "王某某承认方式欠妥是积极信号，但公民监督权的行使边界仍需厘清。控烟初衷值得肯定，但方式方法不当可能适得其反。理性看待问题，双方都有改进空间。"
+      },
+      {
+        "agent_id": 8,
+        "group_name": "理性法律群体",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 5.02,
+        "current_stance": 5.04,
+        "stance_delta": 0.02,
+        "susceptibility": 0.48,
+        "change_reason": "silent_exposure_drift",
+        "comment": "（未发言）",
+        "reasoning": "本轮未进入发言队列"
+      }
+    ],
+    "global_metrics": {
+      "mean_stance": 5.57,
+      "std_stance": 1.26,
+      "polarization_index": 0.23
+    }
+  },
+  {
+    "tick": 5,
+    "entries": [
+      {
+        "agent_id": 4,
+        "group_name": "女性权益关注者",
+        "saw_posts_from": [
+          0,
+          5,
+          6
+        ],
+        "previous_stance": 6.74,
+        "current_stance": 7.01,
+        "stance_delta": 0.27,
+        "susceptibility": 0.27,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "王某某这次的回应比较理性，承认方式欠妥的同时也坚持了劝烟的正当性。作为在禁烟区维护公共环境的人，这份担当值得尊重。从女性权益角度看，维权者不该因性别承受额外的道德审视，社会舆论对女性行使正当权利时往往更加苛刻。执法程序的透明度问题同样值得关注，晚间签署和解协议等细节需要完整记录。支持姐妹勇敢说，别让维护文明的人寒了心。女性尊严不仅在于被保护，更在于行使正当权利时不被污名化。",
+        "reasoning": "王某某的回应体现了公民责任感，承认方式欠妥显示担当。作为女性权益关注者，支持维权者不被过度审视和污名化的立场不变。同时认同程序监督者关于执法透明度的提醒，程序正义与公民监督权同样重要。立场从之前的支持"
+      },
+      {
+        "agent_id": 5,
+        "group_name": "公共道德支持者",
+        "saw_posts_from": [
+          0,
+          7
+        ],
+        "previous_stance": 8.5,
+        "current_stance": 8.5,
+        "stance_delta": 0.0,
+        "susceptibility": 0.45,
+        "change_reason": "within_effective_delta",
+        "comment": "在法定禁烟区域劝阻吸烟是公民责任，王某某的态度值得肯定。公共场所就该守规矩，支持文明行为。虽然当时情绪激动方式欠妥，但维护公序良俗的初心应当被尊重。感谢警方公正处理，这种风气要支持。希望更多人理解公共场所禁烟的重要性，共同维护文明环境。",
+        "reasoning": "王某某主动承认方式欠妥展现公民责任感，其控烟初衷符合公共道德要求。警方依法处理体现程序正义，应肯定公民参与公共事务监督的积极意义。情绪管理需改进，但维护公共环境的初心值得支持，此类行为有助于推动社会文"
+      },
+      {
+        "agent_id": 6,
+        "group_name": "执法程序监督者",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 4.5,
+        "current_stance": 3.46,
+        "stance_delta": -1.04,
+        "susceptibility": 0.57,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "光明区联合调查组发布的信息依然回避了核心问题。'当晚22时许自愿和解'——这个时间点的表述太模糊，从被带离到和解经历了多长时间？人身安全检查的记录是否全程录像？强制带离的审批文书依据哪条法规？当事人从激烈冲突到'感谢警方公正处理'再到'自愿和解'，态度转变的时间线需要逐小时还原。程序正义不是靠'自愿'二字就能证明的，执法程序是否合法合规，关键看证据链是否完整。建议调查组公布完整的执法流程记录，包括",
+        "reasoning": "继续质疑执法程序的完整性和透明度，认为'自愿和解'的表述不足以排除程序瑕疵的合理怀疑。作为执法程序监督者，立场保持批判性，要求信息公开是核心诉求。"
+      },
+      {
+        "agent_id": 7,
+        "group_name": "质疑王某某行为者",
+        "saw_posts_from": [
+          0
+        ],
+        "previous_stance": 5.0,
+        "current_stance": 4.5,
+        "stance_delta": -0.5,
+        "susceptibility": 0.57,
+        "change_reason": "within_effective_delta",
+        "comment": "看到王某某承认方式欠妥，作为教师我认可这种坦诚态度。但我想说，一个巴掌拍不响，公共场所纠纷双方都应保持冷静。控烟初衷值得肯定，这是公民责任，但善意初衷能否成为情绪失控的理由？公民行使监督权时，这样做合适吗？方式方法确实需要把握。警方处理公正，但我们也应思考：如何在维护公共利益的同时避免激化矛盾？理性看待问题，希望双方都能从这件事中吸取教训，共同维护文明环境。",
+        "reasoning": "保持中立立场，既认可王某某控烟的公民责任感，也坚持认为其方式方法存在问题，双方都有责任。作为教师强调理性教育的重要性，避免过度偏袒任何一方。"
+      },
+      {
+        "agent_id": 8,
+        "group_name": "理性法律群体",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 5.04,
+        "current_stance": 5.06,
+        "stance_delta": 0.02,
+        "susceptibility": 0.48,
+        "change_reason": "silent_exposure_drift",
+        "comment": "（未发言）",
+        "reasoning": "本轮未进入发言队列"
+      }
+    ],
+    "global_metrics": {
+      "mean_stance": 5.43,
+      "std_stance": 1.47,
+      "polarization_index": 0.27
+    }
+  }
+]

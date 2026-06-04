@@ -1,0 +1,165 @@
+{
+  "event_summary": "李佳琦直播质疑网友工资引发争议，花西子品牌被质疑价格虚高及是否为国货，品牌方发信道歉回应",
+  "event_scale": 0.6,
+  "event_controversy": 0.55,
+  "event_type": "产品质量问题",
+  "event_entities": [
+    {
+      "name": "花西子Florasis",
+      "type": "organization",
+      "role": "被质疑的国货彩妆品牌方",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "真诚地和大家说声抱歉，过去一周花西子受到了全网极大的关注，我们诚惶诚恐、手足无措，品牌此前也一直没有发声。这段时间里，我们不断吸收大家的批评、意见和建议。",
+      "can_speak_reason": null
+    },
+    {
+      "name": "李佳琦",
+      "type": "individual",
+      "role": "直播带货主播，争议言论当事人",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "不要乱说，眉笔一直79元，国货很难的。有时候找找自己原因，这么多年工资涨没涨，有没有认真工作。",
+      "can_speak_reason": null
+    }
+  ],
+  "opinion_spreaders": [
+    {
+      "group_name": "理性消费者",
+      "related_event_entity": "花西子Florasis",
+      "description": "关注产品性价比，质疑花西子定价过高，呼吁品牌方正视消费者诉求",
+      "I": 7.5,
+      "P": -1,
+      "susceptibility": 0.3,
+      "estimated_percentage": 25,
+      "communication_style": "用数据说话，冷静分析价格构成，擅长列图表对比",
+      "entity_category": "opinion_spreader",
+      "persona_name": "小林",
+      "age_range": "25-34",
+      "occupation": "财务分析师",
+      "personality": "理性较真、注重逻辑",
+      "motivation": "维护消费者知情权，追求合理定价",
+      "typical_phrases": [
+        "按克重算比黄金还贵",
+        "请回答价格问题",
+        "我们需要真相"
+      ]
+    },
+    {
+      "group_name": "国货身份质疑者",
+      "related_event_entity": "花西子Florasis",
+      "description": "关注品牌背景和产地，质疑花西子日本研发中心及国货真实性",
+      "I": 8.0,
+      "P": -1,
+      "susceptibility": 0.25,
+      "estimated_percentage": 15,
+      "communication_style": "深挖品牌历史和股权结构，倾向曝光式表达",
+      "entity_category": "opinion_spreader",
+      "persona_name": "老周",
+      "age_range": "35-45",
+      "occupation": "自媒体博主",
+      "personality": "爱较真、喜欢追根究底",
+      "motivation": "追求品牌透明度，维护消费者权益",
+      "typical_phrases": [
+        "日本研发中心怎么回事",
+        "请出示产地证明",
+        "国货不能是免死金牌"
+      ]
+    },
+    {
+      "group_name": "打工人共情派",
+      "related_event_entity": "李佳琦",
+      "description": "对李佳琦言论感到被冒犯，代入打工人立场表达不满",
+      "I": 6.5,
+      "P": -1,
+      "susceptibility": 0.4,
+      "estimated_percentage": 15,
+      "communication_style": "情绪化表达，擅长用梗和表情包",
+      "entity_category": "opinion_spreader",
+      "persona_name": "小美",
+      "age_range": "18-24",
+      "occupation": "公司职员",
+      "personality": "感性冲动、富有同理心",
+      "motivation": "维护打工人群体尊严，反对精英式说教",
+      "typical_phrases": [
+        "伤害性不大侮辱性极强",
+        "你赚够了就开始教育我们了",
+        "共情了破防了"
+      ]
+    },
+    {
+      "group_name": "国货支持者",
+      "related_event_entity": "花西子Florasis",
+      "description": "支持民族品牌，认为应该给国货更多包容和成长空间",
+      "I": 6.0,
+      "P": 1,
+      "susceptibility": 0.45,
+      "estimated_percentage": 25,
+      "communication_style": "温情呼吁，侧重品牌情怀和民族自豪感",
+      "entity_category": "opinion_spreader",
+      "persona_name": "陈老师",
+      "age_range": "35-45",
+      "occupation": "中学教师",
+      "personality": "温和包容、注重情感联结",
+      "motivation": "支持国货发展，传承东方美学",
+      "typical_phrases": [
+        "给国货一些时间",
+        "支持本土品牌",
+        "扬东方之美"
+      ]
+    },
+    {
+      "group_name": "李佳琦老粉",
+      "related_event_entity": "李佳琦",
+      "description": "长期关注李佳琦直播，理解其工作压力，认为言论被过度解读",
+      "I": 5.5,
+      "P": 1,
+      "susceptibility": 0.5,
+      "estimated_percentage": 20,
+      "communication_style": "护主心切，擅长用情感人",
+      "entity_category": "opinion_spreader",
+      "persona_name": "慧慧",
+      "age_range": "18-24",
+      "occupation": "大学生",
+      "personality": "热情冲动、忠诚度高",
+      "motivation": "维护偶像形象，相信其真诚道歉",
+      "typical_phrases": [
+        "佳琦已经道歉了",
+        "他不是故意的",
+        "直播压力太大了"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "source": "李佳琦",
+      "target": "花西子Florasis",
+      "type": "带货合作关系"
+    },
+    {
+      "source": "理性消费者",
+      "target": "花西子Florasis",
+      "type": "质疑产品质量和定价"
+    },
+    {
+      "source": "国货身份质疑者",
+      "target": "花西子Florasis",
+      "type": "质疑品牌背景"
+    },
+    {
+      "source": "打工人共情派",
+      "target": "李佳琦",
+      "type": "批评不当言论"
+    },
+    {
+      "source": "国货支持者",
+      "target": "花西子Florasis",
+      "type": "支持民族品牌"
+    },
+    {
+      "source": "李佳琦老粉",
+      "target": "李佳琦",
+      "type": "维护偶像"
+    }
+  ]
+}

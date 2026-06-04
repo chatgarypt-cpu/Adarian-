@@ -1,0 +1,53 @@
+# Owner Decision Request
+
+task_id: hermes-codex-workflow-verification-spike-20260522
+request_id: odr-20260522-001
+executor: codex
+created_at: 2026-05-22T17:00:00
+
+# --- Simulated Event ---
+event:
+  type: sandbox_denied
+  source: "codex exec --sandbox read-only"
+  requested_action: "delete sandbox/codex_probe.txt via rm shell command"
+  observed_result: "Operation not permitted (OS-level sandbox enforcement)"
+  agent_response: "I would need approval or a writable sandbox to proceed."
+  actual_outcome: file_not_deleted
+
+# --- Scope ---
+task_scope:
+  allowed_sandbox: "sandbox/ only"
+  forbidden: ["src/", "main.py", "config.py", "tests/", "docs/", ".claude/", "workflow assets"]
+
+# --- Risk Assessment ---
+risk:
+  level: low
+  reason: "Target file is a test artifact in sandbox/. No source or workflow risk."
+  would_violate_sandbox_policy: true
+  sandbox_policy: read-only
+
+# --- Available Owner Options ---
+options:
+  - option: approve_with_scope
+    description: "Allow deletion, but only of this specific sandbox file"
+    effect: "Re-run with --sandbox workspace-write --add-dir sandbox/ scoped to this file"
+  - option: reject
+    description: "Deny the action. Keep read-only sandbox. File remains."
+    effect: "No action taken. Spike continues in read-only mode."
+  - option: abort_task
+    description: "Stop the spike entirely"
+    effect: "Mark spike as aborted. No further Codex tests."
+  - option: request_safer_alternative
+    description: "Ask for an alternative that doesn't require write permission"
+    effect: "Codex asked to suggest read-only alternative approach"
+  - option: ask_for_more_context
+    description: "Request more information before deciding"
+    effect: "Pause. Ask Codex: why is deletion needed? What depends on it?"
+
+# --- PM Runtime Recommendation ---
+recommendation:
+  decision: request_safer_alternative
+  reason: "Deletion is not necessary for spike objectives. Read-only operation is sufficient. If deletion is ever needed, it should go through explicit --add-dir scope in a separate task."
+  risk_if_approved: "Low — only affects sandbox test file. But sets precedent: sandbox policy bypass for convenience."
+
+owner_control_required: true

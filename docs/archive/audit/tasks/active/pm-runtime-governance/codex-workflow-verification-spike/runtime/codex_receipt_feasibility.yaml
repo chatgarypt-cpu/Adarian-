@@ -1,0 +1,28 @@
+agent_message_length: 281
+agent_message_preview: 'executor: codex
+
+  mode: verification_spike
+
+  changed_files: []
+
+  commands_run: []
+
+  test_results: []
+
+  exit_code: 0
+
+  approval_required: false
+
+  sandbox_mode: read-only
+
+  ask_for_approval: false
+
+  stdout_path: logs/codex_receipt_stdout.log
+
+  stderr_path: logs/codex_receipt_stderr.log
+
+  known_issues: []'
+exit_code: 0
+has_required_fields: true
+has_yaml_block: true
+stdout_lines: 8

@@ -1,0 +1,24 @@
+{
+  "whitebox_version": "v1.2.5",
+  "status": "pass",
+  "checks": {
+    "report_completeness": {
+      "status": "pass",
+      "path": "whitebox/report_completeness.json"
+    },
+    "artifact_check": {
+      "status": "pass",
+      "path": "whitebox/artifact_check.json"
+    }
+  },
+  "raw_sources": {
+    "seed_input": "seed_input.txt",
+    "run_log": "run.log",
+    "timing_summary": "timing_summary.json",
+    "tick_logs": "tick_logs.json",
+    "final_report_md": "final_report.md",
+    "final_report_json": "final_report.json",
+    "run_meta": "run_meta.json",
+    "whitebox_summary": "whitebox_summary.json"
+  }
+}

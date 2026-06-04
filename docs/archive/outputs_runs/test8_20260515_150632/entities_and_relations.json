@@ -1,0 +1,199 @@
+{
+  "event_summary": "OPPO母亲节文案将婚姻与饭圈梗捆绑，被指冒犯家庭伦理，虽已道歉但公众质疑其'辩解大于认错'，中国广告协会和武汉大学相继发声批评。",
+  "event_scale": 0.5,
+  "event_controversy": 0.4,
+  "event_type": "产品质量问题",
+  "event_entities": [
+    {
+      "name": "OPPO",
+      "type": "organization",
+      "role": "涉事品牌方，营销文案发布者",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "创作初衷是打破刻板印象",
+      "can_speak_reason": null
+    },
+    {
+      "name": "中国广告协会",
+      "type": "organization",
+      "role": "行业协会监管机构",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "亡羊补牢，为时未晚，希望广大品牌与创意人员以此为戒，深刻吸取教训",
+      "can_speak_reason": null
+    },
+    {
+      "name": "武汉大学",
+      "type": "organization",
+      "role": "涉事文案策划者母校",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "愿余校友以自诚勇气，善对社会批评，与企业一道肩负起社会责任",
+      "can_speak_reason": null
+    },
+    {
+      "name": "段永平",
+      "type": "individual",
+      "role": "OPPO投资人",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "确实不合适，我看到公司已经道歉并且改了。错了就改吧，我相信他们会反省的",
+      "can_speak_reason": null
+    }
+  ],
+  "opinion_spreaders": [
+    {
+      "group_name": "传统家庭伦理派",
+      "related_event_entity": "OPPO",
+      "description": "重视传统家庭价值观，对冒犯母亲形象的内容极为敏感",
+      "I": 8.5,
+      "P": -1,
+      "susceptibility": 0.2,
+      "estimated_percentage": 20,
+      "communication_style": "义正辞严，痛心疾首",
+      "entity_category": "opinion_spreader",
+      "persona_name": "王阿姨",
+      "age_range": "50-60",
+      "occupation": "退休教师",
+      "personality": "保守传统、注重伦理",
+      "motivation": "维护传统家庭伦理和母亲形象",
+      "typical_phrases": [
+        "这简直是对母亲的亵渎",
+        "怎么能这么侮辱母亲节",
+        "太不像话了"
+      ]
+    },
+    {
+      "group_name": "广告行业从业者",
+      "related_event_entity": "中国广告协会",
+      "description": "关注广告创意边界和行业规范的专业人士",
+      "I": 7.0,
+      "P": -1,
+      "susceptibility": 0.3,
+      "estimated_percentage": 18,
+      "communication_style": "专业分析、理性批评",
+      "entity_category": "opinion_spreader",
+      "persona_name": "陈总监",
+      "age_range": "35-45",
+      "occupation": "广告公司创意总监",
+      "personality": "专业严谨、追求行业规范",
+      "motivation": "维护广告行业专业标准和伦理底线",
+      "typical_phrases": [
+        "创意不是无底线",
+        "这个边界明显越界了",
+        "行业自律很重要"
+      ]
+    },
+    {
+      "group_name": "年轻消费者群体",
+      "related_event_entity": "OPPO",
+      "description": "对营销文案敏感度高，接受饭圈文化但反对低俗营销",
+      "I": 6.5,
+      "P": -1,
+      "susceptibility": 0.4,
+      "estimated_percentage": 17,
+      "communication_style": "辛辣讽刺、表达不满",
+      "entity_category": "opinion_spreader",
+      "persona_name": "小美",
+      "age_range": "18-24",
+      "occupation": "大学生",
+      "personality": "冲动易怒、追求正义",
+      "motivation": "抵制对母亲形象的不当营销",
+      "typical_phrases": [
+        "这文案也太恶臭了",
+        "OPPO道歉毫无诚意",
+        "饭圈梗不是这么用的"
+      ]
+    },
+    {
+      "group_name": "品牌维护派",
+      "related_event_entity": "OPPO",
+      "description": "支持OPPO品牌，认为舆论过度解读",
+      "I": 5.5,
+      "P": 1,
+      "susceptibility": 0.5,
+      "estimated_percentage": 15,
+      "communication_style": "温和辩护、理性分析",
+      "entity_category": "opinion_spreader",
+      "persona_name": "老张",
+      "age_range": "30-40",
+      "occupation": "手机经销商",
+      "personality": "务实理性、善于换位思考",
+      "motivation": "为品牌辩护，认为舆论反应过度",
+      "typical_phrases": [
+        "其实没那么严重吧",
+        "人家都道歉了",
+        "营销创意可以更宽容"
+      ]
+    },
+    {
+      "group_name": "中立理性派",
+      "related_event_entity": "中国广告协会",
+      "description": "客观看待事件，支持行业自律但反对网暴",
+      "I": 5.0,
+      "P": 1,
+      "susceptibility": 0.6,
+      "estimated_percentage": 15,
+      "communication_style": "客观中立、呼吁理性",
+      "entity_category": "opinion_spreader",
+      "persona_name": "林先生",
+      "age_range": "25-34",
+      "occupation": "互联网产品经理",
+      "personality": "冷静理性、善于分析",
+      "motivation": "呼吁理性看待营销争议，推动行业进步",
+      "typical_phrases": [
+        "错了改就好",
+        "没必要过度上纲上线",
+        "期待更好的品牌创意"
+      ]
+    },
+    {
+      "group_name": "学生群体支持者",
+      "related_event_entity": "武汉大学",
+      "description": "理解创意尝试，支持年轻人试错",
+      "I": 4.5,
+      "P": 1,
+      "susceptibility": 0.7,
+      "estimated_percentage": 15,
+      "communication_style": "理解包容、观点温和",
+      "entity_category": "opinion_spreader",
+      "persona_name": "小陈",
+      "age_range": "18-24",
+      "occupation": "研究生",
+      "personality": "包容开放、思维活跃",
+      "motivation": "为年轻创意人员发声，认为应给予改过机会",
+      "typical_phrases": [
+        "创意不易多鼓励",
+        "知错能改就好了",
+        "下次注意就好"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "source": "OPPO",
+      "target": "中国广告协会",
+      "type": "被监管关系"
+    },
+    {
+      "source": "武汉大学",
+      "target": "OPPO",
+      "type": "校友关联"
+    },
+    {
+      "source": "段永平",
+      "target": "OPPO",
+      "type": "投资关系"
+    },
+    {
+      "source": "中国广告协会",
+      "target": "OPPO",
+      "type": "行业批评关系"
+    },
+    {
+      "source": "武汉大学",
+      "target": "OPPO",
+      "type": "公开批评关系"
+    }
+  ]
+}

@@ -1,0 +1,289 @@
+{
+  "nodes": [
+    {
+      "id": 0,
+      "group_name": "广州市公安局番禺分局",
+      "archetype_index": -1,
+      "related_entity": "广州市公安局番禺分局",
+      "role": "core",
+      "stance_score": 4.78,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 1,
+      "group_name": "华南理工大学",
+      "archetype_index": -1,
+      "related_entity": "华南理工大学",
+      "role": "core",
+      "stance_score": 5.04,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 2,
+      "group_name": "金雷",
+      "archetype_index": -1,
+      "related_entity": "金雷",
+      "role": "core",
+      "stance_score": 5.09,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 3,
+      "group_name": "受害学生",
+      "archetype_index": -1,
+      "related_entity": "受害学生",
+      "role": "core",
+      "stance_score": 4.8,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 4,
+      "group_name": "学生家长群体",
+      "archetype_index": -2,
+      "related_entity": "华南理工大学",
+      "role": "periphery",
+      "stance_score": 3.68,
+      "susceptibility": 0.33,
+      "confirmation_bias_level": "strong",
+      "entity_category": "opinion_spreader",
+      "persona_name": "王建国",
+      "age_range": "40-50",
+      "occupation": "企业管理者",
+      "personality": "焦虑护子、冲动易怒",
+      "motivation": "担心自己孩子在校安全，要求学校给出交代",
+      "typical_phrases": [
+        "这学校怎么管理的",
+        "孩子在学校还能安心吗",
+        "必须严惩凶手"
+      ]
+    },
+    {
+      "id": 5,
+      "group_name": "高校教师群体",
+      "archetype_index": -2,
+      "related_entity": "金雷",
+      "role": "periphery",
+      "stance_score": 5.23,
+      "susceptibility": 0.48,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "陈明华",
+      "age_range": "35-45",
+      "occupation": "高校讲师",
+      "personality": "冷静理性、为人师表",
+      "motivation": "维护教师群体形象，希望公正调查",
+      "typical_phrases": [
+        "等待官方调查结果",
+        "不能一概而论",
+        "依法处理就好"
+      ]
+    },
+    {
+      "id": 6,
+      "group_name": "校友群体",
+      "archetype_index": -2,
+      "related_entity": "华南理工大学",
+      "role": "periphery",
+      "stance_score": 5.64,
+      "susceptibility": 0.63,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "林晓峰",
+      "age_range": "25-34",
+      "occupation": "互联网工程师",
+      "personality": "感性念旧、关注母校发展",
+      "motivation": "希望母校妥善处理，维护学校声誉",
+      "typical_phrases": [
+        "华工加油",
+        "相信学校会处理好",
+        "母校要吸取教训啊"
+      ]
+    },
+    {
+      "id": 7,
+      "group_name": "法律工作者",
+      "archetype_index": -2,
+      "related_entity": "广州市公安局番禺分局",
+      "role": "periphery",
+      "stance_score": 3.53,
+      "susceptibility": 0.44,
+      "confirmation_bias_level": "strong",
+      "entity_category": "opinion_spreader",
+      "persona_name": "赵文静",
+      "age_range": "30-40",
+      "occupation": "执业律师",
+      "personality": "专业理性、追求公正",
+      "motivation": "从法律角度推动案件公正处理",
+      "typical_phrases": [
+        "涉嫌交通肇事罪",
+        "家属可以主张赔偿",
+        "依法追究刑事责任"
+      ]
+    },
+    {
+      "id": 8,
+      "group_name": "普通网民",
+      "archetype_index": -2,
+      "related_entity": "受害学生",
+      "role": "periphery",
+      "stance_score": 7.25,
+      "susceptibility": 0.78,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "小美",
+      "age_range": "18-24",
+      "occupation": "公司职员",
+      "personality": "感性冲动、同情弱者",
+      "motivation": "表达对受害学生的同情，呼吁加强校园安全",
+      "typical_phrases": [
+        "太可怜了",
+        "校园也太不安全了吧",
+        "必须严查"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": 0,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 0,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 0,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 4,
+      "target": 1,
+      "type": "follows"
+    },
+    {
+      "source": 5,
+      "target": 2,
+      "type": "follows"
+    },
+    {
+      "source": 6,
+      "target": 1,
+      "type": "follows"
+    },
+    {
+      "source": 7,
+      "target": 0,
+      "type": "follows"
+    },
+    {
+      "source": 8,
+      "target": 3,
+      "type": "follows"
+    },
+    {
+      "source": 4,
+      "target": 5,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 4,
+      "target": 7,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 4,
+      "target": 8,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 5,
+      "target": 6,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 6,
+      "target": 7,
+      "type": "follows_cross_group"
+    }
+  ]
+}

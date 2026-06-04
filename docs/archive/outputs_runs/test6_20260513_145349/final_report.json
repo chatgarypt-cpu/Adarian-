@@ -1,0 +1,83 @@
+{
+  "report_meta": {
+    "generated_at": "2026年05月13日 15:02",
+    "timezone": "CST",
+    "report_type": "模拟推演型舆情风险研判报告",
+    "event_name": "华南理工大学教师校园内驾驶车辆撞学生致1死1伤，学校承认安全管理存在漏洞",
+    "total_ticks": 6,
+    "simulation_run_id": "test6_20260513_145349"
+  },
+  "event_summary": "华南理工大学教师校园内驾驶车辆撞学生致1死1伤，学校承认安全管理存在漏洞",
+  "stakeholder_map": "事件实体: 广州市公安局番禺分局, 华南理工大学, 金雷, 受害学生 | 传播者: 学生家长群体, 高校教师群体, 校友群体, 法律工作者, 普通网民",
+  "emotion_trajectory": [
+    {
+      "tick": 0,
+      "mean_stance": 5.0,
+      "std_stance": 1.09,
+      "polarization_index": 0.22,
+      "key_event": "Agent #0 发言"
+    },
+    {
+      "tick": 1,
+      "mean_stance": 4.86,
+      "std_stance": 0.83,
+      "polarization_index": 0.17,
+      "key_event": "Agent #8 发言"
+    },
+    {
+      "tick": 2,
+      "mean_stance": 4.83,
+      "std_stance": 0.6,
+      "polarization_index": 0.12,
+      "key_event": "Agent #8 发言"
+    },
+    {
+      "tick": 3,
+      "mean_stance": 4.77,
+      "std_stance": 0.61,
+      "polarization_index": 0.13,
+      "key_event": "Agent #8 发言"
+    },
+    {
+      "tick": 4,
+      "mean_stance": 4.71,
+      "std_stance": 0.87,
+      "polarization_index": 0.18,
+      "key_event": "Agent #8 发言"
+    },
+    {
+      "tick": 5,
+      "mean_stance": 4.7,
+      "std_stance": 1.34,
+      "polarization_index": 0.29,
+      "key_event": "Agent #8 发言"
+    }
+  ],
+  "inflection_points": [
+    {
+      "tick": 5,
+      "agent_id": 8,
+      "group_name": "普通网民",
+      "pivotal_comment": "看到警方通报确认了悲剧，太可怜了！一个鲜活的生命就这样没了，还有一个学生在医院抢救。校园也太不安全了",
+      "impact_description": "极化指数变化 0.11，立场偏移 -1.1"
+    }
+  ],
+  "risk_level": "low",
+  "risk_level_label": "低风险",
+  "audience_mode": "law_enforcement_facing",
+  "primary_risk_types": [
+    "law_enforcement_trust_risk"
+  ],
+  "risk_type_labels": [
+    "执法公信力风险"
+  ],
+  "risk_assessment": "舆情平稳，x(t)=4.7，风险较低",
+  "x_t_sequence": [
+    5.0,
+    4.86,
+    4.83,
+    4.77,
+    4.71,
+    4.7
+  ]
+}

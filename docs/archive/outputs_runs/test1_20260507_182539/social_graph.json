@@ -1,0 +1,279 @@
+{
+  "nodes": [
+    {
+      "id": 0,
+      "group_name": "李佳琦",
+      "archetype_index": -1,
+      "related_entity": "李佳琦",
+      "role": "core",
+      "stance_score": 4.91,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 1,
+      "group_name": "花西子",
+      "archetype_index": -1,
+      "related_entity": "花西子",
+      "role": "core",
+      "stance_score": 4.76,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 2,
+      "group_name": "澎湃新闻",
+      "archetype_index": -1,
+      "related_entity": "澎湃新闻",
+      "role": "core",
+      "stance_score": 5.08,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 3,
+      "group_name": "潮新闻",
+      "archetype_index": -1,
+      "related_entity": "潮新闻",
+      "role": "core",
+      "stance_score": 4.9,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 4,
+      "group_name": "理性消费者",
+      "archetype_index": -2,
+      "related_entity": "花西子",
+      "role": "periphery",
+      "stance_score": 4.55,
+      "susceptibility": 0.39,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "小林",
+      "age_range": "25-34",
+      "occupation": "上班族",
+      "personality": "精打细算、务实理性",
+      "motivation": "追求产品性价比，质疑品牌定价合理性",
+      "typical_phrases": [
+        "算一下账",
+        "性价比太低了",
+        "支持国货但不是冤大头"
+      ]
+    },
+    {
+      "id": 5,
+      "group_name": "李佳琦支持者",
+      "archetype_index": -2,
+      "related_entity": "李佳琦",
+      "role": "periphery",
+      "stance_score": 7.52,
+      "susceptibility": 0.26,
+      "confirmation_bias_level": "strong",
+      "entity_category": "opinion_spreader",
+      "persona_name": "小美",
+      "age_range": "18-24",
+      "occupation": "大学生",
+      "personality": "感性冲动、忠诚度高",
+      "motivation": "为喜欢的主播辩护，认为道歉已足够",
+      "typical_phrases": [
+        "佳琦也不容易",
+        "已经道歉了",
+        "不要太过分了"
+      ]
+    },
+    {
+      "id": 6,
+      "group_name": "打工人群体",
+      "archetype_index": -2,
+      "related_entity": "李佳琦",
+      "role": "periphery",
+      "stance_score": 3.23,
+      "susceptibility": 0.2,
+      "confirmation_bias_level": "strong",
+      "entity_category": "opinion_spreader",
+      "persona_name": "老张",
+      "age_range": "35-45",
+      "occupation": "公司职员",
+      "personality": "冲动易怒、有代入感",
+      "motivation": "维护打工人尊严，反对精英式说教",
+      "typical_phrases": [
+        "关你什么事",
+        "你赚够了",
+        "打工人的命不是命"
+      ]
+    },
+    {
+      "id": 7,
+      "group_name": "国货支持者",
+      "archetype_index": -2,
+      "related_entity": "花西子",
+      "role": "periphery",
+      "stance_score": 5.01,
+      "susceptibility": 0.57,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "陈老师",
+      "age_range": "35-45",
+      "occupation": "中学教师",
+      "personality": "温和理性、爱国情怀",
+      "motivation": "支持国货品牌发展，希望给予包容",
+      "typical_phrases": [
+        "给国货一点时间",
+        "支持国产",
+        "不要落井下石"
+      ]
+    },
+    {
+      "id": 8,
+      "group_name": "品牌质疑者",
+      "archetype_index": -2,
+      "related_entity": "花西子",
+      "role": "periphery",
+      "stance_score": 4.34,
+      "susceptibility": 0.34,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "阿明",
+      "age_range": "25-34",
+      "occupation": "自媒体从业者",
+      "personality": "好奇八卦、追根究底",
+      "motivation": "追求真相，质疑品牌营销套路",
+      "typical_phrases": [
+        "证据呢",
+        "避重就轻",
+        "说的和做的不一样"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": 0,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 0,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 0,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 4,
+      "target": 1,
+      "type": "follows"
+    },
+    {
+      "source": 5,
+      "target": 0,
+      "type": "follows"
+    },
+    {
+      "source": 6,
+      "target": 0,
+      "type": "follows"
+    },
+    {
+      "source": 7,
+      "target": 1,
+      "type": "follows"
+    },
+    {
+      "source": 8,
+      "target": 1,
+      "type": "follows"
+    },
+    {
+      "source": 5,
+      "target": 6,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 5,
+      "target": 7,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 6,
+      "target": 8,
+      "type": "follows_cross_group"
+    }
+  ]
+}

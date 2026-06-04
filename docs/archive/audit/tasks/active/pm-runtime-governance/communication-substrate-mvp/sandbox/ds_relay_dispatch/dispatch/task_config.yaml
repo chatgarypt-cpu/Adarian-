@@ -1,0 +1,72 @@
+task_id: ds-relay-verify-v0.1.1-20260523
+task_domain: pm-runtime-governance
+short_task: ds-real-relay-verify
+task_level: M
+executor_type: shell_command
+execution_mode: managed_subprocess
+owner_control_required: true
+runtime_allowed_level: L1
+
+paths:
+  task_dir: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/ds_relay_dispatch
+  dispatch_path: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/ds_relay_dispatch/dispatch/task_config.yaml
+  system_prompt_path:
+  external_dispatch_path: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/dispatch/ds_relay_verify_dispatch_v0_1_1.md
+  runtime_dir: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/ds_relay_dispatch/runtime
+  logs_dir: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/ds_relay_dispatch/logs
+  summary_path: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/ds_relay_dispatch/summary/pm_runtime_summary.md
+
+runtime_control:
+  mode: health_based
+  heartbeat_interval_sec: 2
+  progress_check_interval_sec: 10
+  no_heartbeat_timeout_sec: 600
+  no_progress_review_sec: 900
+  owner_review_after_sec: 1800
+  emergency_max_wall_time_sec:
+  abort_requires_owner: true
+  preserve_partial_output_on_abort: true
+
+scope:
+  allowed_files: []
+  forbidden_files: []
+  allowed_dirs:
+    - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/ds_relay_dispatch
+    - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/ds
+  sandbox_dir: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/ds_relay_dispatch
+
+executor_options:
+  sandbox_mode: workspace-write
+  allowed_tools: []
+  max_turns:
+  extra_args: []
+  # v0.1.3: readonly review yolo lane — allow autonomous write inside task_dir only
+  task_type: readonly_review
+  approval_mode: yolo
+  yolo_write_scope:
+    - summary/**
+    - runtime/**
+    - logs/**
+    - ds/**
+  expected_receipt_path: runtime/ds_relay_verification_receipt.yaml
+  expected_report_path: summary/ds_relay_verification.md
+  command:
+    - claude
+    - --permission-mode
+    - bypassPermissions
+    - -p
+    - |
+      你正在执行只读审查任务，已获得 yolo 权限写入审查报告到当前 task_dir 内。
+      不得修改源码、配置、workflow、安全门、依赖文件。
+      不得 commit、不得 closeout。
+
+      立即读取 dispatch/dispatch.md 作为你的完整任务书。
+
+      严格按照任务书执行 real relay verification。
+
+      输出（注意：所有输出必须写在当前任务目录内，不得跨 sandbox）：
+      - 验证报告 → summary/ds_relay_verification.md
+      - 回执 YAML → runtime/ds_relay_verification_receipt.yaml
+
+      不要问输出路径。直接写。
+      不 commit，不 closeout，不碰 forbidden files。

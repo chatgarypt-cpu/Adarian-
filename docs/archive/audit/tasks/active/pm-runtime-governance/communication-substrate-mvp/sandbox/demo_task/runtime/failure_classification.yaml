@@ -1,0 +1,14 @@
+classification: agent_completed
+evidence:
+  -
+    path: /Users/gary/项目开发/AdarianMigration/adarian mvp/audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task/logs/stdout.log
+    excerpt_or_summary: "PM Runtime local_echo demo stdout\n"
+  -
+    path: /Users/gary/项目开发/AdarianMigration/adarian mvp/audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task/logs/stderr.log
+    excerpt_or_summary: "PM Runtime local_echo demo stderr\n"
+  -
+    path: /Users/gary/项目开发/AdarianMigration/adarian mvp/audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task/logs/raw_output.jsonl
+    excerpt_or_summary: " \"-c\", \"import sys; print('PM Runtime local_echo demo stdout'); print('PM Runtime local_echo demo stderr', file=sys.stderr)\"], \"returncode\": 0, \"elapsed_sec\": 0.056, \"stdout_path\": \"/Users/gary/项目开发/AdarianMigration/adarian mvp/audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task/logs/stdout.log\", \"stderr_path\": \"/Users/gary/项目开发/AdarianMigration/adarian mvp/audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/demo_task/logs/stderr.log\"}\n"
+confidence: high
+classified_by: runtime
+requires_independent_review: false

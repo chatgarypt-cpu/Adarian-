@@ -1,0 +1,47 @@
+{
+  "run": {
+    "start_time": "2026-05-01 19:47:27",
+    "end_time": "2026-05-01 19:47:34",
+    "elapsed_seconds": 7.07,
+    "status": "failed",
+    "mode": "normal",
+    "seed_file": "/Users/gary/项目开发/AdarianMigration/adarian mvp/seeds/test1.txt",
+    "run_dir": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test1_20260501_194727"
+  },
+  "phases": {
+    "phase1_entity_extraction": {
+      "start_time": "2026-05-01 19:47:27"
+    }
+  },
+  "llm": {
+    "count": 0,
+    "calls": []
+  },
+  "persona": {
+    "count": 0,
+    "groups": []
+  },
+  "ticks": [],
+  "errors": [
+    {
+      "stage": "llm:analyzer_set_parameters",
+      "error": "Connection error.",
+      "timestamp": "2026-05-01 19:47:29"
+    },
+    {
+      "stage": "llm:analyzer_set_parameters",
+      "error": "Connection error.",
+      "timestamp": "2026-05-01 19:47:31"
+    },
+    {
+      "stage": "llm:analyzer_set_parameters",
+      "error": "Connection error.",
+      "timestamp": "2026-05-01 19:47:34"
+    },
+    {
+      "stage": "main",
+      "error": "LLM 调用失败，已重试 3 次: Connection error.",
+      "timestamp": "2026-05-01 19:47:34"
+    }
+  ]
+}

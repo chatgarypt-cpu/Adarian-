@@ -1,0 +1,8 @@
+legacy_compat: true
+compat_for: hermes_old_relay
+task_id: adarian-source-reality-review
+runtime_state: executor_completed
+timestamp: 2026-06-04T02:40:22+08:00
+runtime_pid: 12448
+executor_pid:
+heartbeat_seq: 888

@@ -1,0 +1,178 @@
+{
+  "event_summary": "OPPO母亲节文案将母亲与“老公”戏称捆绑，被指解构家庭伦理、违背公序良俗，遭广告协会与武大发声批评",
+  "event_scale": 0.55,
+  "event_controversy": 0.25,
+  "event_type": "产品质量问题",
+  "event_entities": [
+    {
+      "name": "OPPO",
+      "type": "organization",
+      "role": "品牌方，发布争议文案的主体",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "错了就改吧，我相信他们会反省的",
+      "can_speak_reason": null
+    },
+    {
+      "name": "中国广告协会",
+      "type": "organization",
+      "role": "行业协会发声，批评文案违背公序良俗",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "个别品牌借母亲节推出的营销文案，以扭曲亲情、猎奇调侃的方式制造话题，曲解家庭伦理，颠覆公众对母爱与家庭亲情的传统认知",
+      "can_speak_reason": null
+    },
+    {
+      "name": "武汉大学",
+      "type": "organization",
+      "role": "涉事文案策划者毕业院校，发布声明批评文案",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "学校极不认同某手机厂商'母亲节'广告文案的内容表述和价值倾向，这与武汉大学立德树人的育人理念严重不符",
+      "can_speak_reason": null
+    },
+    {
+      "name": "段永平",
+      "type": "individual",
+      "role": "OPPO投资人，在雪球平台回应事件",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "确实不合适，我看到公司已经道歉并且改了。错了就改吧，我相信他们会反省的",
+      "can_speak_reason": null
+    }
+  ],
+  "opinion_spreaders": [
+    {
+      "group_name": "普通消费者妈妈群体",
+      "related_event_entity": "OPPO",
+      "description": "已为人母的女性消费者，对文案中的不当表述感到被冒犯和不适",
+      "I": 7.5,
+      "P": -1,
+      "susceptibility": 0.3,
+      "estimated_percentage": 25,
+      "communication_style": "表达愤怒和失望，质疑品牌价值观",
+      "entity_category": "opinion_spreader",
+      "persona_name": "王女士",
+      "age_range": "35-45",
+      "occupation": "全职妈妈",
+      "personality": "感性敏感、重视家庭伦理",
+      "motivation": "维护母亲形象和家庭价值观",
+      "typical_phrases": [
+        "这文案太气人了",
+        "不尊重母亲",
+        "营销不能没底线"
+      ]
+    },
+    {
+      "group_name": "年轻网民群体",
+      "related_event_entity": "OPPO",
+      "description": "关注热点事件的年轻网友，在社交媒体上批评品牌营销失误",
+      "I": 5.5,
+      "P": -1,
+      "susceptibility": 0.6,
+      "estimated_percentage": 20,
+      "communication_style": "调侃讽刺，热衷玩梗和吐槽",
+      "entity_category": "opinion_spreader",
+      "persona_name": "小陈",
+      "age_range": "18-24",
+      "occupation": "大学生",
+      "personality": "冲动易怒、爱吐槽",
+      "motivation": "追求热点、参与舆论讨论",
+      "typical_phrases": [
+        "OPPO这波操作太迷惑了",
+        "公关灾难",
+        "赶紧道歉吧"
+      ]
+    },
+    {
+      "group_name": "营销从业者群体",
+      "related_event_entity": "中国广告协会",
+      "description": "广告营销行业从业者，从专业角度分析文案问题",
+      "I": 6.0,
+      "P": -1,
+      "susceptibility": 0.4,
+      "estimated_percentage": 15,
+      "communication_style": "专业分析、理性批评",
+      "entity_category": "opinion_spreader",
+      "persona_name": "张老师",
+      "age_range": "30-40",
+      "occupation": "广告策划",
+      "personality": "冷静理性、追求专业",
+      "motivation": "维护行业规范和职业操守",
+      "typical_phrases": [
+        "创意要有底线",
+        "这波确实翻车了",
+        "行业需要自律"
+      ]
+    },
+    {
+      "group_name": "OPPO老用户群体",
+      "related_event_entity": "OPPO",
+      "description": "长期使用OPPO手机的用户，对品牌有感情基础，愿意给改正机会",
+      "I": 4.5,
+      "P": 1,
+      "susceptibility": 0.7,
+      "estimated_percentage": 20,
+      "communication_style": "温和包容、给品牌机会",
+      "entity_category": "opinion_spreader",
+      "persona_name": "老周",
+      "age_range": "25-34",
+      "occupation": "上班族",
+      "personality": "念旧重情、性格温和",
+      "motivation": "维护自己喜欢的品牌",
+      "typical_phrases": [
+        "知错能改就好",
+        "支持OPPO",
+        "产品还是好用的"
+      ]
+    },
+    {
+      "group_name": "理性中立群体",
+      "related_event_entity": "段永平",
+      "description": "关注各方回应，客观看待事件的理性网民",
+      "I": 4.0,
+      "P": 1,
+      "susceptibility": 0.5,
+      "estimated_percentage": 20,
+      "communication_style": "客观分析、呼吁理性",
+      "entity_category": "opinion_spreader",
+      "persona_name": "林先生",
+      "age_range": "30-40",
+      "occupation": "企业管理者",
+      "personality": "冷静理性、善于思考",
+      "motivation": "追求真相和理性讨论",
+      "typical_phrases": [
+        "错都改了就算了吧",
+        "给企业一个机会",
+        "理性看待"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "source": "OPPO",
+      "target": "中国广告协会",
+      "type": "被批评方-批评方"
+    },
+    {
+      "source": "OPPO",
+      "target": "武汉大学",
+      "type": "被批评方-批评方"
+    },
+    {
+      "source": "段永平",
+      "target": "OPPO",
+      "type": "投资方-被投方"
+    },
+    {
+      "source": "武汉大学",
+      "target": "涉事文案策划者",
+      "type": "学校-校友"
+    },
+    {
+      "source": "中国广告协会",
+      "target": "OPPO",
+      "type": "行业监管-被监管方"
+    }
+  ]
+}

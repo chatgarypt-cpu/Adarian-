@@ -1,0 +1,724 @@
+[
+  {
+    "tick": 0,
+    "entries": [
+      {
+        "agent_id": 0,
+        "group_name": "劝阻吸烟女子",
+        "saw_posts_from": [],
+        "previous_stance": 5.0,
+        "current_stance": 5.0,
+        "stance_delta": 0.0,
+        "susceptibility": 0.0,
+        "change_reason": "entity_not_speaking",
+        "comment": "（该实体不可发言）",
+        "reasoning": "实体不可发言"
+      },
+      {
+        "agent_id": 1,
+        "group_name": "吸烟男子",
+        "saw_posts_from": [],
+        "previous_stance": 5.0,
+        "current_stance": 5.0,
+        "stance_delta": 0.0,
+        "susceptibility": 0.0,
+        "change_reason": "entity_not_speaking",
+        "comment": "（该实体不可发言）",
+        "reasoning": "实体不可发言"
+      },
+      {
+        "agent_id": 2,
+        "group_name": "深圳市公安局",
+        "saw_posts_from": [],
+        "previous_stance": 5.0,
+        "current_stance": 5.0,
+        "stance_delta": 0.0,
+        "susceptibility": 0.0,
+        "change_reason": "entity_generated_statement",
+        "comment": "我局已关注到网络反映的深圳公交站台相关事件，目前正在依法核查具体情况。执法工作将严格依照法律法规和程序规定进行，调查结果将及时向社会公布。感谢公众监督。",
+        "reasoning": "作为执法机构需保持中立调查立场，表明核查态度同时维护公信力"
+      },
+      {
+        "agent_id": 3,
+        "group_name": "涉事民警",
+        "saw_posts_from": [],
+        "previous_stance": 5.0,
+        "current_stance": 5.0,
+        "stance_delta": 0.0,
+        "susceptibility": 0.0,
+        "change_reason": "entity_not_speaking",
+        "comment": "（该实体不可发言）",
+        "reasoning": "实体不可发言"
+      },
+      {
+        "agent_id": 4,
+        "group_name": "控烟维权群体",
+        "saw_posts_from": [],
+        "previous_stance": 5.0,
+        "current_stance": 5.0,
+        "stance_delta": 0.0,
+        "susceptibility": 0.0,
+        "change_reason": "entity_generated_statement",
+        "comment": "我们关注深圳女子劝阻公交吸烟反被拟拘留事件。《深圳控烟条例》明确规定公交站为禁烟区，公民劝阻权应受保护。我们质疑执法标准不一，呼吁彻查程序违规，维护法律尊严与公民健康权。",
+        "reasoning": "控烟群体需支持依法劝阻行为，质疑执法不公"
+      },
+      {
+        "agent_id": 5,
+        "group_name": "中国新闻周刊",
+        "saw_posts_from": [],
+        "previous_stance": 5.0,
+        "current_stance": 5.0,
+        "stance_delta": 0.0,
+        "susceptibility": 0.0,
+        "change_reason": "entity_generated_statement",
+        "comment": "深圳女子劝阻公交吸烟反被拟拘留事件引发关注。据当事人反映，执法过程中存在程序争议。中国新闻周刊将持续关注事件进展，呼吁相关部门依法公正处理，保障公民合法权益。",
+        "reasoning": "作为媒体，客观报道事实，关注事件进展，呼吁公正处理"
+      },
+      {
+        "agent_id": 6,
+        "group_name": "律师群体",
+        "saw_posts_from": [],
+        "previous_stance": 5.0,
+        "current_stance": 5.0,
+        "stance_delta": 0.0,
+        "susceptibility": 0.0,
+        "change_reason": "entity_generated_statement",
+        "comment": "从法律专业角度，本案涉及三个核心问题：一是公交站是否属于法定禁烟区，二是劝阻行为与侮辱的界限，三是执法程序是否合规。我们呼吁依法核查，保障公民合法劝阻权，同时维护执法程序正义。",
+        "reasoning": "律师群体需从专业角度分析执法合法性与公民权利边界"
+      }
+    ],
+    "global_metrics": {
+      "mean_stance": 5.07,
+      "std_stance": 1.88,
+      "polarization_index": 0.37
+    }
+  },
+  {
+    "tick": 1,
+    "entries": [
+      {
+        "agent_id": 7,
+        "group_name": "维权正义派",
+        "saw_posts_from": [
+          0
+        ],
+        "previous_stance": 2.66,
+        "current_stance": 2.4,
+        "stance_delta": -0.26,
+        "susceptibility": 0.22,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "公交是公共场所，禁烟是明文规定。女子劝阻是维护公共秩序，是公民正当行为。结果劝阻者被拟拘留，吸烟者却未追责？这执法标准谁定的？守法者吃亏，违法者逍遥？这合理吗？执法不能只看谁闹得凶，要看谁理正。支持公共维权，反对选择性执法。",
+        "reasoning": "作为维权正义派，我认为此事件暴露了执法标准的不公。劝阻吸烟是正当的公民行为，应当得到保护而非处罚。吸烟者违反公共场所禁烟规定却未受追责，劝阻者反被拟拘留，这是典型的倒置执法。这种处理方式会寒了维权者的"
+      },
+      {
+        "agent_id": 8,
+        "group_name": "执法质疑派",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 1.7,
+        "current_stance": 1.94,
+        "stance_delta": 0.24,
+        "susceptibility": 0.1,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "深圳市公安局回应表明重视公众监督，但事件核心在于执法程序是否体现程序正义。劝阻吸烟者拟被拘留而吸烟者未受追责，需警惕选择性执法与双重标准。建议核查时同步公开执法依据，确保公权力规范运行。",
+        "reasoning": "公安机关表态符合程序要求，但事件暴露的执法标准一致性问题未获实质回应。作为监督者，需以中立态度观察后续调查是否体现法治精神，避免公众对执法公正性产生合理怀疑。"
+      },
+      {
+        "agent_id": 9,
+        "group_name": "健康权益派",
+        "saw_posts_from": [
+          1
+        ],
+        "previous_stance": 2.83,
+        "current_stance": 3.09,
+        "stance_delta": 0.26,
+        "susceptibility": 0.26,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "深圳公交上劝阻吸烟女子反被拟拘留，吸烟者却未受追责，这执法标准让人寒心。二手烟害死人，在密闭车厢里抽烟对老人小孩都是伤害。那位女子是出于善意维护公共健康，不该被处罚。为了孩子，为了所有乘客的健康权，公共场所应该禁烟。希望相关部门重新审视此事，给劝阻者一个公道。",
+        "reasoning": "作为关心家人健康的普通家庭主妇，我支持劝阻吸烟的女子。她在维护公共健康权益，不应因劝阻他人吸烟而被处罚。健康权不容侵犯，执法应更加公正合理。"
+      },
+      {
+        "agent_id": 10,
+        "group_name": "年轻围观派",
+        "saw_posts_from": [
+          0
+        ],
+        "previous_stance": 4.45,
+        "current_stance": 5.46,
+        "stance_delta": 1.01,
+        "susceptibility": 0.53,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "我真的会谢，劝阻别人遵守规定还要被拘留？吸烟者没事儿，女子反而要被罚，这执法标准也太离谱了吧。公共场合禁烟是常识，她是在维护规则啊。无语子，以后谁还敢管闲事？希望相关部门重新审视这个决定。",
+        "reasoning": "作为大学生，我觉得维护公共秩序是每个人的责任。劝阻吸烟是正当行为，不应该受到惩罚。这种执法结果让人感到不公平，会打击公众参与社会管理的积极性。因此我强烈支持劝阻吸烟女子的立场。"
+      },
+      {
+        "agent_id": 11,
+        "group_name": "中立观望派",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 8.6,
+        "current_stance": 6.49,
+        "stance_delta": -2.11,
+        "susceptibility": 0.61,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "深圳市公安局已经回应正在核查，这个态度是对的。目前网上信息比较碎片化，双方说法需要进一步核实。作为普通市民，我觉得还是让子弹飞一会儿，等官方调查结果出来再下判断。执法程序的合法性和透明度是关键，事实胜于雄辩。",
+        "reasoning": "作为大学教师，习惯保持理性客观。目前信息不足，不宜过早站队。公安机关已介入核查，应等待正式调查结果再做评价。执法标准是否统一、程序是否合规，需要以官方通报为准。"
+      },
+      {
+        "agent_id": 12,
+        "group_name": "程序理性派",
+        "saw_posts_from": [
+          0
+        ],
+        "previous_stance": 5.07,
+        "current_stance": 5.09,
+        "stance_delta": 0.02,
+        "susceptibility": 0.48,
+        "change_reason": "silent_exposure_drift",
+        "comment": "（未发言）",
+        "reasoning": "本轮未进入发言队列"
+      },
+      {
+        "agent_id": 13,
+        "group_name": "执法理解派",
+        "saw_posts_from": [
+          3
+        ],
+        "previous_stance": 6.45,
+        "current_stance": 6.73,
+        "stance_delta": 0.28,
+        "susceptibility": 0.34,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "作为在社区干了十多年的工作者，我理解基层执法的难处。女子劝阻吸烟是好事，但民警当场处置也有难言之隐。公交车上取证难、当事人情绪激动，基层民警要在几分钟内做出判断，不能事后诸葛亮。别一棒子打死，建议双方都再核实一下证据链，执法标准需要统一但也要考虑现场实际。",
+        "reasoning": "基于执法理解派立场，认为基层执法面临现实困境，需要理解民警现场处置的难度，同时呼吁完善执法标准但反对过度批评执法者。"
+      },
+      {
+        "agent_id": 14,
+        "group_name": "官方支持派",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 8.59,
+        "current_stance": 8.6,
+        "stance_delta": 0.01,
+        "susceptibility": 0.23,
+        "change_reason": "silent_exposure_drift",
+        "comment": "（未发言）",
+        "reasoning": "本轮未进入发言队列"
+      }
+    ],
+    "global_metrics": {
+      "mean_stance": 5.04,
+      "std_stance": 1.65,
+      "polarization_index": 0.33
+    }
+  },
+  {
+    "tick": 2,
+    "entries": [
+      {
+        "agent_id": 7,
+        "group_name": "维权正义派",
+        "saw_posts_from": [
+          0
+        ],
+        "previous_stance": 2.4,
+        "current_stance": 2.41,
+        "stance_delta": 0.01,
+        "susceptibility": 0.22,
+        "change_reason": "silent_exposure_drift",
+        "comment": "（未发言）",
+        "reasoning": "本轮未进入发言队列"
+      },
+      {
+        "agent_id": 8,
+        "group_name": "执法质疑派",
+        "saw_posts_from": [
+          2,
+          9
+        ],
+        "previous_stance": 1.94,
+        "current_stance": 2.18,
+        "stance_delta": 0.24,
+        "susceptibility": 0.1,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "深圳市公安局回应称正在核查，这是程序上的必要步骤。但公众质疑的核心在于：劝阻者面临处罚、违法者却未被追责，这种执法结果的对等性存疑。程序正义要求同类行为同等对待，若执法机关仅追究劝阻者而放任吸烟者，则有选择性执法之嫌。建议核查过程中同步公开执法依据和裁量标准，让公权力运行经得起法治检验。",
+        "reasoning": "目前仅看到警方核查回应，尚未公布最终调查结果。作为执法质疑派，我关注的是执法程序是否规范、是否存在双重标准。在调查结果明确前，保持中立偏审慎的立场，既不预设立场，也要求执法机关公开透明地回应公众关切，"
+      },
+      {
+        "agent_id": 9,
+        "group_name": "健康权益派",
+        "saw_posts_from": [
+          1,
+          10,
+          11
+        ],
+        "previous_stance": 3.09,
+        "current_stance": 2.83,
+        "stance_delta": -0.26,
+        "susceptibility": 0.26,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "看了这个事件真的很气愤。在公交车这种密闭空间吸烟，二手烟害死人，对老人小孩都是伤害。那位女子站出来劝阻是维护公共健康权益，结果反而要被拘留，吸烟的人却没事？这执法标准真的让人寒心。为了孩子，为了所有乘客的健康，公共场所禁烟是基本规定。希望相关部门认真核查，给劝阻者一个公道，健康权不容侵犯。",
+        "reasoning": "作为健康权益派，我支持在公共场所维护禁烟规定的行为。女子劝阻吸烟是在保护公共健康，不应被处罚。当前执法标准存在明显不公，吸烟者未受追责而劝阻者被拟拘留，需要重新审视。"
+      },
+      {
+        "agent_id": 10,
+        "group_name": "年轻围观派",
+        "saw_posts_from": [
+          0
+        ],
+        "previous_stance": 5.46,
+        "current_stance": 4.45,
+        "stance_delta": -1.01,
+        "susceptibility": 0.53,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "我真的会谢，看了后续还是无语子。女子在公交上劝阻吸烟本来就是维护公共利益，结果反被拟拘留？吸烟者一点责任没有，这种执法双重标准真的太离谱了。公共场合禁烟是明文规定，她没做错什么啊。希望官方能给个合理说法，不然以后谁还敢站出来维护规则？",
+        "reasoning": "保持对执法标准不公的强烈批评立场，认为劝阻者不应受罚而吸烟者未追责存在明显双重标准，符合年轻围观派对社会正义的关切"
+      },
+      {
+        "agent_id": 11,
+        "group_name": "中立观望派",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 6.49,
+        "current_stance": 5.0,
+        "stance_delta": -1.49,
+        "susceptibility": 0.61,
+        "change_reason": "within_effective_delta",
+        "comment": "深圳市公安局的回应算是比较规范，至少明确了正在核查的程序。现在网上各种说法都有，视频片段、当事人陈述都缺乏完整性。劝阻吸烟是公民权利，但执法尺度是否得当需要看完整证据链。我倾向于相信官方会按程序办事，在调查结果出来之前，不宜过早给任何一方定性。程序正义很重要，事实真相也需要时间沉淀。",
+        "reasoning": "保持中立观望立场。认可警方核查态度，但对执法标准争议持谨慎态度。作为大学教师，更看重程序合法性和证据完整性，不急于站队表态，等待官方通报是理性的选择。"
+      },
+      {
+        "agent_id": 12,
+        "group_name": "程序理性派",
+        "saw_posts_from": [
+          0
+        ],
+        "previous_stance": 5.09,
+        "current_stance": 5.5,
+        "stance_delta": 0.41,
+        "susceptibility": 0.48,
+        "change_reason": "within_effective_delta",
+        "comment": "从法律角度分析，公共场所吸烟确实违反《深圳经济特区控制吸烟条例》，劝阻行为本身具有正当性。但泼洒饮料这一举动确实不妥，维权也要合法，不能以违法方式对抗违法。执法机关拟拘留劝阻者而吸烟者未受追责，这里存在法律边界的问题——执法应当对等审查各方行为。建议依法分别处理：吸烟者依条例处罚，劝阻者若泼洒饮料则按治安管理处罚法评估情节轻重。程序理性派希望看到执法标准统一，让公众明白法律既保护公民监督权，也要求",
+        "reasoning": "作为律师助理，我认为需要厘清法律边界。劝阻吸烟本身合法，但泼洒饮料方式不当；执法机关对双方处理不对等，需要更公正的裁量。中立立场，推动理性讨论而非情绪对立。"
+      },
+      {
+        "agent_id": 13,
+        "group_name": "执法理解派",
+        "saw_posts_from": [
+          3
+        ],
+        "previous_stance": 6.73,
+        "current_stance": 7.01,
+        "stance_delta": 0.28,
+        "susceptibility": 0.34,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "这件事我看了好几遍报道，作为在社区干过的人，真心觉得不能简单地说谁对谁错。劝阻吸烟的初衷是好的，这个值得肯定。但民警当时面临的现场情况，没经历过的人可能想象不到——车厢里人多眼杂、取证难、还要顾全各方情绪。基层执法的难处就在这里，几秒钟内就要做判断。我建议先别急着下定论，等完整的证据链出来再说。执法标准确实需要统一，但也要给一线执法者留点实际操作的空间。",
+        "reasoning": "作为社区工作者，理解基层执法面临的现场困境。维护执法权威的同时也认可劝阻行为的正当性，立场偏向支持执法方的现场处置权，但保持中立态度等待更多证据。"
+      },
+      {
+        "agent_id": 14,
+        "group_name": "官方支持派",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 8.6,
+        "current_stance": 8.5,
+        "stance_delta": -0.1,
+        "susceptibility": 0.23,
+        "change_reason": "within_effective_delta",
+        "comment": "深圳市公安局已经回应了，正在依法核查具体情况。这种态度很负责任，我们老百姓应该相信官方的处理结果。现在网上各种声音都有，但还是要维护权威，不要带节奏，等调查结果出来再说。执法工作肯定是有法可依的，相信公安机关会依法公正处理。",
+        "reasoning": "作为国企员工，我支持官方依法处理的态度。深圳市公安局已经公开回应并承诺依法核查，这体现了对公众监督的重视。在调查结果公布前，不应妄加评判，应该相信官方会依法公正处理，维护社会秩序。"
+      }
+    ],
+    "global_metrics": {
+      "mean_stance": 4.91,
+      "std_stance": 1.61,
+      "polarization_index": 0.33
+    }
+  },
+  {
+    "tick": 3,
+    "entries": [
+      {
+        "agent_id": 7,
+        "group_name": "维权正义派",
+        "saw_posts_from": [
+          0
+        ],
+        "previous_stance": 2.41,
+        "current_stance": 2.42,
+        "stance_delta": 0.01,
+        "susceptibility": 0.22,
+        "change_reason": "silent_exposure_drift",
+        "comment": "（未发言）",
+        "reasoning": "本轮未进入发言队列"
+      },
+      {
+        "agent_id": 8,
+        "group_name": "执法质疑派",
+        "saw_posts_from": [
+          2,
+          9
+        ],
+        "previous_stance": 2.18,
+        "current_stance": 2.42,
+        "stance_delta": 0.24,
+        "susceptibility": 0.1,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "深圳市公安局回应称正在核查，这是程序上的必要步骤。但公众质疑的核心在于：劝阻者面临处罚、违法者却未被追责，这种执法结果的对等性存疑。程序正义要求同类行为同等对待，若执法机关仅追究劝阻者而放任吸烟者，则有选择性执法之嫌。建议核查过程中同步公开执法依据和裁量标准，让公权力运行经得起法治检验。",
+        "reasoning": "立场偏中性偏谨慎。承认警方核查是程序必要步骤，但核心质疑执法标准的一致性和对等性。不预设结论，但要求公开执法依据，体现程序正义原则。避免情绪化表达，聚焦于公权力规范运行的监督。"
+      },
+      {
+        "agent_id": 9,
+        "group_name": "健康权益派",
+        "saw_posts_from": [
+          1,
+          10,
+          11
+        ],
+        "previous_stance": 2.83,
+        "current_stance": 2.57,
+        "stance_delta": -0.26,
+        "susceptibility": 0.26,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "在公交车这种密闭空间抽烟，二手烟害死人，老人孩子吸了更遭罪。劝阻者是为公共健康着想，现在反而要担责，吸烟的人却没事，这执法标准太不公平。为了孩子，公共场所禁烟是基本底线，健康权不容侵犯。希望相关部门能重视公众健康，别让维护规则的人寒了心。",
+        "reasoning": "作为家庭主妇，我特别担心孩子和老人暴露在二手烟环境。执法标准对劝阻者和吸烟者明显不公，会打击公众维护公共健康的积极性。密闭空间禁烟是明文规定，应当优先保障公众健康权益而非简单处罚劝阻者。"
+      },
+      {
+        "agent_id": 10,
+        "group_name": "年轻围观派",
+        "saw_posts_from": [
+          0,
+          12
+        ],
+        "previous_stance": 4.45,
+        "current_stance": 3.44,
+        "stance_delta": -1.01,
+        "susceptibility": 0.53,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "我真的会谢，看到程序理性派的分析还是无语子。说泼洒饮料不妥我理解，但核心问题是吸烟者为什么没被追责？公共场所禁烟是明文规定，女子劝阻本来就是正当行为。执法机关拟拘留劝阻者，吸烟者却没事，这双重标准太离谱了。如果泼洒饮料要罚，那违反禁烟条例的要不要罚？法律面前应该人人平等啊。",
+        "reasoning": "保持强烈批评立场。虽然程序理性派提出维权也要合法的观点有一定道理，但事件的核心矛盾是执法标准不对等——吸烟者违规未受追究，劝阻者反而面临处罚。作为年轻围观派，更关注社会公平正义和执法公信力，这种双重标"
+      },
+      {
+        "agent_id": 11,
+        "group_name": "中立观望派",
+        "saw_posts_from": [
+          2,
+          12
+        ],
+        "previous_stance": 5.0,
+        "current_stance": 4.5,
+        "stance_delta": -0.5,
+        "susceptibility": 0.61,
+        "change_reason": "within_effective_delta",
+        "comment": "深圳市公安局已经介入核查，这个程序是对的。从程序理性派的分析来看，核心问题其实是两个：一是劝阻者维权方式的边界在哪里，二是执法标准是否对等适用。目前信息确实还比较碎片，视频、当事人陈述都需要核实。作为大学老师，我觉得这件事反映的不仅是单个案件，更涉及公民监督权与执法尺度的平衡问题。我的观点是：吸烟违法该罚，但劝阻者若采取过激行为也需依法评估，关键是看证据链和情节轻重。让子弹飞一会儿，等官方通报完整",
+        "reasoning": "作为中立观望派，保持4.5分的中立立场。支持官方核查程序，但不急于对任何一方定性，强调等待完整证据链和官方调查结果。理性分析事件涉及的法律边界问题，不情绪化站队。"
+      },
+      {
+        "agent_id": 12,
+        "group_name": "程序理性派",
+        "saw_posts_from": [
+          0
+        ],
+        "previous_stance": 5.5,
+        "current_stance": 5.52,
+        "stance_delta": 0.02,
+        "susceptibility": 0.48,
+        "change_reason": "silent_exposure_drift",
+        "comment": "（未发言）",
+        "reasoning": "本轮未进入发言队列"
+      },
+      {
+        "agent_id": 13,
+        "group_name": "执法理解派",
+        "saw_posts_from": [
+          3
+        ],
+        "previous_stance": 7.01,
+        "current_stance": 7.29,
+        "stance_delta": 0.28,
+        "susceptibility": 0.34,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "作为社区工作者，我真心觉得这件事不能简单站队。执法难处很多人没经历过，基层民警每天面对的就是各种突发状况，几秒钟内要做出判断，这压力不是外人能体会的。女子劝阻吸烟是好事，这个应该肯定，但民警的现场处置也有执法依据。别一棒子打死，等完整调查结果出来再说。执法标准确实需要统一，但也要理解基层的实际困难，给一线执法者留点操作空间。",
+        "reasoning": "基于社区工作者身份，理解基层执法的实际困境。支持对执法行为保持客观理性态度，既不偏袒也不苛责，立场倾向于理解执法难处，维护执法权威。"
+      },
+      {
+        "agent_id": 14,
+        "group_name": "官方支持派",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 8.5,
+        "current_stance": 8.51,
+        "stance_delta": 0.01,
+        "susceptibility": 0.23,
+        "change_reason": "silent_exposure_drift",
+        "comment": "（未发言）",
+        "reasoning": "本轮未进入发言队列"
+      }
+    ],
+    "global_metrics": {
+      "mean_stance": 4.83,
+      "std_stance": 1.68,
+      "polarization_index": 0.35
+    }
+  },
+  {
+    "tick": 4,
+    "entries": [
+      {
+        "agent_id": 7,
+        "group_name": "维权正义派",
+        "saw_posts_from": [
+          0
+        ],
+        "previous_stance": 2.42,
+        "current_stance": 2.43,
+        "stance_delta": 0.01,
+        "susceptibility": 0.22,
+        "change_reason": "silent_exposure_drift",
+        "comment": "（未发言）",
+        "reasoning": "本轮未进入发言队列"
+      },
+      {
+        "agent_id": 8,
+        "group_name": "执法质疑派",
+        "saw_posts_from": [
+          2,
+          9
+        ],
+        "previous_stance": 2.42,
+        "current_stance": 2.5,
+        "stance_delta": 0.08,
+        "susceptibility": 0.1,
+        "change_reason": "within_effective_delta",
+        "comment": "深圳市公安局回应称正在核查，态度尚可。但公众关注点不在核查本身，而在执法结果的对称性：吸烟者在公共场所违规为何未被追责？劝阻者维护公共秩序为何反拟被拘留？若执法机关仅对劝阻者施压而放任违法行为，确有选择性执法之虞。程序正义不仅是走流程，更要求同等情况同等对待。建议核查期间同步公开执法依据与裁量标准，让公权力运行经得起法治检验，避免双重标准损害执法公信力。",
+        "reasoning": "基于对执法对等性和程序正义的质疑，认为当前执法标准存在双重标准嫌疑，对深圳市公安局的执法公正性持批判立场。"
+      },
+      {
+        "agent_id": 9,
+        "group_name": "健康权益派",
+        "saw_posts_from": [
+          1,
+          10,
+          11
+        ],
+        "previous_stance": 2.57,
+        "current_stance": 2.31,
+        "stance_delta": -0.26,
+        "susceptibility": 0.26,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "看了年轻围观派说的，确实说到我心坎里了。法律面前人人平等，吸烟违法为什么不管？劝阻的人却要被拘留？二手烟害死人，在公交车这种密闭空间，老人孩子躲都躲不开。为了孩子，为了全家人的健康，公共场所禁烟是底线。执法不能只看谁声音大，要看谁在维护公共利益。希望官方核查能给个公道，别让维护健康权的人寒了心。",
+        "reasoning": "作为家庭主妇，最关心的是家人健康。二手烟对老人孩子的危害是实实在在的，劝阻行为本身是出于善意。执法标准双重对待，吸烟者未追责而劝阻者被拟拘留，明显不公平。健康权不容侵犯，这个立场必须坚持。"
+      },
+      {
+        "agent_id": 10,
+        "group_name": "年轻围观派",
+        "saw_posts_from": [
+          0,
+          12
+        ],
+        "previous_stance": 3.44,
+        "current_stance": 2.42,
+        "stance_delta": -1.02,
+        "susceptibility": 0.53,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "我真的会谢，程序理性派说得有道理，维权确实要合法。但问题是泼洒饮料和公共场所吸烟能划等号吗？一个是在禁烟区域公然违法，一个是情绪激动下的过激行为。吸烟者没被追责才是核心问题好吗？执法机关拟拘留劝阻者，吸烟者却没事，这种双重标准真的太离谱了。无语子，如果法律不能保护维护规则的人，那以后谁还敢站出来？",
+        "reasoning": "保持强烈批评立场。虽然理解程序理性派关于维权方式要合法的观点，但核心矛盾是执法标准的不平等。劝阻者拟被拘留而吸烟者未受追责，这种双重标准损害了公众对规则的信任。作为年轻围观派，更关注执法是否公平公正，"
+      },
+      {
+        "agent_id": 11,
+        "group_name": "中立观望派",
+        "saw_posts_from": [
+          2,
+          12
+        ],
+        "previous_stance": 4.5,
+        "current_stance": 5.0,
+        "stance_delta": 0.5,
+        "susceptibility": 0.61,
+        "change_reason": "within_effective_delta",
+        "comment": "深圳市公安局的回应是规范的，明确正在核查并承诺公布结果，这符合程序要求。程序理性派的分析比较到位，核心问题确实是两个维度的平衡：一是公民劝阻权的正当性边界，二是执法对等适用的问题。泼洒饮料确实可能构成过激行为，但这与吸烟违法是两个独立的法律评价，不应混为一谈。作为大学老师，我觉得公众讨论这件事的价值在于推动执法透明度，而不是急于站队。目前信息仍然不完整，视频片段和当事人陈述都需要官方核实。我的观点",
+        "reasoning": "保持中立观望立场，认可官方核查程序，支持程序理性派关于分别处理、对等适用的分析，但强调需等待完整调查结果再下判断。"
+      },
+      {
+        "agent_id": 12,
+        "group_name": "程序理性派",
+        "saw_posts_from": [
+          0
+        ],
+        "previous_stance": 5.52,
+        "current_stance": 5.54,
+        "stance_delta": 0.02,
+        "susceptibility": 0.48,
+        "change_reason": "silent_exposure_drift",
+        "comment": "（未发言）",
+        "reasoning": "本轮未进入发言队列"
+      },
+      {
+        "agent_id": 13,
+        "group_name": "执法理解派",
+        "saw_posts_from": [
+          3
+        ],
+        "previous_stance": 7.29,
+        "current_stance": 7.01,
+        "stance_delta": -0.28,
+        "susceptibility": 0.34,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "这件事我持续关注了一下。作为在社区干了十多年的工作者，真心觉得执法难处很多人没真正体会过。公交车上这种突发情况，民警要在几分钟内做出判断，取证难、现场乱，还要顾全各方情绪。女子劝阻吸烟的初衷值得肯定，但民警当时的处置也有执法依据。别一棒子打死，等完整的调查结论出来再说。执法标准确实需要统一，但也要理解基层的实际困难，给一线执法者留点实际操作的空间。",
+        "reasoning": "保持理解基层执法难处的立场，既肯定女子劝阻吸烟的初衷，也理解民警现场处置的困难。不急于下结论，主张等待完整调查结果，立场中立偏理解执法方。"
+      },
+      {
+        "agent_id": 14,
+        "group_name": "官方支持派",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 8.51,
+        "current_stance": 8.52,
+        "stance_delta": 0.01,
+        "susceptibility": 0.23,
+        "change_reason": "silent_exposure_drift",
+        "comment": "（未发言）",
+        "reasoning": "本轮未进入发言队列"
+      }
+    ],
+    "global_metrics": {
+      "mean_stance": 4.77,
+      "std_stance": 1.75,
+      "polarization_index": 0.37
+    }
+  },
+  {
+    "tick": 5,
+    "entries": [
+      {
+        "agent_id": 7,
+        "group_name": "维权正义派",
+        "saw_posts_from": [
+          0
+        ],
+        "previous_stance": 2.43,
+        "current_stance": 2.44,
+        "stance_delta": 0.01,
+        "susceptibility": 0.22,
+        "change_reason": "silent_exposure_drift",
+        "comment": "（未发言）",
+        "reasoning": "本轮未进入发言队列"
+      },
+      {
+        "agent_id": 8,
+        "group_name": "执法质疑派",
+        "saw_posts_from": [
+          2,
+          9
+        ],
+        "previous_stance": 2.5,
+        "current_stance": 2.5,
+        "stance_delta": 0.0,
+        "susceptibility": 0.1,
+        "change_reason": "within_effective_delta",
+        "comment": "健康权益派说得对，法律面前人人平等是法治的基本原则。公共场所禁烟有明确规定，吸烟者违法在先，劝阻者反而面临处罚，这种执法结果的严重不对等，恰恰印证了公众对选择性执法的担忧。程序正义不能只停留在'正在核查'的表态上，更关键的是核查结果能否体现执法标准的统一性。若吸烟违法不被追究、劝阻行为却被拟拘留，这种双重标准将严重损害执法公信力。建议深圳市公安局在公布调查结果时，同步公开对吸烟者的处理依据与对劝阻",
+        "reasoning": "基于之前对执法对等性和程序正义的质疑延续，此次健康权益派的发言进一步凸显了执法结果的不合理性。立场维持在强烈批评区间，核心关注点仍是选择性执法与双重标准问题，要求核查结果公开透明、执法标准统一。"
+      },
+      {
+        "agent_id": 9,
+        "group_name": "健康权益派",
+        "saw_posts_from": [
+          1,
+          10,
+          11
+        ],
+        "previous_stance": 2.31,
+        "current_stance": 2.05,
+        "stance_delta": -0.26,
+        "susceptibility": 0.26,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "看了整个事件经过，心里很不是滋味。公交车是密闭空间，二手烟害死人，老人孩子躲都躲不开。那位女子站出来劝阻，本是为了维护公共健康权益，结果反而要被拘留？吸烟的人在禁烟区域公然违法，却没有任何处罚？这种执法双重标准真的让人寒心。健康权不容侵犯，为了孩子，公共场所禁烟是基本底线。执法不能只看谁情绪激动、谁行为过激，更要看谁在维护公共利益、谁在破坏公共规则。希望官方核查能公平对待双方，别让维护规则的人心寒",
+        "reasoning": "作为家庭主妇，每天要照顾老人孩子，深知二手烟对家人的危害。劝阻吸烟是维护公共健康的行为，不应被处罚。吸烟者在禁烟区域违法在先，未受追责反而劝阻者被拟拘留，这明显是执法标准的双重标准。支持强烈批评这种不"
+      },
+      {
+        "agent_id": 10,
+        "group_name": "年轻围观派",
+        "saw_posts_from": [
+          0,
+          12
+        ],
+        "previous_stance": 2.42,
+        "current_stance": 2.0,
+        "stance_delta": -0.42,
+        "susceptibility": 0.53,
+        "change_reason": "within_effective_delta",
+        "comment": "我真的会谢，看了这么多讨论还是无语子。程序理性派说得有道理，维权要合法。但泼洒饮料和公共场所吸烟能划等号吗？一个是在禁烟区域公然违法，一个是情绪激动下的过激行为。执法机关拟拘留劝阻者，吸烟者却没事，这种双重标准真的太离谱了。法律面前应该人人平等啊，如果维护规则的人要被罚，那以后谁还敢站出来？",
+        "reasoning": "立场维持强烈批评。核心问题是执法双重标准：吸烟者违反禁烟条例未被追责，劝阻者却被拟拘留。虽然泼洒饮料行为确实不妥，但两者性质和严重程度不能相提并论。执法应当对等审查，不能只罚一方。如果法律不能保护维护"
+      },
+      {
+        "agent_id": 11,
+        "group_name": "中立观望派",
+        "saw_posts_from": [
+          2,
+          12
+        ],
+        "previous_stance": 5.0,
+        "current_stance": 5.0,
+        "stance_delta": 0.0,
+        "susceptibility": 0.61,
+        "change_reason": "within_effective_delta",
+        "comment": "深圳市公安局的核查回应是符合程序的，这点值得肯定。目前网络上的信息确实比较碎片化，视频片段和各方陈述都存在信息不对称的问题。程序理性派的分析比较理性，核心问题确实在于两个维度：一是公民劝阻权的正当边界在哪里，二是执法标准是否对等适用。泼洒饮料是否构成过激行为，与吸烟是否违法，这两个是独立的法律评价，不应混为一谈。作为大学老师，我比较关注执法透明度和社会示范效应。在官方完整调查结果出来之前，不宜过早",
+        "reasoning": "保持中立观望立场，既不急于批评也不盲目支持。认可官方核查程序的规范性，强调等待完整证据链的重要性，符合理性克制的人设特征。"
+      },
+      {
+        "agent_id": 12,
+        "group_name": "程序理性派",
+        "saw_posts_from": [
+          0
+        ],
+        "previous_stance": 5.54,
+        "current_stance": 5.56,
+        "stance_delta": 0.02,
+        "susceptibility": 0.48,
+        "change_reason": "silent_exposure_drift",
+        "comment": "（未发言）",
+        "reasoning": "本轮未进入发言队列"
+      },
+      {
+        "agent_id": 13,
+        "group_name": "执法理解派",
+        "saw_posts_from": [
+          3
+        ],
+        "previous_stance": 7.01,
+        "current_stance": 7.29,
+        "stance_delta": 0.28,
+        "susceptibility": 0.34,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "看了整个事件的来龙去脉，说实话基层执法真的不容易。公交车上这种突发状况，民警要在短时间内做判断，取证难、现场乱，还要平衡各方。女子劝阻吸烟的初衷是好的，但民警当时面临的执法环境没经历过的人很难理解。别急着下结论，等完整调查出来再说。执法标准需要统一，但也要给一线执法者留点实际操作的空间。理解基层执法的难处，别一棒子打死。",
+        "reasoning": "作为社区工作者，理解基层执法的实际困境。支持给一线执法者更多操作空间，同时肯定女子劝阻的初衷，但强调需等完整调查结果再下定论。"
+      },
+      {
+        "agent_id": 14,
+        "group_name": "官方支持派",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 8.52,
+        "current_stance": 8.53,
+        "stance_delta": 0.01,
+        "susceptibility": 0.23,
+        "change_reason": "silent_exposure_drift",
+        "comment": "（未发言）",
+        "reasoning": "本轮未进入发言队列"
+      }
+    ],
+    "global_metrics": {
+      "mean_stance": 4.74,
+      "std_stance": 1.84,
+      "polarization_index": 0.39
+    }
+  }
+]

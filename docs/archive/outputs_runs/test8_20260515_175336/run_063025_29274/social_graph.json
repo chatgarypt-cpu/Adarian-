@@ -1,0 +1,279 @@
+{
+  "nodes": [
+    {
+      "id": 0,
+      "group_name": "OPPO",
+      "archetype_index": -1,
+      "related_entity": "OPPO",
+      "role": "core",
+      "stance_score": 5.15,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 1,
+      "group_name": "中国广告协会",
+      "archetype_index": -1,
+      "related_entity": "中国广告协会",
+      "role": "core",
+      "stance_score": 5.14,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 2,
+      "group_name": "武汉大学",
+      "archetype_index": -1,
+      "related_entity": "武汉大学",
+      "role": "core",
+      "stance_score": 5.0,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 3,
+      "group_name": "段永平",
+      "archetype_index": -1,
+      "related_entity": "段永平",
+      "role": "core",
+      "stance_score": 5.04,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 4,
+      "group_name": "普通消费者",
+      "archetype_index": -2,
+      "related_entity": "OPPO",
+      "role": "periphery",
+      "stance_score": 6.8,
+      "susceptibility": 0.48,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "小张",
+      "age_range": "25-34",
+      "occupation": "公司职员",
+      "personality": "冲动易怒",
+      "motivation": "维护消费者权益，抵制冒犯性营销",
+      "typical_phrases": [
+        "这种文案太离谱了",
+        "必须道歉",
+        "消费我们的感情"
+      ]
+    },
+    {
+      "id": 5,
+      "group_name": "自媒体博主",
+      "archetype_index": -2,
+      "related_entity": "OPPO",
+      "role": "periphery",
+      "stance_score": 3.79,
+      "susceptibility": 0.33,
+      "confirmation_bias_level": "strong",
+      "entity_category": "opinion_spreader",
+      "persona_name": "阿伟",
+      "age_range": "25-34",
+      "occupation": "自媒体博主",
+      "personality": "理性分析",
+      "motivation": "追求流量和关注度，深度解读品牌营销问题",
+      "typical_phrases": [
+        "从专业角度分析",
+        "品牌营销底线在哪",
+        "创意不是这么玩的"
+      ]
+    },
+    {
+      "id": 6,
+      "group_name": "广告行业从业者",
+      "archetype_index": -2,
+      "related_entity": "中国广告协会",
+      "role": "periphery",
+      "stance_score": 4.96,
+      "susceptibility": 0.39,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "林姐",
+      "age_range": "35-45",
+      "occupation": "广告策划",
+      "personality": "专业严谨",
+      "motivation": "维护广告行业形象，反对低俗营销",
+      "typical_phrases": [
+        "这波操作确实过了",
+        "创意要有底线",
+        "协会说得对"
+      ]
+    },
+    {
+      "id": 7,
+      "group_name": "品牌支持者",
+      "archetype_index": -2,
+      "related_entity": "OPPO",
+      "role": "periphery",
+      "stance_score": 3.88,
+      "susceptibility": 0.61,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "小美",
+      "age_range": "18-24",
+      "occupation": "大学生",
+      "personality": "感性共情",
+      "motivation": "作为老用户希望品牌知错能改",
+      "typical_phrases": [
+        "品牌已经道歉了",
+        "给个机会改正",
+        "产品还是好用的"
+      ]
+    },
+    {
+      "id": 8,
+      "group_name": "高校学生群体",
+      "archetype_index": -2,
+      "related_entity": "武汉大学",
+      "role": "periphery",
+      "stance_score": 5.41,
+      "susceptibility": 0.47,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "阿强",
+      "age_range": "18-24",
+      "occupation": "大学生",
+      "personality": "冷静理性",
+      "motivation": "关注社会议题，认同武大发声",
+      "typical_phrases": [
+        "武大说得对",
+        "营销要有价值观",
+        "不能为了流量没下限"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": 0,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 0,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 0,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 4,
+      "target": 0,
+      "type": "follows"
+    },
+    {
+      "source": 5,
+      "target": 0,
+      "type": "follows"
+    },
+    {
+      "source": 6,
+      "target": 1,
+      "type": "follows"
+    },
+    {
+      "source": 7,
+      "target": 0,
+      "type": "follows"
+    },
+    {
+      "source": 8,
+      "target": 2,
+      "type": "follows"
+    },
+    {
+      "source": 5,
+      "target": 6,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 5,
+      "target": 7,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 7,
+      "target": 8,
+      "type": "follows_cross_group"
+    }
+  ]
+}

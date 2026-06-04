@@ -1,0 +1,111 @@
+task_id: ds-relay-verify-v0.1.1-20260523
+task_domain: pm-runtime-governance
+task_level: M
+executor: DS Team / Claude
+review_type: real_relay_verification
+created_at: "2026-05-23T01:34:00+08:00"
+
+acceptance_verdict: pass
+implementation_readiness: usable
+
+team_mode_used: true
+mcp_used: true
+
+heartbeat_verification:
+  history_jsonl_exists: true
+  multiple_entries: true
+  entry_count: 9
+  timestamps_monotonic: true
+  states_observed:
+    - running
+    - healthy_running
+    - slow_but_progressing
+    - executor_completed
+  heartbeat_json_current: executor_completed
+
+streaming_verification:
+  stdout_content_valid: true
+  stdout_lines: 15
+  stderr_content_valid: true
+  stderr_content: "info: processing took multiple steps"
+  raw_output_entries: present
+  elapsed_sec: 7.062
+
+hermes_compat_check:
+  relay_heartbeat_txt: pass
+  relay_progress_md: pass
+  result_json: pass
+  closeout_claimed_in_result: false
+
+syntax_import_check: pass
+
+config_path_robustness:
+  missing_file: "pass - artifact_path_missing (exit 3)"
+  directory_instead_of_file: "pass - config_invalid (exit 2)"
+  no_config_found: "pass - artifact_path_missing (exit 3)"
+
+recovery_preserves_evidence:
+  result: pass
+  heartbeat_history_entries_preserved: true
+  stdout_content_preserved: true
+  recovered_evidence_files: 6
+  recovery_type: trivial_recovery
+
+file_boundary_check:
+  forbidden_files_touched: []
+  unexpected_files: []
+  all_changes_within_sandbox: true
+
+registry_events:
+  total_events: 6
+  lifecycle_complete: true
+
+relay_sequence:
+  init:
+    exit_code: 0
+  run:
+    exit_code: 0
+    classification: agent_completed
+    confidence: high
+  summary:
+    exit_code: 0
+  recover:
+    exit_code: 0
+    evidence_preserved: true
+
+findings:
+  P0: []
+  P1: []
+  P2:
+    - "summary registry_event_count not refreshed after recover (snapshot timing)"
+    - "claude executor mode may hang on stdin; needs runtime docs"
+  P3: []
+
+blockers: []
+
+known_issues:
+  - "runtime_state and task_status intentionally overlap (MVP design)"
+  - "no auto closeout (MVP design choice)"
+  - "concurrent task execution out of scope"
+
+recommended_next_action:
+  - owner_acceptance
+
+test_evidence_paths:
+  heartbeat_history: sandbox/ds_relay_dispatch/test_run/runtime/heartbeat_history.jsonl
+  heartbeat: sandbox/ds_relay_dispatch/test_run/runtime/heartbeat.json
+  stdout_log: sandbox/ds_relay_dispatch/test_run/logs/stdout.log
+  stderr_log: sandbox/ds_relay_dispatch/test_run/logs/stderr.log
+  recovery_summary: sandbox/ds_relay_dispatch/test_run/runtime/recovery_summary.md
+  result_json: sandbox/ds_relay_dispatch/test_run/runtime/result.json
+  relay_heartbeat_txt: sandbox/ds_relay_dispatch/test_run/runtime/relay_heartbeat.txt
+  relay_progress_md: sandbox/ds_relay_dispatch/test_run/runtime/relay_progress.md
+
+report_path: summary/ds_relay_verification.md
+receipt_path: runtime/ds_relay_verification_receipt.yaml
+
+ds_team_signoff:
+  verified: true
+  ready_for_owner_acceptance: true
+  closeout_claimed: false
+  notes: "DS Team verification complete. Owner-Control is the final gate."

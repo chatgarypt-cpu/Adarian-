@@ -1,0 +1,269 @@
+{
+  "nodes": [
+    {
+      "id": 0,
+      "group_name": "OPPO",
+      "archetype_index": -1,
+      "related_entity": "OPPO",
+      "role": "core",
+      "stance_score": 5.11,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 1,
+      "group_name": "中国广告协会",
+      "archetype_index": -1,
+      "related_entity": "中国广告协会",
+      "role": "core",
+      "stance_score": 5.15,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 2,
+      "group_name": "武汉大学",
+      "archetype_index": -1,
+      "related_entity": "武汉大学",
+      "role": "core",
+      "stance_score": 5.08,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 3,
+      "group_name": "段永平",
+      "archetype_index": -1,
+      "related_entity": "段永平",
+      "role": "core",
+      "stance_score": 5.21,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 4,
+      "group_name": "普通消费者妈妈群体",
+      "archetype_index": -2,
+      "related_entity": "OPPO",
+      "role": "periphery",
+      "stance_score": 3.61,
+      "susceptibility": 0.26,
+      "confirmation_bias_level": "strong",
+      "entity_category": "opinion_spreader",
+      "persona_name": "王女士",
+      "age_range": "35-45",
+      "occupation": "全职妈妈",
+      "personality": "感性敏感、重视家庭伦理",
+      "motivation": "维护母亲形象和家庭价值观",
+      "typical_phrases": [
+        "这文案太气人了",
+        "不尊重母亲",
+        "营销不能没底线"
+      ]
+    },
+    {
+      "id": 5,
+      "group_name": "年轻网民群体",
+      "archetype_index": -2,
+      "related_entity": "OPPO",
+      "role": "periphery",
+      "stance_score": 5.01,
+      "susceptibility": 0.55,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "小陈",
+      "age_range": "18-24",
+      "occupation": "大学生",
+      "personality": "冲动易怒、爱吐槽",
+      "motivation": "追求热点、参与舆论讨论",
+      "typical_phrases": [
+        "OPPO这波操作太迷惑了",
+        "公关灾难",
+        "赶紧道歉吧"
+      ]
+    },
+    {
+      "id": 6,
+      "group_name": "营销从业者群体",
+      "archetype_index": -2,
+      "related_entity": "中国广告协会",
+      "role": "periphery",
+      "stance_score": 5.37,
+      "susceptibility": 0.41,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "张老师",
+      "age_range": "30-40",
+      "occupation": "广告策划",
+      "personality": "冷静理性、追求专业",
+      "motivation": "维护行业规范和职业操守",
+      "typical_phrases": [
+        "创意要有底线",
+        "这波确实翻车了",
+        "行业需要自律"
+      ]
+    },
+    {
+      "id": 7,
+      "group_name": "OPPO老用户群体",
+      "archetype_index": -2,
+      "related_entity": "OPPO",
+      "role": "periphery",
+      "stance_score": 5.07,
+      "susceptibility": 0.71,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "老周",
+      "age_range": "25-34",
+      "occupation": "上班族",
+      "personality": "念旧重情、性格温和",
+      "motivation": "维护自己喜欢的品牌",
+      "typical_phrases": [
+        "知错能改就好",
+        "支持OPPO",
+        "产品还是好用的"
+      ]
+    },
+    {
+      "id": 8,
+      "group_name": "理性中立群体",
+      "archetype_index": -2,
+      "related_entity": "段永平",
+      "role": "periphery",
+      "stance_score": 4.35,
+      "susceptibility": 0.53,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "林先生",
+      "age_range": "30-40",
+      "occupation": "企业管理者",
+      "personality": "冷静理性、善于思考",
+      "motivation": "追求真相和理性讨论",
+      "typical_phrases": [
+        "错都改了就算了吧",
+        "给企业一个机会",
+        "理性看待"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": 0,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 0,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 0,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 4,
+      "target": 0,
+      "type": "follows"
+    },
+    {
+      "source": 5,
+      "target": 0,
+      "type": "follows"
+    },
+    {
+      "source": 6,
+      "target": 1,
+      "type": "follows"
+    },
+    {
+      "source": 7,
+      "target": 0,
+      "type": "follows"
+    },
+    {
+      "source": 8,
+      "target": 3,
+      "type": "follows"
+    },
+    {
+      "source": 4,
+      "target": 7,
+      "type": "follows_cross_group"
+    }
+  ]
+}

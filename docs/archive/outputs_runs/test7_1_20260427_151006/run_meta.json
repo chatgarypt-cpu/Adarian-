@@ -1,0 +1,23 @@
+{
+  "run_id": "test7_1_20260427_151006",
+  "seed_file": "D:\\项目开发\\研一\\adarian\\adarian mvp\\seeds\\test7_1.txt",
+  "seed_copy": "D:\\项目开发\\研一\\adarian\\adarian mvp\\outputs\\runs\\test7_1_20260427_151006\\seed_input.txt",
+  "run_dir": "D:\\项目开发\\研一\\adarian\\adarian mvp\\outputs\\runs\\test7_1_20260427_151006",
+  "started_at": "2026-04-27 15:10:06",
+  "provider": "qwen",
+  "model": "qwen35-122b-a10b",
+  "status": "failed",
+  "outputs": {
+    "entities": "D:\\项目开发\\研一\\adarian\\adarian mvp\\outputs\\runs\\test7_1_20260427_151006\\entities_and_relations.json",
+    "social_graph": "D:\\项目开发\\研一\\adarian\\adarian mvp\\outputs\\runs\\test7_1_20260427_151006\\social_graph.json",
+    "tick_logs": "D:\\项目开发\\研一\\adarian\\adarian mvp\\outputs\\runs\\test7_1_20260427_151006\\tick_logs.json",
+    "final_report_json": "D:\\项目开发\\研一\\adarian\\adarian mvp\\outputs\\runs\\test7_1_20260427_151006\\final_report.json",
+    "final_report_md": "D:\\项目开发\\研一\\adarian\\adarian mvp\\outputs\\runs\\test7_1_20260427_151006\\final_report.md",
+    "run_log": "D:\\项目开发\\研一\\adarian\\adarian mvp\\outputs\\runs\\test7_1_20260427_151006\\run.log",
+    "timing_summary": "D:\\项目开发\\研一\\adarian\\adarian mvp\\outputs\\runs\\test7_1_20260427_151006\\timing_summary.json",
+    "run_meta": "D:\\项目开发\\研一\\adarian\\adarian mvp\\outputs\\runs\\test7_1_20260427_151006\\run_meta.json"
+  },
+  "completed_at": "2026-04-27 15:10:12",
+  "elapsed_seconds": 5.44,
+  "error": "invalid character '【' (U+3010) (<unknown>, line 2)"
+}

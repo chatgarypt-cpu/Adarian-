@@ -1,0 +1,26 @@
+两个输出文件的内容已经准备完毕，正在等待写入权限批准。以下是审查结论摘要：
+
+---
+
+## B线审查结论：`READY_AFTER_CONTROL_AGENT_PATCH`
+
+**核心发现**：v4.0 草案结构完整、规则清晰，当前唯一阻塞原因是 **Control Agent 仍在按 v3 口径运行**。
+
+**关键判断**：
+1. Control Agent 是下游所有任务的源头。如果它不理解 v4.0，DS Team、Codex、PM Runtime 收到的都是 v3 格式的指令。
+2. 必须先产出 Control Agent v4.0 instruction patch 草案并经 Owner 确认，再进入 workflow_core.md 的 Codex landing。
+3. 如果先覆盖 workflow_core.md 再补 Control Agent，会出现 v3/v4 口径分裂的危险窗口期。
+
+**最小安全上线顺序（10 步）**：
+- Step 0: 完成 A/B/C 三线审查
+- Step 1: **Control Agent v4.0 instruction patch 草案**（前置条件）
+- Step 2: Codex landing workflow_core.md（仅覆盖这一个文件，不 commit）
+- Step 3-9: compact.md → compact.yaml → Hermes template → DS instructions → Codex instructions → Hook/Skill → TASK_LOG/CHANGELOG
+
+**14 项缺失产物**已按严重程度分级，其中 #1 (Control Agent patch) 为 blocker。
+
+**第一轮不应启用的自动化**：A1 低风险自动批准、A2 端到端执行包、C1 自动 commit、Patch Loop 自动返修、/milestonereset cleanup。
+
+请批准写入以下两个文件：
+- `audit/tasks/active/workflow-v4-landing/B-rollout-readiness/summary/workflow_rollout_readiness_report_2026-05-19.md`
+- `audit/tasks/active/workflow-v4-landing/B-rollout-readiness/runtime/result.yaml`

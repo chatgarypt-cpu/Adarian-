@@ -1,0 +1,22 @@
+task_id: workflowbase-v4.2-reality-review
+task_title: WorkflowBase v4.2 Reality Review — 四层架构 + G1-G6 实现现状
+task_domain: review
+short_task: workflowbase-v4.2-reality-review
+task_type: review
+executor: claude
+executor_type: claude
+execution_mode: tmux_interactive
+observer_mode: true
+observer_attach: terminal_window
+executor_options:
+  prompt_file: dispatch/prompt.md
+  workflow: true
+  agent_team_size: 5
+  expected_outputs:
+    - outputs/reality_review.md
+paths:
+  task_dir: /Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/workflowbase-v4.2-reality-review
+  runtime_dir: /Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/workflowbase-v4.2-reality-review/runtime
+  dispatch_dir: /Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/workflowbase-v4.2-reality-review/dispatch
+  output_dir: /Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/workflowbase-v4.2-reality-review/outputs
+  summary_dir: /Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/workflowbase-v4.2-reality-review/summary

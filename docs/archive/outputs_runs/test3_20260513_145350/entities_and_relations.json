@@ -1,0 +1,244 @@
+{
+  "event_summary": "江西职校学生食堂发现疑似鼠头物体，校方坚称鸭脖后被证实为老鼠头，引发全国舆论关注",
+  "event_scale": 0.75,
+  "event_controversy": 0.7,
+  "event_type": "食品安全",
+  "event_entities": [
+    {
+      "name": "江西工业职业技术学院",
+      "type": "organization",
+      "role": "涉事学校方，坚称异物为鸭脖",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "此物为鸭脖",
+      "can_speak_reason": null
+    },
+    {
+      "name": "当事学生",
+      "type": "individual",
+      "role": "发现异物并拍摄视频发布到网络的当事人",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "出面'澄清'（在压力下改口）",
+      "can_speak_reason": null
+    },
+    {
+      "name": "江西省政府",
+      "type": "organization",
+      "role": "责成重启调查组，最终确认异物为鼠头",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "经调查后正式宣布此物为老鼠类啮齿动物头部",
+      "can_speak_reason": null
+    },
+    {
+      "name": "市场监督管理局",
+      "type": "organization",
+      "role": "最初佐证校方说法的监管部门",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "佐证校方说法",
+      "can_speak_reason": null
+    },
+    {
+      "name": "网民/舆论",
+      "type": "group",
+      "role": "传播事件、质疑官方、创造'鼠头鸭脖''指鼠为鸭'等梗",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "普遍认为此物明显为鼠头",
+      "can_speak_reason": null
+    }
+  ],
+  "opinion_spreaders": [
+    {
+      "group_name": "愤怒的消费者",
+      "related_event_entity": "网民/舆论",
+      "description": "关注食品安全的普通民众，对学校处理方式极度不满",
+      "I": 9.5,
+      "P": -1,
+      "susceptibility": 0.15,
+      "estimated_percentage": 20,
+      "communication_style": "情绪激动，质问校方和监管部门",
+      "entity_category": "opinion_spreader",
+      "persona_name": "老张",
+      "age_range": "35-45",
+      "occupation": "公司职员",
+      "personality": "冲动易怒，爱较真",
+      "motivation": "维护食品安全，要求严惩责任人",
+      "typical_phrases": [
+        "这明明就是鼠头！",
+        "当我们是傻子吗？",
+        "必须严查！"
+      ]
+    },
+    {
+      "group_name": "高校学生群体",
+      "related_event_entity": "当事学生",
+      "description": "关注校园食品安全，对当事人表示同情和支持",
+      "I": 8.0,
+      "P": -1,
+      "susceptibility": 0.25,
+      "estimated_percentage": 15,
+      "communication_style": "同情当事人，呼吁真相",
+      "entity_category": "opinion_spreader",
+      "persona_name": "小陈",
+      "age_range": "18-24",
+      "occupation": "大学生",
+      "personality": "正义感强，敢于发声",
+      "motivation": "同情同学遭遇，关注自身权益",
+      "typical_phrases": [
+        "太可怕了",
+        "心疼当事人",
+        "学校必须负责"
+      ]
+    },
+    {
+      "group_name": "理性分析博主",
+      "related_event_entity": "网民/舆论",
+      "description": "法律博主或时事评论员，从专业角度分析事件",
+      "I": 7.0,
+      "P": -1,
+      "susceptibility": 0.35,
+      "estimated_percentage": 15,
+      "communication_style": "客观分析，引用法规",
+      "entity_category": "opinion_spreader",
+      "persona_name": "李律师",
+      "age_range": "30-40",
+      "occupation": "法律博主",
+      "personality": "冷静理性，爱分析",
+      "motivation": "普及法律知识，推动事件公正处理",
+      "typical_phrases": [
+        "从法律角度来说",
+        "证据显示",
+        "相关部门有监管责任"
+      ]
+    },
+    {
+      "group_name": "调侃传播者",
+      "related_event_entity": "网民/舆论",
+      "description": "以玩梗方式传播事件，创造'指鼠为鸭'等网络用语",
+      "I": 6.0,
+      "P": -1,
+      "susceptibility": 0.45,
+      "estimated_percentage": 12,
+      "communication_style": "幽默讽刺，用梗表达不满",
+      "entity_category": "opinion_spreader",
+      "persona_name": "阿伟",
+      "age_range": "20-30",
+      "occupation": "自媒体从业者",
+      "personality": "幽默风趣，爱玩梗",
+      "motivation": "娱乐化传播，表达讽刺态度",
+      "typical_phrases": [
+        "指鼠为鸭",
+        "鸭脖：我是谁？我在哪？",
+        "鼠鼠我呀"
+      ]
+    },
+    {
+      "group_name": "质疑调查公正性群体",
+      "related_event_entity": "江西省政府",
+      "description": "质疑官方调查结果，认为存在掩盖可能",
+      "I": 8.5,
+      "P": -1,
+      "susceptibility": 0.2,
+      "estimated_percentage": 8,
+      "communication_style": "深度质疑，阴谋论色彩",
+      "entity_category": "opinion_spreader",
+      "persona_name": "王叔",
+      "age_range": "40-50",
+      "occupation": "自由职业",
+      "personality": "多疑，看透社会复杂",
+      "motivation": "不信任官方说法，追求真相",
+      "typical_phrases": [
+        "真相没那么简单",
+        "背后有利益",
+        "早晚会反转"
+      ]
+    },
+    {
+      "group_name": "理解校方立场者",
+      "related_event_entity": "江西工业职业技术学院",
+      "description": "认为学生可能误认，校方处理方式可以理解",
+      "I": 8.0,
+      "P": 1,
+      "susceptibility": 0.2,
+      "estimated_percentage": 15,
+      "communication_style": "为校方辩护，语气温和",
+      "entity_category": "opinion_spreader",
+      "persona_name": "赵老师",
+      "age_range": "35-45",
+      "occupation": "中学教师",
+      "personality": "稳重，倾向维护权威",
+      "motivation": "理解学校处境，认为舆论过激",
+      "typical_phrases": [
+        "也许真的是误会",
+        "给学生一个机会",
+        "不要网络暴力"
+      ]
+    },
+    {
+      "group_name": "相信官方结论者",
+      "related_event_entity": "江西省政府",
+      "description": "认可最终调查结果，支持官方处理结果",
+      "I": 9.0,
+      "P": 1,
+      "susceptibility": 0.1,
+      "estimated_percentage": 15,
+      "communication_style": "信任官方，呼吁停止争议",
+      "entity_category": "opinion_spreader",
+      "persona_name": "陈大姐",
+      "age_range": "45-55",
+      "occupation": "家庭主妇",
+      "personality": "传统保守，相信政府",
+      "motivation": "维护政府公信力，希望事件平息",
+      "typical_phrases": [
+        "政府已经查清楚了",
+        "相信官方",
+        "别再炒作了"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "source": "当事学生",
+      "target": "江西工业职业技术学院",
+      "type": "发现异物并投诉"
+    },
+    {
+      "source": "当事学生",
+      "target": "网民/舆论",
+      "type": "发布视频引发关注"
+    },
+    {
+      "source": "江西工业职业技术学院",
+      "target": "市场监督管理局",
+      "type": "请求佐证"
+    },
+    {
+      "source": "市场监督管理局",
+      "target": "江西工业职业技术学院",
+      "type": "佐证鸭脖说法"
+    },
+    {
+      "source": "网民/舆论",
+      "target": "江西工业职业技术学院",
+      "type": "质疑和批评"
+    },
+    {
+      "source": "网民/舆论",
+      "target": "江西省政府",
+      "type": "施加舆论压力"
+    },
+    {
+      "source": "江西省政府",
+      "target": "市场监督管理局",
+      "type": "责成重启调查"
+    },
+    {
+      "source": "江西省政府",
+      "target": "网民/舆论",
+      "type": "公布最终调查结果"
+    }
+  ]
+}

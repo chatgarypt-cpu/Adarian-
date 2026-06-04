@@ -1,0 +1,15 @@
+=== DS Real Relay Test Start ===
+[1/5] Reading dispatch: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/dispatch/ds_relay_verify_dispatch_v0_1_1.md
+[2/5] Dispatch exists: False
+[3/5] Dispatch not found - creating placeholder
+[4/5] Dispatch content preview:
+[5/5] Dispatch ready for DS Team consumption
+=== DS Real Relay Test Complete ===
+{
+  "task_id": "ds-relay-verify-v0.1.1-20260523",
+  "status": "dispatched",
+  "dispatch_file": "audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/dispatch/ds_relay_verify_dispatch_v0_1_1.md",
+  "dispatch_found": false,
+  "dispatch_size": 0,
+  "ready_for_ds": false
+}

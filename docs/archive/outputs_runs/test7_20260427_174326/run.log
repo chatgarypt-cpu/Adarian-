@@ -1,0 +1,96 @@
+[2026-04-27 17:43:26] RUN START mode=normal seed=D:\项目开发\研一\adarian\adarian mvp\seeds\test7.txt run_dir=D:\项目开发\研一\adarian\adarian mvp\outputs\runs\test7_20260427_174326
+[2026-04-27 17:43:26] PHASE START name=phase1_entity_extraction
+[2026-04-27 17:43:26] LLM START caller=analyzer_set_parameters model=qwen35-122b-a10b
+[2026-04-27 17:43:34] LLM END caller=analyzer_set_parameters model=qwen35-122b-a10b elapsed=7.74s
+[2026-04-27 17:43:34] LLM START caller=generator_create_entities model=qwen35-122b-a10b
+[2026-04-27 17:44:10] LLM END caller=generator_create_entities model=qwen35-122b-a10b elapsed=35.50s
+[2026-04-27 17:44:10] LLM START caller=validator_check_format model=qwen35-122b-a10b
+[2026-04-27 17:44:26] LLM END caller=validator_check_format model=qwen35-122b-a10b elapsed=16.42s
+[2026-04-27 17:44:26] PHASE END name=phase1_entity_extraction elapsed=60.74s
+[2026-04-27 17:44:26] PHASE START name=phase2_topology_builder
+[2026-04-27 17:44:27] PHASE END name=phase2_topology_builder elapsed=0.95s
+[2026-04-27 17:44:27] PHASE START name=phase3_tick_simulation
+[2026-04-27 17:44:28] TICK START tick=0
+[2026-04-27 17:44:29] LLM START caller=run_tick_0 model=qwen35-122b-a10b
+[2026-04-27 17:44:32] LLM END caller=run_tick_0 model=qwen35-122b-a10b elapsed=3.07s
+[2026-04-27 17:44:32] LLM START caller=run_tick_0 model=qwen35-122b-a10b
+[2026-04-27 17:44:35] LLM END caller=run_tick_0 model=qwen35-122b-a10b elapsed=2.84s
+[2026-04-27 17:44:35] TICK END tick=0 elapsed=6.30s speakers=6 llm_calls=2
+[2026-04-27 17:44:35] TICK START tick=1
+[2026-04-27 17:44:35] SPEAKER SELECTION tick=1 spreader_count=8 computed_num_speakers=6 expected_selected_count=6 actual_selected_count=6 selected_speakers_count=6 is_full_selection=False full_selection_reason=not_full_selection
+[2026-04-27 17:44:35] LLM START caller=generate_opinion_spreader_post model=qwen35-122b-a10b
+[2026-04-27 17:44:38] LLM END caller=generate_opinion_spreader_post model=qwen35-122b-a10b elapsed=3.51s
+[2026-04-27 17:44:38] LLM START caller=generate_opinion_spreader_post model=qwen35-122b-a10b
+[2026-04-27 17:44:41] LLM END caller=generate_opinion_spreader_post model=qwen35-122b-a10b elapsed=3.20s
+[2026-04-27 17:44:41] LLM START caller=generate_opinion_spreader_post model=qwen35-122b-a10b
+[2026-04-27 17:44:45] LLM END caller=generate_opinion_spreader_post model=qwen35-122b-a10b elapsed=3.50s
+[2026-04-27 17:44:45] LLM START caller=generate_opinion_spreader_post model=qwen35-122b-a10b
+[2026-04-27 17:44:48] LLM END caller=generate_opinion_spreader_post model=qwen35-122b-a10b elapsed=3.24s
+[2026-04-27 17:44:48] LLM START caller=generate_opinion_spreader_post model=qwen35-122b-a10b
+[2026-04-27 17:44:53] LLM END caller=generate_opinion_spreader_post model=qwen35-122b-a10b elapsed=5.37s
+[2026-04-27 17:44:54] LLM START caller=generate_opinion_spreader_post model=qwen35-122b-a10b
+[2026-04-27 17:44:57] LLM END caller=generate_opinion_spreader_post model=qwen35-122b-a10b elapsed=3.30s
+[2026-04-27 17:44:57] TICK END tick=1 elapsed=22.14s speakers=6 llm_calls=6
+[2026-04-27 17:44:57] TICK START tick=2
+[2026-04-27 17:44:57] SPEAKER SELECTION tick=2 spreader_count=8 computed_num_speakers=7 expected_selected_count=7 actual_selected_count=7 selected_speakers_count=7 is_full_selection=False full_selection_reason=not_full_selection
+[2026-04-27 17:44:57] LLM START caller=generate_opinion_spreader_post model=qwen35-122b-a10b
+[2026-04-27 17:45:01] LLM END caller=generate_opinion_spreader_post model=qwen35-122b-a10b elapsed=4.14s
+[2026-04-27 17:45:01] LLM START caller=generate_opinion_spreader_post model=qwen35-122b-a10b
+[2026-04-27 17:45:06] LLM END caller=generate_opinion_spreader_post model=qwen35-122b-a10b elapsed=4.64s
+[2026-04-27 17:45:06] LLM START caller=generate_opinion_spreader_post model=qwen35-122b-a10b
+[2026-04-27 17:45:10] LLM END caller=generate_opinion_spreader_post model=qwen35-122b-a10b elapsed=4.00s
+[2026-04-27 17:45:10] LLM START caller=generate_opinion_spreader_post model=qwen35-122b-a10b
+[2026-04-27 17:45:14] LLM END caller=generate_opinion_spreader_post model=qwen35-122b-a10b elapsed=4.27s
+[2026-04-27 17:45:14] LLM START caller=generate_opinion_spreader_post model=qwen35-122b-a10b
+[2026-04-27 17:45:17] LLM END caller=generate_opinion_spreader_post model=qwen35-122b-a10b elapsed=3.56s
+[2026-04-27 17:45:17] LLM START caller=generate_opinion_spreader_post model=qwen35-122b-a10b
+[2026-04-27 17:45:20] LLM END caller=generate_opinion_spreader_post model=qwen35-122b-a10b elapsed=2.78s
+[2026-04-27 17:45:20] LLM START caller=generate_opinion_spreader_post model=qwen35-122b-a10b
+[2026-04-27 17:45:24] LLM END caller=generate_opinion_spreader_post model=qwen35-122b-a10b elapsed=3.49s
+[2026-04-27 17:45:24] TICK END tick=2 elapsed=26.91s speakers=7 llm_calls=7
+[2026-04-27 17:45:24] TICK START tick=3
+[2026-04-27 17:45:24] SPEAKER SELECTION tick=3 spreader_count=8 computed_num_speakers=5 expected_selected_count=5 actual_selected_count=5 selected_speakers_count=5 is_full_selection=False full_selection_reason=not_full_selection
+[2026-04-27 17:45:24] LLM START caller=generate_opinion_spreader_post model=qwen35-122b-a10b
+[2026-04-27 17:45:28] LLM END caller=generate_opinion_spreader_post model=qwen35-122b-a10b elapsed=4.01s
+[2026-04-27 17:45:28] LLM START caller=generate_opinion_spreader_post model=qwen35-122b-a10b
+[2026-04-27 17:45:34] LLM END caller=generate_opinion_spreader_post model=qwen35-122b-a10b elapsed=6.35s
+[2026-04-27 17:45:34] LLM START caller=generate_opinion_spreader_post model=qwen35-122b-a10b
+[2026-04-27 17:45:39] LLM END caller=generate_opinion_spreader_post model=qwen35-122b-a10b elapsed=4.42s
+[2026-04-27 17:45:39] LLM START caller=generate_opinion_spreader_post model=qwen35-122b-a10b
+[2026-04-27 17:45:42] LLM END caller=generate_opinion_spreader_post model=qwen35-122b-a10b elapsed=3.61s
+[2026-04-27 17:45:42] LLM START caller=generate_opinion_spreader_post model=qwen35-122b-a10b
+[2026-04-27 17:45:47] LLM END caller=generate_opinion_spreader_post model=qwen35-122b-a10b elapsed=4.82s
+[2026-04-27 17:45:47] TICK END tick=3 elapsed=23.24s speakers=5 llm_calls=5
+[2026-04-27 17:45:47] TICK START tick=4
+[2026-04-27 17:45:47] SPEAKER SELECTION tick=4 spreader_count=8 computed_num_speakers=5 expected_selected_count=5 actual_selected_count=5 selected_speakers_count=5 is_full_selection=False full_selection_reason=not_full_selection
+[2026-04-27 17:45:47] LLM START caller=generate_opinion_spreader_post model=qwen35-122b-a10b
+[2026-04-27 17:45:51] LLM END caller=generate_opinion_spreader_post model=qwen35-122b-a10b elapsed=4.37s
+[2026-04-27 17:45:51] LLM START caller=generate_opinion_spreader_post model=qwen35-122b-a10b
+[2026-04-27 17:45:56] LLM END caller=generate_opinion_spreader_post model=qwen35-122b-a10b elapsed=4.71s
+[2026-04-27 17:45:56] LLM START caller=generate_opinion_spreader_post model=qwen35-122b-a10b
+[2026-04-27 17:46:01] LLM END caller=generate_opinion_spreader_post model=qwen35-122b-a10b elapsed=5.12s
+[2026-04-27 17:46:01] LLM START caller=generate_opinion_spreader_post model=qwen35-122b-a10b
+[2026-04-27 17:46:05] LLM END caller=generate_opinion_spreader_post model=qwen35-122b-a10b elapsed=3.98s
+[2026-04-27 17:46:05] LLM START caller=generate_opinion_spreader_post model=qwen35-122b-a10b
+[2026-04-27 17:46:09] LLM END caller=generate_opinion_spreader_post model=qwen35-122b-a10b elapsed=3.58s
+[2026-04-27 17:46:09] TICK END tick=4 elapsed=21.77s speakers=5 llm_calls=5
+[2026-04-27 17:46:09] TICK START tick=5
+[2026-04-27 17:46:09] SPEAKER SELECTION tick=5 spreader_count=8 computed_num_speakers=5 expected_selected_count=5 actual_selected_count=5 selected_speakers_count=5 is_full_selection=False full_selection_reason=not_full_selection
+[2026-04-27 17:46:09] LLM START caller=generate_opinion_spreader_post model=qwen35-122b-a10b
+[2026-04-27 17:46:15] LLM END caller=generate_opinion_spreader_post model=qwen35-122b-a10b elapsed=5.78s
+[2026-04-27 17:46:15] LLM START caller=generate_opinion_spreader_post model=qwen35-122b-a10b
+[2026-04-27 17:46:19] LLM END caller=generate_opinion_spreader_post model=qwen35-122b-a10b elapsed=4.83s
+[2026-04-27 17:46:19] LLM START caller=generate_opinion_spreader_post model=qwen35-122b-a10b
+[2026-04-27 17:46:25] LLM END caller=generate_opinion_spreader_post model=qwen35-122b-a10b elapsed=5.23s
+[2026-04-27 17:46:25] LLM START caller=generate_opinion_spreader_post model=qwen35-122b-a10b
+[2026-04-27 17:46:29] LLM END caller=generate_opinion_spreader_post model=qwen35-122b-a10b elapsed=3.99s
+[2026-04-27 17:46:29] LLM START caller=generate_opinion_spreader_post model=qwen35-122b-a10b
+[2026-04-27 17:46:32] LLM END caller=generate_opinion_spreader_post model=qwen35-122b-a10b elapsed=3.78s
+[2026-04-27 17:46:32] TICK END tick=5 elapsed=23.65s speakers=5 llm_calls=5
+[2026-04-27 17:46:32] PHASE END name=phase3_tick_simulation elapsed=125.19s
+[2026-04-27 17:46:32] PHASE START name=phase4_report_agent
+[2026-04-27 17:46:32] LLM START caller=generate_report_with_llm model=qwen35-122b-a10b
+[2026-04-27 17:47:19] LLM END caller=generate_report_with_llm model=qwen35-122b-a10b elapsed=46.25s
+[2026-04-27 17:47:19] PHASE END name=phase4_report_agent elapsed=46.32s
+[2026-04-27 17:47:19] REPORT COMPLETENESS report_truncated=false score=0.85 char_count=8630
+[2026-04-27 17:47:19] RUN END status=success elapsed=233.25s

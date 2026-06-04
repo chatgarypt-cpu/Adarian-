@@ -1,0 +1,21 @@
+{
+  "whitebox_version": "v1.2.5",
+  "check": "report_completeness",
+  "status": "pass",
+  "raw_source": "final_report.md",
+  "path": "whitebox/report_completeness.json",
+  "result": {
+    "report_char_count": 6432,
+    "report_truncated": false,
+    "truncation_reason": "",
+    "report_ends_cleanly": true,
+    "missing_required_sections": [],
+    "report_completeness_score": 1.0,
+    "inflection_points_json_count": 0,
+    "inflection_points_markdown_claim": "non_empty_claim",
+    "inflection_points_consistency": "mismatch",
+    "empty_inflection_text_present": false,
+    "reality_inflection_claim_detected": false,
+    "inflection_consistency_issue": "inflection_points markdown claim does not match final_report.json"
+  }
+}

@@ -1,0 +1,424 @@
+{
+  "nodes": [
+    {
+      "id": 0,
+      "group_name": "女子",
+      "archetype_index": -1,
+      "related_entity": "女子",
+      "role": "core",
+      "stance_score": 5.07,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 1,
+      "group_name": "吸烟男子",
+      "archetype_index": -1,
+      "related_entity": "吸烟男子",
+      "role": "core",
+      "stance_score": 4.81,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 2,
+      "group_name": "深圳市公安局",
+      "archetype_index": -1,
+      "related_entity": "深圳市公安局",
+      "role": "core",
+      "stance_score": 4.97,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 3,
+      "group_name": "涉事民警",
+      "archetype_index": -1,
+      "related_entity": "涉事民警",
+      "role": "core",
+      "stance_score": 4.83,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 4,
+      "group_name": "中国新闻周刊",
+      "archetype_index": -1,
+      "related_entity": "中国新闻周刊",
+      "role": "core",
+      "stance_score": 4.98,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 5,
+      "group_name": "小野的瓜田",
+      "archetype_index": -1,
+      "related_entity": "小野的瓜田",
+      "role": "core",
+      "stance_score": 5.06,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 6,
+      "group_name": "女性权益支持者",
+      "archetype_index": -2,
+      "related_entity": "女子",
+      "role": "periphery",
+      "stance_score": 3.98,
+      "susceptibility": 0.3,
+      "confirmation_bias_level": "strong",
+      "entity_category": "opinion_spreader",
+      "persona_name": "小美",
+      "age_range": "25-34",
+      "occupation": "互联网运营",
+      "personality": "富有同理心，冲动易怒",
+      "motivation": "维护女性合法权益，质疑执法不公",
+      "typical_phrases": [
+        "太过分了",
+        "凭什么拘留她",
+        "女性维权怎么这么难"
+      ]
+    },
+    {
+      "id": 7,
+      "group_name": "法律专业人士",
+      "archetype_index": -2,
+      "related_entity": "深圳市公安局",
+      "role": "periphery",
+      "stance_score": 2.66,
+      "susceptibility": 0.22,
+      "confirmation_bias_level": "strong",
+      "entity_category": "opinion_spreader",
+      "persona_name": "陈律师",
+      "age_range": "35-45",
+      "occupation": "执业律师",
+      "personality": "冷静理性，专业严谨",
+      "motivation": "普及法律知识，推动执法规范化",
+      "typical_phrases": [
+        "程序违法",
+        "执法过度",
+        "这明显不符合规定"
+      ]
+    },
+    {
+      "id": 8,
+      "group_name": "普通市民",
+      "archetype_index": -2,
+      "related_entity": "女子",
+      "role": "periphery",
+      "stance_score": 4.8,
+      "susceptibility": 0.43,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "老张",
+      "age_range": "45-55",
+      "occupation": "国企职工",
+      "personality": "务实谨慎，关心社会风气",
+      "motivation": "担心公共场所文明倒退",
+      "typical_phrases": [
+        "以后谁还管闲事",
+        "这社会怎么了",
+        "吸烟的没事，劝阻的被抓"
+      ]
+    },
+    {
+      "id": 9,
+      "group_name": "控烟志愿者",
+      "archetype_index": -2,
+      "related_entity": "吸烟男子",
+      "role": "periphery",
+      "stance_score": 4.55,
+      "susceptibility": 0.27,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "李阿姨",
+      "age_range": "50-60",
+      "occupation": "社区志愿者",
+      "personality": "正直执着，热心公益",
+      "motivation": "推动控烟条例落实，保护公共健康",
+      "typical_phrases": [
+        "最严控烟令成笑话",
+        "执法部门不作为",
+        "二手烟危害多大知道不"
+      ]
+    },
+    {
+      "id": 10,
+      "group_name": "理性分析派",
+      "archetype_index": -2,
+      "related_entity": "深圳市公安局",
+      "role": "periphery",
+      "stance_score": 5.69,
+      "susceptibility": 0.46,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "王老师",
+      "age_range": "30-40",
+      "occupation": "高校教师",
+      "personality": "理性客观，审慎中立",
+      "motivation": "维护网络理性讨论氛围",
+      "typical_phrases": [
+        "等调查结果",
+        "不要过早下结论",
+        "让子弹飞一会儿"
+      ]
+    },
+    {
+      "id": 11,
+      "group_name": "执法理解派",
+      "archetype_index": -2,
+      "related_entity": "涉事民警",
+      "role": "periphery",
+      "stance_score": 5.17,
+      "susceptibility": 0.37,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "赵队长",
+      "age_range": "40-50",
+      "occupation": "退休民警",
+      "personality": "维护体制，理解执法复杂",
+      "motivation": "为警方执法行为提供理解视角",
+      "typical_phrases": [
+        "执法有执法程序",
+        "民警也不容易",
+        "双方都有问题"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": 0,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 0,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 0,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 0,
+      "target": 4,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 4,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 0,
+      "target": 5,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 5,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 4,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 4,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 5,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 5,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 4,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 4,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 5,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 5,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 4,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 4,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 5,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 5,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 4,
+      "target": 5,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 5,
+      "target": 4,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 6,
+      "target": 0,
+      "type": "follows"
+    },
+    {
+      "source": 7,
+      "target": 2,
+      "type": "follows"
+    },
+    {
+      "source": 8,
+      "target": 0,
+      "type": "follows"
+    },
+    {
+      "source": 9,
+      "target": 1,
+      "type": "follows"
+    },
+    {
+      "source": 10,
+      "target": 2,
+      "type": "follows"
+    },
+    {
+      "source": 11,
+      "target": 3,
+      "type": "follows"
+    },
+    {
+      "source": 7,
+      "target": 10,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 9,
+      "target": 10,
+      "type": "follows_cross_group"
+    }
+  ]
+}

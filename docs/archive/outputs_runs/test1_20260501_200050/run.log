@@ -1,0 +1,10 @@
+[2026-05-01 20:00:50] RUN START mode=normal seed=/Users/gary/项目开发/AdarianMigration/adarian mvp/seeds/test1.txt run_dir=/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test1_20260501_200050
+[2026-05-01 20:00:50] PHASE START name=phase1_entity_extraction
+[2026-05-01 20:00:50] LLM START caller=analyzer_set_parameters model=qwen35-122b-a10b
+[2026-05-01 20:00:52] ERROR stage=llm:analyzer_set_parameters error=Connection error.
+[2026-05-01 20:00:53] LLM START caller=analyzer_set_parameters model=qwen35-122b-a10b
+[2026-05-01 20:00:54] ERROR stage=llm:analyzer_set_parameters error=Connection error.
+[2026-05-01 20:00:56] LLM START caller=analyzer_set_parameters model=qwen35-122b-a10b
+[2026-05-01 20:00:57] ERROR stage=llm:analyzer_set_parameters error=Connection error.
+[2026-05-01 20:00:57] ERROR stage=main error=LLM 调用失败，已重试 3 次: Connection error.
+[2026-05-01 20:00:57] RUN END status=failed elapsed=7.24s

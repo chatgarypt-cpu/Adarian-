@@ -1,0 +1,32 @@
+{
+  "run": {
+    "start_time": "2026-05-01 20:02:21",
+    "end_time": null,
+    "elapsed_seconds": null,
+    "status": "running",
+    "mode": "normal",
+    "seed_file": "/Users/gary/项目开发/AdarianMigration/adarian mvp/seeds/test7.txt",
+    "run_dir": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test7_20260501_200221"
+  },
+  "phases": {
+    "phase1_entity_extraction": {
+      "start_time": "2026-05-01 20:02:21"
+    }
+  },
+  "llm": {
+    "count": 0,
+    "calls": []
+  },
+  "persona": {
+    "count": 0,
+    "groups": []
+  },
+  "ticks": [],
+  "errors": [
+    {
+      "stage": "llm:analyzer_set_parameters",
+      "error": "Error code: 502 - {'error': {'message': 'Bad Gateway', 'type': 'api_error'}}",
+      "timestamp": "2026-05-01 20:15:41"
+    }
+  ]
+}

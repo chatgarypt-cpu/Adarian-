@@ -1,0 +1,48 @@
+task_id: v4.0-workflow-rollout-readiness-01
+verdict: READY_AFTER_CONTROL_AGENT_PATCH
+blockers:
+  - Control Agent 仍在按 v3 口径运行，必须先产出 Control Agent v4.0 instruction
+    patch 草案
+missing_artifacts:
+  - '#1: Control Agent v4.0 instruction patch (BLOCKER)'
+  - '#2: workflow_core_compact.md'
+  - '#3: workflow_core_compact.yaml'
+  - '#4: Hermes dispatch template (v4.0)'
+  - '#5: DS Post-Execution Review template'
+  - '#6: Codex receipt/handoff template'
+  - '#7: approval.yaml template'
+  - '#8: result.yaml template'
+  - '#9: pm_runtime_summary.md template'
+  - '#10: DS Team instruction (v4.0)'
+  - '#11: Codex instruction (v4.0)'
+  - '#12: Agent-specific instructions authority doc'
+  - '#13: Path audit checklist'
+  - '#14: Landing execution checklist'
+automation_boundary:
+  - A1 低风险自动批准
+  - A2 端到端执行包
+  - C1 自动 commit
+  - Patch Loop 自动返修
+  - /milestonereset cleanup
+minimum_safe_rollout_order:
+  - Step 0: 完成 A/B/C 三线审查
+  - 'Step 1: Control Agent v4.0 instruction patch 草案 (前置条件)'
+  - 'Step 2: Codex landing workflow_core.md (仅覆盖, 不 commit)'
+  - Step 3: compact.md
+  - Step 4: compact.yaml
+  - Step 5: Hermes dispatch template
+  - Step 6: DS Team instructions
+  - Step 7: Codex instructions
+  - Step 8: Hook/Skill
+  - Step 9: TASK_LOG/CHANGELOG
+recommended_next_action: 产出 Control Agent v4.0 instruction patch 草案 → Owner 确认 → Codex landing workflow_core.md
+report_path: audit/tasks/active/workflow-v4-landing/B-rollout-readiness/summary/workflow_rollout_readiness_report_2026-05-19.md
+process_issues:
+  - Claude Code 因 Write 权限限制无法写入完整报告文件，仅返回摘要（8 次 permission_denials）
+  - 报告内容从 Claude result 摘要重构，非原始完整输出
+amendments:
+  - >-
+    2026-05-19 Owner Directive: 补充 Control Agent / Hermes PM 传达职责要求（§5.2）。
+    Control Agent 必须明确告知状态/阶段/blocker/唯一下一步/执行方/是否需批准，
+    必须输出可执行 prompt 而非抽象建议，Hermes PM 固定汇报模板。
+    见报告 §5.2 及 C线报告 §12、Context Packet 附录 B。

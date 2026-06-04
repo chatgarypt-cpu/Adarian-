@@ -1,0 +1,25 @@
+task_id: pm-runtime-communication-substrate-mvp
+session_id: session-local
+round_id: round-1
+action_type: launch_executor
+intended_executor: local_echo
+task_domain: pm-runtime-governance
+task_level: M
+artifact_expected: true
+artifact_target_paths:
+  - /Users/gary/项目开发/AdarianMigration/adarian mvp/audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/ds_verify_demo/runtime
+  - /Users/gary/项目开发/AdarianMigration/adarian mvp/audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/ds_verify_demo/logs
+  - /Users/gary/项目开发/AdarianMigration/adarian mvp/audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/ds_verify_demo/summary/pm_runtime_summary.md
+role_boundary_checked: true
+allowed_by_role: true
+needs_ds_team: false
+needs_owner_approval: true
+mcp_or_tool_preflight_required: false
+scope_checked: true
+allowed_files:
+  []
+forbidden_files:
+  []
+result: pass
+hold_reason: 
+created_at: "2026-05-22T23:14:22+08:00"

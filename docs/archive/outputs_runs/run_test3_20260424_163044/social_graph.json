@@ -1,0 +1,341 @@
+{
+  "nodes": [
+    {
+      "id": 0,
+      "group_name": "当事学生",
+      "archetype_index": -1,
+      "related_entity": "当事学生",
+      "role": "core",
+      "stance_score": 4.99,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 1,
+      "group_name": "江西工业职业技术学院",
+      "archetype_index": -1,
+      "related_entity": "江西工业职业技术学院",
+      "role": "core",
+      "stance_score": 5.17,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 2,
+      "group_name": "当地食品管理局",
+      "archetype_index": -1,
+      "related_entity": "当地食品管理局",
+      "role": "core",
+      "stance_score": 5.15,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 3,
+      "group_name": "江西省政府",
+      "archetype_index": -1,
+      "related_entity": "江西省政府",
+      "role": "core",
+      "stance_score": 4.76,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 4,
+      "group_name": "真相质疑派",
+      "archetype_index": -2,
+      "related_entity": "江西工业职业技术学院",
+      "role": "periphery",
+      "stance_score": 1.62,
+      "susceptibility": 0.05,
+      "confirmation_bias_level": "strong",
+      "entity_category": "opinion_spreader",
+      "persona_name": "小陈",
+      "age_range": "18-24",
+      "occupation": "在校大学生",
+      "personality": "正义感强，直言不讳",
+      "motivation": "追求真相，反对欺瞒",
+      "typical_phrases": [
+        "指鼠为鸭？",
+        "这操作太离谱了",
+        "糊弄鬼呢"
+      ]
+    },
+    {
+      "id": 5,
+      "group_name": "监管批评派",
+      "archetype_index": -2,
+      "related_entity": "当地食品管理局",
+      "role": "periphery",
+      "stance_score": 2.11,
+      "susceptibility": 0.11,
+      "confirmation_bias_level": "strong",
+      "entity_category": "opinion_spreader",
+      "persona_name": "老周",
+      "age_range": "35-45",
+      "occupation": "媒体评论员",
+      "personality": "冷静理性，批判性强",
+      "motivation": "监督公权力，维护公信力",
+      "typical_phrases": [
+        "公信力崩塌",
+        "监管去哪儿了",
+        "必须追责"
+      ]
+    },
+    {
+      "id": 6,
+      "group_name": "食品安全担忧派",
+      "archetype_index": -2,
+      "related_entity": "江西工业职业技术学院",
+      "role": "periphery",
+      "stance_score": 3.17,
+      "susceptibility": 0.21,
+      "confirmation_bias_level": "strong",
+      "entity_category": "opinion_spreader",
+      "persona_name": "王阿姨",
+      "age_range": "45-55",
+      "occupation": "全职妈妈",
+      "personality": "敏感焦虑，共情能力强",
+      "motivation": "保护家人饮食安全",
+      "typical_phrases": [
+        "吓死我了",
+        "孩子在学校吃啥",
+        "太恶心了"
+      ]
+    },
+    {
+      "id": 7,
+      "group_name": "舆论施压派",
+      "archetype_index": -2,
+      "related_entity": "江西省政府",
+      "role": "periphery",
+      "stance_score": 5.43,
+      "susceptibility": 0.4,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "张磊",
+      "age_range": "25-34",
+      "occupation": "公务员",
+      "personality": "稳重务实，立场坚定",
+      "motivation": "维护政府形象，肯定纠错能力",
+      "typical_phrases": [
+        "最终还是查了",
+        "亡羊补牢",
+        "还算及时"
+      ]
+    },
+    {
+      "id": 8,
+      "group_name": "事件淡化派",
+      "archetype_index": -2,
+      "related_entity": "江西工业职业技术学院",
+      "role": "periphery",
+      "stance_score": 4.75,
+      "susceptibility": 0.48,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "刘哥",
+      "age_range": "35-45",
+      "occupation": "企业中层管理",
+      "personality": "圆滑世故，求稳心态",
+      "motivation": "维护学校声誉，避免过度追责",
+      "typical_phrases": [
+        "别上纲上线",
+        "学校也不容易",
+        "差不多就行了"
+      ]
+    },
+    {
+      "id": 9,
+      "group_name": "中立围观派",
+      "archetype_index": -2,
+      "related_entity": "当地食品管理局",
+      "role": "periphery",
+      "stance_score": 6.09,
+      "susceptibility": 0.66,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "小李",
+      "age_range": "25-34",
+      "occupation": "自由职业者",
+      "personality": "随性淡然，佛系心态",
+      "motivation": "单纯吃瓜看热闹",
+      "typical_phrases": [
+        "坐等后续",
+        "让子弹飞",
+        "看看怎么说"
+      ]
+    },
+    {
+      "id": 10,
+      "group_name": "法律追责派",
+      "archetype_index": -2,
+      "related_entity": "当地食品管理局",
+      "role": "periphery",
+      "stance_score": 2.97,
+      "susceptibility": 0.16,
+      "confirmation_bias_level": "strong",
+      "entity_category": "opinion_spreader",
+      "persona_name": "陈律师",
+      "age_range": "30-40",
+      "occupation": "执业律师",
+      "personality": "严谨专业，原则性强",
+      "motivation": "维护法律尊严，推动问责",
+      "typical_phrases": [
+        "依法追责",
+        "涉嫌渎职",
+        "必须立案"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": 0,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 0,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 0,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 4,
+      "target": 1,
+      "type": "follows"
+    },
+    {
+      "source": 5,
+      "target": 2,
+      "type": "follows"
+    },
+    {
+      "source": 6,
+      "target": 1,
+      "type": "follows"
+    },
+    {
+      "source": 7,
+      "target": 3,
+      "type": "follows"
+    },
+    {
+      "source": 8,
+      "target": 1,
+      "type": "follows"
+    },
+    {
+      "source": 9,
+      "target": 2,
+      "type": "follows"
+    },
+    {
+      "source": 10,
+      "target": 2,
+      "type": "follows"
+    },
+    {
+      "source": 4,
+      "target": 8,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 5,
+      "target": 10,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 6,
+      "target": 7,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 6,
+      "target": 9,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 8,
+      "target": 10,
+      "type": "follows_cross_group"
+    }
+  ]
+}

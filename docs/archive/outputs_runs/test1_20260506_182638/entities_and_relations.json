@@ -1,0 +1,232 @@
+{
+  "event_summary": "李佳琦直播质疑网友工资引发争议，花西子品牌被质疑定价过高及是否为日本品牌",
+  "event_scale": 0.7,
+  "event_controversy": 0.55,
+  "event_type": "产品质量问题",
+  "event_entities": [
+    {
+      "name": "李佳琦",
+      "type": "individual",
+      "role": "主播，在直播中发表争议言论引发事件",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "不要乱说，眉笔一直79元，国货很难的。有时候找找自己原因，这么多年工资涨没涨，有没有认真工作。",
+      "can_speak_reason": null
+    },
+    {
+      "name": "花西子",
+      "type": "organization",
+      "role": "被质疑的国货彩妆品牌方",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "真诚地和大家说声抱歉，过去一周花西子受到了全网极大的关注，我们诚惶诚恐、手足无措，品牌此前也一直没有发声。这段时间里，我们不断吸收大家的批评、意见和建议。",
+      "can_speak_reason": null
+    },
+    {
+      "name": "网友",
+      "type": "group",
+      "role": "质疑方，最初在直播间提出价格质疑的消费者",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": "花西子眉笔越来越贵了",
+      "can_speak_reason": null
+    }
+  ],
+  "opinion_spreaders": [
+    {
+      "group_name": "打工人共情派",
+      "related_event_entity": "李佳琦",
+      "description": "同情普通劳动者，认为李佳琦的言论伤害了打工人感情",
+      "I": 8.5,
+      "P": -1,
+      "susceptibility": 0.2,
+      "estimated_percentage": 20,
+      "communication_style": "情绪激动，擅长共情打工人处境",
+      "entity_category": "opinion_spreader",
+      "persona_name": "小王",
+      "age_range": "25-34",
+      "occupation": "互联网运营",
+      "personality": "冲动易怒但正义感强",
+      "motivation": "维护打工人群体尊严，反对精英式傲慢",
+      "typical_phrases": [
+        "你飘了",
+        "忘本了",
+        "打工人的钱不是钱"
+      ]
+    },
+    {
+      "group_name": "理性分析派",
+      "related_event_entity": "花西子",
+      "description": "关注产品性价比和品牌定价策略，用数据说话",
+      "I": 7.0,
+      "P": -1,
+      "susceptibility": 0.4,
+      "estimated_percentage": 15,
+      "communication_style": "客观冷静，喜欢列数据摆事实",
+      "entity_category": "opinion_spreader",
+      "persona_name": "陈老师",
+      "age_range": "30-40",
+      "occupation": "财务分析师",
+      "personality": "理性客观，数据控",
+      "motivation": "揭露品牌定价不合理，维护消费者知情权",
+      "typical_phrases": [
+        "算笔账",
+        "按克计价",
+        "智商税"
+      ]
+    },
+    {
+      "group_name": "国货支持者",
+      "related_event_entity": "花西子",
+      "description": "支持国货品牌，认为应该给国货更多包容和成长空间",
+      "I": 6.5,
+      "P": 1,
+      "susceptibility": 0.5,
+      "estimated_percentage": 15,
+      "communication_style": "温和但坚定，强调民族情感",
+      "entity_category": "opinion_spreader",
+      "persona_name": "阿敏",
+      "age_range": "22-30",
+      "occupation": "国企文员",
+      "personality": "爱国心强，感性包容",
+      "motivation": "支持国货发展，不希望看到国货被恶意抹黑",
+      "typical_phrases": [
+        "给国货一点时间",
+        "支持国货",
+        "中国品牌不容易"
+      ]
+    },
+    {
+      "group_name": "李佳琦粉丝团",
+      "related_event_entity": "李佳琦",
+      "description": "长期关注李佳琦直播的粉丝，理解并原谅其言论",
+      "I": 9.0,
+      "P": 1,
+      "susceptibility": 0.15,
+      "estimated_percentage": 12,
+      "communication_style": "维护偶像，感恩李佳琦带来的优惠",
+      "entity_category": "opinion_spreader",
+      "persona_name": "小美",
+      "age_range": "18-24",
+      "occupation": "大学生",
+      "personality": "感性冲动，忠诚度高",
+      "motivation": "支持喜欢的主播，认为道歉已经足够",
+      "typical_phrases": [
+        "佳琦哥",
+        "道歉了还要怎样",
+        "他也不容易"
+      ]
+    },
+    {
+      "group_name": "阴谋论分析派",
+      "related_event_entity": "花西子",
+      "description": "关注品牌背景，质疑花西子日本研发中心及品牌归属",
+      "I": 8.0,
+      "P": -1,
+      "susceptibility": 0.3,
+      "estimated_percentage": 13,
+      "communication_style": "喜欢深挖内幕，擅长联想分析",
+      "entity_category": "opinion_spreader",
+      "persona_name": "老张",
+      "age_range": "35-45",
+      "occupation": "自媒体博主",
+      "personality": "好奇心强，爱分析",
+      "motivation": "揭露品牌真相，反对虚假宣传",
+      "typical_phrases": [
+        "细思极恐",
+        "日本研发中心",
+        "懂的都懂"
+      ]
+    },
+    {
+      "group_name": "美妆从业者",
+      "related_event_entity": "花西子",
+      "description": "了解美妆行业规则，为品牌说话的专业人士",
+      "I": 7.5,
+      "P": 1,
+      "susceptibility": 0.35,
+      "estimated_percentage": 10,
+      "communication_style": "专业客观，从行业角度分析",
+      "entity_category": "opinion_spreader",
+      "persona_name": "林哥",
+      "age_range": "30-40",
+      "occupation": "化妆品配方师",
+      "personality": "专业自信，理性中立",
+      "motivation": "普及行业知识，为国货美妆正名",
+      "typical_phrases": [
+        "行业平均佣金",
+        "研发成本",
+        "彩妆行业不容易"
+      ]
+    },
+    {
+      "group_name": "吃瓜群众",
+      "related_event_entity": "李佳琦",
+      "description": "单纯看热闹，不站队但积极参与讨论的网民",
+      "I": 4.0,
+      "P": -1,
+      "susceptibility": 0.7,
+      "estimated_percentage": 10,
+      "communication_style": "轻松调侃，看热闹不嫌事大",
+      "entity_category": "opinion_spreader",
+      "persona_name": "阿强",
+      "age_range": "20-30",
+      "occupation": "自由职业",
+      "personality": "爱凑热闹，幽默风趣",
+      "motivation": "参与热点话题，获取社交谈资",
+      "typical_phrases": [
+        "又上热搜了",
+        "前排吃瓜",
+        "笑死了"
+      ]
+    },
+    {
+      "group_name": "消费者权益派",
+      "related_event_entity": "花西子",
+      "description": "关注消费者权益，反感主播和品牌的傲慢态度",
+      "I": 8.5,
+      "P": -1,
+      "susceptibility": 0.25,
+      "estimated_percentage": 5,
+      "communication_style": "正义感强，擅长道德绑架",
+      "entity_category": "opinion_spreader",
+      "persona_name": "霞姐",
+      "age_range": "35-45",
+      "occupation": "全职妈妈",
+      "personality": "强势直接，爱打抱不平",
+      "motivation": "维护消费者权益，反对商家傲慢",
+      "typical_phrases": [
+        "消费者是上帝",
+        "必须道歉",
+        "太气人了"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "source": "李佳琦",
+      "target": "花西子",
+      "type": "带货合作关系"
+    },
+    {
+      "source": "网友",
+      "target": "李佳琦",
+      "type": "质疑/批评"
+    },
+    {
+      "source": "网友",
+      "target": "花西子",
+      "type": "质疑/批评"
+    },
+    {
+      "source": "花西子",
+      "target": "网友",
+      "type": "回应/道歉"
+    },
+    {
+      "source": "李佳琦",
+      "target": "网友",
+      "type": "道歉"
+    }
+  ]
+}

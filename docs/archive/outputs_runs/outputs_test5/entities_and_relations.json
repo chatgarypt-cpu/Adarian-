@@ -1,0 +1,100 @@
+{
+  "event_summary": "官方账号评论引发对禁毒政策特权争议",
+  "event_temperature": 0.7,
+  "event_intensity": 0.8,
+  "event_type": "政策争议",
+  "event_entities": [
+    {
+      "name": "兵團禁毒",
+      "type": "organization",
+      "role": "发布普法视频的官方机构",
+      "entity_category": "event_entity"
+    },
+    {
+      "name": "南通文旅",
+      "type": "organization",
+      "role": "评论引发争议的官方账号",
+      "entity_category": "event_entity"
+    }
+  ],
+  "opinion_spreaders": [
+    {
+      "group_name": "政策批评者",
+      "related_event_entity": "南通文旅",
+      "description": "关注政策公平性的网民，质疑特权阶层",
+      "stance_score": 8.5,
+      "susceptibility": 0.7,
+      "confirmation_bias_level": "strong",
+      "estimated_percentage": 25,
+      "communication_style": "犀利讽刺，直指核心矛盾",
+      "entity_category": "opinion_spreader"
+    },
+    {
+      "group_name": "法律支持者",
+      "related_event_entity": "兵團禁毒",
+      "description": "维护法律权威的理性网民",
+      "stance_score": 2.0,
+      "susceptibility": 0.4,
+      "confirmation_bias_level": "weak",
+      "estimated_percentage": 15,
+      "communication_style": "强调法律程序与规范",
+      "entity_category": "opinion_spreader"
+    },
+    {
+      "group_name": "网络调侃群体",
+      "related_event_entity": "南通文旅",
+      "description": "以幽默方式传播热点的网友",
+      "stance_score": 4.0,
+      "susceptibility": 0.6,
+      "confirmation_bias_level": "none",
+      "estimated_percentage": 20,
+      "communication_style": "轻松调侃，制造话题热度",
+      "entity_category": "opinion_spreader"
+    },
+    {
+      "group_name": "媒体评论员",
+      "related_event_entity": "兵團禁毒",
+      "description": "分析事件背景和影响的专业人士",
+      "stance_score": 5.0,
+      "susceptibility": 0.5,
+      "confirmation_bias_level": "weak",
+      "estimated_percentage": 15,
+      "communication_style": "客观分析，提供多角度解读",
+      "entity_category": "opinion_spreader"
+    },
+    {
+      "group_name": "社会观察者",
+      "related_event_entity": "南通文旅",
+      "description": "关注社会公平议题的普通网民",
+      "stance_score": 7.0,
+      "susceptibility": 0.6,
+      "confirmation_bias_level": "strong",
+      "estimated_percentage": 25,
+      "communication_style": "深入剖析社会现象",
+      "entity_category": "opinion_spreader"
+    },
+    {
+      "group_name": "粉丝群体",
+      "related_event_entity": "南通文旅",
+      "description": "对官方账号有情感认同的用户",
+      "stance_score": 3.0,
+      "susceptibility": 0.3,
+      "confirmation_bias_level": "weak",
+      "estimated_percentage": 10,
+      "communication_style": "为账号发声，维护形象",
+      "entity_category": "opinion_spreader"
+    }
+  ],
+  "relations": [
+    {
+      "source": "兵團禁毒",
+      "target": "南通文旅",
+      "type": "commented_on"
+    },
+    {
+      "source": "南通文旅",
+      "target": "兵團禁毒",
+      "type": "responded_to"
+    }
+  ]
+}

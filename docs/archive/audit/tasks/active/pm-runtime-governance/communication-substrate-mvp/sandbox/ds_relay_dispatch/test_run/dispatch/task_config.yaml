@@ -1,0 +1,75 @@
+task_id: ds-real-relay-shell-test-20260523
+task_domain: pm-runtime-governance
+short_task: ds-real-relay-verify-shell
+task_level: M
+executor_type: shell_command
+execution_mode: managed_subprocess
+owner_control_required: true
+runtime_allowed_level: L1
+
+paths:
+  task_dir: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/ds_relay_dispatch/test_run
+  dispatch_path: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/ds_relay_dispatch/test_run/dispatch/task_config.yaml
+  system_prompt_path:
+  runtime_dir: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/ds_relay_dispatch/test_run/runtime
+  logs_dir: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/ds_relay_dispatch/test_run/logs
+  summary_path: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/ds_relay_dispatch/test_run/summary/pm_runtime_summary.md
+
+runtime_control:
+  mode: health_based
+  heartbeat_interval_sec: 1
+  progress_check_interval_sec: 5
+  no_heartbeat_timeout_sec: 300
+  no_progress_review_sec: 600
+  owner_review_after_sec: 1800
+  emergency_max_wall_time_sec: 30
+  abort_requires_owner: true
+  preserve_partial_output_on_abort: true
+
+scope:
+  allowed_files: []
+  forbidden_files: []
+  allowed_dirs:
+    - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/ds_relay_dispatch/test_run
+  sandbox_dir: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/ds_relay_dispatch/test_run
+
+executor_options:
+  sandbox_mode: workspace-write
+  allowed_tools: []
+  max_turns:
+  extra_args: []
+  expected_receipt_path:
+  expected_report_path:
+  command:
+    - /Users/gary/项目开发/AdarianMigration/adarian mvp/.venv/bin/python
+    - -c
+    - |
+      import time, sys, json, os
+
+      print("=== DS Real Relay Shell Test Start ===")
+      sys.stdout.flush()
+
+      # Step 1: simulate work
+      for i in range(1, 6):
+          print(f"[Step {i}/5] Processing...")
+          sys.stdout.flush()
+          time.sleep(1.4)
+
+      # Step 2: write some stderr
+      print("info: processing took multiple steps", file=sys.stderr)
+      sys.stderr.flush()
+
+      # Step 3: produce a result
+      result = {
+          "test_id": "ds-real-relay-shell-test-20260523",
+          "status": "completed",
+          "steps": 5,
+          "elapsed_approx_sec": 7.0,
+          "cwd": os.getcwd(),
+          "pid": os.getpid()
+      }
+      print(json.dumps(result, ensure_ascii=False, indent=2))
+      sys.stdout.flush()
+
+      print("=== DS Real Relay Shell Test Complete ===")
+      sys.stdout.flush()

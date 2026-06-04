@@ -1,0 +1,202 @@
+{
+  "event_summary": "深圳女子公交站劝阻吸烟反被拟拘留，吸烟者未追责，执法标准争议引发舆论关注",
+  "event_scale": 0.65,
+  "event_controversy": 0.75,
+  "event_type": "执法争议",
+  "event_entities": [
+    {
+      "name": "劝阻吸烟女子",
+      "type": "individual",
+      "role": "事件当事人，在公交站劝阻吸烟被拟拘留",
+      "entity_category": "event_entity",
+      "can_speak": false,
+      "original_statement": null,
+      "can_speak_reason": null
+    },
+    {
+      "name": "吸烟男子",
+      "type": "individual",
+      "role": "事件当事人，在公交站吸烟未受追责",
+      "entity_category": "event_entity",
+      "can_speak": false,
+      "original_statement": null,
+      "can_speak_reason": null
+    },
+    {
+      "name": "涉事民警",
+      "type": "individual",
+      "role": "执法者，称'公交站不算室内禁烟区'并表示'我也抽烟'",
+      "entity_category": "event_entity",
+      "can_speak": false,
+      "original_statement": null,
+      "can_speak_reason": null
+    },
+    {
+      "name": "深圳市公安局",
+      "type": "organization",
+      "role": "执法机构，拟对女子拘留5天",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": null,
+      "can_speak_reason": null
+    },
+    {
+      "name": "薄荷奶律",
+      "type": "organization",
+      "role": "法律博主，对事件进行法律分析",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": null,
+      "can_speak_reason": null
+    }
+  ],
+  "opinion_spreaders": [
+    {
+      "group_name": "维权支持者",
+      "related_event_entity": "劝阻吸烟女子",
+      "description": "支持公民依法维权的年轻群体，认为守法者不应受罚",
+      "I": 7.5,
+      "P": -1,
+      "susceptibility": 0.25,
+      "estimated_percentage": 35,
+      "communication_style": "情绪激昂，善于引用法条和对比案例",
+      "entity_category": "opinion_spreader",
+      "persona_name": "林晓芸",
+      "age_range": "25-34",
+      "occupation": "互联网运营",
+      "personality": "正义感强、易怒冲动",
+      "motivation": "维护公民维权权利和社会公平正义",
+      "typical_phrases": [
+        "凭什么守法者吃亏？",
+        "这执法双标太离谱",
+        "支持维权到底"
+      ]
+    },
+    {
+      "group_name": "程序质疑者",
+      "related_event_entity": "深圳市公安局",
+      "description": "关注执法程序规范的理性群体，质疑搜身等过度执法",
+      "I": 6.8,
+      "P": -1,
+      "susceptibility": 0.32,
+      "estimated_percentage": 25,
+      "communication_style": "理性分析，引用法规条文质疑程序问题",
+      "entity_category": "opinion_spreader",
+      "persona_name": "陈思远",
+      "age_range": "35-45",
+      "occupation": "法务工作者",
+      "personality": "严谨审慎、逻辑性强",
+      "motivation": "监督执法规范性，防止权力滥用",
+      "typical_phrases": [
+        "程序正义不能忽视",
+        "法律条文不是摆设",
+        "执法要有边界"
+      ]
+    },
+    {
+      "group_name": "法律理性派",
+      "related_event_entity": "劝阻吸烟女子",
+      "description": "从法律角度分析劝阻方式是否过当的中间群体",
+      "I": 5.2,
+      "P": -1,
+      "susceptibility": 0.48,
+      "estimated_percentage": 10,
+      "communication_style": "冷静客观，平衡分析双方责任",
+      "entity_category": "opinion_spreader",
+      "persona_name": "周明哲",
+      "age_range": "25-34",
+      "occupation": "法学研究生",
+      "personality": "冷静理性、中立客观",
+      "motivation": "探讨公民维权与执法权的边界",
+      "typical_phrases": [
+        "两边都有问题",
+        "维权也要讲方式",
+        "理性讨论就好"
+      ]
+    },
+    {
+      "group_name": "秩序维护派",
+      "related_event_entity": "深圳市公安局",
+      "description": "支持警方执法，认为暴力劝阻方式不当的中年群体",
+      "I": 6.5,
+      "P": 1,
+      "susceptibility": 0.35,
+      "estimated_percentage": 20,
+      "communication_style": "强调秩序和规则，支持官方处理",
+      "entity_category": "opinion_spreader",
+      "persona_name": "王建国",
+      "age_range": "45-60",
+      "occupation": "国企员工",
+      "personality": "保守稳重、尊重权威",
+      "motivation": "维护社会秩序和执法权威",
+      "typical_phrases": [
+        "警察执法不容易",
+        "别动不动就网暴",
+        "按规矩办事"
+      ]
+    },
+    {
+      "group_name": "控烟倡导者",
+      "related_event_entity": "吸烟男子",
+      "description": "关注控烟议题，认为吸烟者应承担责任的群体",
+      "I": 8.2,
+      "P": -1,
+      "susceptibility": 0.18,
+      "estimated_percentage": 10,
+      "communication_style": "引用健康数据，强调二手烟危害",
+      "entity_category": "opinion_spreader",
+      "persona_name": "刘雅婷",
+      "age_range": "25-34",
+      "occupation": "公共卫生从业者",
+      "personality": "执着坚定、专业导向",
+      "motivation": "推动控烟条例落实和公众健康保护",
+      "typical_phrases": [
+        "二手烟危害这么大",
+        "控烟条例必须执行",
+        "健康权不容侵犯"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "source": "劝阻吸烟女子",
+      "target": "吸烟男子",
+      "type": "冲突关系"
+    },
+    {
+      "source": "劝阻吸烟女子",
+      "target": "深圳市公安局",
+      "type": "被执法关系"
+    },
+    {
+      "source": "吸烟男子",
+      "target": "深圳市公安局",
+      "type": "被调查关系"
+    },
+    {
+      "source": "涉事民警",
+      "target": "深圳市公安局",
+      "type": "隶属关系"
+    },
+    {
+      "source": "薄荷奶律",
+      "target": "劝阻吸烟女子",
+      "type": "关注分析关系"
+    },
+    {
+      "source": "维权支持者",
+      "target": "劝阻吸烟女子",
+      "type": "声援关系"
+    },
+    {
+      "source": "秩序维护派",
+      "target": "深圳市公安局",
+      "type": "支持关系"
+    },
+    {
+      "source": "控烟倡导者",
+      "target": "吸烟男子",
+      "type": "批评关系"
+    }
+  ]
+}

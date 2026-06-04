@@ -1,0 +1,13 @@
+task_id: ds-relay-verify-v0.1.1-20260523
+session_id: session-local
+round_id: round-1
+request_id: ""
+owner_decision: ""
+decision_source: unknown
+decision_time: ""
+approved_scope:
+  []
+rejected_scope:
+  []
+notes: ""
+next_runtime_action: ""

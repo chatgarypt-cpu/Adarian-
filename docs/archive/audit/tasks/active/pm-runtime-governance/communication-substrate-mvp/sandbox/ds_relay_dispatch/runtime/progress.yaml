@@ -1,0 +1,4 @@
+task_id: ds-relay-verify-v0.1.1-20260523
+runtime_state: executor_failed
+message: executor classified as missing_receipt
+updated_at: "2026-05-23T01:34:29+08:00"

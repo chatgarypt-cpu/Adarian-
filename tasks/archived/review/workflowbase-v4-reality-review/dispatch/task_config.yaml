@@ -1,0 +1,11 @@
+task_id: workflowbase-v4-reality-review
+task_title: WorkflowBase v4.0 Reality Review — 收口验证
+executor: claude
+workdir: /Users/gary/项目开发/AdarianMigration/adarian mvp
+prompt_file: dispatch/prompt.md
+executor_options:
+  workflow: true
+  agent_team_size: 6
+expected_outputs:
+  - outputs/reality_review.md
+notify_on_complete: true

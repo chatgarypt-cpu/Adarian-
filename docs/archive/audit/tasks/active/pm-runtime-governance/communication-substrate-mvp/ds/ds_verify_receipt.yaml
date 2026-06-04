@@ -1,0 +1,45 @@
+acceptance_verdict: pass_with_known_issues
+append_only_check:
+  status: pass
+artifact_schema_spot_check:
+  status: pass
+blockers: []
+demo_rerun:
+  status: pass
+file_boundary_check:
+  forbidden_files_touched: []
+  unexpected_files: []
+findings:
+  P0: []
+  P1: []
+  P2:
+  - mcp_used字段声明为false但实际使用了文件读取操作，元数据不够精确
+  - created_files与changed_files列表大量重叠，降低了字段区分度
+  - Sandbox demo summary在created_files中缺失但存在于output_files中
+  P3:
+  - py_compile在tools/pm_runtime/下生成了__pycache__（已知问题，无风险）
+  - receipt.template.yaml和dispatch.template.yaml在tools/pm_runtime/templates/下有冗余副本
+  - 多次重跑后task_state.yaml的runtime_state可能不够精确
+implementation_readiness: usable
+known_issues:
+- Safety gate需后续patch以支持infrastructure_creation_lane
+- Runtime state值与task_status有意重叠（MVP兼容性）
+- MVP仅支持单任务
+- 最小YAML fallback不是通用解析器
+- 分类分支覆盖MVP级别标签，生产策略映射需验证
+mcp_used: true
+process_issues:
+- Codex使用了owner_override（infrastructure_creation_lane不被当前safety gate支持），符合taskbook预期
+receipt_path: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/ds/ds_verify_receipt.yaml
+receipt_schema_check:
+  status: pass
+recommended_next_action:
+- owner_control_gate
+- codex_patch
+report_path: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/ds/ds_post_execution_verification.md
+review_type: post_execution_functional_verification
+scope_compliance: pass
+syntax_import_check:
+  status: pass
+task_id: ds-verify-pm-runtime-communication-substrate-mvp-20260522
+team_mode_used: true

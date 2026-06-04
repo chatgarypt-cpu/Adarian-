@@ -1,0 +1,1 @@
+codex exec --sandbox read-only --skip-git-repo-check --ephemeral --json List the files in the current directory. Tell me if README or CLAUDE.md exists. Do NOT modify anything. Short answer.

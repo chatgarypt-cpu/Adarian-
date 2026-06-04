@@ -1,0 +1,102 @@
+executor: codex
+task_id: pm-runtime-communication-substrate-mvp-v0.1.1
+task_title: PM Runtime Communication Substrate MVP v0.1.1 Real Executor / Heartbeat / Hermes Compatibility Patch
+patch_type: same_version_followup_patch
+started_at: "2026-05-23T00:35:00+08:00"
+completed_at: "2026-05-23T00:45:47+08:00"
+elapsed_sec: 647
+status: completed
+verdict: pass_with_known_issues
+owner_control_required: true
+diagnosis:
+  fake_heartbeat_confirmed: true
+  real_executor_missing_confirmed: partial
+  hermes_integration_missing_confirmed: true
+  task_config_path_issue_confirmed: true
+  state_machine_jump_confirmed: true
+changed_files:
+  - tools/pm_runtime/relay/relay_runner.py
+  - tools/pm_runtime/templates/task_config.yaml
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/**
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/codex/codex_receipt_v0_1_1.yaml
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/codex/codex_handoff_v0_1_1.md
+created_files:
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/codex/codex_receipt_v0_1_1.yaml
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/codex/codex_handoff_v0_1_1.md
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/local_echo/dispatch/task_config.yaml
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/shell_command/dispatch/task_config.yaml
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/local_echo/runtime/relay_heartbeat.txt
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/local_echo/runtime/relay_progress.md
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/local_echo/runtime/result.json
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/shell_command/runtime/relay_heartbeat.txt
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/shell_command/runtime/relay_progress.md
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/shell_command/runtime/result.json
+  - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/shell_command/runtime/heartbeat_history.jsonl
+modified_files:
+  - tools/pm_runtime/relay/relay_runner.py
+  - tools/pm_runtime/templates/task_config.yaml
+commands_run:
+  - sed -n '1,280p' /Users/gary/Downloads/codex_patch_pm_runtime_substrate_v0.1.1_real_executor_heartbeat_hermes.md
+  - git status --short
+  - sed/nl inspections of tools/pm_runtime/relay/relay_runner.py, cli.py, task_config.yaml
+  - .venv/bin/python -m py_compile tools/pm_runtime/relay/cli.py
+  - .venv/bin/python -m py_compile tools/pm_runtime/relay/relay_runner.py
+  - .venv/bin/python -m py_compile tools/pm_runtime/relay/extractors.py
+  - .venv/bin/python -m py_compile tools/pm_runtime/relay/recovery.py
+  - .venv/bin/python -c "from tools.pm_runtime.relay import cli; print('import OK')"
+  - .venv/bin/python -m tools.pm_runtime.relay.cli init --config audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/local_echo/dispatch/task_config.yaml
+  - .venv/bin/python -m tools.pm_runtime.relay.cli run --task-dir audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/local_echo
+  - .venv/bin/python -m tools.pm_runtime.relay.cli summary --task-dir audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/local_echo
+  - .venv/bin/python -m tools.pm_runtime.relay.cli recover --task-dir audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/local_echo
+  - .venv/bin/python -m tools.pm_runtime.relay.cli init --config audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/shell_command/dispatch/task_config.yaml
+  - .venv/bin/python -m tools.pm_runtime.relay.cli run --task-dir audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/shell_command
+  - .venv/bin/python -m tools.pm_runtime.relay.cli summary --task-dir audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/shell_command
+  - .venv/bin/python -m tools.pm_runtime.relay.cli recover --task-dir audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/shell_command
+test_results:
+  - command: .venv/bin/python -m py_compile tools/pm_runtime/relay/cli.py
+    result: pass
+  - command: .venv/bin/python -m py_compile tools/pm_runtime/relay/relay_runner.py
+    result: pass
+  - command: .venv/bin/python -m py_compile tools/pm_runtime/relay/extractors.py
+    result: pass
+  - command: .venv/bin/python -m py_compile tools/pm_runtime/relay/recovery.py
+    result: pass
+  - command: .venv/bin/python -c "from tools.pm_runtime.relay import cli; print('import OK')"
+    result: pass
+demo_results:
+  local_echo:
+    result: pass
+    task_dir: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/local_echo
+    stdout_path: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/local_echo/logs/stdout.log
+    stderr_path: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/local_echo/logs/stderr.log
+  managed_subprocess:
+    result: pass
+    task_dir: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/shell_command
+    stdout_path: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/shell_command/logs/stdout.log
+    stderr_path: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/shell_command/logs/stderr.log
+    raw_output_path: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/shell_command/logs/raw_output.jsonl
+  heartbeat_observed:
+    result: pass
+    evidence_path: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/shell_command/runtime/heartbeat_history.jsonl
+    observed_sequence: "heartbeat_seq 1 through 10"
+    observed_states: running, healthy_running, slow_but_progressing, executor_completed
+  hermes_compat_files:
+    result: pass
+    files:
+      - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/shell_command/runtime/relay_heartbeat.txt
+      - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/shell_command/runtime/relay_progress.md
+      - audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/sandbox/v0_1_1_patch_demo/shell_command/runtime/result.json
+forbidden_files_touched: []
+known_issues:
+  - This patch does not make PM Runtime production-ready; it makes the substrate a Hermes real-relay candidate.
+  - Legacy compat artifacts are written under runtime/ rather than old relay_logs/ because relay_logs/** was not in the v0.1.1 allowed write scope.
+  - Codex/Claude executor modes are command-template foundations only; production invocation policy still requires Hermes/DS/Owner-Control verification.
+  - The working tree has unrelated pre-existing dirty/untracked files outside this patch boundary.
+blockers: []
+runtime_contract_deviations: []
+python_interpreter: /Users/gary/项目开发/AdarianMigration/adarian mvp/.venv/bin/python
+commit_status: no_commit
+closeout_claimed: false
+handoff_path: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/codex/codex_handoff_v0_1_1.md
+receipt_path: audit/tasks/active/pm-runtime-governance/communication-substrate-mvp/codex/codex_receipt_v0_1_1.yaml
+next_recommendation: Hermes and DS should test this as a real-relay candidate; Owner-Control remains final gate.

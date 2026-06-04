@@ -1,0 +1,1202 @@
+metadata:
+  asset_id: workflow_compact
+  schema_version: 0.3.3
+  asset_version: v0.3.3
+  status: bootstrap_alignment_candidate
+  repository_landed: false
+  compatible_workflow_core_version: v4.0-r2
+  compatible_human_compact_version: v0.3
+  canonical_target_path: docs/skills/workflow_v4.0/workflow_core/workflow_compact_v0.3.3.yaml
+  human_compact_target_path: docs/skills/workflow_v4.0/workflow_core/workflow_compact_v0.3.md
+  workflow_core_target_path: docs/skills/workflow_v4.0/workflow_core/workflow_core_v4.0_r2.md
+  generated_after_review:
+    review_id: ds-runtime-contract-review-20260522
+    verdict: pass_with_known_issues
+    required_patch: yaml_v0.3.3_bootstrap_alignment
+  owner: Owner-Control
+  language: zh-CN
+  patched_from: workflow_compact_v0.3.2.yaml
+  patch_reason: 'bootstrap alignment for PM Runtime Communication Substrate Runtime Contract v0.1: directory policy, runtime_state
+    enum, bootstrap workspace caveat'
+authority:
+  authority_level: non_authoritative_machine_index
+  workflow_core_is_authority: true
+  this_yaml_is_authority: false
+  human_compact_is_authority: false
+  agent_specific_instruction_is_authority: false
+  allowed_use:
+  - route_lookup
+  - contract_index
+  - validation_hint
+  - task_directory_check
+  - gate_check_helper
+  forbidden_use:
+  - replace_workflow_core
+  - override_workflow_core
+  - decide_final_closeout
+  - authorize_execution_by_itself
+  conflict_policy:
+    compact_vs_workflow_core: use_workflow_core
+    yaml_vs_workflow_core: use_workflow_core
+    agent_instruction_vs_workflow_core: use_workflow_core
+    unresolved_three_way_conflict: hold_return_to_owner_control
+  transitional_context_policy:
+    context_packet_is_authority: false
+    context_packet_usage: transitional_context_only
+    if_workflow_core_is_draft: state_transitional_status_and_hold_final_authority_judgment
+definitions:
+  abbreviations:
+    DS: DeepSeek-backed review team / audit team
+    PM: Project Management Runtime / task middleware
+    Hermes: current PM Runtime implementation
+    Codex: code execution agent
+    S-Level: small low-risk task
+    M-Level: medium standard iteration task
+    L-Level: large architecture or authority-level task
+    HOLD: stop and return to Owner-Control for missing context, conflict, or risk
+enums:
+  task_level:
+  - s_level
+  - m_level
+  - l_level
+  - patch_lane
+  task_status: &id001
+  - proposed
+  - approved
+  - running
+  - completed
+  - failed
+  - hold
+  - closed
+  - archived
+  approval_mode:
+  - a0_manual_single_task
+  - a1_low_risk_auto_policy
+  - a2_owner_approved_execution_package
+  executor_type:
+  - owner
+  - control_agent
+  - pm_runtime
+  - ds_team
+  - codex
+  - external_agent
+  gate_decision:
+  - go
+  - conditional_go
+  - hold
+  - fail
+  acceptance_verdict:
+  - pass
+  - pass_with_known_issues
+  - patch_required
+  - repairable_hold
+  - blocking_hold
+  - fail
+  - hold
+  closeout_decision:
+  - pass
+  - pass_with_known_issues
+  - patch_required
+  - fail
+  - hold
+  requirement_level:
+  - required
+  - recommended
+  - optional
+  - forbidden
+  validation_severity:
+  - blocker
+  - major
+  - minor
+  - note
+  runtime_state:
+  - created
+  - dispatch_ready
+  - pre_action_checking
+  - launching
+  - healthy_running
+  - slow_but_progressing
+  - waiting_input
+  - permission_blocked
+  - sandbox_denied
+  - suspected_blocked
+  - missing_receipt
+  - missing_report
+  - partial_output
+  - recovering
+  - recovered
+  - rerun_required
+  - aborting
+  - aborted
+  - executor_completed
+  - executor_failed
+  - summary_written
+  - not_started
+  - running
+  - completed
+  - failed
+  - timeout
+  - partial_output_recovered
+  - artifact_missing
+  - environment_blocked
+  - hold_required
+  execution_mode:
+  - managed_relay_session
+  - managed_codex_exec
+  - manual_transport
+  owner_decision_event_type:
+  - approval_required
+  - sandbox_denied
+  - permission_blocked
+  - waiting_input
+  - scope_violation
+  - unclear_policy
+  - missing_receipt
+  - recovery_requires_approval
+  owner_decision_option:
+  - approve_with_scope
+  - reject
+  - abort_task
+  - request_safer_alternative
+  - ask_for_more_context
+path_aliases:
+  workflow_root: docs/skills/workflow_v4.0/
+  workflow_core_dir: docs/skills/workflow_v4.0/workflow_core/
+  control_agent_dir: docs/skills/workflow_v4.0/control_agent/
+  pm_runtime_dir: docs/skills/workflow_v4.0/pm_runtime/
+  ds_team_dir: docs/skills/workflow_v4.0/ds_team/
+  codex_dir: docs/skills/workflow_v4.0/codex/
+  task_active_root: audit/tasks/active/<task_domain>/<short_task>/
+  task_closed_root: audit/tasks/closed/<task_domain>/<short_task>/
+  task_archive_root: audit/tasks/archive/<milestone_id>/<task_domain>/<short_task>/
+  run_artifact_root: outputs/runs/<run_id>/
+  task_bootstrap_workspace_root: audit/tasks/active/<task_domain>/<short_task>/
+  production_task_registry_root: pending_task_management_model_design
+global_principles:
+  values:
+  - do_not_guess
+  - retrieve_verify_ask_or_hold
+  - minimize_complexity
+  - do_only_necessary_actions
+  - make_execution_verifiable
+  - owner_control_closeout_only
+  machine_action:
+    if_missing_required_context: hold_return_to_owner_control
+role_registry:
+  owner:
+    display_name: Owner / User
+    executor_type: owner
+    system_position: final_decision_layer
+    responsibilities:
+    - define_direction
+    - approve_tasks
+    - make_final_business_decisions
+    - confirm_closeout
+    forbidden:
+    - act_as_manual_messenger
+    - manually_poll_long_tasks
+    - manually_compile_agent_outputs_as_default
+    minimum_outputs:
+    - approval_or_rejection
+    - direction_decision
+    - closeout_confirmation
+  control_agent:
+    display_name: ChatGPT Web Control Agent
+    executor_type: control_agent
+    system_position: control_and_gate_layer
+    responsibilities:
+    - identify_phase
+    - determine_task_level
+    - define_scope_and_boundary
+    - write_iteration_docs_or_task_cards
+    - generate_dispatch_prompts
+    - judge_gate
+    - propose_closeout
+    - provide_single_next_step
+    forbidden:
+    - pretend_local_execution
+    - run_tests_or_git_commands_as_fact
+    - outsource_final_gate_to_ds_or_codex_or_pm
+    - assume_repository_landing_without_evidence
+    - skip_pm_runtime_for_external_work_unless_exception_applies
+    minimum_outputs:
+    - gate_judgment
+    - task_boundary
+    - dispatch_prompt
+    - closeout_note
+  pm_runtime:
+    display_name: PM Runtime / Hermes
+    executor_type: pm_runtime
+    system_position: task_middleware_layer
+    responsibilities:
+    - create_or_receive_dispatch
+    - start_approved_tasks
+    - maintain_heartbeat_progress_result
+    - recover_report_receipt_summary
+    - perform_task_local_communication_repair
+    - return_execution_facts_to_owner_control
+    forbidden:
+    - final_closeout
+    - modify_business_source_code
+    - modify_workflow_core
+    - modify_ds_verdict
+    - downgrade_blockers
+    - git_commit
+    - expand_scope_without_owner_approval
+    minimum_outputs:
+    - dispatch_path
+    - receipt_paths
+    - report_paths
+    - runtime_result
+    - pm_runtime_summary
+  ds_team:
+    display_name: DS Team
+    executor_type: ds_team
+    system_position: audit_and_acceptance_fact_layer
+    responsibilities:
+    - pre_audit
+    - post_execution_review
+    - read_only_review
+    - verify_scope_compliance
+    - identify_process_issues
+    - output_acceptance_verdict
+    forbidden:
+    - final_closeout
+    - modify_source_code
+    - redefine_version_scope
+    - auto_upgrade_finding_to_new_version
+    - git_commit
+    minimum_outputs:
+    - review_report
+    - ds_receipt
+    - acceptance_verdict
+    - process_issues
+  codex:
+    display_name: Codex
+    executor_type: codex
+    system_position: execution_layer
+    responsibilities:
+    - read_approved_dispatch
+    - modify_allowed_files_only
+    - run_required_checks
+    - return_diff_status_receipt
+    - prepare_commit_materials_if_authorized
+    forbidden:
+    - self_closeout
+    - expand_scope
+    - modify_forbidden_files
+    - enter_next_version_without_approval
+    - git_commit_without_owner_authorization
+    minimum_outputs:
+    - changed_files
+    - commands_run
+    - test_results
+    - diff_summary
+    - codex_receipt
+default_routes:
+  external_work:
+    default_path:
+    - control_agent_defines_boundary
+    - pm_runtime_orchestrates_dispatch
+    - pm_runtime_dispatches_downstream_agent
+    - downstream_agent_outputs_report_or_receipt
+    - pm_runtime_recovers_summary
+    - owner_control_performs_final_gate
+    direct_downstream_allowed_only_if:
+    - owner_explicitly_requests_bypass_pm_runtime
+    - s_level_one_shot_task_without_receipt_or_summary_recovery
+    - pm_runtime_unavailable_and_owner_accepts_manual_transfer
+    - workflow_core_formally_allows_direct_route
+    self_authorized_direct_route_allowed: false
+task_levels:
+  s_level:
+    enum_value: s_level
+    pm_runtime_requirement: optional
+    ds_pre_audit_requirement: optional
+    ds_post_execution_review_requirement: optional
+    full_iteration_doc_requirement: forbidden
+    default_checks:
+    - boundary_check
+    - output_path_check_if_artifact_expected
+  m_level:
+    enum_value: m_level
+    pm_runtime_requirement: required
+    ds_pre_audit_requirement: recommended
+    ds_post_execution_review_requirement: recommended
+    full_iteration_doc_requirement: recommended
+    default_checks:
+    - scope_check
+    - allowed_forbidden_file_check
+    - required_command_check
+    - receipt_check
+  l_level:
+    enum_value: l_level
+    pm_runtime_requirement: required
+    ds_pre_audit_requirement: required
+    ds_post_execution_review_requirement: required
+    full_iteration_doc_requirement: required
+    default_checks:
+    - authority_check
+    - scope_check
+    - allowed_forbidden_file_check
+    - receipt_check
+    - report_check
+    - owner_approval_check
+    - closeout_gate_check
+  patch_lane:
+    enum_value: patch_lane
+    pm_runtime_requirement: recommended
+    ds_pre_audit_requirement: optional
+    ds_post_execution_review_requirement: conditional
+    patch_appendix_requirement: required
+    default_checks:
+    - same_version_check
+    - no_scope_expansion_check
+    - why_not_new_version_check
+task_lifecycle:
+  states:
+  - proposed
+  - approved
+  - running
+  - completed
+  - failed
+  - hold
+  - closed
+  - archived
+  initial_state: proposed
+  terminal_states:
+  - closed
+  - archived
+  transitions:
+  - from: proposed
+    to: approved
+    allowed_by:
+    - owner
+    - approved_auto_policy
+  - from: proposed
+    to: hold
+    allowed_by:
+    - control_agent
+    - pm_runtime
+  - from: approved
+    to: running
+    allowed_by:
+    - pm_runtime
+  - from: running
+    to: completed
+    allowed_by:
+    - pm_runtime
+    required_evidence:
+    - runtime_result
+    - required_outputs_checked
+  - from: running
+    to: failed
+    allowed_by:
+    - pm_runtime
+    required_evidence:
+    - runtime_result
+    - failure_reason
+  - from: running
+    to: hold
+    allowed_by:
+    - pm_runtime
+    - control_agent
+    required_evidence:
+    - blocker_or_missing_context
+  - from: completed
+    to: closed
+    allowed_by:
+    - owner_control
+    required_evidence:
+    - closeout_decision
+  - from: completed
+    to: hold
+    allowed_by:
+    - control_agent
+    required_evidence:
+    - gate_issue
+  - from: closed
+    to: archived
+    allowed_by:
+    - owner_control
+    - milestone_reset_policy
+task_directory_policy:
+  canonical_active_root: audit/tasks/active/<task_domain>/<short_task>/
+  canonical_closed_root: audit/tasks/closed/<task_domain>/<short_task>/
+  canonical_archive_root: audit/tasks/archive/<milestone_id>/<task_domain>/<short_task>/
+  legacy_roots:
+  - audit/hermes_tasks/<task_id>/
+  - audit/pm_runtime_tasks/<task_id>/
+  - audit/tasks/active/<task_id>/
+  - audit/tasks/closed/<task_id>/
+  - audit/tasks/archive/<milestone_id>/<task_id>/
+  legacy_roots_are_canonical: false
+  layouts:
+    s_level:
+      required:
+      - task/dispatch.md
+      - task/approval.yaml
+      - runtime/result.yaml
+      - summary/pm_runtime_summary.md
+      optional:
+      - ds/ds_receipt.yaml
+    m_level:
+      required:
+      - task/dispatch.md
+      - task/approval.yaml
+      - runtime/progress.yaml
+      - runtime/result.yaml
+      - summary/pm_runtime_summary.md
+      optional:
+      - codex/codex_receipt.yaml
+      - codex/codex_handoff.md
+      - ds/ds_receipt.yaml
+      - ds/ds_post_execution_review.md
+    l_level:
+      required:
+      - task/dispatch.md
+      - task/approval.yaml
+      - runtime/heartbeat.json
+      - runtime/progress.yaml
+      - runtime/result.yaml
+      - summary/pm_runtime_summary.md
+      optional:
+      - codex/codex_receipt.yaml
+      - codex/codex_handoff.md
+      - codex/codex_attempt_report.md
+      - ds/ds_pre_audit.md
+      - ds/ds_post_execution_review.md
+      - ds/ds_receipt.yaml
+      - logs/runtime.log
+  policy_status: bootstrap_workspace_alignment
+  bootstrap_workspace: true
+  final_production_task_registry_path: pending_task_management_model_design
+  policy_notes:
+  - Current audit/tasks layout is a bootstrap workspace convention, not final production task registry.
+  - Two-level <task_domain>/<short_task> layout is used to align PM Runtime bootstrap tasks and avoid false validation blockers.
+  - Final task/document management model remains pending after Communication Substrate MVP task testing.
+  communication_substrate_v0_1_layout:
+    required:
+    - dispatch/task_config.yaml
+    - dispatch/dispatch.md
+    - runtime/pre_action_check.yaml
+    - runtime/registry_events.jsonl
+    - runtime/task_state.yaml
+    - logs/stdout.log
+    - logs/stderr.log
+    - summary/pm_runtime_summary.md
+    optional:
+    - runtime/heartbeat.json
+    - runtime/progress.yaml
+    - runtime/blocker_report.md
+    - runtime/owner_decision_request.yaml
+    - runtime/owner_decision_record.yaml
+    - runtime/recovery_summary.md
+    - logs/raw_output.jsonl
+    - logs/stdout.partial.log
+    - logs/stderr.partial.log
+    - ds/
+    - codex/
+    - sandbox/
+    - artifacts/
+    non_final_note: This layout is for PM Runtime Communication Substrate bootstrap tasks only.
+pm_runtime_state_model:
+  required_state_concepts:
+  - heartbeat
+  - progress
+  - result
+  heartbeat:
+    purpose: task_alive_check
+    persisted_for:
+    - l_level
+    - long_running_tasks
+    - end_to_end_execution_packages
+    preferred_format: json
+  progress:
+    purpose: current_stage_check
+    persisted_for:
+    - m_level_when_external_loop_exists
+    - l_level
+    - long_running_tasks
+    preferred_format: yaml
+  result:
+    purpose: final_execution_status
+    persisted_for:
+    - all_pm_runtime_tasks
+    preferred_format: yaml
+  machine_rule:
+    status_source_priority:
+    - runtime/result.yaml
+    - required_artifact_existence
+    - receipt_status
+    - pm_runtime_summary
+    ai_summary_alone_can_mark_success: false
+  status_model: two_level_task_status_plus_runtime_state
+  task_status_enum_ref: enums.task_status
+  runtime_state_enum_ref: enums.runtime_state
+  runtime_contract_alignment: pm_runtime_communication_substrate_runtime_contract_v0.1
+  bootstrap_alignment_notes:
+  - task_status is workflow lifecycle.
+  - runtime_state is operational detail.
+  - runtime_state values include sandbox_denied, suspected_blocked, rerun_required, partial_output, recovered, and other substrate
+    states.
+dispatch_contract:
+  object_name: dispatch
+  required_fields:
+    task_id:
+      type: string
+      required: true
+    task_title:
+      type: string
+      required: true
+    task_date:
+      type: date_or_string
+      required: true
+    task_type:
+      type: string
+      required: true
+    owner:
+      type: string
+      required: true
+    executor:
+      type: enum
+      enum_ref: executor_type
+      required: true
+    status:
+      type: enum
+      enum_ref: task_status
+      required: true
+    created_at:
+      type: datetime_or_string
+      required: true
+    goal:
+      type: string
+      required: true
+    scope:
+      type: string_or_object
+      required: true
+    allowed_actions:
+      type: list_string
+      required: true
+    forbidden_actions:
+      type: list_string
+      required: true
+    allowed_read_paths:
+      type: list_path
+      required: true
+    allowed_write_paths:
+      type: list_path
+      required: true
+    expected_outputs:
+      type: list_path_or_object
+      required: true
+    acceptance_criteria:
+      type: list_string
+      required: true
+    failure_policy:
+      type: string_or_object
+      required: true
+  extra_fields_by_executor:
+    ds_team:
+      team_mode_required:
+        type: boolean
+        required: true
+      mcp_required:
+        type: boolean
+        required: true
+      report_required:
+        type: boolean
+        required: true
+      receipt_required:
+        type: boolean
+        required: true
+    codex:
+      allowed_files:
+        type: list_path
+        required: true
+      forbidden_files:
+        type: list_path
+        required: true
+      required_commands:
+        type: list_string
+        required: true
+      diff_report_required:
+        type: boolean
+        required: true
+    pm_runtime:
+      runtime_allowed_level:
+        type: enum
+        allowed_values:
+        - L0
+        - L1
+        - L2
+        - L3
+        required: true
+      heartbeat_required:
+        type: boolean
+        required: true
+      progress_required:
+        type: boolean
+        required: true
+      result_required:
+        type: boolean
+        required: true
+      receipt_required:
+        type: boolean
+        required: true
+  validation_rules:
+  - id: dispatch_status_must_be_task_status_enum
+    severity: blocker
+    check: status in enums.task_status
+  - id: failure_policy_required
+    severity: blocker
+    check: failure_policy exists
+  - id: no_execution_without_approved_status
+    severity: blocker
+    check: task cannot run unless status == approved
+  status_values:
+    enum_ref: task_status
+    values: *id001
+    machine_note: Local alias for machine readers; authoritative enum remains enums.task_status.
+receipt_contract:
+  object_name: receipt
+  required_fields:
+    task_id:
+      type: string
+      required: true
+    task_title:
+      type: string
+      required: true
+    executor:
+      type: enum
+      enum_ref: executor_type
+      required: true
+    started_at:
+      type: datetime_or_string
+      required: true
+    completed_at:
+      type: datetime_or_string
+      required: true
+    elapsed_sec:
+      type: number
+      required: true
+    status:
+      type: enum
+      allowed_values:
+      - completed
+      - failed
+      - hold
+      required: true
+    verdict:
+      type: enum
+      enum_ref: acceptance_verdict
+      required: true
+    team_mode_used:
+      type: boolean_or_na
+      required: true
+    mcp_used:
+      type: boolean_or_na
+      required: true
+    input_files:
+      type: list_path
+      required: true
+    output_files:
+      type: list_path
+      required: true
+    modified_files:
+      type: list_path
+      required: true
+    commands_run:
+      type: list_string_or_object
+      required: true
+    known_issues:
+      type: list_string
+      required: true
+    blockers:
+      type: list_string
+      required: true
+    next_recommendation:
+      type: string
+      required: true
+  validation_rules:
+  - id: receipt_must_include_output_paths
+    severity: blocker
+    check: output_files length > 0 for report_required tasks
+    on_fail: status cannot be completed
+  - id: team_mode_required_but_not_used
+    severity: major
+    check: if dispatch.team_mode_required == true then receipt.team_mode_used == true
+    on_fail: verdict must be process_issue_or_partial_audit_or_hold
+  - id: mcp_required_but_not_used
+    severity: major
+    check: if dispatch.mcp_required == true then receipt.mcp_used == true
+    on_fail: reason_required
+  - id: plain_done_not_valid
+    severity: blocker
+    check: receipt has structured required fields
+  validation_schema:
+    required:
+    - task_id
+    - task_title
+    - executor
+    - started_at
+    - completed_at
+    - elapsed_sec
+    - status
+    - verdict
+    - team_mode_used
+    - mcp_used
+    - input_files
+    - output_files
+    - modified_files
+    - commands_run
+    - known_issues
+    - blockers
+    - next_recommendation
+    optional:
+    - report_path
+    - receipt_path
+    - summary_path
+    - run_dir
+    - diff_summary
+    - process_issues
+    - recommended_commit_message
+    field_rules:
+      task_id:
+        type: string
+        required: true
+        min_length: 1
+      task_title:
+        type: string
+        required: true
+        min_length: 1
+      executor:
+        type: enum
+        enum_ref: executor_type
+        required: true
+      status:
+        type: enum
+        required: true
+        allowed_values:
+        - completed
+        - failed
+        - hold
+      verdict:
+        type: enum
+        enum_ref: acceptance_verdict
+        required: true
+      elapsed_sec:
+        type: number
+        required: true
+        min_value: 0
+      team_mode_used:
+        type: boolean_or_na
+        required: true
+        allowed_values:
+        - true
+        - false
+        - N/A
+      mcp_used:
+        type: boolean_or_na
+        required: true
+        allowed_values:
+        - true
+        - false
+        - N/A
+      input_files:
+        type: list_path
+        required: true
+      output_files:
+        type: list_path
+        required: true
+        min_items_if_report_required: 1
+      modified_files:
+        type: list_path
+        required: true
+        allow_empty: true
+      commands_run:
+        type: list_string_or_object
+        required: true
+        allow_empty: true
+      known_issues:
+        type: list_string
+        required: true
+        allow_empty: true
+      blockers:
+        type: list_string
+        required: true
+        allow_empty: true
+      next_recommendation:
+        type: string
+        required: true
+        min_length: 1
+    cross_field_rules:
+    - id: completed_receipt_requires_output_files
+      severity: blocker
+      if: status == completed and report_required == true
+      then: len(output_files) >= 1
+    - id: failed_receipt_requires_blocker_or_known_issue
+      severity: major
+      if: status == failed
+      then: len(blockers) >= 1 or len(known_issues) >= 1
+    - id: hold_receipt_requires_next_recommendation
+      severity: blocker
+      if: status == hold
+      then: next_recommendation is not empty
+    - id: team_mode_required_consistency
+      severity: major
+      if: dispatch.team_mode_required == true
+      then: team_mode_used == true or verdict in [hold, repairable_hold, blocking_hold]
+    - id: mcp_required_consistency
+      severity: major
+      if: dispatch.mcp_required == true
+      then: mcp_used == true or verdict in [hold, repairable_hold, blocking_hold]
+ds_review_contract:
+  pre_audit_name: DS Pre-Audit
+  post_execution_name: DS Post-Execution Review
+  deprecated_separate_nodes:
+  - DS Verify
+  - DS Accept
+  post_execution_contains:
+  - verify_checks
+  - acceptance_verdict
+  five_phase_verify_flow:
+  - phase: intake
+    required_checks:
+    - dispatch_exists
+    - scope_understood
+    - required_files_available
+  - phase: scope_compliance
+    required_checks:
+    - allowed_files_checked
+    - forbidden_files_checked
+    - no_scope_expansion
+  - phase: artifact_and_command_verification
+    required_checks:
+    - required_outputs_exist
+    - commands_run_reviewed
+    - test_or_smoke_evidence_reviewed
+  - phase: risk_and_process_review
+    required_checks:
+    - blockers_identified
+    - known_issues_identified
+    - process_issues_identified
+    - design_smell_checked_if_relevant
+  - phase: verdict
+    required_checks:
+    - acceptance_verdict_set
+    - report_path_present
+    - receipt_path_present
+    - next_recommendation_present
+  required_receipt_flags:
+  - team_mode_used
+  - mcp_used
+  validation_rules:
+  - id: ds_team_mode_flag_required
+    severity: blocker
+    check: team_mode_used in [true, false]
+  - id: ds_mcp_flag_required
+    severity: blocker
+    check: mcp_used in [true, false]
+  - id: ds_verdict_must_be_enum
+    severity: blocker
+    check: acceptance_verdict in enums.acceptance_verdict
+codex_execution_contract:
+  entry_condition: approved_dispatch
+  required_gates:
+  - codex_safety_gate
+  - git_safety_gate
+  default_commit_mode: no_commit_until_owner_confirmed
+  required_outputs:
+  - codex_receipt.yaml
+  - codex_handoff.md
+  - changed_files
+  - commands_run
+  - test_results
+  - diff_summary
+  validation_rules:
+  - id: codex_only_allowed_files
+    severity: blocker
+    check: changed_files subset_of dispatch.allowed_files
+  - id: codex_no_forbidden_files
+    severity: blocker
+    check: changed_files intersection dispatch.forbidden_files is empty
+  - id: codex_no_unauthorized_commit
+    severity: blocker
+    check: git_commit only if owner_authorized == true
+safety_gates:
+  codex_safety_gate:
+    purpose: ensure_codex_can_execute_without_clarification_or_version_isolation
+    possible_decisions:
+    - GO
+    - GO_WITH_ADJUSTMENTS
+    - NEEDS_CLARIFICATION
+    - NEEDS_VERSION_ISOLATION
+    - NO_GO
+    required_checks:
+    - approved_dispatch_exists
+    - allowed_files_defined
+    - forbidden_files_defined
+    - required_commands_defined
+    - scope_clear
+  git_safety_gate:
+    purpose: ensure_repository_state_is_safe_before_modification_or_commit
+    possible_decisions:
+    - pass
+    - fail
+    - hold
+    required_checks:
+    - branch_checked
+    - baseline_commit_checked
+    - dirty_tree_checked
+    - forbidden_files_not_dirty_or_explained
+    - commit_mode_checked
+commit_gate:
+  modes:
+    c0_default_manual_confirm:
+      owner_confirmation_required: true
+      codex_may_commit: false_until_confirmed
+    c1_end_to_end_package_authorized:
+      owner_commit_authorized_required: true
+      codex_may_commit_after_gate: true
+  hard_requirements:
+  - git_safety_gate_passed
+  - diff_only_allowed_files
+  - forbidden_files_not_modified
+  - ds_post_execution_review_passed_or_accepted_with_known_issues
+  - smoke_done_or_explicitly_exempted
+  - pm_runtime_summary_generated
+  - recommended_commit_message_recorded
+  forbidden:
+  - pm_runtime_git_commit
+  - ds_team_git_commit
+  - auto_commit_after_ds_pass
+  - auto_commit_after_smoke_pass
+  - commit_with_unexplained_dirty_tree
+closeout_gate:
+  owner_control_only: true
+  valid_decisions:
+  - pass
+  - pass_with_known_issues
+  - patch_required
+  - fail
+  - hold
+  not_closeout_signals:
+  - hermes_completed
+  - pm_runtime_summary
+  - ds_pass
+  - ds_acceptance_verdict
+  - codex_delivered
+  - report_generated
+  - document_written_in_chat
+  - context_packet_absorbed
+  - project_memory_updated
+  required_checkpoints:
+  - authority_source_confirmed
+  - current_stage_confirmed
+  - repository_landing_status_confirmed
+  - paths_exist_or_reported_as_unverified
+  - receipts_reports_summaries_complete
+  - process_issues_handled
+  - blockers_handled
+  - forbidden_files_checked
+  - scope_expansion_checked
+  - next_step_identified
+hold_conditions:
+- id: missing_workflow_authority
+  severity: blocker
+  trigger: workflow_core unavailable or authority path unresolved
+  action: hold_return_to_owner_control
+- id: missing_agent_specific_instruction_when_required
+  severity: major
+  trigger: role-specific instruction required but unavailable
+  action: request_context_or_hold
+- id: missing_iteration_doc_or_task_card_or_dispatch
+  severity: blocker
+  trigger: execution requested without task contract
+  action: hold_until_dispatch_exists
+- id: missing_allowed_or_forbidden_files
+  severity: blocker
+  trigger: codex or execution task lacks file boundary
+  action: hold_until_scope_defined
+- id: unclear_path_state
+  severity: major
+  trigger: repository path or artifact path cannot be confirmed
+  action: request_pm_or_ds_path_audit
+- id: unexplained_dirty_tree
+  severity: blocker
+  trigger: dirty tree exists without explanation
+  action: hold_for_git_safety_check
+- id: ds_required_team_mode_not_used
+  severity: major
+  trigger: team_mode_required true but team_mode_used false
+  action: mark_process_issue_or_hold
+- id: ds_required_mcp_not_used_without_reason
+  severity: major
+  trigger: mcp_required true but mcp_used false without reason
+  action: mark_process_issue_or_hold
+- id: codex_touched_forbidden_files
+  severity: blocker
+  trigger: changed_files intersects forbidden_files
+  action: hold_return_to_owner_control
+- id: pm_runtime_attempted_closeout
+  severity: blocker
+  trigger: pm runtime claims final closeout
+  action: reject_closeout_and_return_to_owner_control
+- id: scope_expansion
+  severity: blocker
+  trigger: any agent expands task scope without approval
+  action: hold_return_to_owner_control
+- id: document_body_written_but_not_repository_landed
+  severity: major
+  trigger: chat artifact treated as repository file
+  action: correct_status_to_not_repository_landed
+- id: context_packet_treated_as_system_prompt_update
+  severity: major
+  trigger: transitional context treated as formal system prompt update
+  action: correct_status_to_transitional_context_only
+- id: missing_real_artifact_paths
+  severity: blocker
+  trigger: report or receipt claimed but no path provided
+  action: hold_until_paths_provided
+- id: unresolved_authority_conflict
+  severity: blocker
+  trigger: workflow_core compact yaml or agent instruction conflict
+  action: hold_return_to_owner_control
+standard_outputs:
+  control_agent_non_execution:
+    fields:
+      judgment:
+        type: string
+        required: true
+      reason:
+        type: string
+        required: true
+      risk:
+        type: string
+        required: false
+      recommended_next_step:
+        type: string
+        required: true
+  control_agent_execution:
+    fields:
+      current_status:
+        type: string
+        required: true
+      current_stage:
+        type: string
+        required: true
+      blocker:
+        type: string_or_list
+        required: true
+      single_next_step:
+        type: string
+        required: true
+      executor:
+        type: enum
+        enum_ref: executor_type
+        required: true
+      owner_approval_required:
+        type: boolean
+        required: true
+      complete_prompt:
+        type: string
+        required: conditional
+  after_agent_artifact:
+    fields:
+      received_artifact:
+        type: string_or_list
+        required: true
+      key_conclusion:
+        type: string
+        required: true
+      process_issues:
+        type: list_string
+        required: true
+      blockers:
+        type: list_string
+        required: true
+      gate_judgment:
+        type: enum
+        enum_ref: gate_decision
+        required: true
+      single_next_step:
+        type: string
+        required: true
+file_first_delivery:
+  applies_to:
+  - system_prompt
+  - role_card
+  - agent_specific_instruction
+  - compact
+  - template
+  - task_card
+  - dispatch
+  - long_prompt
+  - long_report
+  default_behavior:
+  - generate_downloadable_markdown_or_txt
+  - provide_summary_and_link_in_chat
+  - split_into_parts_only_if_user_requests_chat_display
+agent_asset_layout:
+  root: docs/skills/workflow_v4.0/
+  workflow_core:
+    path: workflow_core/
+    files:
+    - workflow_core_v4.0_r2.md
+    - workflow_compact_v0.3.md
+    - workflow_compact_v0.3.3.yaml
+  control_agent:
+    path: control_agent/
+    folders:
+    - system_prompt/
+    - specific_instruction/
+  pm_runtime:
+    path: pm_runtime/
+    folders:
+    - specific_instruction/
+    - skills/
+  ds_team:
+    path: ds_team/
+    folders:
+    - specific_instruction/
+    - skills/
+  codex:
+    path: codex/
+    folders:
+    - specific_instruction/
+    - skills/
+  validation_rules:
+  - id: global_compact_under_workflow_core
+    severity: major
+    check: global compact files are only under workflow_core
+  - id: no_per_agent_compact_by_default
+    severity: major
+    check: agent folders do not contain compact unless named quickref and explicitly non-authoritative
+operator_memory:
+  lines:
+  - Do not guess.
+  - Do not overstep role boundaries.
+  - Do not make Owner a manual messenger.
+  - Execution completed is not version closeout.
+  - PM Runtime recovery is not closeout.
+  - Compact is not workflow authority.
+  - External work defaults to PM Runtime orchestration.
+  - First locate the task in the pipeline, then freeze boundary, then dispatch, then return to Owner-Control.
+communication_substrate_contract_index:
+  contract_version: v0.1
+  status: draft_candidate_pending_repository_landing
+  directory_policy: bootstrap_two_level_domain_short_task
+  task_status_enum_ref: enums.task_status
+  runtime_state_enum_ref: enums.runtime_state
+  execution_modes_enum_ref: enums.execution_mode
+  owner_decision_event_type_enum_ref: enums.owner_decision_event_type
+  owner_decision_option_enum_ref: enums.owner_decision_option
+  required_runtime_artifacts:
+  - runtime/pre_action_check.yaml
+  - runtime/registry_events.jsonl
+  - logs/stdout.log
+  - logs/stderr.log
+  - summary/pm_runtime_summary.md
+  bootstrap_caveat: This is a machine index for bootstrap alignment; it does not finalize the production task/document management
+    model.

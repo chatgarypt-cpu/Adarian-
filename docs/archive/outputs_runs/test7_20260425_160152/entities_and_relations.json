@@ -1,0 +1,278 @@
+{
+  "event_summary": "深圳女子劝阻公交吸烟反被拟拘留，吸烟者未追责，执法标准引发争议",
+  "event_scale": 0.7,
+  "event_controversy": 0.85,
+  "event_type": "执法争议",
+  "event_entities": [
+    {
+      "name": "劝阻吸烟女子",
+      "type": "individual",
+      "role": "事件当事人，在公交站劝阻吸烟后遭警方拟拘留",
+      "entity_category": "event_entity",
+      "can_speak": false,
+      "original_statement": null,
+      "can_speak_reason": null
+    },
+    {
+      "name": "吸烟男子",
+      "type": "individual",
+      "role": "事件当事人，在公交站吸烟并被女子劝阻",
+      "entity_category": "event_entity",
+      "can_speak": false,
+      "original_statement": null,
+      "can_speak_reason": null
+    },
+    {
+      "name": "深圳市公安局",
+      "type": "organization",
+      "role": "执法机构，对事件作出回应和处理决定",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": null,
+      "can_speak_reason": null
+    },
+    {
+      "name": "涉事民警",
+      "type": "individual",
+      "role": "现场执法人员，称公交站不算室内禁烟区",
+      "entity_category": "event_entity",
+      "can_speak": false,
+      "original_statement": null,
+      "can_speak_reason": null
+    },
+    {
+      "name": "控烟维权群体",
+      "type": "group",
+      "role": "关注控烟条例执行的民间组织",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": null,
+      "can_speak_reason": null
+    },
+    {
+      "name": "中国新闻周刊",
+      "type": "organization",
+      "role": "媒体报道机构，发布事件相关信息",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": null,
+      "can_speak_reason": null
+    },
+    {
+      "name": "律师群体",
+      "type": "group",
+      "role": "对执法程序合法性提供专业意见",
+      "entity_category": "event_entity",
+      "can_speak": true,
+      "original_statement": null,
+      "can_speak_reason": null
+    }
+  ],
+  "opinion_spreaders": [
+    {
+      "group_name": "维权正义派",
+      "related_event_entity": "劝阻吸烟女子",
+      "description": "关注公民维权和执法公正的活跃网民，多为青年学生和社会工作者，对不公事件反应强烈",
+      "I": 8.0,
+      "P": -1,
+      "susceptibility": 0.2,
+      "estimated_percentage": 22,
+      "communication_style": "情绪激烈，善用反问和讽刺，喜欢转发对比案例",
+      "entity_category": "opinion_spreader",
+      "persona_name": "林正义",
+      "age_range": "25-34",
+      "occupation": "社会工作者",
+      "personality": "热血冲动，正义感强",
+      "motivation": "维护公民维权权利，反对执法不公",
+      "typical_phrases": [
+        "这合理吗？",
+        "守法者吃亏？",
+        "离谱到无语"
+      ]
+    },
+    {
+      "group_name": "执法质疑派",
+      "related_event_entity": "深圳市公安局",
+      "description": "关注公权力规范运行的中年群体，多为公务员、教师等体制内或相关从业者",
+      "I": 9.0,
+      "P": -1,
+      "susceptibility": 0.1,
+      "estimated_percentage": 18,
+      "communication_style": "理性分析但立场坚定，喜欢引用法规和对比案例",
+      "entity_category": "opinion_spreader",
+      "persona_name": "周明哲",
+      "age_range": "35-45",
+      "occupation": "中学教师",
+      "personality": "谨慎批判，逻辑严密",
+      "motivation": "监督公权力规范运行，维护法治尊严",
+      "typical_phrases": [
+        "选择性执法",
+        "双重标准",
+        "程序正义"
+      ]
+    },
+    {
+      "group_name": "健康权益派",
+      "related_event_entity": "吸烟男子",
+      "description": "关注公共健康和二手烟危害的家庭主妇及中老年群体，多为烟民家属",
+      "I": 8.0,
+      "P": -1,
+      "susceptibility": 0.25,
+      "estimated_percentage": 15,
+      "communication_style": "情感化表达，强调健康危害和家庭影响",
+      "entity_category": "opinion_spreader",
+      "persona_name": "王秀英",
+      "age_range": "45-60",
+      "occupation": "家庭主妇",
+      "personality": "感性共情，易被触动",
+      "motivation": "保护家人健康，维护公共健康权益",
+      "typical_phrases": [
+        "二手烟害死人",
+        "为了孩子",
+        "健康权不容侵犯"
+      ]
+    },
+    {
+      "group_name": "年轻围观派",
+      "related_event_entity": "劝阻吸烟女子",
+      "description": "社交媒体重度用户，18-24岁大学生和初入职场青年，习惯用梗和表情包表达",
+      "I": 6.0,
+      "P": -1,
+      "susceptibility": 0.5,
+      "estimated_percentage": 10,
+      "communication_style": "网络流行语多，态度鲜明但易受舆论影响",
+      "entity_category": "opinion_spreader",
+      "persona_name": "陈小雨",
+      "age_range": "18-24",
+      "occupation": "大学生",
+      "personality": "直率冲动，易跟风",
+      "motivation": "表达对社会不公的愤怒",
+      "typical_phrases": [
+        "我真的会谢",
+        "太离谱了",
+        "无语子"
+      ]
+    },
+    {
+      "group_name": "中立观望派",
+      "related_event_entity": "深圳市公安局",
+      "description": "理性谨慎的中立群体，等待调查结果再表态，多为知识阶层",
+      "I": 3.0,
+      "P": -1,
+      "susceptibility": 0.7,
+      "estimated_percentage": 5,
+      "communication_style": "克制中立，强调证据和程序",
+      "entity_category": "opinion_spreader",
+      "persona_name": "赵博文",
+      "age_range": "35-45",
+      "occupation": "大学教师",
+      "personality": "理性克制，谨慎观望",
+      "motivation": "等待事实真相，避免盲目站队",
+      "typical_phrases": [
+        "让子弹飞一会儿",
+        "等官方通报",
+        "事实胜于雄辩"
+      ]
+    },
+    {
+      "group_name": "程序理性派",
+      "related_event_entity": "劝阻吸烟女子",
+      "description": "关注法律边界的理性群体，多为法律从业者或相关专业背景人士",
+      "I": 5.0,
+      "P": 1,
+      "susceptibility": 0.5,
+      "estimated_percentage": 10,
+      "communication_style": "专业分析，区分不同法律问题，避免情绪化",
+      "entity_category": "opinion_spreader",
+      "persona_name": "李思远",
+      "age_range": "25-34",
+      "occupation": "律师助理",
+      "personality": "理性客观，专业冷静",
+      "motivation": "厘清法律边界，推动理性讨论",
+      "typical_phrases": [
+        "泼饮料确实不妥",
+        "维权也要合法",
+        "法律边界"
+      ]
+    },
+    {
+      "group_name": "执法理解派",
+      "related_event_entity": "涉事民警",
+      "description": "理解执法难处的群体，多为基层工作者或有执法相关经历人士",
+      "I": 7.0,
+      "P": 1,
+      "susceptibility": 0.3,
+      "estimated_percentage": 10,
+      "communication_style": "强调执法困境，呼吁理解基层工作",
+      "entity_category": "opinion_spreader",
+      "persona_name": "张建国",
+      "age_range": "35-45",
+      "occupation": "社区工作者",
+      "personality": "务实稳重，偏向保守",
+      "motivation": "理解执法困境，维护执法权威",
+      "typical_phrases": [
+        "执法难处",
+        "别一棒子打死",
+        "理解基层"
+      ]
+    },
+    {
+      "group_name": "官方支持派",
+      "related_event_entity": "深圳市公安局",
+      "description": "支持官方立场的群体，多为体制内工作者或保守倾向人士",
+      "I": 7.5,
+      "P": 1,
+      "susceptibility": 0.25,
+      "estimated_percentage": 10,
+      "communication_style": "强调权威和秩序，反对过度质疑官方",
+      "entity_category": "opinion_spreader",
+      "persona_name": "刘正国",
+      "age_range": "45-60",
+      "occupation": "国企员工",
+      "personality": "保守稳重，重视秩序",
+      "motivation": "维护社会秩序和官方权威",
+      "typical_phrases": [
+        "相信官方",
+        "维护权威",
+        "不要带节奏"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "source": "劝阻吸烟女子",
+      "target": "吸烟男子",
+      "type": "劝阻冲突"
+    },
+    {
+      "source": "劝阻吸烟女子",
+      "target": "深圳市公安局",
+      "type": "被处罚"
+    },
+    {
+      "source": "吸烟男子",
+      "target": "深圳市公安局",
+      "type": "未被追责"
+    },
+    {
+      "source": "涉事民警",
+      "target": "深圳市公安局",
+      "type": "隶属关系"
+    },
+    {
+      "source": "律师群体",
+      "target": "深圳市公安局",
+      "type": "监督质疑"
+    },
+    {
+      "source": "中国新闻周刊",
+      "target": "劝阻吸烟女子",
+      "type": "报道关注"
+    },
+    {
+      "source": "控烟维权群体",
+      "target": "吸烟男子",
+      "type": "监督举报"
+    }
+  ]
+}

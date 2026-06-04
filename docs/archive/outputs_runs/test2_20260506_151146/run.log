@@ -1,0 +1,4 @@
+[2026-05-06 15:11:46] RUN START mode=normal seed=/Users/gary/项目开发/AdarianMigration/adarian mvp/seeds/test2.txt run_dir=/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test2_20260506_151146
+[2026-05-06 15:11:46] PHASE START name=phase1_entity_extraction
+[2026-05-06 15:11:46] LLM START caller=analyzer_set_parameters model=minimax
+[2026-05-06 15:11:55] LLM END caller=analyzer_set_parameters model=minimax elapsed=8.77s

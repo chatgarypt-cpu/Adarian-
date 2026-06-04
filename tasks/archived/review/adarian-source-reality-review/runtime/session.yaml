@@ -1,0 +1,9 @@
+task_id: adarian-source-reality-review
+tmux_session_id: adarian_adarian-source-reality-review
+executor_type: claude
+execution_mode: tmux_interactive
+workdir: /Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/adarian-source-reality-review
+command:
+  - claude
+reuse_existing_session: false
+created_at: "2026-06-04T02:02:24+08:00"

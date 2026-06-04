@@ -1,0 +1,67 @@
+{
+  "event_summary": "南通文旅官方账号在禁毒普法视频下评论'哪位少爷吸了'引发网络热议",
+  "stakeholder_map": "事件实体: 兵团禁毒, 南通文旅, 网民群体 | 传播者: 讽刺特权支持者, 官方形象维护者, 中立观望派, 法律关注群体, 年轻玩梗派",
+  "emotion_trajectory": [
+    {
+      "tick": 0,
+      "mean_stance": 5.21,
+      "std_stance": 0.99,
+      "polarization_index": 0.19,
+      "key_event": "Agent #0 发言"
+    },
+    {
+      "tick": 1,
+      "mean_stance": 5.39,
+      "std_stance": 0.97,
+      "polarization_index": 0.18,
+      "key_event": "Agent #7 发言"
+    },
+    {
+      "tick": 2,
+      "mean_stance": 5.28,
+      "std_stance": 1.07,
+      "polarization_index": 0.2,
+      "key_event": "Agent #3 发言"
+    },
+    {
+      "tick": 3,
+      "mean_stance": 5.19,
+      "std_stance": 1.04,
+      "polarization_index": 0.2,
+      "key_event": "Agent #3 发言"
+    },
+    {
+      "tick": 4,
+      "mean_stance": 4.98,
+      "std_stance": 0.74,
+      "polarization_index": 0.15,
+      "key_event": "Agent #6 发言"
+    },
+    {
+      "tick": 5,
+      "mean_stance": 4.9,
+      "std_stance": 1.25,
+      "polarization_index": 0.26,
+      "key_event": "Agent #6 发言"
+    }
+  ],
+  "inflection_points": [
+    {
+      "tick": 5,
+      "agent_id": 6,
+      "group_name": "法律关注群体",
+      "pivotal_comment": "兵团禁毒的回应值得肯定，这种专业态度是普法工作应有的底色。'少爷'这个梗的问题不在于玩笑本身，而在于",
+      "impact_description": "极化指数变化 0.11，立场偏移 +1.0"
+    }
+  ],
+  "risk_level": "low",
+  "risk_assessment": "舆情平稳，x(t)=4.9，风险较低",
+  "x_t_sequence": [
+    5.21,
+    5.39,
+    5.28,
+    5.19,
+    4.98,
+    4.9
+  ]
+}

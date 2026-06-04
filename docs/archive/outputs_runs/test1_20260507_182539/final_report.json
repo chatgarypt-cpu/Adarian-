@@ -1,0 +1,59 @@
+{
+  "event_summary": "李佳琦直播不当言论引发网友质疑花西子眉笔价格和品牌归属，花西子一周后发信回应",
+  "stakeholder_map": "事件实体: 李佳琦, 花西子, 澎湃新闻, 潮新闻 | 传播者: 理性消费者, 李佳琦支持者, 打工人群体, 国货支持者, 品牌质疑者",
+  "emotion_trajectory": [
+    {
+      "tick": 0,
+      "mean_stance": 4.92,
+      "std_stance": 1.13,
+      "polarization_index": 0.23,
+      "key_event": "Agent #0 发言"
+    },
+    {
+      "tick": 1,
+      "mean_stance": 4.96,
+      "std_stance": 1.24,
+      "polarization_index": 0.25,
+      "key_event": "Agent #7 发言"
+    },
+    {
+      "tick": 2,
+      "mean_stance": 5.08,
+      "std_stance": 1.64,
+      "polarization_index": 0.32,
+      "key_event": "Agent #7 发言"
+    },
+    {
+      "tick": 3,
+      "mean_stance": 5.03,
+      "std_stance": 1.98,
+      "polarization_index": 0.39,
+      "key_event": "Agent #8 发言"
+    },
+    {
+      "tick": 4,
+      "mean_stance": 5.02,
+      "std_stance": 2.09,
+      "polarization_index": 0.42,
+      "key_event": "Agent #5 发言"
+    },
+    {
+      "tick": 5,
+      "mean_stance": 5.08,
+      "std_stance": 2.43,
+      "polarization_index": 0.48,
+      "key_event": "Agent #7 发言"
+    }
+  ],
+  "inflection_points": [],
+  "risk_level": "medium",
+  "risk_assessment": "中等风险，x(t)=5.1，趋势需关注",
+  "x_t_sequence": [
+    4.92,
+    4.96,
+    5.08,
+    5.03,
+    5.02,
+    5.08
+  ]
+}

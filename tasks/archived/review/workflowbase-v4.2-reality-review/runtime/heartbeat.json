@@ -1,0 +1,68 @@
+{
+  "task_id": "workflowbase-v4.2-reality-review",
+  "tmux_session_id": "adarian_workflowbase-v4_2-reality-review",
+  "executor_type": "claude",
+  "execution_mode": "tmux_interactive",
+  "runtime_state": "running",
+  "last_heartbeat_at": "2026-06-04T01:38:19+08:00",
+  "last_output_at": "2026-06-04T01:38:19+08:00",
+  "output_changed": true,
+  "expected_outputs_status": [
+    {
+      "path": "/Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/workflowbase-v4.2-reality-review/outputs/reality_review.md",
+      "exists": false,
+      "size_bytes": 0,
+      "ready": false,
+      "truncated_marker_detected": false
+    }
+  ],
+  "hold_reason": null,
+  "runtime_pid": 69092,
+  "heartbeat_seq": 7,
+  "clauderemote": {
+    "attempted": true,
+    "active": true,
+    "fallback_used": false,
+    "fallback_strategy": "safe_whitelist_enter"
+  },
+  "dialog_handling": {
+    "initialized": true,
+    "last_dialog_type": null,
+    "last_dialog_action": null,
+    "last_dialog_signature": null,
+    "matched_keyword": null,
+    "raw_target": null,
+    "resolved_target": null,
+    "target_resolution_strategy": null,
+    "target_path": null,
+    "choice_letter": null,
+    "auto_approved": false,
+    "dedup_hit": false,
+    "fallback_used": false,
+    "action_skipped": false,
+    "message": null
+  },
+  "expected_outputs": {
+    "configured": [
+      "outputs/reality_review.md"
+    ],
+    "resolved_absolute": [
+      "/Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/workflowbase-v4.2-reality-review/outputs/reality_review.md"
+    ],
+    "detected": [
+      {
+        "path": "/Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/workflowbase-v4.2-reality-review/outputs/reality_review.md",
+        "exists": false,
+        "size_bytes": 0,
+        "ready": false,
+        "truncated_marker_detected": false
+      }
+    ],
+    "path_mismatch": []
+  },
+  "error_retry": {
+    "error_counts": {},
+    "error_retry_limit": 3,
+    "last_error_at": null
+  }
+}

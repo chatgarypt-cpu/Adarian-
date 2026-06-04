@@ -1,0 +1,59 @@
+{
+  "event_summary": "深圳公交站劝烟纠纷引发执法程序争议，境外媒体炒作警权边界问题",
+  "stakeholder_map": "事件实体: 王某某, 陈某, 光明区联合调查组, 境外媒体 | 传播者: 女性权益关注者, 公共道德支持者, 执法程序监督者, 质疑王某某行为者, 理性法律群体",
+  "emotion_trajectory": [
+    {
+      "tick": 0,
+      "mean_stance": 5.69,
+      "std_stance": 0.65,
+      "polarization_index": 0.11,
+      "key_event": "Agent #0 发言"
+    },
+    {
+      "tick": 1,
+      "mean_stance": 5.62,
+      "std_stance": 0.98,
+      "polarization_index": 0.17,
+      "key_event": "Agent #6 发言"
+    },
+    {
+      "tick": 2,
+      "mean_stance": 5.51,
+      "std_stance": 1.32,
+      "polarization_index": 0.24,
+      "key_event": "Agent #6 发言"
+    },
+    {
+      "tick": 3,
+      "mean_stance": 5.54,
+      "std_stance": 1.57,
+      "polarization_index": 0.28,
+      "key_event": "Agent #6 发言"
+    },
+    {
+      "tick": 4,
+      "mean_stance": 5.57,
+      "std_stance": 1.26,
+      "polarization_index": 0.23,
+      "key_event": "Agent #6 发言"
+    },
+    {
+      "tick": 5,
+      "mean_stance": 5.43,
+      "std_stance": 1.47,
+      "polarization_index": 0.27,
+      "key_event": "Agent #6 发言"
+    }
+  ],
+  "inflection_points": [],
+  "risk_level": "medium",
+  "risk_assessment": "中等风险，x(t)=5.4，趋势需关注",
+  "x_t_sequence": [
+    5.69,
+    5.62,
+    5.51,
+    5.54,
+    5.57,
+    5.43
+  ]
+}

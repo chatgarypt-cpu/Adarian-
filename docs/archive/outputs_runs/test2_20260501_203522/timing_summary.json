@@ -1,0 +1,359 @@
+{
+  "run": {
+    "start_time": "2026-05-01 20:35:22",
+    "end_time": "2026-05-01 20:46:48",
+    "elapsed_seconds": 686.37,
+    "status": "success",
+    "mode": "normal",
+    "seed_file": "/Users/gary/项目开发/AdarianMigration/adarian mvp/seeds/test2.txt",
+    "run_dir": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test2_20260501_203522"
+  },
+  "phases": {
+    "phase1_entity_extraction": {
+      "start_time": "2026-05-01 20:35:22",
+      "end_time": "2026-05-01 20:38:42",
+      "elapsed_seconds": 199.89
+    },
+    "phase2_topology_builder": {
+      "start_time": "2026-05-01 20:38:42",
+      "end_time": "2026-05-01 20:38:42",
+      "elapsed_seconds": 0.1
+    },
+    "phase3_tick_simulation": {
+      "start_time": "2026-05-01 20:38:42",
+      "end_time": "2026-05-01 20:46:04",
+      "elapsed_seconds": 442.1
+    },
+    "phase4_report_agent": {
+      "start_time": "2026-05-01 20:46:04",
+      "end_time": "2026-05-01 20:46:48",
+      "elapsed_seconds": 44.28
+    }
+  },
+  "llm": {
+    "count": 37,
+    "calls": [
+      {
+        "caller": "analyzer_set_parameters",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 16.52,
+        "timestamp": "2026-05-01 20:35:38"
+      },
+      {
+        "caller": "generator_create_entities",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 40.5,
+        "timestamp": "2026-05-01 20:36:19"
+      },
+      {
+        "caller": "validator_check_format",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 33.75,
+        "timestamp": "2026-05-01 20:36:53"
+      },
+      {
+        "caller": "generator_create_entities",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 44.81,
+        "timestamp": "2026-05-01 20:37:38"
+      },
+      {
+        "caller": "generator_create_entities",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 42.93,
+        "timestamp": "2026-05-01 20:38:20"
+      },
+      {
+        "caller": "validator_check_format",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 21.3,
+        "timestamp": "2026-05-01 20:38:42"
+      },
+      {
+        "caller": "run_tick_0",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 10.04,
+        "timestamp": "2026-05-01 20:38:52"
+      },
+      {
+        "caller": "run_tick_0",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 9.56,
+        "timestamp": "2026-05-01 20:39:02"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 13.69,
+        "timestamp": "2026-05-01 20:39:15"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 10.79,
+        "timestamp": "2026-05-01 20:39:26"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 10.73,
+        "timestamp": "2026-05-01 20:39:37"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 11.19,
+        "timestamp": "2026-05-01 20:39:48"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 15.53,
+        "timestamp": "2026-05-01 20:40:03"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 13.17,
+        "timestamp": "2026-05-01 20:40:17"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 10.31,
+        "timestamp": "2026-05-01 20:40:27"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 14.63,
+        "timestamp": "2026-05-01 20:40:42"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 16.79,
+        "timestamp": "2026-05-01 20:40:58"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 14.02,
+        "timestamp": "2026-05-01 20:41:12"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 15.78,
+        "timestamp": "2026-05-01 20:41:28"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 15.27,
+        "timestamp": "2026-05-01 20:41:43"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 10.73,
+        "timestamp": "2026-05-01 20:41:54"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 13.31,
+        "timestamp": "2026-05-01 20:42:08"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 15.06,
+        "timestamp": "2026-05-01 20:42:23"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 13.37,
+        "timestamp": "2026-05-01 20:42:36"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 11.91,
+        "timestamp": "2026-05-01 20:42:48"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 14.98,
+        "timestamp": "2026-05-01 20:43:03"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 11.54,
+        "timestamp": "2026-05-01 20:43:14"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 15.51,
+        "timestamp": "2026-05-01 20:43:30"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 12.84,
+        "timestamp": "2026-05-01 20:44:16"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 14.82,
+        "timestamp": "2026-05-01 20:44:31"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 13.94,
+        "timestamp": "2026-05-01 20:44:45"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 16.76,
+        "timestamp": "2026-05-01 20:45:02"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 12.7,
+        "timestamp": "2026-05-01 20:45:15"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 21.63,
+        "timestamp": "2026-05-01 20:45:36"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 11.18,
+        "timestamp": "2026-05-01 20:45:47"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 16.53,
+        "timestamp": "2026-05-01 20:46:04"
+      },
+      {
+        "caller": "generate_report_with_llm",
+        "model": "qwen36-35b",
+        "elapsed_seconds": 44.26,
+        "timestamp": "2026-05-01 20:46:48"
+      }
+    ]
+  },
+  "persona": {
+    "count": 0,
+    "groups": []
+  },
+  "ticks": [
+    {
+      "tick": 0,
+      "elapsed_seconds": 19.62,
+      "speakers": 5,
+      "llm_calls": 2,
+      "timestamp": "2026-05-01 20:39:02"
+    },
+    {
+      "tick": 1,
+      "speaker_selection": {
+        "tick": 1,
+        "spreader_count": 8,
+        "computed_num_speakers": 6,
+        "expected_selected_count": 6,
+        "actual_selected_count": 6,
+        "selected_speakers_count": 6,
+        "is_full_selection": false,
+        "full_selection_reason": "not_full_selection"
+      },
+      "elapsed_seconds": 75.13,
+      "speakers": 6,
+      "llm_calls": 6,
+      "timestamp": "2026-05-01 20:40:17"
+    },
+    {
+      "tick": 2,
+      "speaker_selection": {
+        "tick": 2,
+        "spreader_count": 8,
+        "computed_num_speakers": 7,
+        "expected_selected_count": 7,
+        "actual_selected_count": 7,
+        "selected_speakers_count": 7,
+        "is_full_selection": false,
+        "full_selection_reason": "not_full_selection"
+      },
+      "elapsed_seconds": 97.56,
+      "speakers": 7,
+      "llm_calls": 7,
+      "timestamp": "2026-05-01 20:41:54"
+    },
+    {
+      "tick": 3,
+      "speaker_selection": {
+        "tick": 3,
+        "spreader_count": 8,
+        "computed_num_speakers": 5,
+        "expected_selected_count": 5,
+        "actual_selected_count": 5,
+        "selected_speakers_count": 5,
+        "is_full_selection": false,
+        "full_selection_reason": "not_full_selection"
+      },
+      "elapsed_seconds": 68.63,
+      "speakers": 5,
+      "llm_calls": 5,
+      "timestamp": "2026-05-01 20:43:03"
+    },
+    {
+      "tick": 4,
+      "speaker_selection": {
+        "tick": 4,
+        "spreader_count": 8,
+        "computed_num_speakers": 5,
+        "expected_selected_count": 5,
+        "actual_selected_count": 5,
+        "selected_speakers_count": 5,
+        "is_full_selection": false,
+        "full_selection_reason": "not_full_selection"
+      },
+      "elapsed_seconds": 68.68,
+      "speakers": 5,
+      "llm_calls": 5,
+      "timestamp": "2026-05-01 20:44:45"
+    },
+    {
+      "tick": 5,
+      "speaker_selection": {
+        "tick": 5,
+        "spreader_count": 8,
+        "computed_num_speakers": 5,
+        "expected_selected_count": 5,
+        "actual_selected_count": 5,
+        "selected_speakers_count": 5,
+        "is_full_selection": false,
+        "full_selection_reason": "not_full_selection"
+      },
+      "elapsed_seconds": 78.83,
+      "speakers": 5,
+      "llm_calls": 5,
+      "timestamp": "2026-05-01 20:46:04"
+    }
+  ],
+  "errors": []
+}

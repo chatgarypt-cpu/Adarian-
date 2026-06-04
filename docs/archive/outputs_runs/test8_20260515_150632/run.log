@@ -1,0 +1,82 @@
+[2026-05-15 15:06:32] RUN START mode=normal seed=/Users/gary/项目开发/AdarianMigration/adarian mvp/seeds/test8.txt run_dir=/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test8_20260515_150632
+[2026-05-15 15:06:32] PHASE START name=phase1_entity_extraction
+[2026-05-15 15:06:32] LLM START caller=analyzer_set_parameters model=minimax
+[2026-05-15 15:06:42] LLM END caller=analyzer_set_parameters model=minimax elapsed=9.73s
+[2026-05-15 15:06:42] LLM START caller=generator_create_entities model=minimax
+[2026-05-15 15:07:16] LLM END caller=generator_create_entities model=minimax elapsed=34.03s
+[2026-05-15 15:07:16] LLM START caller=validator_check_format model=minimax
+[2026-05-15 15:07:42] LLM END caller=validator_check_format model=minimax elapsed=25.79s
+[2026-05-15 15:07:42] PHASE END name=phase1_entity_extraction elapsed=69.59s
+[2026-05-15 15:07:42] PHASE START name=phase2_topology_builder
+[2026-05-15 15:07:42] PHASE END name=phase2_topology_builder elapsed=0.08s
+[2026-05-15 15:07:42] PHASE START name=phase3_tick_simulation
+[2026-05-15 15:07:42] TICK START tick=0
+[2026-05-15 15:07:42] TICK END tick=0 elapsed=0.00s speakers=4 llm_calls=0
+[2026-05-15 15:07:42] TICK START tick=1
+[2026-05-15 15:07:42] SPEAKER SELECTION tick=1 spreader_count=6 computed_num_speakers=5 expected_selected_count=5 actual_selected_count=5 selected_speakers_count=5 is_full_selection=False full_selection_reason=not_full_selection
+[2026-05-15 15:07:42] LLM START caller=generate_opinion_spreader_post model=minimax
+[2026-05-15 15:07:51] LLM END caller=generate_opinion_spreader_post model=minimax elapsed=8.77s
+[2026-05-15 15:07:51] LLM START caller=generate_opinion_spreader_post model=minimax
+[2026-05-15 15:08:00] LLM END caller=generate_opinion_spreader_post model=minimax elapsed=8.85s
+[2026-05-15 15:08:00] LLM START caller=generate_opinion_spreader_post model=minimax
+[2026-05-15 15:08:07] LLM END caller=generate_opinion_spreader_post model=minimax elapsed=7.13s
+[2026-05-15 15:08:07] LLM START caller=generate_opinion_spreader_post model=minimax
+[2026-05-15 15:08:16] LLM END caller=generate_opinion_spreader_post model=minimax elapsed=8.66s
+[2026-05-15 15:08:16] LLM START caller=generate_opinion_spreader_post model=minimax
+[2026-05-15 15:08:24] LLM END caller=generate_opinion_spreader_post model=minimax elapsed=8.72s
+[2026-05-15 15:08:24] TICK END tick=1 elapsed=42.16s speakers=5 llm_calls=5
+[2026-05-15 15:08:24] TICK START tick=2
+[2026-05-15 15:08:24] SPEAKER SELECTION tick=2 spreader_count=6 computed_num_speakers=6 expected_selected_count=6 actual_selected_count=6 selected_speakers_count=6 is_full_selection=True full_selection_reason=constraint_forced_full_selection
+[2026-05-15 15:08:24] LLM START caller=generate_opinion_spreader_post model=minimax
+[2026-05-15 15:08:33] LLM END caller=generate_opinion_spreader_post model=minimax elapsed=9.17s
+[2026-05-15 15:08:33] LLM START caller=generate_opinion_spreader_post model=minimax
+[2026-05-15 15:08:44] LLM END caller=generate_opinion_spreader_post model=minimax elapsed=10.65s
+[2026-05-15 15:08:44] LLM START caller=generate_opinion_spreader_post model=minimax
+[2026-05-15 15:08:52] LLM END caller=generate_opinion_spreader_post model=minimax elapsed=8.25s
+[2026-05-15 15:08:52] LLM START caller=generate_opinion_spreader_post model=minimax
+[2026-05-15 15:09:03] LLM END caller=generate_opinion_spreader_post model=minimax elapsed=10.39s
+[2026-05-15 15:09:03] LLM START caller=generate_opinion_spreader_post model=minimax
+[2026-05-15 15:09:10] LLM END caller=generate_opinion_spreader_post model=minimax elapsed=7.54s
+[2026-05-15 15:09:10] LLM START caller=generate_opinion_spreader_post model=minimax
+[2026-05-15 15:09:20] LLM END caller=generate_opinion_spreader_post model=minimax elapsed=9.99s
+[2026-05-15 15:09:20] TICK END tick=2 elapsed=56.01s speakers=6 llm_calls=6
+[2026-05-15 15:09:20] TICK START tick=3
+[2026-05-15 15:09:20] SPEAKER SELECTION tick=3 spreader_count=6 computed_num_speakers=4 expected_selected_count=4 actual_selected_count=4 selected_speakers_count=4 is_full_selection=False full_selection_reason=not_full_selection
+[2026-05-15 15:09:20] LLM START caller=generate_opinion_spreader_post model=minimax
+[2026-05-15 15:09:29] LLM END caller=generate_opinion_spreader_post model=minimax elapsed=9.21s
+[2026-05-15 15:09:29] LLM START caller=generate_opinion_spreader_post model=minimax
+[2026-05-15 15:09:41] LLM END caller=generate_opinion_spreader_post model=minimax elapsed=11.38s
+[2026-05-15 15:09:41] LLM START caller=generate_opinion_spreader_post model=minimax
+[2026-05-15 15:09:53] LLM END caller=generate_opinion_spreader_post model=minimax elapsed=11.75s
+[2026-05-15 15:09:53] LLM START caller=generate_opinion_spreader_post model=minimax
+[2026-05-15 15:10:01] LLM END caller=generate_opinion_spreader_post model=minimax elapsed=8.53s
+[2026-05-15 15:10:01] TICK END tick=3 elapsed=40.88s speakers=4 llm_calls=4
+[2026-05-15 15:10:01] TICK START tick=4
+[2026-05-15 15:10:01] SPEAKER SELECTION tick=4 spreader_count=6 computed_num_speakers=4 expected_selected_count=4 actual_selected_count=4 selected_speakers_count=4 is_full_selection=False full_selection_reason=not_full_selection
+[2026-05-15 15:10:01] LLM START caller=generate_opinion_spreader_post model=minimax
+[2026-05-15 15:10:09] LLM END caller=generate_opinion_spreader_post model=minimax elapsed=8.08s
+[2026-05-15 15:10:09] LLM START caller=generate_opinion_spreader_post model=minimax
+[2026-05-15 15:10:18] LLM END caller=generate_opinion_spreader_post model=minimax elapsed=8.93s
+[2026-05-15 15:10:18] LLM START caller=generate_opinion_spreader_post model=minimax
+[2026-05-15 15:10:29] LLM END caller=generate_opinion_spreader_post model=minimax elapsed=10.50s
+[2026-05-15 15:10:29] LLM START caller=generate_opinion_spreader_post model=minimax
+[2026-05-15 15:10:37] LLM END caller=generate_opinion_spreader_post model=minimax elapsed=8.30s
+[2026-05-15 15:10:37] TICK END tick=4 elapsed=35.82s speakers=4 llm_calls=4
+[2026-05-15 15:10:37] TICK START tick=5
+[2026-05-15 15:10:37] SPEAKER SELECTION tick=5 spreader_count=6 computed_num_speakers=4 expected_selected_count=4 actual_selected_count=4 selected_speakers_count=4 is_full_selection=False full_selection_reason=not_full_selection
+[2026-05-15 15:10:37] LLM START caller=generate_opinion_spreader_post model=minimax
+[2026-05-15 15:10:46] LLM END caller=generate_opinion_spreader_post model=minimax elapsed=9.09s
+[2026-05-15 15:10:46] LLM START caller=generate_opinion_spreader_post model=minimax
+[2026-05-15 15:10:57] LLM END caller=generate_opinion_spreader_post model=minimax elapsed=10.79s
+[2026-05-15 15:10:57] LLM START caller=generate_opinion_spreader_post model=minimax
+[2026-05-15 15:11:06] LLM END caller=generate_opinion_spreader_post model=minimax elapsed=9.56s
+[2026-05-15 15:11:06] LLM START caller=generate_opinion_spreader_post model=minimax
+[2026-05-15 15:11:16] LLM END caller=generate_opinion_spreader_post model=minimax elapsed=9.95s
+[2026-05-15 15:11:16] TICK END tick=5 elapsed=39.42s speakers=4 llm_calls=4
+[2026-05-15 15:11:16] PHASE END name=phase3_tick_simulation elapsed=214.32s
+[2026-05-15 15:11:16] PHASE START name=phase4_report_agent
+[2026-05-15 15:11:16] LLM START caller=generate_report_with_llm model=minimax
+[2026-05-15 15:12:18] LLM END caller=generate_report_with_llm model=minimax elapsed=62.05s
+[2026-05-15 15:12:18] PHASE END name=phase4_report_agent elapsed=62.07s
+[2026-05-15 15:12:18] RUN END status=success elapsed=346.07s
+[2026-05-15 15:12:18] REPORT COMPLETENESS report_truncated=false score=1.0 char_count=6169

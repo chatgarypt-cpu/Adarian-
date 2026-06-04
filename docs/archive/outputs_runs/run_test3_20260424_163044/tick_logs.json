@@ -1,0 +1,619 @@
+[
+  {
+    "tick": 0,
+    "entries": [
+      {
+        "agent_id": 0,
+        "group_name": "当事学生",
+        "saw_posts_from": [],
+        "previous_stance": 5.0,
+        "current_stance": 5.0,
+        "stance_delta": 0.0,
+        "susceptibility": 0.0,
+        "change_reason": "entity_not_speaking",
+        "comment": "（该实体不可发言）",
+        "reasoning": "实体不可发言"
+      },
+      {
+        "agent_id": 1,
+        "group_name": "江西工业职业技术学院",
+        "saw_posts_from": [],
+        "previous_stance": 5.0,
+        "current_stance": 5.0,
+        "stance_delta": 0.0,
+        "susceptibility": 0.0,
+        "change_reason": "entity_generated_statement",
+        "comment": "我校高度重视食堂食品安全问题，已第一时间成立专项调查组。经初步核查，网传异物为鸭脖部位，相关食材来源正规。学校将持续配合监管部门调查，确保师生饮食安全。",
+        "reasoning": "代表学校初期立场，强调重视并初步定性"
+      },
+      {
+        "agent_id": 2,
+        "group_name": "当地食品管理局",
+        "saw_posts_from": [],
+        "previous_stance": 5.0,
+        "current_stance": 5.0,
+        "stance_delta": 0.0,
+        "susceptibility": 0.0,
+        "change_reason": "entity_generated_statement",
+        "comment": "经初步核查，该异物为食堂食材鸭脖，学生反映情况已记录，后续将加强食品安全监管。",
+        "reasoning": "代表监管部门初期立场，配合校方初步结论"
+      },
+      {
+        "agent_id": 3,
+        "group_name": "江西省政府",
+        "saw_posts_from": [],
+        "previous_stance": 5.0,
+        "current_stance": 5.0,
+        "stance_delta": 0.0,
+        "susceptibility": 0.0,
+        "change_reason": "entity_generated_statement",
+        "comment": "收到网络反映的江西工业职业技术学院食堂异物问题，我省高度重视，已责成相关部门立即介入核查，将依法依规处理，及时向社会公布调查结果。",
+        "reasoning": "体现政府重视民生问题、主动介入调查的立场"
+      }
+    ],
+    "global_metrics": {
+      "mean_stance": 4.2,
+      "std_stance": 1.48,
+      "polarization_index": 0.35
+    }
+  },
+  {
+    "tick": 1,
+    "entries": [
+      {
+        "agent_id": 4,
+        "group_name": "真相质疑派",
+        "saw_posts_from": [
+          1
+        ],
+        "previous_stance": 1.62,
+        "current_stance": 1.5,
+        "stance_delta": -0.12,
+        "susceptibility": 0.05,
+        "change_reason": "within_effective_delta",
+        "comment": "指鼠为鸭？说初步核查是鸭脖，食材来源正规...这操作太离谱了。食品安全无小事，学生吃出问题，第一反应是核实真相而不是急于定论。糊弄鬼呢？希望调查结果能经得起检验，别辜负学生的信任。",
+        "reasoning": "作为真相质疑派大学生，对校方声明持强烈怀疑态度。声明中'鸭脖'的初步结论与后来证实的鼠头事实不符，存在欺瞒嫌疑。校方第一时间定性而非深入调查，反映出对师生安全的敷衍态度。食品安全关乎学生健康，应透明公"
+      },
+      {
+        "agent_id": 5,
+        "group_name": "监管批评派",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 2.11,
+        "current_stance": 2.0,
+        "stance_delta": -0.11,
+        "susceptibility": 0.11,
+        "change_reason": "within_effective_delta",
+        "comment": "监管部门初步核查结论与事实严重不符，公信力再次崩塌。从虚假通报到被迫承认真相，暴露出监管缺位和应对机制失效。必须彻查涉事人员责任，建立更透明的核查流程。",
+        "reasoning": "监管部门在食品安全事件中发布不实信息，损害公信力。从初始错误结论到舆论压力下的反转，显示监管体系存在漏洞。作为媒体评论员，需强调追责必要性以维护公众信任。"
+      },
+      {
+        "agent_id": 6,
+        "group_name": "食品安全担忧派",
+        "saw_posts_from": [
+          1
+        ],
+        "previous_stance": 3.17,
+        "current_stance": 2.91,
+        "stance_delta": -0.26,
+        "susceptibility": 0.21,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "吓死我了，学校说这是鸭脖部位？孩子在学校吃啥啊...太恶心了。作为家长真的担心孩子在学校食堂能不能吃到安全的饭菜。现在食材来源正规这种话听多了，但孩子吃进嘴里的东西真的不能马虎。希望监管部门能真正查清楚，别让我们家长担心。",
+        "reasoning": "作为45-55岁全职妈妈，对食品安全问题高度敏感。校方声明将异物认定为鸭脖，但作为家长对此表示强烈质疑。立场评分2.0属于强烈批评，因为：1.涉及孩子饮食安全，是家长最敏感的底线问题；2.校方初步结论"
+      },
+      {
+        "agent_id": 7,
+        "group_name": "舆论施压派",
+        "saw_posts_from": [
+          3
+        ],
+        "previous_stance": 5.43,
+        "current_stance": 6.38,
+        "stance_delta": 0.95,
+        "susceptibility": 0.4,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "江西省政府这次反应还算及时，最终还是查了。虽然一开始有隐瞒，但亡羊补牢，为时未晚。作为公职人员，看到上级部门在舆论监督下能够纠正错误，还是值得肯定的。问题曝光后能正视并处理，维护了政府的公信力。",
+        "reasoning": "作为舆论施压派和公务员，我认为政府部门的纠错能力值得肯定。虽然初期存在信息不实的问题，但在舆论压力下能够最终承认真相并介入调查，体现了责任担当。这符合我维护政府形象、肯定纠错能力的立场。"
+      },
+      {
+        "agent_id": 8,
+        "group_name": "事件淡化派",
+        "saw_posts_from": [
+          1
+        ],
+        "previous_stance": 4.75,
+        "current_stance": 5.74,
+        "stance_delta": 0.99,
+        "susceptibility": 0.48,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "学校已经第一时间表态处理了，这种小事别上纲上线。食堂工作也不容易，监管也一直在跟进，差不多就行了。我们还是要信任学校和相关部门的处理，毕竟学校也不容易，要维护好学校的声誉嘛。",
+        "reasoning": "作为中层管理者，我认为事件已经得到回应和处理，过度追责对学校发展不利。学校已经成立调查组并配合监管，应该给学校一些信任空间，维护学校声誉对全体师生都有好处。"
+      },
+      {
+        "agent_id": 9,
+        "group_name": "中立围观派",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 6.09,
+        "current_stance": 6.12,
+        "stance_delta": 0.03,
+        "susceptibility": 0.66,
+        "change_reason": "silent_exposure_drift",
+        "comment": "（未发言）",
+        "reasoning": "本轮未进入发言队列"
+      },
+      {
+        "agent_id": 10,
+        "group_name": "法律追责派",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 2.97,
+        "current_stance": 2.72,
+        "stance_delta": -0.25,
+        "susceptibility": 0.16,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "监管部门初步核查称'鸭脖'，舆论发酵后才承认'鼠头'，这种前后矛盾的说法涉嫌渎职。食品安全监管不是儿戏，相关责任人必须依法追责。建议上级部门介入调查，该立案的要立案，该问责的要问责。",
+        "reasoning": "作为执业律师，我认为监管部门初期发布不实信息已涉嫌失职。学生举报后应及时启动正规检测程序，而非简单定性。最终真相大白证明前期核查存在严重问题，必须追究相关责任，维护法律尊严和监管公信力。"
+      }
+    ],
+    "global_metrics": {
+      "mean_stance": 4.31,
+      "std_stance": 1.72,
+      "polarization_index": 0.4
+    }
+  },
+  {
+    "tick": 2,
+    "entries": [
+      {
+        "agent_id": 4,
+        "group_name": "真相质疑派",
+        "saw_posts_from": [
+          1,
+          8
+        ],
+        "previous_stance": 1.5,
+        "current_stance": 1.73,
+        "stance_delta": 0.23,
+        "susceptibility": 0.05,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "说重视食品安全，结果初步核查直接说成鸭脖？这算哪门子重视？事件淡化派说得轻巧，食品安全是小事？学生吃出问题，真相还没查清就急于定论，现在回头看当初那套说辞多可笑。维护学校声誉不是靠掩盖真相，是靠真正把食品安全做好。糊弄鬼呢？",
+        "reasoning": "校方的初步核查已被证明是错误结论，监管部门也存在失职。事件淡化派试图用'维护声誉'掩盖问题本质，食品安全事关学生健康，不能含糊。真相已经大白，但前期处理态度令人失望，必须严肃追责。"
+      },
+      {
+        "agent_id": 5,
+        "group_name": "监管批评派",
+        "saw_posts_from": [
+          2,
+          10
+        ],
+        "previous_stance": 2.0,
+        "current_stance": 1.76,
+        "stance_delta": -0.24,
+        "susceptibility": 0.11,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "从'鸭脖'到'鼠头'，监管部门的公信力再次崩塌。初步核查就能出现如此严重的结论偏差，监管去哪儿了？这不是简单的误判，而是对公众知情权的漠视。舆论倒逼下才承认真相，这种应对方式让公众如何相信后续的监管承诺？必须追责，问责不能止于通报，要看到实质性的处理结果。",
+        "reasoning": "监管部门前后矛盾的结论暴露了核查流程的严重问题，公信力已受重创。作为媒体评论员，需要持续监督公权力部门，推动责任追究和制度改进，这是维护社会信任的必要立场。"
+      },
+      {
+        "agent_id": 6,
+        "group_name": "食品安全担忧派",
+        "saw_posts_from": [
+          1,
+          7
+        ],
+        "previous_stance": 2.91,
+        "current_stance": 2.65,
+        "stance_delta": -0.26,
+        "susceptibility": 0.21,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "吓死我了，现在说查清楚了，可一开始说是鸭脖的时候，我们家长心里多难受。孩子在学校食堂吃饭，家长最关心的就是食品安全。学校说食材来源正规，可这异物到底是不是鸭脖，一开始说错了后来改口，这种操作让家长怎么放心？亡羊补牢是好事，但孩子吃进嘴里的东西，一开始就要对啊。希望这次是真的查清楚了，别再出什么幺蛾子。",
+        "reasoning": "作为担心孩子食品安全的家长，对校方和监管部门最初隐瞒真相的做法持批评态度。虽然最终查明真相值得肯定，但初始阶段的虚假回应损害了家长信任，食品安全问题容不得半点马虎，前期处理不当导致家长焦虑，因此立场偏"
+      },
+      {
+        "agent_id": 7,
+        "group_name": "舆论施压派",
+        "saw_posts_from": [
+          3
+        ],
+        "previous_stance": 6.38,
+        "current_stance": 6.4,
+        "stance_delta": 0.02,
+        "susceptibility": 0.4,
+        "change_reason": "silent_exposure_drift",
+        "comment": "（未发言）",
+        "reasoning": "本轮未进入发言队列"
+      },
+      {
+        "agent_id": 8,
+        "group_name": "事件淡化派",
+        "saw_posts_from": [
+          1,
+          10
+        ],
+        "previous_stance": 5.74,
+        "current_stance": 6.73,
+        "stance_delta": 0.99,
+        "susceptibility": 0.48,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "其实这事儿吧，学校已经第一时间表态处理了，调查组也成立了。说实话，基层食堂工作确实不容易，监管也在跟进，差不多就行了。现在网上声音太多，容易把小事闹大，对学校声誉影响也不好。咱们还是要理性看待，信任学校和相关部门的处理流程，毕竟都是为师生好，别上纲上线了。",
+        "reasoning": "作为事件淡化派，认为学校已积极回应，过度追责不利于问题实质解决。维护学校声誉和正常运营秩序更重要，监管流程已在推进中，没必要激化矛盾。这种客观中立的处理方式对各方都更稳妥。"
+      },
+      {
+        "agent_id": 9,
+        "group_name": "中立围观派",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 6.12,
+        "current_stance": 5.04,
+        "stance_delta": -1.08,
+        "susceptibility": 0.66,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "当地食品管理局说初步核查是鸭脖，但网上很多视频看着确实像鼠头。这事儿目前各方说法不一，先不急着下定论。让子弹飞一会儿吧，坐等后续调查结果，看看怎么说。食品安全问题确实值得关注，但具体是什么，还是等官方最终通报比较稳妥。",
+        "reasoning": "作为中立围观派，目前各方信息存在矛盾，官方初步说法与网传视频有出入。选择保持观望态度，不轻易站队，等待更权威、更透明的调查结果。食品安全是民生问题，但求真相比急于表态更重要。"
+      },
+      {
+        "agent_id": 10,
+        "group_name": "法律追责派",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 2.72,
+        "current_stance": 2.47,
+        "stance_delta": -0.25,
+        "susceptibility": 0.16,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "当地食品管理局的核查结论在舆论压力下被推翻，这种'先否定后承认'的处理方式严重损害监管公信力。监管部门作为专业机构，出具错误结论后未能主动纠错，反而等舆情发酵才改口，涉嫌履职不到位。食品安全监管必须依法追责，相关责任部门该立案的要立案，该问责的要问责，维护法律尊严不容含糊。",
+        "reasoning": "监管部门前后结论矛盾，在舆论压力下才承认事实，反映履职存在严重问题。作为法律专业人士，我坚持依法追责的立场，必须推动问责机制启动。"
+      }
+    ],
+    "global_metrics": {
+      "mean_stance": 4.26,
+      "std_stance": 1.79,
+      "polarization_index": 0.42
+    }
+  },
+  {
+    "tick": 3,
+    "entries": [
+      {
+        "agent_id": 4,
+        "group_name": "真相质疑派",
+        "saw_posts_from": [
+          1,
+          8
+        ],
+        "previous_stance": 1.73,
+        "current_stance": 1.5,
+        "stance_delta": -0.23,
+        "susceptibility": 0.05,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "指鼠为鸭？当初质疑的时候被说上纲上线，现在真相大白，打脸了吧。说好的高度重视、第一时间核查，结果是彻头彻尾的谎言。糊弄鬼呢？食品安全是大事，学生吃出问题，第一反应是掩盖真相而不是查清事实，这操作太离谱了。现在承认了，公信力已经没了。真相可以迟到，但不能被刻意掩盖。希望这次之后，类似的糊弄操作能少一点，对得起学生的信任。",
+        "reasoning": "事件最终承认真相是鼠头而非鸭脖，验证了最初质疑的正确性。学校及监管部门初期以'鸭脖'搪塞的行为属于故意欺瞒，严重损害公信力。作为真相质疑派，对这种掩盖真相的做法持强烈批评立场，评分1.0。"
+      },
+      {
+        "agent_id": 5,
+        "group_name": "监管批评派",
+        "saw_posts_from": [
+          2,
+          10
+        ],
+        "previous_stance": 1.76,
+        "current_stance": 1.52,
+        "stance_delta": -0.24,
+        "susceptibility": 0.11,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "从鸭脖到鼠头的反转，暴露的不仅是监管失察，更是诚信体系的系统性失效。食品管理局作为专业监管部门，初步核查出现如此低级错误，公信力崩塌已成事实。舆论倒逼才改口，这种被动纠错模式让公众如何相信后续承诺？监管去哪儿了？公信力一旦丧失，重建需要数倍努力。必须追责，问责不能止于通报，要看到实质性的处理结果。食品安全是底线问题，容不得半点糊弄。",
+        "reasoning": "该事件核心问题在于监管部门专业性和诚信度双重缺失。初步核查结论与事实严重不符，且需舆论压力才承认错误，暴露出履职不到位和应对机制失效。作为媒体评论员，必须持续监督公权力，维护公信力。"
+      },
+      {
+        "agent_id": 6,
+        "group_name": "食品安全担忧派",
+        "saw_posts_from": [
+          1,
+          7,
+          9
+        ],
+        "previous_stance": 2.65,
+        "current_stance": 2.39,
+        "stance_delta": -0.26,
+        "susceptibility": 0.21,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "吓死我了，现在承认是鼠头了，可一开始为什么要说是鸭脖呢？孩子在学校食堂吃饭，我们家长最担心的就是食品安全。学校说食材来源正规，可如果连异物都看不清楚、不敢说实话，这食堂怎么让人放心？太恶心了，孩子吃进嘴里的东西，一开始就要对啊。希望这次是真的查清楚了，别再出什么幺蛾子，家长们真的经不起折腾。",
+        "reasoning": "作为关心孩子食品安全的家长，对学校及监管部门初期隐瞒真相的行为持强烈批评态度。虽然最终承认了事实，但一开始的谎报严重损害了家长信任，食品安全问题关乎孩子健康，不能有任何马虎。立场值为2.0表示强烈批评"
+      },
+      {
+        "agent_id": 7,
+        "group_name": "舆论施压派",
+        "saw_posts_from": [
+          3
+        ],
+        "previous_stance": 6.4,
+        "current_stance": 6.42,
+        "stance_delta": 0.02,
+        "susceptibility": 0.4,
+        "change_reason": "silent_exposure_drift",
+        "comment": "（未发言）",
+        "reasoning": "本轮未进入发言队列"
+      },
+      {
+        "agent_id": 8,
+        "group_name": "事件淡化派",
+        "saw_posts_from": [
+          1,
+          10
+        ],
+        "previous_stance": 6.73,
+        "current_stance": 7.72,
+        "stance_delta": 0.99,
+        "susceptibility": 0.48,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "追责是应该的，但也要看实际情况。学校已经公开承认了，也表态会整改，这个态度还是可以的。基层食堂工作确实不容易，监管人员也不是故意出错，给个改正的机会嘛。现在网上声音太大，容易把小事闹大，对学校声誉影响也不好。差不多就行了，别让追责变成追责大会，工作还要不要干了？",
+        "reasoning": "作为企业中层管理者，理解基层工作的压力，认为学校已公开认错并承诺整改，过度追责会影响工作积极性。维护学校声誉和稳定更重要，支持适度处理而非严厉问责。"
+      },
+      {
+        "agent_id": 9,
+        "group_name": "中立围观派",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 5.04,
+        "current_stance": 5.07,
+        "stance_delta": 0.03,
+        "susceptibility": 0.66,
+        "change_reason": "silent_exposure_drift",
+        "comment": "（未发言）",
+        "reasoning": "本轮未进入发言队列"
+      },
+      {
+        "agent_id": 10,
+        "group_name": "法律追责派",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 2.47,
+        "current_stance": 2.22,
+        "stance_delta": -0.25,
+        "susceptibility": 0.16,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "当地食品管理局的初步核查结论与事实严重不符，从'鸭脖'到'鼠头'的反复，暴露出监管核查流程的严重缺陷。作为专业监管部门，出具错误结论后未能主动纠错，而是等待舆情发酵才改口，这种行为涉嫌履职不到位，甚至可能构成渎职。食品安全监管关乎公众健康，监管公信力受损的后果不容小觑。依法追责不是空话，相关责任人必须被问责，该立案的要立案，该移交的要移交。建议上级部门介入调查，查明是否存在故意隐瞒或失职行为，维护",
+        "reasoning": "当地食品管理局的初步核查结论被事实推翻，且未能主动纠错，涉嫌渎职和履职不到位。从维护法律尊严和监管公信力的角度出发，必须对相关责任人依法追责。立场保持强烈批评，与之前发言保持一致性。"
+      }
+    ],
+    "global_metrics": {
+      "mean_stance": 4.26,
+      "std_stance": 2.06,
+      "polarization_index": 0.48
+    }
+  },
+  {
+    "tick": 4,
+    "entries": [
+      {
+        "agent_id": 4,
+        "group_name": "真相质疑派",
+        "saw_posts_from": [
+          1,
+          8
+        ],
+        "previous_stance": 1.5,
+        "current_stance": 1.73,
+        "stance_delta": 0.23,
+        "susceptibility": 0.05,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "指鼠为鸭？当初一口咬定是鸭脖，现在真相大白，打脸了吧。说好的高度重视、第一时间核查，结果是彻头彻尾的谎言。糊弄鬼呢？食品安全是大事，学生吃出问题，第一反应是掩盖真相而不是查清事实，这操作太离谱了。现在承认了，公信力已经没了。事件淡化派说得轻巧，'差不多就行了'？学生吃出问题就是小事？维护学校声誉不是靠掩盖真相，是靠真正把食品安全做好。真相可以迟到，但不能被刻意掩盖。希望这次之后，类似的糊弄操作能少",
+        "reasoning": "作为真相质疑派，对校方和监管部门初期谎称鸭脖的行为持强烈批评态度。事件最终证明是鼠头，说明最初的核查结论是虚假的。食品安全涉及学生健康，不能以'基层工作不容易'为借口掩盖真相。公信力受损后重建困难，必"
+      },
+      {
+        "agent_id": 5,
+        "group_name": "监管批评派",
+        "saw_posts_from": [
+          2,
+          10
+        ],
+        "previous_stance": 1.52,
+        "current_stance": 1.5,
+        "stance_delta": -0.02,
+        "susceptibility": 0.11,
+        "change_reason": "within_effective_delta",
+        "comment": "法律追责派的观点切中要害。监管核查流程的缺陷不是技术问题，而是责任问题。从鸭脖到鼠头的反复，暴露出的是对专业性的漠视和对公信力的透支。上级部门必须介入，查明是否存在故意隐瞒或失职行为。食品安全是底线，容不得糊弄。监管去哪儿了？公信力崩塌后，重建谈何容易。必须追责，问责不能止于通报。",
+        "reasoning": "事件性质严重，监管部门初查结论与事实严重不符，且在舆论压力下才被动纠错，涉嫌渎职。作为监管批评派，对监管缺位和诚信失效必须保持强烈批评立场，推动实质性问责。"
+      },
+      {
+        "agent_id": 6,
+        "group_name": "食品安全担忧派",
+        "saw_posts_from": [
+          1,
+          7,
+          9
+        ],
+        "previous_stance": 2.39,
+        "current_stance": 2.13,
+        "stance_delta": -0.26,
+        "susceptibility": 0.21,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "吓死我了，现在承认是鼠头了，可一开始为什么要说是鸭脖呢？这种瞒报的行为让家长怎么放心？孩子在学校食堂吃饭，我们家长最担心的就是食品安全。学校说食材来源正规，可如果连异物都看不清楚、不敢说实话，这食堂怎么让人放心？太恶心了，孩子吃进嘴里的东西，一开始就要对啊。希望这次是真的查清楚了，别再出什么幺蛾子，家长们真的经不起折腾。",
+        "reasoning": "作为家长，对高校食堂食品安全事件感到强烈担忧。学校一开始谎称鸭脖，后来迫于舆论压力才承认是鼠头，这种不诚实的态度让家长更加担心孩子在校饮食安全。立场倾向于1-3分的批评区间，主要批评学校初期的隐瞒行为"
+      },
+      {
+        "agent_id": 7,
+        "group_name": "舆论施压派",
+        "saw_posts_from": [
+          3
+        ],
+        "previous_stance": 6.42,
+        "current_stance": 6.44,
+        "stance_delta": 0.02,
+        "susceptibility": 0.4,
+        "change_reason": "silent_exposure_drift",
+        "comment": "（未发言）",
+        "reasoning": "本轮未进入发言队列"
+      },
+      {
+        "agent_id": 8,
+        "group_name": "事件淡化派",
+        "saw_posts_from": [
+          1,
+          10
+        ],
+        "previous_stance": 7.72,
+        "current_stance": 7.5,
+        "stance_delta": -0.22,
+        "susceptibility": 0.48,
+        "change_reason": "within_effective_delta",
+        "comment": "说实话，学校现在态度已经出来了，也承认问题会整改，这个处理流程走完了。基层食堂确实不容易，监管人员也不是故意要出错，谁也不想闹这么大。法律追责派说得挺严肃的，但追责归追责，也别把气氛搞得太紧张了。学校声誉受损对谁都没好处，最终影响的还是师生。差不多就行了，给个改正的机会，工作还要继续干嘛。我们还是要理性看待，信任学校和相关部门后续的处理，别上纲上线了。",
+        "reasoning": "作为中层管理者，理解基层工作的复杂性。学校已承认问题并表态整改，监管流程虽有瑕疵但非故意，应给予改正机会。过度追责会影响正常工作秩序，维护学校声誉对整体更有利。"
+      },
+      {
+        "agent_id": 9,
+        "group_name": "中立围观派",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 5.07,
+        "current_stance": 5.1,
+        "stance_delta": 0.03,
+        "susceptibility": 0.66,
+        "change_reason": "silent_exposure_drift",
+        "comment": "（未发言）",
+        "reasoning": "本轮未进入发言队列"
+      },
+      {
+        "agent_id": 10,
+        "group_name": "法律追责派",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 2.22,
+        "current_stance": 1.97,
+        "stance_delta": -0.25,
+        "susceptibility": 0.16,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "监管部门核查结论反复，暴露出行政程序严重失范。从“鸭脖”到“鼠头”的认定逆转，反映基层监管存在主观臆断而非科学核验。依据《食品安全法》第144条，监管部门核查失实应启动问责程序，建议由监察机关介入调查是否存在行政包庇。维护法律尊严必须从纠正“先定论后补证”的违规操作开始，相关责任主体涉嫌履职不当，该立案的必须立案。",
+        "reasoning": "维持原有1.0立场，事件性质未改变监管失职本质。补充法律条款依据与监察介入建议，强化追责程序合法性要求，延续对渎职行为零容忍的问责立场。"
+      }
+    ],
+    "global_metrics": {
+      "mean_stance": 4.22,
+      "std_stance": 2.05,
+      "polarization_index": 0.49
+    }
+  },
+  {
+    "tick": 5,
+    "entries": [
+      {
+        "agent_id": 4,
+        "group_name": "真相质疑派",
+        "saw_posts_from": [
+          1,
+          8
+        ],
+        "previous_stance": 1.73,
+        "current_stance": 1.96,
+        "stance_delta": 0.23,
+        "susceptibility": 0.05,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "事件淡化派说得轻巧，'差不多就行了'？学生吃出问题就是小事？指鼠为鸭的闹剧还没看够吗？当初一口咬定是鸭脖，现在真相大白，公信力已经没了。糊弄鬼呢？食品安全是大事，学生吃出问题，第一反应是掩盖真相而不是查清事实，这操作太离谱了。维护学校声誉不是靠掩盖真相，是靠真正把食品安全做好。追责不是搞气氛紧张，是让类似问题不再发生。真相可以迟到，但不能被刻意掩盖。",
+        "reasoning": "作为真相质疑派，对校方和监管部门最初的谎言行为持强烈批评态度。事件淡化派的观点忽视了食品安全的严重性和掩盖真相的危害，不能因为'工作还要继续'就淡化追责。公信力一旦丧失，重建成本更高。"
+      },
+      {
+        "agent_id": 5,
+        "group_name": "监管批评派",
+        "saw_posts_from": [
+          2,
+          10
+        ],
+        "previous_stance": 1.5,
+        "current_stance": 1.74,
+        "stance_delta": 0.24,
+        "susceptibility": 0.11,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "法律追责派的分析很到位。从鸭脖到鼠头的认定逆转，暴露的不仅是技术层面的核查失误，更是监管体系的专业性缺失。当地食品管理局作为专业部门，初步核查出现如此严重偏差，公信力崩塌已成定局。舆论倒逼下才改口，这种被动纠错模式让公众如何相信后续监管承诺？监管去哪儿了？必须追责，问责不能止于通报，要看到实质性的处理结果。食品安全是底线问题，容不得半点糊弄。",
+        "reasoning": "事件性质未变，监管失职和公信力问题依然存在。法律追责派的观点进一步强化了我的批评立场，需要由监察机关介入调查是否存在行政包庇。维持强烈批评立场。"
+      },
+      {
+        "agent_id": 6,
+        "group_name": "食品安全担忧派",
+        "saw_posts_from": [
+          1,
+          7,
+          9
+        ],
+        "previous_stance": 2.13,
+        "current_stance": 2.0,
+        "stance_delta": -0.13,
+        "susceptibility": 0.21,
+        "change_reason": "within_effective_delta",
+        "comment": "吓死我了，现在虽然承认是鼠头了，可一开始为什么要说是鸭脖呢？这种瞒报的行为让家长怎么放心？孩子在学校食堂吃饭，我们家长最担心的就是食品安全。学校说食材来源正规，可如果连异物都看不清楚、不敢说实话，这食堂怎么让人放心？太恶心了，孩子吃进嘴里的东西，一开始就要对啊。希望这次是真的查清楚了，别再出什么幺蛾子，家长们真的经不起折腾。",
+        "reasoning": "作为家长，对学校最初谎称鸭脖的瞒报行为感到极度愤怒和担忧。虽然最终承认是鼠头，但这种先欺骗后被迫承认的做法严重损害了家长对学校和监管部门的信任。食品安全关系到孩子的健康，任何隐瞒都不可接受。立场保持强"
+      },
+      {
+        "agent_id": 7,
+        "group_name": "舆论施压派",
+        "saw_posts_from": [
+          3
+        ],
+        "previous_stance": 6.44,
+        "current_stance": 6.46,
+        "stance_delta": 0.02,
+        "susceptibility": 0.4,
+        "change_reason": "silent_exposure_drift",
+        "comment": "（未发言）",
+        "reasoning": "本轮未进入发言队列"
+      },
+      {
+        "agent_id": 8,
+        "group_name": "事件淡化派",
+        "saw_posts_from": [
+          1,
+          10
+        ],
+        "previous_stance": 7.5,
+        "current_stance": 8.49,
+        "stance_delta": 0.99,
+        "susceptibility": 0.48,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "这事闹到现在，学校也承认了问题，该整改的在整改，该处理的在处理。说实话，基层食堂确实不容易，工作人员也不是故意要出这事的。监管部门之前可能也是想给学校一个机会，程序上有点瑕疵也正常，但没必要上纲上线非要追责到底。法律追责派说得挺严肃的，但工作还要继续干，气氛搞太紧张对谁都没好处。学校声誉受损，最终影响的还是在校师生。差不多就行了，给个改正的机会，咱们理性看待后续处理流程。",
+        "reasoning": "作为事件淡化派，立场倾向于维护学校声誉、避免过度追责。认为学校已承认问题并表态整改，基层工作不易，给改正机会即可。口头禅融入'上纲上线''差不多就行了'等表达，符合角色性格特征。"
+      },
+      {
+        "agent_id": 9,
+        "group_name": "中立围观派",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 5.1,
+        "current_stance": 5.13,
+        "stance_delta": 0.03,
+        "susceptibility": 0.66,
+        "change_reason": "silent_exposure_drift",
+        "comment": "（未发言）",
+        "reasoning": "本轮未进入发言队列"
+      },
+      {
+        "agent_id": 10,
+        "group_name": "法律追责派",
+        "saw_posts_from": [
+          2
+        ],
+        "previous_stance": 1.97,
+        "current_stance": 1.72,
+        "stance_delta": -0.25,
+        "susceptibility": 0.16,
+        "change_reason": "bounded_by_susceptibility",
+        "comment": "当地食品管理局作为专业监管部门，出具错误核查结论并非小事。从'鸭脖'到'鼠头'的认定逆转，反映出核查程序存在严重问题。依据《食品安全法》相关规定，监管部门有义务确保核查结论的准确性和公信力。此次事件已造成公众信任危机，相关责任主体涉嫌履职不当，必须依法启动问责程序。该立案的要立案，该移交的要移交，维护法律尊严不容含糊。",
+        "reasoning": "监管部门专业核查结论被事实推翻，存在明显履职缺陷，应继续坚持强烈批评立场，强调依法追责的必要性。"
+      }
+    ],
+    "global_metrics": {
+      "mean_stance": 4.32,
+      "std_stance": 2.21,
+      "polarization_index": 0.51
+    }
+  }
+]

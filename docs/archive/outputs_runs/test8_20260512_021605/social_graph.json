@@ -1,0 +1,284 @@
+{
+  "nodes": [
+    {
+      "id": 0,
+      "group_name": "OPPO",
+      "archetype_index": -1,
+      "related_entity": "OPPO",
+      "role": "core",
+      "stance_score": 5.15,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 1,
+      "group_name": "中国广告协会",
+      "archetype_index": -1,
+      "related_entity": "中国广告协会",
+      "role": "core",
+      "stance_score": 4.87,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 2,
+      "group_name": "武汉大学",
+      "archetype_index": -1,
+      "related_entity": "武汉大学",
+      "role": "core",
+      "stance_score": 5.23,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 3,
+      "group_name": "段永平",
+      "archetype_index": -1,
+      "related_entity": "段永平",
+      "role": "core",
+      "stance_score": 4.9,
+      "susceptibility": 0.0,
+      "confirmation_bias_level": "none",
+      "entity_category": "event_entity",
+      "persona_name": null,
+      "age_range": null,
+      "occupation": null,
+      "personality": null,
+      "motivation": null,
+      "typical_phrases": null
+    },
+    {
+      "id": 4,
+      "group_name": "主流媒体评论员",
+      "archetype_index": -2,
+      "related_entity": "中国广告协会",
+      "role": "periphery",
+      "stance_score": 3.32,
+      "susceptibility": 0.34,
+      "confirmation_bias_level": "strong",
+      "entity_category": "opinion_spreader",
+      "persona_name": "林记者",
+      "age_range": "30-40",
+      "occupation": "财经媒体评论员",
+      "personality": "理性客观、言辞犀利",
+      "motivation": "维护广告行业规范，倡导正向营销价值观",
+      "typical_phrases": [
+        "营销要有底线",
+        "创意不能无下限",
+        "公序良俗不容挑战"
+      ]
+    },
+    {
+      "id": 5,
+      "group_name": "普通消费者妈妈群体",
+      "archetype_index": -2,
+      "related_entity": "OPPO",
+      "role": "periphery",
+      "stance_score": 3.45,
+      "susceptibility": 0.22,
+      "confirmation_bias_level": "strong",
+      "entity_category": "opinion_spreader",
+      "persona_name": "张妈妈",
+      "age_range": "35-45",
+      "occupation": "全职妈妈",
+      "personality": "感性敏感、注重家庭价值",
+      "motivation": "维护母亲群体的尊严，反对商业营销对亲情的消解",
+      "typical_phrases": [
+        "这文案太气人了",
+        "母亲节不是这样玩的",
+        "不尊重女性"
+      ]
+    },
+    {
+      "id": 6,
+      "group_name": "年轻网民",
+      "archetype_index": -2,
+      "related_entity": "OPPO",
+      "role": "periphery",
+      "stance_score": 5.58,
+      "susceptibility": 0.44,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "小陈",
+      "age_range": "18-24",
+      "occupation": "大学生",
+      "personality": "好奇跟风、喜欢玩梗",
+      "motivation": "参与热点讨论，表达对品牌营销的看法",
+      "typical_phrases": [
+        "OPPO这波操作666",
+        "公关团队扣鸡腿",
+        "下头品牌"
+      ]
+    },
+    {
+      "id": 7,
+      "group_name": "品牌同情者",
+      "archetype_index": -2,
+      "related_entity": "OPPO",
+      "role": "periphery",
+      "stance_score": 4.06,
+      "susceptibility": 0.54,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "老周",
+      "age_range": "25-34",
+      "occupation": "互联网从业者",
+      "personality": "宽容理性、换位思考",
+      "motivation": "认为公众过度反应，呼吁给品牌改过机会",
+      "typical_phrases": [
+        "知错能改就好",
+        "不至于这么严重吧",
+        "营销创新也要试错"
+      ]
+    },
+    {
+      "id": 8,
+      "group_name": "高校学生群体",
+      "archetype_index": -2,
+      "related_entity": "武汉大学",
+      "role": "periphery",
+      "stance_score": 4.78,
+      "susceptibility": 0.43,
+      "confirmation_bias_level": "weak",
+      "entity_category": "opinion_spreader",
+      "persona_name": "小林",
+      "age_range": "18-24",
+      "occupation": "在读大学生",
+      "personality": "有正义感、重视学校声誉",
+      "motivation": "维护学校形象，对校友不当行为表示遗憾",
+      "typical_phrases": [
+        "给武大丢脸了",
+        "这届校友不行",
+        "学校声明很及时"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": 0,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 0,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 0,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 0,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 1,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 1,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 2,
+      "target": 3,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 3,
+      "target": 2,
+      "type": "follows_core_cross"
+    },
+    {
+      "source": 4,
+      "target": 1,
+      "type": "follows"
+    },
+    {
+      "source": 5,
+      "target": 0,
+      "type": "follows"
+    },
+    {
+      "source": 6,
+      "target": 0,
+      "type": "follows"
+    },
+    {
+      "source": 7,
+      "target": 0,
+      "type": "follows"
+    },
+    {
+      "source": 8,
+      "target": 2,
+      "type": "follows"
+    },
+    {
+      "source": 4,
+      "target": 6,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 4,
+      "target": 7,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 5,
+      "target": 8,
+      "type": "follows_cross_group"
+    },
+    {
+      "source": 6,
+      "target": 7,
+      "type": "follows_cross_group"
+    }
+  ]
+}

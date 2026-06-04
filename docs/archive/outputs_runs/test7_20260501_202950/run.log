@@ -1,0 +1,14 @@
+[2026-05-01 20:29:50] RUN START mode=normal seed=/Users/gary/项目开发/AdarianMigration/adarian mvp/seeds/test7.txt run_dir=/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test7_20260501_202950
+[2026-05-01 20:29:50] PHASE START name=phase1_entity_extraction
+[2026-05-01 20:29:50] LLM START caller=analyzer_set_parameters model=qwen36-35b
+[2026-05-01 20:30:06] LLM END caller=analyzer_set_parameters model=qwen36-35b elapsed=15.97s
+[2026-05-01 20:30:06] LLM START caller=generator_create_entities model=qwen36-35b
+[2026-05-01 20:30:52] LLM END caller=generator_create_entities model=qwen36-35b elapsed=45.82s
+[2026-05-01 20:30:52] LLM START caller=generator_create_entities model=qwen36-35b
+[2026-05-01 20:31:38] LLM END caller=generator_create_entities model=qwen36-35b elapsed=45.34s
+[2026-05-01 20:31:38] LLM START caller=generator_create_entities model=qwen36-35b
+[2026-05-01 20:32:21] LLM END caller=generator_create_entities model=qwen36-35b elapsed=43.36s
+[2026-05-01 20:32:21] LLM START caller=validator_check_format model=qwen36-35b
+[2026-05-01 20:32:53] LLM END caller=validator_check_format model=qwen36-35b elapsed=32.06s
+[2026-05-01 20:32:53] ERROR stage=main error=Phase 1 校验失败，超过最大重试次数。 最后一次校验结果: {'pass': False, 'errors': ["opinion_spreaders 中的 related_event_entity 字段值与 event_entities 中的 name 字段不完全匹配（例如 '劝阻女子' 应对应 '劝阻女子(小野)'，'涉事警方' 应对应 '涉事警方(深圳市公安局)'），请确保精确匹配。"]}
+[2026-05-01 20:32:53] RUN END status=failed elapsed=182.63s

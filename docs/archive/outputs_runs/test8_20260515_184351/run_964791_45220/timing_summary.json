@@ -1,0 +1,299 @@
+{
+  "run": {
+    "start_time": "2026-05-15 18:43:51",
+    "end_time": "2026-05-15 18:49:56",
+    "elapsed_seconds": 364.79,
+    "status": "success",
+    "mode": "normal",
+    "seed_file": "/Users/gary/项目开发/AdarianMigration/adarian mvp/seeds/test8.txt",
+    "run_dir": "/Users/gary/项目开发/AdarianMigration/adarian mvp/outputs/runs/test8_20260515_184351/run_964791_45220"
+  },
+  "phases": {
+    "phase1_entity_extraction": {
+      "start_time": "2026-05-15 18:43:51",
+      "end_time": "2026-05-15 18:44:50",
+      "elapsed_seconds": 58.4
+    },
+    "phase2_topology_builder": {
+      "start_time": "2026-05-15 18:44:50",
+      "end_time": "2026-05-15 18:44:50",
+      "elapsed_seconds": 0.09
+    },
+    "phase3_tick_simulation": {
+      "start_time": "2026-05-15 18:44:50",
+      "end_time": "2026-05-15 18:48:36",
+      "elapsed_seconds": 226.13
+    },
+    "phase4_report_agent": {
+      "start_time": "2026-05-15 18:48:36",
+      "end_time": "2026-05-15 18:49:56",
+      "elapsed_seconds": 80.17
+    }
+  },
+  "llm": {
+    "count": 27,
+    "calls": [
+      {
+        "caller": "analyzer_set_parameters",
+        "model": "minimax",
+        "elapsed_seconds": 11.55,
+        "timestamp": "2026-05-15 18:44:03"
+      },
+      {
+        "caller": "generator_create_entities",
+        "model": "minimax",
+        "elapsed_seconds": 34.9,
+        "timestamp": "2026-05-15 18:44:38"
+      },
+      {
+        "caller": "validator_check_format",
+        "model": "minimax",
+        "elapsed_seconds": 11.89,
+        "timestamp": "2026-05-15 18:44:50"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "minimax",
+        "elapsed_seconds": 8.16,
+        "timestamp": "2026-05-15 18:44:58"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "minimax",
+        "elapsed_seconds": 9.5,
+        "timestamp": "2026-05-15 18:45:08"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "minimax",
+        "elapsed_seconds": 12.9,
+        "timestamp": "2026-05-15 18:45:21"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "minimax",
+        "elapsed_seconds": 6.44,
+        "timestamp": "2026-05-15 18:45:27"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "minimax",
+        "elapsed_seconds": 7.65,
+        "timestamp": "2026-05-15 18:45:35"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "minimax",
+        "elapsed_seconds": 10.08,
+        "timestamp": "2026-05-15 18:45:45"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "minimax",
+        "elapsed_seconds": 8.31,
+        "timestamp": "2026-05-15 18:45:53"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "minimax",
+        "elapsed_seconds": 10.48,
+        "timestamp": "2026-05-15 18:46:04"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "minimax",
+        "elapsed_seconds": 9.48,
+        "timestamp": "2026-05-15 18:46:13"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "minimax",
+        "elapsed_seconds": 11.4,
+        "timestamp": "2026-05-15 18:46:24"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "minimax",
+        "elapsed_seconds": 6.83,
+        "timestamp": "2026-05-15 18:46:31"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "minimax",
+        "elapsed_seconds": 10.44,
+        "timestamp": "2026-05-15 18:46:42"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "minimax",
+        "elapsed_seconds": 9.72,
+        "timestamp": "2026-05-15 18:46:51"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "minimax",
+        "elapsed_seconds": 11.29,
+        "timestamp": "2026-05-15 18:47:03"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "minimax",
+        "elapsed_seconds": 7.64,
+        "timestamp": "2026-05-15 18:47:10"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "minimax",
+        "elapsed_seconds": 12.08,
+        "timestamp": "2026-05-15 18:47:22"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "minimax",
+        "elapsed_seconds": 9.32,
+        "timestamp": "2026-05-15 18:47:32"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "minimax",
+        "elapsed_seconds": 11.84,
+        "timestamp": "2026-05-15 18:47:44"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "minimax",
+        "elapsed_seconds": 8.96,
+        "timestamp": "2026-05-15 18:47:53"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "minimax",
+        "elapsed_seconds": 10.0,
+        "timestamp": "2026-05-15 18:48:03"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "minimax",
+        "elapsed_seconds": 9.43,
+        "timestamp": "2026-05-15 18:48:12"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "minimax",
+        "elapsed_seconds": 10.95,
+        "timestamp": "2026-05-15 18:48:23"
+      },
+      {
+        "caller": "generate_opinion_spreader_post",
+        "model": "minimax",
+        "elapsed_seconds": 13.1,
+        "timestamp": "2026-05-15 18:48:36"
+      },
+      {
+        "caller": "generate_report_with_llm_narrative",
+        "model": "minimax",
+        "elapsed_seconds": 80.15,
+        "timestamp": "2026-05-15 18:49:56"
+      }
+    ]
+  },
+  "persona": {
+    "count": 0,
+    "groups": []
+  },
+  "ticks": [
+    {
+      "tick": 0,
+      "elapsed_seconds": 0.0,
+      "speakers": 4,
+      "llm_calls": 0,
+      "timestamp": "2026-05-15 18:44:50"
+    },
+    {
+      "tick": 1,
+      "speaker_selection": {
+        "tick": 1,
+        "spreader_count": 6,
+        "computed_num_speakers": 5,
+        "expected_selected_count": 5,
+        "actual_selected_count": 5,
+        "selected_speakers_count": 5,
+        "is_full_selection": false,
+        "full_selection_reason": "not_full_selection"
+      },
+      "elapsed_seconds": 44.68,
+      "speakers": 5,
+      "llm_calls": 5,
+      "timestamp": "2026-05-15 18:45:35"
+    },
+    {
+      "tick": 2,
+      "speaker_selection": {
+        "tick": 2,
+        "spreader_count": 6,
+        "computed_num_speakers": 6,
+        "expected_selected_count": 6,
+        "actual_selected_count": 6,
+        "selected_speakers_count": 6,
+        "is_full_selection": true,
+        "full_selection_reason": "constraint_forced_full_selection"
+      },
+      "elapsed_seconds": 56.6,
+      "speakers": 6,
+      "llm_calls": 6,
+      "timestamp": "2026-05-15 18:46:31"
+    },
+    {
+      "tick": 3,
+      "speaker_selection": {
+        "tick": 3,
+        "spreader_count": 6,
+        "computed_num_speakers": 4,
+        "expected_selected_count": 4,
+        "actual_selected_count": 4,
+        "selected_speakers_count": 4,
+        "is_full_selection": false,
+        "full_selection_reason": "not_full_selection"
+      },
+      "elapsed_seconds": 39.11,
+      "speakers": 4,
+      "llm_calls": 4,
+      "timestamp": "2026-05-15 18:47:10"
+    },
+    {
+      "tick": 4,
+      "speaker_selection": {
+        "tick": 4,
+        "spreader_count": 6,
+        "computed_num_speakers": 4,
+        "expected_selected_count": 4,
+        "actual_selected_count": 4,
+        "selected_speakers_count": 4,
+        "is_full_selection": false,
+        "full_selection_reason": "not_full_selection"
+      },
+      "elapsed_seconds": 42.2,
+      "speakers": 4,
+      "llm_calls": 4,
+      "timestamp": "2026-05-15 18:47:53"
+    },
+    {
+      "tick": 5,
+      "speaker_selection": {
+        "tick": 5,
+        "spreader_count": 6,
+        "computed_num_speakers": 4,
+        "expected_selected_count": 4,
+        "actual_selected_count": 4,
+        "selected_speakers_count": 4,
+        "is_full_selection": false,
+        "full_selection_reason": "not_full_selection"
+      },
+      "elapsed_seconds": 43.5,
+      "speakers": 4,
+      "llm_calls": 4,
+      "timestamp": "2026-05-15 18:48:36"
+    }
+  ],
+  "errors": []
+}

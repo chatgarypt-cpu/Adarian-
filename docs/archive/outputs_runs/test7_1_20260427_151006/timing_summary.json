@@ -1,0 +1,39 @@
+{
+  "run": {
+    "start_time": "2026-04-27 15:10:06",
+    "end_time": "2026-04-27 15:10:12",
+    "elapsed_seconds": 5.44,
+    "status": "failed",
+    "mode": "normal",
+    "seed_file": "D:\\项目开发\\研一\\adarian\\adarian mvp\\seeds\\test7_1.txt",
+    "run_dir": "D:\\项目开发\\研一\\adarian\\adarian mvp\\outputs\\runs\\test7_1_20260427_151006"
+  },
+  "phases": {
+    "phase1_entity_extraction": {
+      "start_time": "2026-04-27 15:10:06"
+    }
+  },
+  "llm": {
+    "count": 1,
+    "calls": [
+      {
+        "caller": "analyzer_set_parameters",
+        "model": "qwen35-122b-a10b",
+        "elapsed_seconds": 5.31,
+        "timestamp": "2026-04-27 15:10:12"
+      }
+    ]
+  },
+  "persona": {
+    "count": 0,
+    "groups": []
+  },
+  "ticks": [],
+  "errors": [
+    {
+      "stage": "main",
+      "error": "invalid character '【' (U+3010) (<unknown>, line 2)",
+      "timestamp": "2026-04-27 15:10:12"
+    }
+  ]
+}
