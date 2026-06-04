@@ -1,36 +1,91 @@
-#!/usr/bin/env python3
-"""
-Monitor a tmux session for permission dialogs and auto-approve.
+#!/usr/bin/env python3.14
+"""Monitor a tmux session for permission dialogs and auto-approve.
 
-DESIGN (2026-06-02):
-  dialog_watcher is the PRIMARY approval mechanism for simple bash permission
-  dialogs. It pattern-matches common dialog text and sends keyboard input.
+DESIGN (2026-06-04):
+  dialog_watcher is the PRIMARY approval mechanism for permission dialogs.
+  It pattern-matches common dialog text and sends keyboard input.
 
-  ClaudeDialogHandler (in tmux_executor.py) is the FALLBACK — for dialogs that
-  watcher cannot match, DialogHandler classifies and defers to human takeover
-  via the observer Terminal window.
+  ONLY last 50 lines of pane are scanned (speed).
+  AUTO_MODE (workflow auto-mode) is played as notification, NOT auto-approved.
 
-  workflow auto-mode (option 3: "switch to auto mode") is NEVER auto-approved.
-  Instead, the watcher plays a notification sound and prints to stdout so
-  Hermes can surface the request to the user for manual approval.
+  Auto-detects tmux session from task_dir/runtime/session.yaml.
+  If no task_dir given, uses first arg as explicit tmux session name.
 
 Usage:
-    python3 dialog_watcher.py <tmux-session-id>
-
-Canonical path: tools/dialog_watcher.py (project level)
+    python3 dialog_watcher.py <task_dir>          # auto-detect tmux session
+    python3 dialog_watcher.py <tmux-session-id>    # direct tmux session (legacy)
 """
+
+import json
 import subprocess
 import sys
 import time
+from pathlib import Path
 
-SESSION = sys.argv[1] if len(sys.argv) > 1 else "adarian_default"
 
+def _resolve_session() -> tuple[str, Path | None]:
+    """Resolve tmux session name from args.
+
+    Returns (session_name, task_dir).
+    - If arg is a directory with runtime/session.yaml → read tmux session ID
+    - If arg is not a directory → treat as explicit session name
+    - No args → "adarian_default" (fallback)
+    """
+    if len(sys.argv) > 1:
+        candidate = Path(sys.argv[1])
+        session_yaml = candidate / "runtime" / "session.yaml"
+        if candidate.is_dir() and session_yaml.exists():
+            try:
+                raw = session_yaml.read_text(encoding="utf-8")
+                for line in raw.split("\n"):
+                    if "tmux_session_id:" in line:
+                        sid = line.split(":", 1)[1].strip().strip("\"'")
+                        if sid:
+                            return sid, candidate.resolve()
+            except Exception:
+                pass
+            # Fallback: try heartbeat.json for task context
+        if candidate.is_dir():
+            return candidate.name, candidate.resolve()
+        # It's a session name
+        return sys.argv[1], None
+    return "adarian_default", None
+
+
+SESSION, TASK_DIR = _resolve_session()
+
+# ── Common Claude Code permission dialog patterns ──────────────────────
 AUTO_APPROVE_PATTERNS = [
+    # File operations
     "Do you want to proceed?",
     "Do you want to create",
     "Do you want to overwrite",
+    "Would you like to create",
+    "Would you like to write",
+    # General approval
     "Proceed?",
     "proceed?",
+    "Continue?",
+    "continue?",
+    # Permission
+    "Allow Claude to",
+    "claude wants to",
+    "Allow this",
+    # Bash/command execution
+    "Run this command?",
+    "Run this bash",
+    "Execute this command",
+    # Create/edit/read file permission
+    "Create file",
+    "Write file",
+    "Edit file",
+    "Read file",
+    # macOS specific
+    "grant permission",
+    "needs permission",
+    # Generic y/n
+    "y/N",
+    "(Y/n)",
 ]
 
 AUTO_MODE_PATTERNS = [
@@ -39,14 +94,29 @@ AUTO_MODE_PATTERNS = [
     "workflows run best with",
 ]
 
-GLASS_SOUND = "/System/Library/Sounds/Glass.aiff"
+GLASS_SOUND = "/System/Library/Sounds/Pop.aiff"
+
+POLL_INTERVAL = 0.3  # seconds between scans
+SCAN_LINES = 50      # only scan last N lines of pane (speed optimization)
 
 
-def _pane_contains(session: str, patterns: list[str]) -> str | None:
+def _tmux_has_session(session: str) -> bool:
+    """Check if tmux session exists."""
     r = subprocess.run(
-        ["tmux", "capture-pane", "-t", session, "-p"],
+        ["tmux", "has-session", "-t", session],
+        capture_output=True, timeout=5,
+    )
+    return r.returncode == 0
+
+
+def _pane_tail(session: str, patterns: list[str], n_lines: int = SCAN_LINES) -> str | None:
+    """Scan last N lines of tmux pane for any matching pattern."""
+    r = subprocess.run(
+        ["tmux", "capture-pane", "-t", session, "-p", "-S", f"-{n_lines}"],
         capture_output=True, text=True, timeout=10,
     )
+    if r.returncode != 0:
+        return None
     for line in r.stdout.split("\n"):
         for p in patterns:
             if p in line:
@@ -66,29 +136,41 @@ def _play_sound() -> None:
 
 
 def main():
-    print(f"[watcher] monitoring tmux session: {SESSION}", flush=True)
+    print(f"[watcher] monitoring tmux: {SESSION}", flush=True)
+    if TASK_DIR:
+        print(f"[watcher] task_dir: {TASK_DIR}", flush=True)
+
     while True:
         try:
-            if _pane_contains(SESSION, AUTO_MODE_PATTERNS):
+            # Check session still exists
+            if not _tmux_has_session(SESSION):
+                ts = time.strftime("%H:%M:%S")
+                print(f"[{ts}] ⏹️ tmux session '{SESSION}' gone — exiting", flush=True)
+                break
+
+            # ── Auto-mode detection (never auto-approve) ──────────
+            if _pane_tail(SESSION, AUTO_MODE_PATTERNS):
                 _play_sound()
                 ts = time.strftime("%H:%M:%S")
-                print(f"[{ts}] AUTO-MODE dialog — needs human approval in Hermes CLI", flush=True)
-                time.sleep(10)
+                print(f"[{ts}] ⚠️ AUTO-MODE dialog — check Terminal window", flush=True)
+                time.sleep(5)
                 continue
 
-            matched = _pane_contains(SESSION, AUTO_APPROVE_PATTERNS)
+            # ── Permission dialog auto-approve ────────────────────
+            matched = _pane_tail(SESSION, AUTO_APPROVE_PATTERNS)
             if matched:
                 _send_enter(SESSION)
                 ts = time.strftime("%H:%M:%S")
-                print(f"[{ts}] approved: {matched}", flush=True)
-                time.sleep(3)
+                print(f"[{ts}] ✅ approved: {matched}", flush=True)
+                time.sleep(1.5)
                 continue
 
-            time.sleep(0.5)
+            time.sleep(POLL_INTERVAL)
         except KeyboardInterrupt:
             break
         except Exception as e:
-            print(f"[watcher] {e}", flush=True)
+            ts = time.strftime("%H:%M:%S")
+            print(f"[{ts}] ⚠️ [watcher] {e}", flush=True)
             time.sleep(5)
 
 

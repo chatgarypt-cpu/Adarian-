@@ -30,7 +30,9 @@ import time
 from pathlib import Path
 
 # 同级目录下的 helpers
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+_INFRA_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(_INFRA_DIR))
+sys.path.insert(0, str(_INFRA_DIR / "sound"))
 from sound_utils import load_config, resolve_sound, play_sound, get_sound  # noqa: E402
 
 TERMINAL_STATES = {"executor_completed", "executor_failed", "hold", "timeout", "error", "session_lost"}

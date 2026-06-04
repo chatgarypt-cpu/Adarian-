@@ -67,8 +67,8 @@
   type: skill
   status: active
   purpose: Relay Runner 执行器架构、双执行器模式（Claude tmux / Codex tmux）、dispatch 流程、CC Switch 路由、observer 模式、超时策略、完成检测原则、心跳监视器
-  depends_on: [skill-pm-relay-dialog]
-  applicable_lanes: [WORKYB_RUNTIME, DOGFOOD_TEST]
+  depends_on: [skill-pm-relay-dialog, skill-relay-skill-governance]
+  applicable_lanes: [WORKYB_RUNTIME, DOGFOOD_TEST, A_LINE_FORMAL]
   inputs: [task_config.yaml, prompt.md]
   outputs: [dispatch plan, executor routing]
   allowed_paths: ["~/.hermes/**", "~/项目开发/AdarianMigration/adarian mvp/**"]
@@ -95,6 +95,23 @@
   risk_level: medium
   owner_approval_required: false
   validation: [dialog resolved]
+
+- id: skill-relay-skill-governance
+  name: Relay Skill Governance — pm-relay 同步检查
+  type: skill
+  status: active
+  purpose: 比对 pm-relay SKILL.md 与 reference 文件的漂移 — 检测路径过时、内容不一致、版本落差。govarnance 层只读审计 skill
+  depends_on: [skill-pm-relay]
+  applicable_lanes: [A_LINE_FORMAL, WORKYB_RUNTIME]
+  inputs: [pm-relay skill + references]
+  outputs: [sync check report]
+  allowed_paths: ["~/.hermes/skills/pm-runtime/pm-relay/**"]
+  forbidden_paths: []
+  tools_required: [python3, grep]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [loadable, report generated]
 
 - id: skill-task-directory-canonical
   name: Task Directory Canonical

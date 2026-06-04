@@ -32,6 +32,7 @@ workflow_map:
     hooks:
       auto_trigger:
       - hook-dispatch-approval-gate
+      - hook-dispatch-preflight
       - hook-drift-check
       - hook-git
       - hook-handoff-loader
@@ -51,7 +52,7 @@ workflow_map:
       - script-power-switch
       - script-session-end-stamp
       - script-sound-utils
-      total: 18
+      total: 19
       registry_file: WorkflowBase/registry/hook_registry.yaml
     executors:
       entries:

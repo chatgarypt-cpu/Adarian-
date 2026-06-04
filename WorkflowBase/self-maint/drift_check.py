@@ -371,6 +371,77 @@ def check_env_required(entry, registry_file):
 
 
 # ---------------------------------------------------------------------------
+# P2: Skill content drift — pm-relay vs references
+# ---------------------------------------------------------------------------
+
+
+def check_skill_content_drift() -> list[DriftItem]:
+    """检查 pm-relay SKILL.md 与 reference 文件的路径一致性和内容同步。
+
+    P2 deep check:
+      — 扫描主 skill 中的路径引用（WorkflowBase/ vs tools/）
+      — 检查 reference 文件路径是否仍然存在
+      — 发现过时路径时报告 DriftItem
+    """
+    items = []
+    skill_dir = os.path.expanduser("~/.hermes/skills/pm-runtime/pm-relay")
+    skill_file = os.path.join(skill_dir, "SKILL.md")
+    ref_dir = os.path.join(skill_dir, "references")
+    if not os.path.exists(skill_file):
+        return items
+
+    # 读主 skill
+    with open(skill_file, encoding="utf-8") as f:
+        skill_text = f.read()
+
+    # 过时路径模式 — 出现就算漂移
+    DEPRECATED_PATTERNS = {
+        "tools/pm_runtime/relay/": "WorkflowBase/runner/",
+        "tools/pm_runtime/": "WorkflowBase/",
+        "tools/dialog_watcher.py": "WorkflowBase/registry/skills/dispatch-prompt-authoring/scripts/dialog_watcher.py",
+        "tools/sound_utils.py": "WorkflowBase/infra/sound/sound_utils.py",
+        "from runner.": "from WorkflowBase.runner.",
+        "import runner.": "import WorkflowBase.runner.",
+    }
+
+    for old, new in DEPRECATED_PATTERNS.items():
+        count = skill_text.count(old)
+        if count > 0:
+            items.append(DriftItem(
+                entry_id="skill-pm-relay",
+                field="SKILL.md content",
+                check_type="skill_content_drift",
+                severity="warning",
+                expected=f"替换为 '{new}'",
+                actual=f"SKILL.md 含 {count} 处过时引用 '{old}'",
+                registry_file="drift_check",
+                note="见 relay-skill-governance skill 获取完整检查",
+            ))
+
+    # 检查 reference 文件列表是否与目录一致
+    if os.path.isdir(ref_dir):
+        ref_files = sorted(os.listdir(ref_dir))
+        for ref in ref_files:
+            ref_path = os.path.join(ref_dir, ref)
+            if os.path.isfile(ref_path) and ref.endswith(".md"):
+                with open(ref_path, encoding="utf-8") as f:
+                    ref_text = f.read()
+                for old, new in DEPRECATED_PATTERNS.items():
+                    if old in ref_text:
+                        items.append(DriftItem(
+                            entry_id=f"ref-{ref}",
+                            field=f"references/{ref}",
+                            check_type="skill_content_drift",
+                            severity="warning",
+                            expected=f"替换为 '{new}'（或加过时标记注释）",
+                            actual=f"reference '{ref}' 含过时路径 '{old}'",
+                            registry_file="drift_check",
+                        ))
+
+    return items
+
+
+# ---------------------------------------------------------------------------
 # P2: MCP config cross-check
 # ---------------------------------------------------------------------------
 
@@ -869,10 +940,12 @@ def run_drift_check(args):
     # --- P2: Deep checks ---
     if args.deep or args.full:
         checks_performed.extend(["cross_reference_mcp", "readme_consistency",
-                                 "filesystem_vs_registry"])
+                                 "filesystem_vs_registry",
+                                 "skill_content_drift"])
         all_items.extend(check_mcp_config_cross_reference())
         all_items.extend(check_readme_consistency())
         all_items.extend(check_filesystem_vs_registry())
+        all_items.extend(check_skill_content_drift())
 
     # --- P3: Full checks ---
     if args.full:

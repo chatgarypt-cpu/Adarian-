@@ -126,6 +126,33 @@
   owner_approval_required: false
   validation: [exit code 0, context injected when triggered]
 
+- id: hook-dispatch-preflight
+  name: Dispatch Preflight
+  type: hook
+  status: active
+  version: '0.1'
+  purpose: 派发前检查 task 目录和配置完整性 — 检查 task_dir/dispatch/task_config.yaml 字段完整性（task_id/executor_type/expected_outputs/prompt_file/workdir），防止从项目根裸跑留垃圾文件
+  hook_type: python_script
+  trigger: pre_llm_call
+  hook_path: /Users/gary/.hermes/scripts/dispatch-preflight-hook.py
+  auto_accept: true
+  timeout_sec: 10
+  applicable_lanes: [A_LINE_FORMAL, WORKYB_RUNTIME]
+  inputs: [user message containing dispatch intent or task path]
+  outputs: [preflight check failures or pass signal]
+  allowed_paths: [\"~/项目开发/**\"]
+  forbidden_paths: []
+  tools_required: [python3]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  features:
+    - task_dir_existence_check: true
+    - task_config_field_check: true
+    - executor_options_completeness: true
+    - workdir_project_root_check: true
+
 - id: hook-drift-check
   name: Drift Check Gate
   type: hook
@@ -391,7 +418,7 @@
   version: '0.1'
   purpose: 监控 tmux 会话 — 自动批准权限弹窗 + 检测 idle at ❯ prompt + auto-mode 声音通知
   script_type: utility
-  script_path: /Users/gary/项目开发/AdarianMigration/adarian mvp/WorkflowBase/registry/skills/dag-execution/scripts/dialog_watcher.py
+  script_path: /Users/gary/项目开发/AdarianMigration/adarian mvp/WorkflowBase/registry/skills/dispatch-prompt-authoring/scripts/dialog_watcher.py
   auto_accept: true
   applicable_lanes: [A_LINE_FORMAL]
   inputs: [tmux session id, task directory path]

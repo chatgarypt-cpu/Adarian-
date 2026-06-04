@@ -33,9 +33,9 @@ _EXECUTORS: dict[str, type] = {}
 # When get_executor() is called and the module isn't loaded yet,
 # the registry imports the module to trigger its registration code.
 _MODULE_MAP: dict[str, str] = {
-    "claude": "runner.claude.tmux_executor",
-    "codex": "runner.codex.executor",
-    "codex-tmux": "runner.codex.tmux_executor",
+    "claude": "WorkflowBase.runner.claude.tmux_executor",
+    "codex": "WorkflowBase.runner.codex.executor",
+    "codex-tmux": "WorkflowBase.runner.codex.tmux_executor",
 }
 
 

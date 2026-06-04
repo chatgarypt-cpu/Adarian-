@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from runner.executor_registry import get_executor
+from WorkflowBase.runner.executor_registry import get_executor
 
 
 RUNTIME_STATES = {
@@ -1222,7 +1222,7 @@ def generate_issue_packet(
 
     Returns the path to the written file.
     """
-    from runner.output_validator import validate_outputs  # noqa: E402
+    from WorkflowBase.runner.output_validator import validate_outputs  # noqa: E402
 
     dirs = ensure_task_dirs(config)
     date_str = datetime.now().strftime("%Y%m%d")
@@ -1298,7 +1298,7 @@ def repair_node(
         dict with keys: ``verdict`` (pass|retry_once|escalate_to_owner),
         ``issue_packet_path``, ``validation``, ``retries_used``.
     """
-    from runner.output_validator import validate_outputs  # noqa: E402
+    from WorkflowBase.runner.output_validator import validate_outputs  # noqa: E402
 
     dirs = ensure_task_dirs(config)
     task_dir = dirs["task_dir"]
@@ -1448,7 +1448,7 @@ def trigger_repair_if_needed(
     Returns None if outputs pass validation; otherwise returns the
     repair_node() result dict.
     """
-    from runner.output_validator import validate_outputs  # noqa: E402
+    from WorkflowBase.runner.output_validator import validate_outputs  # noqa: E402
 
     dirs = ensure_task_dirs(config)
     validation = validate_outputs(dirs["task_dir"], expected_outputs)

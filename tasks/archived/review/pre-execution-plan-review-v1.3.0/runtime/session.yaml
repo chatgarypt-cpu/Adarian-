@@ -1,0 +1,9 @@
+task_id: review-v1.3.0-plan
+tmux_session_id: adarian_review-v1_3_0-plan
+executor_type: claude
+execution_mode: tmux_interactive
+workdir: /Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/review/pre-execution-plan-review-v1.3.0
+command:
+  - claude
+reuse_existing_session: false
+created_at: "2026-06-04T19:02:26+08:00"

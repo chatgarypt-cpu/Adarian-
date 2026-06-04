@@ -15,8 +15,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from runner.output_validator import validate_outputs
-from runner.relay_runner import (
+from WorkflowBase.runner.output_validator import validate_outputs
+from WorkflowBase.runner.relay_runner import (
     append_registry_event,
     ensure_task_dirs,
     now_iso,
@@ -1130,7 +1130,7 @@ class RuntimeFileWriter:
             **extra,
         }
         write_yaml(self.dirs["runtime_dir"] / "progress.yaml", payload)
-        from runner.relay_runner import write_legacy_progress
+        from WorkflowBase.runner.relay_runner import write_legacy_progress
 
         write_legacy_progress(self.config, runtime_state, message)
 
@@ -1312,6 +1312,38 @@ class ClaudeTmuxExecutor:
         self._artifact_stable_consecutive_count = 0
         self._ready_timeout_warned = False
 
+    def _spawn_monitors(self) -> None:
+        """Auto-start dialog_watcher and heartbeat_monitor as nohup daemons.
+
+        Both monitors are spawned in detached process groups (nohup) so they
+        survive even if the relay runner's parent process exits.
+        The task_dir is passed so monitors auto-detect tmux session from runtime/.
+        """
+        task_dir = str(self.dirs["task_dir"])
+        proj_root = str(Path(__file__).resolve().parent.parent.parent)
+        python = sys.executable
+
+        watcher_script = f"{proj_root}/WorkflowBase/registry/skills/dispatch-prompt-authoring/scripts/dialog_watcher.py"
+        heartbeat_script = f"{proj_root}/WorkflowBase/infra/heartbeat_monitor.py"
+
+        for label, script, args in [
+            ("dialog_watcher", watcher_script, [task_dir]),
+            ("heartbeat_monitor", heartbeat_script, [task_dir]),
+        ]:
+            try:
+                cmd = [python, script] + args
+                subprocess.Popen(
+                    cmd,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    start_new_session=True,  # detach from process group
+                )
+                ts = time.strftime("%H:%M:%S")
+                print(f"[{ts}] [executor] spawned {label} for {task_dir}", flush=True)
+            except Exception as e:
+                ts = time.strftime("%H:%M:%S")
+                print(f"[{ts}] [executor] failed to spawn {label}: {e}", flush=True)
+
     def run(self) -> TmuxRunResult:
         self.writer.finalize_stream_files()
         command = self._claude_command()
@@ -1330,6 +1362,7 @@ class ClaudeTmuxExecutor:
                 self.manager.attach_observer(self.observer_attach)
             self.writer.write_session(command=command, reused=reused, workdir=self.workdir)
             self._registry_event("tmux_session_ready", "tmux session created or reused", "launching", "starting")
+            self._spawn_monitors()
             if not reused:
                 self.manager.start_claude(command)
             return self._monitor_loop(prompt_already_sent=reused)
@@ -2087,6 +2120,6 @@ def _shell_quote(value: str) -> str:
 
 # ── Self-registration ──────────────────────────────────────────────
 
-from runner.executor_registry import register_executor  # noqa: E402
+from WorkflowBase.runner.executor_registry import register_executor  # noqa: E402
 
 register_executor("claude", ClaudeTmuxExecutor)

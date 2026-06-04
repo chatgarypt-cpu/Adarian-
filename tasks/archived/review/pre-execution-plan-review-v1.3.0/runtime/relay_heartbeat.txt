@@ -1,0 +1,8 @@
+legacy_compat: true
+compat_for: hermes_old_relay
+task_id: review-v1.3.0-plan
+runtime_state: running
+timestamp: 2026-06-04T19:06:16+08:00
+runtime_pid: 72215
+executor_pid:
+heartbeat_seq: 74
