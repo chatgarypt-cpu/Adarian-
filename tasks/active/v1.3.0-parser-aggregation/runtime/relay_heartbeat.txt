@@ -1,0 +1,8 @@
+legacy_compat: true
+compat_for: hermes_old_relay
+task_id: v1.3.0-parser-aggregation
+runtime_state: executor_completed
+timestamp: 2026-06-05T01:38:46+08:00
+runtime_pid: 58855
+executor_pid:
+heartbeat_seq: 483

@@ -1,0 +1,100 @@
+{
+  "task_id": "v1.3.0-parser-aggregation",
+  "tmux_session_id": "adarian_v1_3_0-parser-aggregation",
+  "executor_type": "claude",
+  "execution_mode": "tmux_interactive",
+  "runtime_state": "executor_completed",
+  "last_heartbeat_at": "2026-06-05T01:38:46+08:00",
+  "last_output_at": "2026-06-05T01:38:46+08:00",
+  "output_changed": false,
+  "expected_outputs_status": [
+    {
+      "path": "/Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/v1.3.0-parser-aggregation/outputs/simulation_dataset_sample.json",
+      "exists": true,
+      "size_bytes": 2538,
+      "ready": true,
+      "truncated_marker_detected": false
+    },
+    {
+      "path": "/Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/v1.3.0-parser-aggregation/outputs/bypass_comparison.json",
+      "exists": true,
+      "size_bytes": 791,
+      "ready": true,
+      "truncated_marker_detected": false
+    },
+    {
+      "path": "/Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/v1.3.0-parser-aggregation/outputs/closeout_evidence.md",
+      "exists": true,
+      "size_bytes": 4347,
+      "ready": true,
+      "truncated_marker_detected": false
+    }
+  ],
+  "hold_reason": null,
+  "runtime_pid": 58855,
+  "heartbeat_seq": 483,
+  "clauderemote": {
+    "attempted": true,
+    "active": true,
+    "fallback_used": false,
+    "fallback_strategy": "safe_whitelist_enter"
+  },
+  "dialog_handling": {
+    "initialized": true,
+    "last_dialog_type": null,
+    "last_dialog_action": null,
+    "last_dialog_signature": null,
+    "matched_keyword": null,
+    "raw_target": null,
+    "resolved_target": null,
+    "target_resolution_strategy": null,
+    "target_path": null,
+    "choice_letter": null,
+    "auto_approved": false,
+    "dedup_hit": false,
+    "fallback_used": false,
+    "action_skipped": false,
+    "message": null
+  },
+  "expected_outputs": {
+    "configured": [
+      "outputs/simulation_dataset_sample.json",
+      "outputs/bypass_comparison.json",
+      "outputs/closeout_evidence.md"
+    ],
+    "resolved_absolute": [
+      "/Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/v1.3.0-parser-aggregation/outputs/simulation_dataset_sample.json",
+      "/Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/v1.3.0-parser-aggregation/outputs/bypass_comparison.json",
+      "/Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/v1.3.0-parser-aggregation/outputs/closeout_evidence.md"
+    ],
+    "detected": [
+      {
+        "path": "/Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/v1.3.0-parser-aggregation/outputs/simulation_dataset_sample.json",
+        "exists": true,
+        "size_bytes": 2538,
+        "ready": true,
+        "truncated_marker_detected": false
+      },
+      {
+        "path": "/Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/v1.3.0-parser-aggregation/outputs/bypass_comparison.json",
+        "exists": true,
+        "size_bytes": 791,
+        "ready": true,
+        "truncated_marker_detected": false
+      },
+      {
+        "path": "/Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/v1.3.0-parser-aggregation/outputs/closeout_evidence.md",
+        "exists": true,
+        "size_bytes": 4347,
+        "ready": true,
+        "truncated_marker_detected": false
+      }
+    ],
+    "path_mismatch": []
+  },
+  "error_retry": {
+    "error_counts": {},
+    "error_retry_limit": 3,
+    "last_error_at": null
+  }
+}

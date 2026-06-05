@@ -73,8 +73,19 @@ LLM_API_KEY = os.getenv("LLM_API_KEY", "")
 # 基础 URL (用于兼容不同 provider)
 LLM_BASE_URL = os.getenv("LLM_BASE_URL", "")
 
-# 默认模型名称
-DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", "deepseek-chat")
+# =============================================================================
+# LLM Fallback 配置（内网不通时自动切换外网模型）
+# =============================================================================
+
+FALLBACK_ENABLED = os.getenv("FALLBACK_ENABLED", "true").lower() == "true"
+FALLBACK_PROVIDER = os.getenv("FALLBACK_PROVIDER", "deepseek")
+FALLBACK_MODEL = os.getenv("FALLBACK_MODEL", "deepseek-chat")
+FALLBACK_BASE_URL = os.getenv("FALLBACK_BASE_URL", "https://api.deepseek.com/v1")
+FALLBACK_API_KEY = os.getenv("FALLBACK_API_KEY") or os.getenv("LLM_API_KEY", "")
+
+# =============================================================================
+# 模型名称
+# =============================================================================
 
 # DeepSeek 模型
 DEEPSEEK_MODEL = "deepseek-chat"

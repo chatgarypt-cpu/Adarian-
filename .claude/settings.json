@@ -1,6 +1,6 @@
 {
   "hooks": {
-    "PreCommit": [
+    "PreToolUse": [
       {
         "matcher": "Bash",
         "hooks": [

@@ -86,6 +86,8 @@ AUTO_APPROVE_PATTERNS = [
     # Generic y/n
     "y/N",
     "(Y/n)",
+    # Pasted text confirmation — press Enter to submit pasted prompt
+    "[Pasted text",
 ]
 
 AUTO_MODE_PATTERNS = [
@@ -94,10 +96,16 @@ AUTO_MODE_PATTERNS = [
     "workflows run best with",
 ]
 
+# ── Prompt text submit pattern ───────────────────────────
+# When executor prefills text at the ❯ prompt (clauderemote on, task prompt),
+# the watcher detects text after ❯ and presses Enter to submit.
+PROMPT_CHAR = "\u276f"  # ❯ (Claude Code prompt character)
+
 GLASS_SOUND = "/System/Library/Sounds/Pop.aiff"
 
 POLL_INTERVAL = 0.3  # seconds between scans
-SCAN_LINES = 50      # only scan last N lines of pane (speed optimization)
+SUBMIT_COOLDOWN = 3   # seconds between submit Enter presses to avoid dups
+
 
 
 def _tmux_has_session(session: str) -> bool:
@@ -109,10 +117,10 @@ def _tmux_has_session(session: str) -> bool:
     return r.returncode == 0
 
 
-def _pane_tail(session: str, patterns: list[str], n_lines: int = SCAN_LINES) -> str | None:
-    """Scan last N lines of tmux pane for any matching pattern."""
+def _pane_tail(session: str, patterns: list[str]) -> str | None:
+    """Scan tmux pane for any matching pattern (full pane scan)."""
     r = subprocess.run(
-        ["tmux", "capture-pane", "-t", session, "-p", "-S", f"-{n_lines}"],
+        ["tmux", "capture-pane", "-t", session, "-p"],
         capture_output=True, text=True, timeout=10,
     )
     if r.returncode != 0:
@@ -121,6 +129,21 @@ def _pane_tail(session: str, patterns: list[str], n_lines: int = SCAN_LINES) -> 
         for p in patterns:
             if p in line:
                 return p
+    return None
+
+
+def _last_nonempty_line(session: str) -> str | None:
+    """Get the last non-empty line from tmux pane."""
+    r = subprocess.run(
+        ["tmux", "capture-pane", "-t", session, "-p", "-S", "-5"],
+        capture_output=True, text=True, timeout=10,
+    )
+    if r.returncode != 0:
+        return None
+    for line in reversed(r.stdout.split("\n")):
+        stripped = line.strip()
+        if stripped:
+            return stripped
     return None
 
 
@@ -139,6 +162,7 @@ def main():
     print(f"[watcher] monitoring tmux: {SESSION}", flush=True)
     if TASK_DIR:
         print(f"[watcher] task_dir: {TASK_DIR}", flush=True)
+    last_submit_at = 0.0  # debounce for prompt submit Enter
 
     while True:
         try:
@@ -155,6 +179,21 @@ def main():
                 print(f"[{ts}] ⚠️ AUTO-MODE dialog — check Terminal window", flush=True)
                 time.sleep(5)
                 continue
+
+            # ── Prompt text submit ──────────────────────────────
+            # Executor prefilled a command at the ❯ prompt (e.g. /clauderemote on).
+            # Watcher detects the prefilled command and presses Enter to submit it.
+            now = time.time()
+            last_line = _last_nonempty_line(SESSION)
+            if last_line and last_line.startswith(PROMPT_CHAR) and len(last_line) > len(PROMPT_CHAR) and now - last_submit_at > SUBMIT_COOLDOWN:
+                text_after = last_line[len(PROMPT_CHAR):].strip()
+                if text_after and text_after.startswith("/"):
+                    _send_enter(SESSION)
+                    last_submit_at = now
+                    ts = time.strftime("%H:%M:%S")
+                    print(f"[{ts}] ⌨️ submitted command: {text_after}", flush=True)
+                    time.sleep(1.0)
+                    continue
 
             # ── Permission dialog auto-approve ────────────────────
             matched = _pane_tail(SESSION, AUTO_APPROVE_PATTERNS)

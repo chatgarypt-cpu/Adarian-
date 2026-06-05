@@ -1,0 +1,23 @@
+task_id: task-v1.3.0-reality-review
+task_name: Phase 3/4 Data Flow Reality Review
+task_domain: review
+short_task: task-v1.3.0-reality-review
+task_level: M
+owner: gary
+description: >
+  Code reality mapping review of Phase 3 and Phase 4 modules in Adarian MVP.
+  Focus on data flow: what each module generates (outputs) and consumes (inputs),
+  identify residual inline computations in Phase 4, verify isolation boundaries,
+  and assess LLM call effectiveness.
+
+executor_type: claude
+execution_mode: tmux_interactive
+
+executor_options:
+  teammate_mode: tmux
+  workdir: /Users/gary/项目开发/AdarianMigration/adarian mvp
+  prompt_file: dispatch/prompt.md
+  expected_outputs:
+    - outputs/phase3_phase4_data_flow_reality_review_2026-06-05.md
+  enable_sound_notification: true
+  notification_sound: Glass

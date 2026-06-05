@@ -1,0 +1,9 @@
+---
+legacy_compat: true
+compat_for: hermes_old_relay
+task_id: task-v1.3.0-reality-review
+runtime_state: prompt_sent
+updated_at: 2026-06-05T22:17:11+08:00
+---
+
+prompt sent to Claude tmux session

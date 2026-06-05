@@ -36,6 +36,31 @@ sys.path.insert(0, str(_INFRA_DIR / "sound"))
 from sound_utils import load_config, resolve_sound, play_sound, get_sound  # noqa: E402
 
 TERMINAL_STATES = {"executor_completed", "executor_failed", "hold", "timeout", "error", "session_lost"}
+
+
+def _resolve_tmux_session(task_dir: Path) -> str | None:
+    """Read tmux session ID from runtime/session.yaml."""
+    session_yaml = task_dir / "runtime" / "session.yaml"
+    try:
+        raw = session_yaml.read_text(encoding="utf-8")
+        for line in raw.split("\n"):
+            if "tmux_session_id:" in line:
+                sid = line.split(":", 1)[1].strip().strip("\"'")
+                if sid:
+                    return sid
+    except Exception:
+        return None
+    return None
+
+
+def _tmux_has_session(session: str) -> bool:
+    """Check if tmux session exists."""
+    import subprocess
+    r = subprocess.run(
+        ["tmux", "has-session", "-t", session],
+        capture_output=True, timeout=5,
+    )
+    return r.returncode == 0
 DEFAULT_CFG = {
     "sound": "Glass",
     "stale_threshold": 5,
@@ -96,6 +121,13 @@ def main():
     print(f"[heartbeat] monitoring: {task_dir}", flush=True)
     print(f"[heartbeat] sound: {sound_name} → {sound_path}", flush=True)
 
+    # Resolve tmux session for session liveness check
+    tmux_session = _resolve_tmux_session(task_dir)
+    if tmux_session:
+        print(f"[heartbeat] tmux session: {tmux_session}", flush=True)
+    else:
+        print(f"[heartbeat] no session.yaml found — session liveness check disabled", flush=True)
+
     last_state = None  # type: str | None
     last_ts = None  # type: float | None
     notified_states = set()  # type: set[str]
@@ -105,6 +137,12 @@ def main():
 
     while True:
         try:
+            # Session liveness check — exit when tmux session dies
+            if tmux_session and not _tmux_has_session(tmux_session):
+                ts = time.strftime("%H:%M:%S")
+                print(f"[{ts}] ⏹️ tmux session '{tmux_session}' gone — exiting", flush=True)
+                break
+
             hb = read_heartbeat(task_dir)
             now = time.time()
 

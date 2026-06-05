@@ -16,6 +16,25 @@ from openai import OpenAI
 import config
 from src.utils.runtime_logger import get_runtime_logger
 
+
+def _check_endpoint(base_url: str, timeout: int = 3) -> bool:
+    """检查 API 端点是否可达。
+    
+    启动前快速检查内网代理是否响应，避免 LLM 调用时才发现不通。
+    只做连接检查，不发真实请求。
+    """
+    if not base_url:
+        return False
+    # 去掉 /v1 后缀或空路径，只检测根地址
+    root = base_url.rstrip("/")
+    if root.endswith("/v1"):
+        root = root[:-3]
+    try:
+        httpx.get(root, timeout=timeout)
+        return True
+    except (httpx.ConnectError, httpx.TimeoutException, httpx.RemoteProtocolError, httpx.ReadError):
+        return False
+
 # 类型变量，用于泛型返回
 T = TypeVar('T', bound=BaseModel)
 
@@ -321,8 +340,21 @@ def init_llm_client(
     """初始化全局 LLM 客户端
 
     应在应用启动时调用一次。
+
+    自动检测内网端点是否可达，不可达时切换到外网 fallback 模型。
     """
     global _llm_client
+
+    # ── Fallback 检查：内网不通时切外网 ──────────────────────
+    if config.FALLBACK_ENABLED:
+        target_url = base_url or config.LLM_BASE_URL
+        if target_url and not _check_endpoint(target_url):
+            print(f"[⚠] 内网端点 {target_url} 不可达，切换到外网 fallback")
+            provider = config.FALLBACK_PROVIDER
+            api_key = config.FALLBACK_API_KEY
+            base_url = config.FALLBACK_BASE_URL
+            model = config.FALLBACK_MODEL
+
     _llm_client = LLMClient(
         provider=provider or config.LLM_PROVIDER,
         api_key=api_key or config.LLM_API_KEY,

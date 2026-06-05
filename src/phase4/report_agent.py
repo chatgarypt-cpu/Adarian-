@@ -1039,6 +1039,124 @@ def load_tick_logs(tick_dir: Path = None) -> List[TickLog]:
     return tick_logs
 
 
+# ─── v1.3.0: Dual-Consumption Path Wrappers ───────────────────────────────
+
+def run_old_path(
+    extraction_output: EntityExtractionOutput,
+    tick_logs: List[TickLog],
+    x_t_sequence: List[float],
+    phase2_output: Phase2Output,
+) -> Phase4Output:
+    """旧版 Phase 4 消费路径（baseline）。
+
+    保持原有行为不变：从原始 tick_logs / x_t_sequence / extraction_output 中
+    自行计算 risk / inflection / stance，不读取 simulation_dataset。
+    """
+    risk_level, risk_assessment = assess_risk(
+        x_t_sequence, tick_logs, extraction_output=extraction_output,
+    )
+    inflection_points = identify_inflection_points(tick_logs, phase2_output)
+    emotion_trajectory = []
+    for tl in tick_logs:
+        emotion_trajectory.append(EmotionTrajectory(
+            tick=tl.tick,
+            mean_stance=tl.global_metrics.mean_stance,
+            std_stance=tl.global_metrics.std_stance,
+            polarization_index=tl.global_metrics.polarization_index,
+            key_event="",
+        ))
+    stakeholder_map = ""  # stakeholder_map is LLM-generated, skip for bypass
+    return _build_phase4_output(
+        extraction_output, tick_logs, x_t_sequence,
+        emotion_trajectory, inflection_points, risk_level, risk_assessment, stakeholder_map,
+    )
+
+
+def run_new_path(
+    simulation_dataset: dict,
+    extraction_output: EntityExtractionOutput,
+    tick_logs: List[TickLog],
+    x_t_sequence: List[float],
+) -> Phase4Output:
+    """新版 Phase 4 消费路径（candidate）。
+
+    只从 simulation_dataset 中消费结构化字段，不允许自行重新计算。
+    作为接收容器/生成器使用。
+    """
+    ds = simulation_dataset.get("simulation_result", {})
+
+    # 消费 risk_verdict
+    rv = ds.get("risk_verdict", {})
+    risk_level_str = rv.get("level", "low")
+    risk_level = RiskLevel(risk_level_str)
+    risk_assessment = rv.get("basis_text", "")
+
+    # 消费 inflection_points
+    raw_inflections = ds.get("inflection_points", [])
+    inflection_points = [
+        InflectionPoint(
+            tick=ip.get("tick", 0),
+            agent_id=ip.get("agent_id", 0),
+            group_name=ip.get("group_name", "未知"),
+            pivotal_comment=ip.get("pivotal_comment", ""),
+            impact_description=ip.get("impact_description", ""),
+        )
+        for ip in raw_inflections
+    ]
+
+    # 消费 emotion_trajectory
+    raw_trajectory = ds.get("emotion_trajectory", [])
+    emotion_trajectory = [
+        EmotionTrajectory(
+            tick=et.get("tick", 0),
+            mean_stance=et.get("mean_stance", 5.0),
+            std_stance=et.get("std_stance", 0.0),
+            polarization_index=et.get("polarization_index", 0.0),
+            key_event=et.get("key_event", ""),
+        )
+        for et in raw_trajectory
+    ]
+
+    # 消费 risk_type_classification
+    rtc = ds.get("risk_type_classification", {})
+    primary_risk_types = rtc.get("primary_types", ["negative_narrative_risk"])
+    risk_type_labels = rtc.get("type_labels", [])
+
+    # Audience mode from run_info
+    run_info = simulation_dataset.get("run_info", {})
+    audience_mode_str = run_info.get("audience_mode", "generic_government")
+    audience_mode = AudienceMode(audience_mode_str)
+
+    stakeholder_map = ""
+
+    from src.schemas import ReportMeta, REPORT_TYPE
+    from datetime import datetime
+
+    report_meta = ReportMeta(
+        generated_at=datetime.now().astimezone().strftime("%Y年%m月%d日 %H:%M"),
+        timezone="local",
+        report_type=REPORT_TYPE,
+        event_name=extraction_output.event_summary,
+        total_ticks=len(tick_logs),
+        simulation_run_id="new_path",
+    )
+
+    return Phase4Output(
+        report_meta=report_meta,
+        event_summary=extraction_output.event_summary,
+        stakeholder_map=stakeholder_map,
+        emotion_trajectory=emotion_trajectory,
+        inflection_points=inflection_points,
+        risk_level=risk_level,
+        risk_level_label=RISK_LEVEL_LABELS.get(risk_level_str, str(risk_level)),
+        audience_mode=audience_mode,
+        primary_risk_types=primary_risk_types,
+        risk_type_labels=risk_type_labels,
+        risk_assessment=risk_assessment,
+        x_t_sequence=x_t_sequence,
+    )
+
+
 # =============================================================================
 # 主入口（可独立运行）
 # =============================================================================

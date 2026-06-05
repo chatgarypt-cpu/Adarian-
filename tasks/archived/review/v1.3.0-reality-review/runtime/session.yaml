@@ -1,0 +1,11 @@
+task_id: task-v1.3.0-reality-review
+tmux_session_id: adarian_task-v1_3_0-reality-review
+executor_type: claude
+execution_mode: tmux_interactive
+workdir: /Users/gary/项目开发/AdarianMigration/adarian mvp
+command:
+  - claude
+  - --teammate-mode
+  - tmux
+reuse_existing_session: false
+created_at: "2026-06-05T22:16:59+08:00"

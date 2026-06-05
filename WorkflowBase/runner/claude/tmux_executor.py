@@ -446,7 +446,6 @@ class PaneStateParser:
         "Beboppin",
         "Blanching",
         "\u273d",  # ✽
-        "\u00b7",  # middle dot
         "\u27d0",  # ⟐ four-teardrop-spoked asterisk
         "Harmonizing",  # Claude long thought/synthesis phase
     ]
@@ -1323,8 +1322,8 @@ class ClaudeTmuxExecutor:
         proj_root = str(Path(__file__).resolve().parent.parent.parent)
         python = sys.executable
 
-        watcher_script = f"{proj_root}/WorkflowBase/registry/skills/dispatch-prompt-authoring/scripts/dialog_watcher.py"
-        heartbeat_script = f"{proj_root}/WorkflowBase/infra/heartbeat_monitor.py"
+        watcher_script = f"{proj_root}/registry/skills/dispatch-prompt-authoring/scripts/dialog_watcher.py"
+        heartbeat_script = f"{proj_root}/infra/heartbeat_monitor.py"
 
         for label, script, args in [
             ("dialog_watcher", watcher_script, [task_dir]),
@@ -1332,11 +1331,15 @@ class ClaudeTmuxExecutor:
         ]:
             try:
                 cmd = [python, script] + args
+                log_dir = Path(task_dir) / "logs"
+                log_dir.mkdir(parents=True, exist_ok=True)
+                log_path = log_dir / f"{label}.log"
+                log_file = open(log_path, "a", encoding="utf-8")
                 subprocess.Popen(
                     cmd,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                    start_new_session=True,  # detach from process group
+                    stdout=log_file,
+                    stderr=subprocess.STDOUT,
+                    start_new_session=True,
                 )
                 ts = time.strftime("%H:%M:%S")
                 print(f"[{ts}] [executor] spawned {label} for {task_dir}", flush=True)
@@ -1625,7 +1628,7 @@ class ClaudeTmuxExecutor:
                 )
             last_output_time = now  # prevent no_output_timeout from false-firing during launch
 
-        if runtime_state in {"waiting_for_input", "waiting_for_ready"} and not remote_mode_sent:
+        if runtime_state in {"waiting_for_input", "waiting_for_ready"} and not remote_mode_sent and (now - started_at > 5.0):
             self._exception_stage = "clauderemote_activation"
             activation = self._activate_remote_mode()
             remote_mode_active = activation.get("active") is True
@@ -1637,7 +1640,7 @@ class ClaudeTmuxExecutor:
             )
             self._registry_event("remote_mode_activated", "clauderemote mode activation attempted", "starting", "waiting_after_remote")
 
-        if runtime_state in {"waiting_for_input", "waiting_for_ready"} and not prompt_sent and remote_mode_sent:
+        if runtime_state in {"waiting_for_input", "waiting_for_ready"} and not prompt_sent and remote_mode_sent and (now - started_at > 7.0):
             self._exception_stage = "send_prompt"
             self._send_prompt()
             prompt_sent = True
@@ -1735,7 +1738,7 @@ class ClaudeTmuxExecutor:
         )
         try:
             self.manager.send_literal("/clauderemote on")
-            self.manager.send_enter()
+            # 不 Enter——由 dialog_watcher 检测到 prompt 下的输入后提交
             time.sleep(2.0)
             pane_text = self.manager.capture()
         except Exception as exc:
@@ -1767,8 +1770,8 @@ class ClaudeTmuxExecutor:
         # paste-buffer for reliable multi-line paste, then short delay
         # before Enter to let Claude's TUI absorb the pasted content.
         self.manager.paste_text(prompt)
-        time.sleep(1.0)
-        self.manager.send_enter()
+        # 不 Enter——由 dialog_watcher 检测到对话框后提交
+        time.sleep(2.0)
 
     def _validate_and_repair(self, artifact_status: ArtifactStatus) -> dict[str, Any] | None:
         """§10 output validation + Repair Agent via tmux paste.

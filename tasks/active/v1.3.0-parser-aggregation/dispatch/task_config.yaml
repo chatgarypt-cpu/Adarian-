@@ -1,0 +1,16 @@
+task_id: v1.3.0-parser-aggregation
+task_domain: development
+short_task: v1.3.0-parser-aggregation
+executor_type: claude
+execution_mode: tmux_interactive
+executor_options:
+  workdir: /Users/gary/项目开发/AdarianMigration/adarian mvp
+  prompt_file: dispatch/prompt.md
+  expected_outputs:
+    - outputs/simulation_dataset_sample.json
+    - outputs/bypass_comparison.json
+    - outputs/closeout_evidence.md
+  observer:
+    mode: always
+    attach: terminal_window
+  enable_sound_notification: true
