@@ -1,0 +1,47 @@
+task_id: task-v1.3.0.1-phase4-wiring-repair
+task_status: running
+runtime_state: running
+runtime_states_supported:
+  - aborted
+  - aborting
+  - artifact_detected
+  - artifact_missing
+  - completed
+  - created
+  - dispatch_ready
+  - environment_blocked
+  - error
+  - executor_completed
+  - executor_failed
+  - failed
+  - healthy_running
+  - hold
+  - hold_required
+  - launching
+  - missing_receipt
+  - missing_report
+  - not_started
+  - partial_output
+  - partial_output_recovered
+  - permission_blocked
+  - pre_action_checking
+  - prompt_sent
+  - recovered
+  - recovering
+  - rerun_required
+  - running
+  - sandbox_denied
+  - session_lost
+  - slow_but_progressing
+  - starting
+  - summary_written
+  - suspected_blocked
+  - timeout
+  - waiting_for_input
+  - waiting_for_ready
+  - waiting_input
+known_issues:
+  - runtime_state values intentionally overlap task_status for MVP compatibility
+config_path: /Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/v1.3.0.1-phase4-wiring-repair/dispatch/task_config.yaml
+updated_at: "2026-06-05T23:48:13+08:00"
+closeout_claimed: false

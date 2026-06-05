@@ -1,0 +1,8 @@
+legacy_compat: true
+compat_for: hermes_old_relay
+task_id: task-v1.3.0.1-phase4-wiring-repair
+runtime_state: running
+timestamp: 2026-06-05T23:50:14+08:00
+runtime_pid: 7800
+executor_pid: 0
+heartbeat_seq: 5

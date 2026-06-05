@@ -9,8 +9,8 @@ description: >
   B2: parse_llm_report_response recomputes dataset fields
   B3: _build_code_owned_report_contract_block injects old path signals
 
-executor_type: codex
-execution_mode: managed_subprocess
+executor_type: codex-tmux
+execution_mode: tmux_interactive
 
 executor_options:
   codex_bypass_approvals: true

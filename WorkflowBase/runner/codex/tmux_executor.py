@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Codex Tmux Executor for Relay Runtime R0.
 
 Completely independent of ClaudeTmuxExecutor — does NOT import anything
@@ -653,6 +654,32 @@ class CodexTmuxExecutor:
         classification["expected_outputs_missing"] = missing
         return classification
 
+    # ── Helper: detect system proxy ─────────────────────────────────
+
+    @staticmethod
+    def _detect_system_proxy() -> tuple:
+        """Detect system HTTP proxy from macOS system settings.
+
+        Returns (host, port) tuple, or (None, None) if no proxy configured.
+        Uses ``scutil --proxy`` to read system proxy settings.
+        """
+        try:
+            r = subprocess.run(
+                ["scutil", "--proxy"],
+                capture_output=True, text=True, timeout=5,
+            )
+            for line in r.stdout.splitlines():
+                line = line.strip()
+                if line.startswith("HTTPProxy :"):
+                    host = line.split(":")[-1].strip()
+                elif line.startswith("HTTPPort :"):
+                    port = line.split(":")[-1].strip()
+            if host and port:
+                return (host, int(port))
+        except Exception:
+            pass
+        return (None, None)
+
     # ── Helper: build launch command ─────────────────────────────────
 
     def _build_codex_launch_command(self) -> str:
@@ -660,14 +687,17 @@ class CodexTmuxExecutor:
 
         Uses codex with optional sandbox/approval flags.
         Based on codex-orchestrator's buildCodexArgs pattern.
-
-        Proxy env vars (HTTPS_PROXY, HTTP_PROXY) are exported before
-        codex so it can reach chatgpt.com through the local proxy
-        (known requirement for Adarian environment behind GFW).
         """
-        parts = ["export HTTPS_PROXY=http://127.0.0.1:7897",
-                 "HTTP_PROXY=http://127.0.0.1:7897",
-                 "&&", "codex"]
+        # Proxy env vars are dynamically detected from system proxy settings
+        # so codex can reach chatgpt.com through the local proxy
+        # (known requirement for Adarian environment behind GFW).
+        proxy_host, proxy_port = self._detect_system_proxy()
+        parts = []
+        if proxy_host and proxy_port:
+            parts.append(f"export HTTPS_PROXY=http://{proxy_host}:{proxy_port}")
+            parts.append(f"HTTP_PROXY=http://{proxy_host}:{proxy_port}")
+            parts.append("&&")
+        parts.append("codex")
 
         # Model — only pin if explicitly configured in executor_options.
         # Otherwise let Codex use its own default (which matches the
@@ -715,7 +745,7 @@ class CodexTmuxExecutor:
     # ── Helper: wait for Codex ready ─────────────────────────────────
 
     def _wait_for_codex_ready(self, timeout: int = 30) -> bool:
-        """Wait until Codex shows its prompt indicator (›)."""
+        """Wait until Codex shows its prompt indicator (>)."""
         deadline = time.time() + timeout
         while time.time() < deadline:
             try:
@@ -744,7 +774,7 @@ class CodexTmuxExecutor:
         or pasted at the initial prompt as plain text, not as a slash
         command.
         """
-        self.manager.send_literal(str(prompt_text))
+        self.manager.paste_text(str(prompt_text))
         time.sleep(0.3)
         self.manager.send_enter()
         return prompt_text
