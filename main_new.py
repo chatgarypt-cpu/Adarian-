@@ -310,11 +310,17 @@ def run_phase4(
             build_code_owned_contract_block=_build_code_owned_report_contract_block,
             parse_llm_report_response=parse_llm_report_response,
             get_llm_client_func=get_llm_client,
+            simulation_dataset=dataset,
         )
         progress.update(task, completed=1)
 
     save_report(phase4_output, output_path=json_output_path)
-    save_markdown_report(phase4_output, extraction_output, output_path=markdown_output_path)
+    save_markdown_report(
+        phase4_output,
+        extraction_output,
+        output_path=markdown_output_path,
+        markdown=markdown,
+    )
 
     return phase4_output
 

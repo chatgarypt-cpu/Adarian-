@@ -1,6 +1,6 @@
 """LLM narrative generation and prompt context assembly for Phase 4."""
 
-from typing import Callable, List, Tuple
+from typing import Any, Callable, List, Optional, Tuple
 
 from rich.console import Console
 
@@ -109,9 +109,10 @@ def generate_report_with_llm_narrative(
     phase2_output: Phase2Output,
     *,
     build_report_context: Callable[..., str],
-    build_code_owned_contract_block: Callable[[EntityExtractionOutput, List[TickLog], List[float]], str],
+    build_code_owned_contract_block: Callable[..., str],
     parse_llm_report_response: Callable[..., Phase4Output],
     get_llm_client_func: Callable[[], object] = get_llm_client,
+    simulation_dataset: Optional[dict[str, Any]] = None,
 ) -> Tuple[Phase4Output, str]:
     """Run the LLM narrative path and return both parsed output and raw Markdown."""
     llm = get_llm_client_func()
@@ -126,6 +127,7 @@ def generate_report_with_llm_narrative(
         extraction_output,
         tick_logs,
         x_t_sequence,
+        simulation_dataset=simulation_dataset,
     )
     user_prompt = build_report_user_prompt(code_owned_contract_block, report_context)
 
@@ -143,5 +145,6 @@ def generate_report_with_llm_narrative(
         tick_logs,
         x_t_sequence,
         phase2_output=phase2_output,
+        simulation_dataset=simulation_dataset,
     )
     return phase4_output, response

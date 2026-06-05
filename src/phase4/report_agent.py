@@ -19,7 +19,7 @@ v1.1.8 变化：
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
@@ -229,15 +229,35 @@ def _build_code_owned_report_contract_block(
     extraction_output: EntityExtractionOutput,
     tick_logs: List[TickLog],
     x_t_sequence: List[float],
+    simulation_dataset: Optional[dict] = None,
 ) -> str:
-    risk_level, risk_assessment = assess_risk(
-        x_t_sequence,
-        tick_logs,
-        extraction_output=extraction_output,
-    )
-    audience_mode = determine_audience_mode(extraction_output, risk_assessment)
-    primary_risk_types = select_primary_risk_types(audience_mode, risk_assessment, tick_logs)
-    risk_type_labels = _risk_type_labels(primary_risk_types)
+    if simulation_dataset is not None:
+        sim = simulation_dataset.get("simulation_result", {})
+        risk_verdict = sim.get("risk_verdict", {})
+        risk_type_classification = sim.get("risk_type_classification", {})
+        risk_level = RiskLevel(risk_verdict.get("level", RiskLevel.LOW.value))
+        risk_assessment = risk_verdict.get("basis_text", "")
+        audience_mode = AudienceMode(
+            simulation_dataset.get("run_info", {}).get(
+                "audience_mode",
+                AudienceMode.GENERIC_GOVERNMENT.value,
+            )
+        )
+        primary_risk_types = risk_type_classification.get("primary_types", []) or [
+            "negative_narrative_risk"
+        ]
+        risk_type_labels = risk_type_classification.get("type_labels", []) or _risk_type_labels(
+            primary_risk_types
+        )
+    else:
+        risk_level, risk_assessment = assess_risk(
+            x_t_sequence,
+            tick_logs,
+            extraction_output=extraction_output,
+        )
+        audience_mode = determine_audience_mode(extraction_output, risk_assessment)
+        primary_risk_types = select_primary_risk_types(audience_mode, risk_assessment, tick_logs)
+        risk_type_labels = _risk_type_labels(primary_risk_types)
     return "\n".join([
         "【CODE_OWNED_REPORT_CONTRACT】",
         f"risk_level_label: {risk_level_label_for(risk_level)}",
@@ -551,12 +571,85 @@ def generate_report_with_llm(
     return phase4_output
 
 
+def _build_phase4_output_from_simulation_dataset(
+    simulation_dataset: dict,
+    extraction_output: EntityExtractionOutput,
+    tick_logs: List[TickLog],
+    x_t_sequence: List[float],
+) -> Phase4Output:
+    sim = simulation_dataset.get("simulation_result", {})
+
+    risk_verdict = sim.get("risk_verdict", {})
+    risk_level_str = risk_verdict.get("level", RiskLevel.LOW.value)
+    risk_level = RiskLevel(risk_level_str)
+    risk_assessment = risk_verdict.get("basis_text", "")
+
+    inflection_points = [
+        InflectionPoint(
+            tick=point.get("tick", 0),
+            agent_id=point.get("agent_id", 0),
+            group_name=point.get("group_name", "未知"),
+            pivotal_comment=point.get("pivotal_comment", point.get("comment", "")),
+            impact_description=point.get(
+                "impact_description",
+                point.get("description", ""),
+            ),
+        )
+        for point in sim.get("inflection_points", [])
+    ]
+
+    emotion_trajectory = [
+        EmotionTrajectory(
+            tick=item.get("tick", 0),
+            mean_stance=item.get("mean_stance", 5.0),
+            std_stance=item.get("std_stance", 0.0),
+            polarization_index=item.get("polarization_index", 0.0),
+            key_event=item.get("key_event", ""),
+        )
+        for item in sim.get("emotion_trajectory", [])
+    ]
+
+    risk_type_classification = sim.get("risk_type_classification", {})
+    primary_risk_types = risk_type_classification.get("primary_types", []) or [
+        "negative_narrative_risk"
+    ]
+    risk_type_labels = risk_type_classification.get("type_labels", []) or _risk_type_labels(
+        primary_risk_types
+    )
+
+    audience_mode_str = simulation_dataset.get("run_info", {}).get(
+        "audience_mode",
+        AudienceMode.GENERIC_GOVERNMENT.value,
+    )
+    audience_mode = AudienceMode(audience_mode_str)
+
+    event_entities_str = ", ".join([entity.name for entity in extraction_output.event_entities])
+    spreaders_str = ", ".join([spreader.group_name for spreader in extraction_output.opinion_spreaders])
+    stakeholder_map = f"事件实体: {event_entities_str} | 传播者: {spreaders_str}"
+
+    return Phase4Output(
+        report_meta=build_report_meta(extraction_output, tick_logs),
+        event_summary=extraction_output.event_summary,
+        stakeholder_map=stakeholder_map,
+        emotion_trajectory=emotion_trajectory,
+        inflection_points=inflection_points,
+        risk_level=risk_level,
+        risk_level_label=risk_level_label_for(risk_level),
+        audience_mode=audience_mode,
+        primary_risk_types=primary_risk_types,
+        risk_type_labels=risk_type_labels,
+        risk_assessment=risk_assessment,
+        x_t_sequence=x_t_sequence,
+    )
+
+
 def parse_llm_report_response(
     response: str,
     extraction_output: EntityExtractionOutput,
     tick_logs: List[TickLog],
     x_t_sequence: List[float],
     phase2_output: Phase2Output = None,
+    simulation_dataset: Optional[dict] = None,
 ) -> Phase4Output:
     """解析 LLM 报告响应
 
@@ -571,6 +664,14 @@ def parse_llm_report_response(
     Returns:
         Phase4Output 对象
     """
+    if simulation_dataset is not None:
+        return _build_phase4_output_from_simulation_dataset(
+            simulation_dataset,
+            extraction_output,
+            tick_logs,
+            x_t_sequence,
+        )
+
     # 检查响应是否有效
     if not response or len(response) < 100:
         console.print("[yellow]警告：[/yellow] LLM 报告过短，使用自动分析")
@@ -996,6 +1097,8 @@ def save_markdown_report(
     phase4_output: Phase4Output,
     extraction_output: EntityExtractionOutput,
     output_path: Path = None,
+    *,
+    markdown: Optional[str] = None,
 ):
     """保存 Markdown 格式报告
 
@@ -1009,8 +1112,10 @@ def save_markdown_report(
     md_path = output_path or config.FINAL_REPORT_PATH.with_suffix(".md")
     phase4_output = _align_report_meta_to_output_path(phase4_output, md_path)
 
-    # 如果有 LLM 生成的 Markdown（长度 > 100），优先使用；残缺报告会回退到 code-owned fallback。
-    if _llm_generated_markdown and len(_llm_generated_markdown) > 100:
+    # 显式传入的新路径 Markdown 优先；旧路径保留全局变量兼容。
+    if markdown and len(markdown) > 100:
+        md_content = markdown
+    elif _llm_generated_markdown and len(_llm_generated_markdown) > 100:
         md_content = _llm_generated_markdown
     else:
         md_content = generate_markdown_report(phase4_output, extraction_output)
