@@ -79,6 +79,29 @@ class SimulationDatasetParser:
                 "total_ticks": len(tick_logs),
                 "audience_mode": audience_mode,
             },
+            "source_context": {
+                "event_summary": extraction_output.event_summary,
+                "event_type": extraction_output.event_type,
+                "event_entities": [
+                    {
+                        "name": e.name,
+                        "type": e.type,
+                        "role": e.role,
+                        "can_speak": e.can_speak,
+                        "original_statement": e.original_statement,
+                    }
+                    for e in extraction_output.event_entities
+                ],
+                "opinion_spreaders": [
+                    {
+                        "group_name": s.group_name,
+                        "related_event_entity": s.related_event_entity,
+                        "stance_score": s.stance_score,
+                        "estimated_percentage": s.estimated_percentage,
+                    }
+                    for s in extraction_output.opinion_spreaders
+                ],
+            },
             "simulation_result": {
                 "x_t_sequence": x_t_sequence,
                 "final_x": final_x,
