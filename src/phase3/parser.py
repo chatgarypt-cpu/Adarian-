@@ -64,12 +64,34 @@ class SimulationDatasetParser:
                 "key_event": "",
             })
 
+        # Full per-tick per-agent entries
+        tick_entries = []
+        for tl in tick_logs:
+            tick_entries.append({
+                "tick": tl.tick,
+                "entries": [
+                    {
+                        "agent_id": e.agent_id,
+                        "group_name": e.group_name,
+                        "comment": e.comment,
+                        "previous_stance": e.previous_stance,
+                        "current_stance": e.current_stance,
+                        "stance_delta": e.stance_delta,
+                        "reasoning": e.reasoning,
+                        "speaker_status": e.speaker_status,
+                        "susceptibility": e.susceptibility,
+                        "change_reason": e.change_reason,
+                    }
+                    for e in tl.entries
+                ],
+            })
+
         # Final metrics
         final_x = x_t_sequence[-1] if x_t_sequence else None
         final_pol = tick_logs[-1].global_metrics.polarization_index if tick_logs else None
 
         dataset = {
-            "_schema_version": "v1",
+            "_schema_version": "v2",
             "_generated_by": "phase3_parser",
             "run_info": {
                 "event_name": extraction_output.event_summary,
@@ -107,6 +129,7 @@ class SimulationDatasetParser:
                 "final_x": final_x,
                 "final_polarization_index": final_pol,
                 "emotion_trajectory": emotion_trajectory,
+                "tick_entries": tick_entries,
                 "inflection_points": inflection_points,
                 "risk_verdict": {
                     "level": risk_level.value if hasattr(risk_level, 'value') else str(risk_level),

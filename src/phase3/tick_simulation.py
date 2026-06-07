@@ -807,12 +807,31 @@ class SimulationEngine:
         )
 
         selected_lookup = set(selection.selected_speakers)
+        selected_nodes = [n for n in spreader_nodes if n.id in selected_lookup]
 
+        # Step 1: Parallel LLM calls for selected speakers
+        llm_results = {}  # node.id -> (comment, final_stance, reasoning, change_reason)
+        if selected_nodes:
+            from concurrent.futures import ThreadPoolExecutor, as_completed
+            with ThreadPoolExecutor(max_workers=len(selected_nodes)) as pool:
+                futures = {
+                    pool.submit(self.generate_opinion_spreader_post, node, tick): node
+                    for node in selected_nodes
+                }
+                for future in as_completed(futures):
+                    node = futures[future]
+                    try:
+                        llm_results[node.id] = future.result()
+                    except Exception as e:
+                        console.print(f"  [yellow]警告：[/yellow] Agent {node.id} 生成发言失败: {e}")
+                        llm_results[node.id] = ("（无评论）", self.agent_stances[node.id], "生成失败", "exception")
+
+        # Step 2: Build entries (state updates happen here, in main thread)
         for node in spreader_nodes:
             previous_stance = self.agent_stances[node.id]
 
             if node.id in selected_lookup:
-                comment, new_stance, reasoning, change_reason = self.generate_opinion_spreader_post(node, tick)
+                comment, new_stance, reasoning, change_reason = llm_results[node.id]
                 self.agent_stances[node.id] = new_stance
                 self.agent_comments[node.id].append(comment)
                 self.activity_state[node.id] = "active"

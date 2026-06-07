@@ -37,11 +37,11 @@ def write_whitebox_summary(
     checks = {
         "report_completeness": {
             "status": report_completeness["status"],
-            "path": report_completeness["path"],
+            "path": report_completeness.get("path"),
         },
         "artifact_check": {
             "status": artifact_check["status"],
-            "path": artifact_check["path"],
+            "path": artifact_check.get("path"),
         },
     }
     if artifact_check["status"] != "pass":
