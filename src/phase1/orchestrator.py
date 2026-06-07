@@ -14,7 +14,7 @@ from .analyzer import analyzer_set_parameters
 from .compiler import _post_process_entities
 from .generator import generator_create_event_entities
 from .generator import generator_create_spreaders_concurrent
-from .reporter import Phase1Reporter
+from src.whitebox.phase1_reporter import Phase1Reporter
 from .utils import console
 
 # 主函数：带迭代校验的实体提取

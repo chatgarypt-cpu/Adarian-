@@ -2,7 +2,7 @@
 
 from typing import Any, Dict
 
-from .reporter import Phase1Reporter
+from src.whitebox.phase1_reporter import Phase1Reporter
 from .utils import console
 
 
