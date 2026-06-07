@@ -11,9 +11,10 @@ import config
 def build_run_paths(seed_file: Path) -> dict:
     """Create the run directory and return all authoritative output paths."""
     now = datetime.now()
-    batch_id = f"{seed_file.stem}_{now.strftime('%Y%m%d_%H%M%S')}"
+    date_dir = now.strftime("%Y-%m-%d")
+    batch_id = f"{seed_file.stem}_{now.strftime('%H%M%S')}"
     run_id = f"run_{now.strftime('%f')}_{os.getpid()}"
-    batch_dir = config.OUTPUTS_DIR / "runs" / batch_id
+    batch_dir = config.OUTPUTS_DIR / "runs" / date_dir / batch_id
     batch_dir.mkdir(parents=True, exist_ok=True)
     run_dir = batch_dir / run_id
     run_dir.mkdir(parents=True, exist_ok=False)
