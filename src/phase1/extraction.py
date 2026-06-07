@@ -474,6 +474,10 @@ def generator_create_spreader(
         "typical_phrases": detail.get("typical_phrases"),
     }
     console.print(f"    [green]✓[/green] {spreader.get('persona_name', '?')} ({spreader.get('occupation', '?')}) [{elapsed:.1f}s]")
+    from src.display import get_bar
+    _bar = get_bar()
+    if _bar and _bar.concurrency:
+        _bar.concurrency.done(group_name, elapsed)
     return spreader
 
 
@@ -570,6 +574,16 @@ def generator_create_spreaders_concurrent(
     max_workers = max(1, min(total_N, cap)) if cap > 0 else total_N
 
     console.print(f"  [cyan]→ 并 {max_workers}[/cyan] {total_N} 个传播者人设并发生成...")
+
+    # 注册到状态栏
+    from src.display import get_bar
+    _bar = get_bar()
+    if _bar:
+        ct = _bar.set_concurrency()
+        for stub in spreaders_plan:
+            ct.add(stub.get("group_name", "?"))
+    else:
+        ct = None
 
     while pending:
         batch = _submit_batch(pending, max_workers)

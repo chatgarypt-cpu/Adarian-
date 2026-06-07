@@ -616,6 +616,10 @@ class SimulationEngine:
 
             elapsed = time.perf_counter() - t0
             console.print(f"    [green]✓[/green] #{agent.id} {agent.group_name} [{elapsed:.1f}s]")
+            from src.display import get_bar
+            _bar = get_bar()
+            if _bar and _bar.concurrency:
+                _bar.concurrency.done(agent.group_name, elapsed)
             return comment, final_stance, reasoning, change_reason
 
         except Exception as e:
@@ -825,6 +829,16 @@ class SimulationEngine:
 
         if total_speakers:
             console.print(f"  [cyan]→ 并 {max_workers}[/cyan] {total_speakers} 个 Agent 发言并发生成...")
+
+        # 注册到状态栏
+        from src.display import get_bar
+        _tick_bar = get_bar()
+        if _tick_bar:
+            _tick_ct = _tick_bar.set_concurrency()
+            for nid in pending_ids:
+                _tick_ct.add(node_lookup[nid].group_name)
+        else:
+            _tick_ct = None
 
         while pending_ids:
             batch_size = min(max_workers, len(pending_ids))

@@ -36,10 +36,12 @@ def _ensure_visible_window():
     """如 stdout 非 TTY（后台/Hermes 调用），自动通过 osascript 开可见窗口。"""
     if sys.stdout.isatty():
         return  # 前台终端，正常运行
-    wrapped = shlex.join(sys.argv)
+    py = shlex.quote(sys.executable)
+    script = shlex.quote(sys.argv[0])
+    script_args = " ".join(shlex.quote(a) for a in sys.argv[1:])
     cmd = (
         f'tell application "Terminal" to do script '
-        f'"cd {shlex.quote(str(_proj))} && {wrapped}"'
+        f'"cd {shlex.quote(str(_proj))} && {py} {script} {script_args}"'
     )
     subprocess.run(["osascript", "-e", cmd])
     sys.exit(0)
@@ -49,6 +51,7 @@ from src.llm_client import init_llm_client
 from src.phase4.paths import build_run_paths
 from src.whitebox.run_meta import write_run_meta, write_whitebox_artifacts
 from src.utils.runtime_logger import get_runtime_logger
+from src.display import StatusBar
 
 
 def run_phase1(seed_file: str):
@@ -111,43 +114,47 @@ def main():
     seed_text = seed_file.read_text(encoding="utf-8")
     logger = get_runtime_logger()
 
-    # 白盒：构建运行目录
-    run_context = build_run_paths(seed_file)
-    run_dir = run_context["run_dir"]
-    logger.configure(run_dir=run_dir)
-    started_at = datetime.now().isoformat()
-    write_run_meta(run_context, seed_file=seed_file, status="running", started_at=started_at)
+    with StatusBar() as bar:
+        # 白盒：构建运行目录
+        run_context = build_run_paths(seed_file)
+        run_dir = run_context["run_dir"]
+        logger.configure(run_dir=run_dir)
+        started_at = datetime.now().isoformat()
+        write_run_meta(run_context, seed_file=seed_file, status="running", started_at=started_at)
 
-    logger.info("[新路径] 种子: %s (%d chars)", seed_file.name, len(seed_text))
-    init_llm_client()
+        logger.info("[新路径] 种子: %s (%d chars)", seed_file.name, len(seed_text))
+        init_llm_client()
 
-    # Phase 1
-    logger.log_phase_start("phase1_extraction")
-    logger.info("[Phase 1] 实体提取...")
-    t1 = time.time()
-    extraction_output = run_phase1(str(seed_file))
-    t1 = time.time() - t1
-    logger.log_phase_end("phase1_extraction", elapsed=t1)
-    logger.info("  √ %.1fs", t1)
+        # Phase 1
+        logger.log_phase_start("phase1_extraction")
+        logger.info("[Phase 1] 实体提取...")
+        bar.set_phase("Phase 1 实体提取")
+        t1 = time.time()
+        extraction_output = run_phase1(str(seed_file))
+        t1 = time.time() - t1
+        logger.log_phase_end("phase1_extraction", elapsed=t1)
+        logger.info("  √ %.1fs", t1)
 
-    # Phase 2
-    logger.log_phase_start("phase2_topology")
-    logger.info("[Phase 2] 社交拓扑构建...")
-    t2 = time.time()
-    phase2_output = run_phase2(extraction_output)
-    t2 = time.time() - t2
-    logger.log_phase_end("phase2_topology", elapsed=t2)
-    logger.info("  √ %.1fs", t2)
+        # Phase 2
+        logger.log_phase_start("phase2_topology")
+        logger.info("[Phase 2] 社交拓扑构建...")
+        bar.set_phase("Phase 2 拓扑构建")
+        t2 = time.time()
+        phase2_output = run_phase2(extraction_output)
+        t2 = time.time() - t2
+        logger.log_phase_end("phase2_topology", elapsed=t2)
+        logger.info("  √ %.1fs", t2)
 
-    # Phase 3 tick simulation
-    logger.log_phase_start("phase3_tick_simulation")
-    logger.info("[Phase 3] 多轮涌现推演...")
-    t3 = time.time()
-    tick_logs, x_t_sequence = run_phase3_tick_simulation(
-        extraction_output, phase2_output, seed_text,
-    )
-    t3 = time.time() - t3
-    logger.log_phase_end("phase3_tick_simulation", elapsed=t3)
+        # Phase 3 tick simulation
+        logger.log_phase_start("phase3_tick_simulation")
+        logger.info("[Phase 3] 多轮涌现推演...")
+        bar.set_phase("Phase 3 推演")
+        t3 = time.time()
+        tick_logs, x_t_sequence = run_phase3_tick_simulation(
+            extraction_output, phase2_output, seed_text,
+        )
+        t3 = time.time() - t3
+        logger.log_phase_end("phase3_tick_simulation", elapsed=t3)
     x_str = ", ".join(f"{x:.2f}" for x in x_t_sequence)
     logger.info("  √ %.1fs | %d ticks | x(t): [%s]", t3, len(tick_logs), x_str)
 
