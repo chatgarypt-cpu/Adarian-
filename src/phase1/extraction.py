@@ -281,8 +281,6 @@ from .prompts import (
     GENERATOR_USER_PROMPT,
     SPREADER_SYSTEM_PROMPT,
     SPREADER_USER_PROMPT,
-    VALIDATOR_SYSTEM_PROMPT,
-    VALIDATOR_USER_PROMPT,
 )
 
 # =============================================================================
@@ -660,65 +658,10 @@ def _post_process_entities(
 
 
 # =============================================================================
-# Validator: 格式校验
-# =============================================================================
-
-def validator_check_format(
-    json_content: Dict[str, Any],
-    seed_text: str
-) -> Dict[str, Any]:
-    """
-    Validator: 格式校验
-
-    Args:
-        json_content: 要校验的 JSON 数据
-        seed_text: 种子文本内容（用于校验 can_speak 和 original_statement）
-
-    Returns:
-        校验结果 {"pass": bool, "message": str, "errors": List[str]}
-    """
-    llm = get_llm_client()
-
-    user_prompt = VALIDATOR_USER_PROMPT.format(
-        seed_text=seed_text,
-        json_content=json.dumps(json_content, ensure_ascii=False)
-    )
-
-    console.print("[bold cyan]Validator:[/bold cyan] 正在校验格式...")
-
-    result = llm.generate(
-        system=VALIDATOR_SYSTEM_PROMPT,
-        user=user_prompt,
-        response_model=None,  # Validator 返回自由 JSON
-    )
-
-    try:
-        validation = _coerce_top_level_object(_parse_llm_json_payload(result), "Validator")
-    except (json.JSONDecodeError, ValueError, SyntaxError, TypeError) as e:
-        # JSON 解析失败，视为校验不通过
-        console.print(f"  [yellow]⚠[/yellow] Validator 返回格式错误，视为校验失败")
-        return {
-            "pass": False,
-            "message": "Validator 返回内容无法解析为 JSON",
-            "errors": [f"JSON 解析错误: {str(e)}"]
-        }
-
-    if validation.get("pass"):
-        console.print(f"  [green]✓[/green] {validation.get('message', '校验通过')}")
-    else:
-        errors = validation.get("errors", [])
-        console.print(f"  [yellow]⚠[/yellow] 校验失败: {len(errors)} 个错误")
-        for error in errors[:3]:  # 只显示前3个错误
-            console.print(f"    - {error}")
-
-    return validation
-
-# =============================================================================
 # 主函数：带迭代校验的实体提取
 # =============================================================================
 
 MAX_RETRIES = 3
-
 
 def extract_entities_with_validation(seed_text: str) -> EntityExtractionOutput:
     """
@@ -783,24 +726,31 @@ def extract_entities_with_validation(seed_text: str) -> EntityExtractionOutput:
             )
             continue
 
-        # Step 3: 校验
-        validation = validator_check_format(entities_data, seed_text)
-        last_validation = validation
-
-        if validation.get("pass"):
-            merged_output = {
-                "event_summary": params["event_summary"],
-                "event_scale": params["event_scale"],
-                "event_controversy": params["event_controversy"],
-                "event_type": params["event_type"],
-                "event_entities": entities_data.get("event_entities", []),
-                "opinion_spreaders": entities_data.get("opinion_spreaders", []),
-                "relations": entities_data.get("relations", []),
-            }
+        # Step 3: 校验（确定性 Pydantic 校验，替代 LLM Validator）
+        from pydantic import ValidationError
+        merged_output = {
+            "event_summary": params["event_summary"],
+            "event_scale": params["event_scale"],
+            "event_controversy": params["event_controversy"],
+            "event_type": params["event_type"],
+            "event_entities": entities_data.get("event_entities", []),
+            "opinion_spreaders": entities_data.get("opinion_spreaders", []),
+            "relations": entities_data.get("relations", []),
+        }
+        try:
             return EntityExtractionOutput(**merged_output)
-
-        errors = validation.get("errors", [])
-        error_feedback = "\n".join(f"- {error}" for error in errors)
+        except ValidationError as e:
+            errors_str = "; ".join(
+                f"{err['loc']}: {err['msg']}" for err in e.errors()
+            )
+            console.print(f"  [yellow]⚠[/yellow] Pydantic 校验失败: {e.errors()[0].get('msg', str(e))}")
+            last_validation = {
+                "pass": False,
+                "message": "Pydantic 校验失败",
+                "errors": [errors_str],
+            }
+            error_feedback = errors_str
+            continue
 
     raise ValueError(
         "Phase 1 校验失败，超过最大重试次数。"

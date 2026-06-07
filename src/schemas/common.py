@@ -187,6 +187,16 @@ class EntityExtractionOutput(BaseModel):
             raise ValueError("opinion_spreaders 必须至少包含一个 P=+1（支持）和一个 P=-1（反对）的群体")
         return self
 
+    @model_validator(mode="after")
+    def validate_estimated_percentage_sum(self):
+        """验证所有 opinion_spreader 的 estimated_percentage 之和 = 100"""
+        total = sum(s.estimated_percentage for s in self.opinion_spreaders)
+        if total != 100:
+            raise ValueError(
+                f"opinion_spreaders 的 estimated_percentage 之和为 {total}，必须等于 100"
+            )
+        return self
+
 
 class ConfirmationBiasLevel(str, Enum):
     """确认偏差强度，保留为 public export。"""
