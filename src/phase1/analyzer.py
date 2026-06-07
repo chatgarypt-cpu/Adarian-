@@ -2,6 +2,8 @@
 
 from typing import Any, Dict
 
+from src.llm_client import get_llm_client
+
 from .utils import console
 from .prompts import ANALYZER_SYSTEM_PROMPT, ANALYZER_USER_PROMPT
 
