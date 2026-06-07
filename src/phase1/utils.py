@@ -1,5 +1,6 @@
 """Phase 1 shared utilities — JSON parsing and normalization."""
 
+import ast
 import json
 import re
 from pathlib import Path
