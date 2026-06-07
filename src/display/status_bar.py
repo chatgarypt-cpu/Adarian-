@@ -68,17 +68,14 @@ class StatusBar:
     # ── 面板渲染 ──────────────────────────────────────────────
 
     def _render(self) -> Panel:
-        from rich.columns import Columns
+        from rich.table import Table
         from rich.text import Text
 
+        t = Table.grid(padding=(0, 1))
         spinner = Spinner("dots", style="cyan")
-        parts = [spinner, Text(f" {self.phase.name}", style="bold")]
 
-        # 阶段名 + 时间
-        elapsed = Text(f"  ⏱ {self.phase.elapsed_str}", style="cyan")
-        parts.append(elapsed)
-
-        # 并发概览
+        # 第一行：Spinner + 阶段名 + 总耗时 + 并发概览
+        con_str = ""
         if self._concurrency:
             s = self._concurrency.summary
             con_str = f"  ┃ 并发 {s['total']}"
@@ -86,9 +83,30 @@ class StatusBar:
                 con_str += f" ✓{s['done']}"
             if s["pending"]:
                 con_str += f" ⏳{s['pending']}"
-            parts.append(Text(con_str))
 
-        return Panel(Columns(parts), border_style="dim")
+        t.add_row(
+            spinner,
+            Text(f" {self.phase.name}", style="bold"),
+            Text(f"  ⏱ {self.phase.elapsed_str}", style="cyan"),
+            Text(con_str),
+        )
+
+        # 第二行+：每个 worker（已完成 ✓ + 耗时，进行中 ⏱ + 实时耗时）
+        if self._concurrency:
+            raw = dict(self._concurrency.raw_workers)
+            live = dict(self._concurrency.live_workers) if self._concurrency.live_workers else {}
+            if raw:
+                parts = []
+                for name in raw:
+                    elapsed = live.get(name, 0.0)
+                    if raw[name] is not None:
+                        parts.append(f"  {name} ✓ {elapsed:.1f}s")
+                    else:
+                        parts.append(f"  {name} \u23f1 {elapsed:.1f}s")
+                for i in range(0, len(parts), 3):
+                    t.add_row(Text(""), Text(""), Text(""), Text("".join(parts[i:i + 3])))
+
+        return Panel(t, border_style="dim")
 
     # ── 生命周期 ──────────────────────────────────────────────
 
