@@ -100,9 +100,9 @@ class StatusBar:
                 for name in raw:
                     elapsed = live.get(name, 0.0)
                     if raw[name] is not None:
-                        parts.append(f"  {name} \u2713 {elapsed:.0f}s")
+                        parts.append(f"  {name} \u2713 {elapsed:.1f}s")
                     else:
-                        parts.append(f"  {name} \u23f1 {elapsed:.0f}s")
+                        parts.append(f"  {name} \u23f1 {elapsed:.1f}s")
                 for i in range(0, len(parts), 3):
                     t.add_row(Text(""), Text(""), Text(""), Text("".join(parts[i:i + 3])))
 
