@@ -26,8 +26,8 @@ class RuntimeLogger:
     def configure(self, run_dir: Path) -> None:
         self.run_dir = Path(run_dir)
         self.run_dir.mkdir(parents=True, exist_ok=True)
-        self.log_path = self.run_dir / "run.log"
-        self.timing_path = self.run_dir / "timing_summary.json"
+        self.log_path = self.run_dir / "whitebox" / "run.log"
+        self.timing_path = self.run_dir / "whitebox" / "timing_summary.json"
 
         # Initialize logger: file + console, no duplicate logs on reconfigure
         _LOG.setLevel(logging.INFO)

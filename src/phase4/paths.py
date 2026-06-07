@@ -31,11 +31,11 @@ def build_run_paths(seed_file: Path) -> dict:
         "simulation_dataset": run_dir / "simulation_dataset.json",
         "final_report_json": run_dir / "final_report.json",
         "final_report_md": run_dir / "final_report.md",
-        "whitebox_summary": run_dir / "whitebox_summary.json",
+        "whitebox_summary": whitebox_dir / "whitebox_summary.json",
         "whitebox_dir": whitebox_dir,
-        "run_log": run_dir / "run.log",
-        "timing_summary": run_dir / "timing_summary.json",
-        "run_meta": run_dir / "run_meta.json",
+        "run_log": whitebox_dir / "run.log",
+        "timing_summary": whitebox_dir / "timing_summary.json",
+        "run_meta": whitebox_dir / "run_meta.json",
     }
 
     return {
