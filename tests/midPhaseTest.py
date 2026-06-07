@@ -130,7 +130,7 @@ def main():
         logger.info("[Phase 1] 实体提取...")
         bar.set_phase("Phase 1 实体提取")
         t1 = time.time()
-        extraction_output = run_phase1(str(seed_file), report_path=run_dir / "phase1_report.json")
+        extraction_output = run_phase1(str(seed_file), report_path=run_dir / "whitebox" / "phase1_report.json")
         t1 = time.time() - t1
         logger.log_phase_end("phase1_extraction", elapsed=t1)
         logger.info("  √ %.1fs", t1)
