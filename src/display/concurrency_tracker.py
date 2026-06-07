@@ -8,9 +8,10 @@ from typing import Dict, List, Optional, Tuple
 class ConcurrencyTracker:
     """跟踪一组并发 worker 的状态（活跃/完成/耗时）。"""
 
-    def __init__(self) -> None:
+    def __init__(self, on_change=None) -> None:
         self._lock = threading.Lock()
         self._workers: Dict[str, Dict] = {}  # name -> {"start": float, "elapsed": float | None}
+        self._on_change = on_change
 
     def add(self, name: str) -> None:
         """注册一个 worker。"""
@@ -22,6 +23,8 @@ class ConcurrencyTracker:
         with self._lock:
             if name in self._workers:
                 self._workers[name]["elapsed"] = elapsed
+        if self._on_change:
+            self._on_change()
 
     @property
     def summary(self) -> Dict:
@@ -45,6 +48,20 @@ class ConcurrencyTracker:
 
     @property
     def raw_workers(self) -> List[Tuple[str, Optional[float]]]:
-        """返回 (name, elapsed_or_None) 列表。"""
+        """返回 (name, elapsed_or_None) 列表。None 表示仍在跑。"""
         with self._lock:
             return [(k, v["elapsed"]) for k, v in self._workers.items()]
+
+    @property
+    def live_workers(self) -> List[Tuple[str, Optional[float]]]:
+        """返回 (name, elapsed_or_live) 列表。
+        已完成的返回固定耗时，还在跑的返回 time.time() - start（实时跳动）。"""
+        now = time.time()
+        with self._lock:
+            results = []
+            for k, v in self._workers.items():
+                if v["elapsed"] is not None:
+                    results.append((k, v["elapsed"]))
+                else:
+                    results.append((k, now - v["start"]))
+            return results

@@ -95,14 +95,16 @@ class StatusBar:
 
         # 第二行+：每个 worker
         if self._concurrency:
-            workers = self._concurrency.raw_workers
-            if workers:
+            raw = dict(self._concurrency.raw_workers)  # name -> elapsed_or_None
+            live = dict(self._concurrency.live_workers) if self._concurrency.live_workers else {}
+            if raw:
                 parts = []
-                for name, elapsed in workers:
-                    if elapsed is not None:
-                        parts.append(f"  {name} ✓ {elapsed:.1f}s")
+                for name in raw:
+                    elapsed = live.get(name, 0.0)
+                    if raw[name] is not None:
+                        parts.append(f"  {name} [green]✓[/green] {elapsed:.1f}s")
                     else:
-                        parts.append(f"  {name} \u22ef")
+                        parts.append(f"  {name} [cyan]⏱[/cyan] {elapsed:.1f}s")
                 for i in range(0, len(parts), 3):
                     t.add_row(Text(""), Text(""), Text(""), Text("".join(parts[i:i + 3])))
 
