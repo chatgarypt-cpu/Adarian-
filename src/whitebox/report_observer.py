@@ -42,6 +42,9 @@ def write_report_completeness_summary(run_dir: Path, final_report_path: Path) ->
     whitebox_dir = run_dir / "whitebox"
     whitebox_dir.mkdir(parents=True, exist_ok=True)
 
+    if not final_report_path.exists():
+        return {"status": "skipped", "reason": "no final report (midPhase-only pipeline)"}
+
     with open(final_report_path, "r", encoding="utf-8") as f:
         markdown_text = f.read()
 
