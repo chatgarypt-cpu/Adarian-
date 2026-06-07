@@ -68,48 +68,27 @@ class StatusBar:
     # ── 面板渲染 ──────────────────────────────────────────────
 
     def _render(self) -> Panel:
-        from rich.table import Table
+        from rich.columns import Columns
         from rich.text import Text
 
-        t = Table.grid(padding=(0, 1))
         spinner = Spinner("dots", style="cyan")
+        parts = [spinner, Text(f" {self.phase.name}", style="bold")]
 
-        # 第一行：Spinner + 阶段名 + 时间 + 并发概览
-        con_str = f""
+        # 阶段名 + 时间
+        elapsed = Text(f"  ⏱ {self.phase.elapsed_str}", style="cyan")
+        parts.append(elapsed)
+
+        # 并发概览
         if self._concurrency:
             s = self._concurrency.summary
-            con_str = f"并发 {s['total']}"
+            con_str = f"  ┃ 并发 {s['total']}"
             if s["done"]:
-                con_str += f"  ✓{s['done']}"
+                con_str += f" ✓{s['done']}"
             if s["pending"]:
-                con_str += f"  ⏳{s['pending']}"
-            if s["max_elapsed"]:
-                con_str += f"  最慢 {s['max_elapsed']:.1f}s"
+                con_str += f" ⏳{s['pending']}"
+            parts.append(Text(con_str))
 
-        t.add_row(
-            spinner,
-            Text(f" {self.phase.name} ", style="bold"),
-            Text(f"⏱ {self.phase.elapsed_str}", style="cyan"),
-            Text(f"  ┃ {con_str}" if con_str else ""),
-        )
-
-        # 第二行+：每个 worker
-        if self._concurrency:
-            raw = dict(self._concurrency.raw_workers)  # name -> elapsed_or_None
-            live = dict(self._concurrency.live_workers) if self._concurrency.live_workers else {}
-            if raw:
-                parts = []
-                for name in raw:
-                    elapsed = live.get(name, 0.0)
-                    if raw[name] is not None:
-                        parts.append(f"  {name} [green]✓[/green] {elapsed:.1f}s")
-                    else:
-                        parts.append(f"  {name} [cyan]⏱[/cyan] {elapsed:.1f}s")
-                for i in range(0, len(parts), 3):
-                    t.add_row(Text(""), Text(""), Text(""), Text.from_markup("".join(parts[i:i + 3])))
-
-        panel = Panel(t, border_style="cyan", title="[bold]仿真引擎[/bold]")
-        return panel
+        return Panel(Columns(parts), border_style="dim")
 
     # ── 生命周期 ──────────────────────────────────────────────
 
