@@ -9,6 +9,7 @@ from rich.console import Console
 from .prompts import GENERATOR_SYSTEM_PROMPT, GENERATOR_USER_PROMPT
 from .prompts import SPREADER_SYSTEM_PROMPT, SPREADER_USER_PROMPT
 from .utils import _parse_llm_json_payload, _coerce_top_level_object, console
+from .compiler import _post_process_entities
 
 
 # =============================================================================

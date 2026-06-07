@@ -13,6 +13,7 @@ from .generator import (
     generator_create_spreaders_concurrent,
 )
 from .compiler import _post_process_entities
+from .reporter import Phase1Reporter
 from .orchestrator import (
     extract_entities,
     extract_entities_from_file,

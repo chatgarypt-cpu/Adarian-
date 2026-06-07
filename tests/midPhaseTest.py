@@ -54,10 +54,10 @@ from src.utils.runtime_logger import get_runtime_logger
 from src.display import StatusBar
 
 
-def run_phase1(seed_file: str):
+def run_phase1(seed_file: str, report_path=None):
     """Phase 1 实体提取（LLM）。"""
     from src.phase1 import extract_entities_from_file
-    return extract_entities_from_file(seed_file)
+    return extract_entities_from_file(seed_file, report_path=report_path)
 
 
 def run_phase2(extraction_output):
@@ -130,7 +130,7 @@ def main():
         logger.info("[Phase 1] 实体提取...")
         bar.set_phase("Phase 1 实体提取")
         t1 = time.time()
-        extraction_output = run_phase1(str(seed_file))
+        extraction_output = run_phase1(str(seed_file), report_path=run_dir / "phase1_report.json")
         t1 = time.time() - t1
         logger.log_phase_end("phase1_extraction", elapsed=t1)
         logger.info("  √ %.1fs", t1)

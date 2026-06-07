@@ -1,6 +1,7 @@
 """Phase 1 Orchestrator — Analyzer → Generator → Compiler → Repair → Pydantic."""
 
 import json
+import time
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -13,6 +14,7 @@ from .analyzer import analyzer_set_parameters
 from .compiler import _post_process_entities
 from .generator import generator_create_event_entities
 from .generator import generator_create_spreaders_concurrent
+from .reporter import Phase1Reporter
 from .utils import console
 
 # 主函数：带迭代校验的实体提取
@@ -20,17 +22,25 @@ from .utils import console
 
 MAX_RETRIES = 3
 
-def extract_entities_with_validation(seed_text: str) -> EntityExtractionOutput:
+def extract_entities_with_validation(
+    seed_text: str,
+    report_path: Optional[Path] = None,
+) -> EntityExtractionOutput:
     """
     Phase 1 Orchestrator: Analyzer → Entity Generator → Concurrent Spreader Generator → Validator
 
     Args:
         seed_text: 种子文本内容
+        report_path: 可选，写入 phase1_report.json 的路径
 
     Returns:
         EntityExtractionOutput: 包含 event_entities, opinion_spreaders 等
     """
+    report = Phase1Reporter()
+    t0 = time.perf_counter()
+
     params = analyzer_set_parameters(seed_text)
+    report.record_analyzer(elapsed=time.perf_counter() - t0)
     last_validation: Optional[Dict[str, Any]] = None
     error_feedback = ""
 
@@ -40,6 +50,7 @@ def extract_entities_with_validation(seed_text: str) -> EntityExtractionOutput:
 
         try:
             # Step 1: 提取事件实体 + 规划传播者框架
+            t_gen = time.perf_counter()
             entities_data = generator_create_event_entities(
                 seed_text=seed_text,
                 event_scale=params["event_scale"],
@@ -48,7 +59,10 @@ def extract_entities_with_validation(seed_text: str) -> EntityExtractionOutput:
                 event_summary=params["event_summary"],
                 error_feedback=error_feedback,
             )
+            report.record_entity_gen_attempt(attempt, time.perf_counter() - t_gen, "success")
         except ValueError as e:
+            t_gen = time.perf_counter() - t0 if 't_gen' not in dir() else 0
+            report.record_entity_gen_attempt(attempt, t_gen or 0, "json_parse_failed", errors=[str(e)])
             last_validation = {
                 "pass": False,
                 "message": "Generator 输出解析失败",
@@ -72,6 +86,10 @@ def extract_entities_with_validation(seed_text: str) -> EntityExtractionOutput:
                 event_entities=event_entities,
             )
             entities_data["opinion_spreaders"] = spreaders
+            report.record_spreaders_concurrent(
+                count=len(spreaders),
+                workers=[{"name": s.get("group_name", "?"), "status": "success"} for s in spreaders],
+            )
         except ValueError as e:
             last_validation = {
                 "pass": False,
@@ -95,12 +113,17 @@ def extract_entities_with_validation(seed_text: str) -> EntityExtractionOutput:
             "relations": entities_data.get("relations", []),
         }
         try:
+            if report_path:
+                report.record_total_time(time.perf_counter() - t0)
+                report.write(report_path)
+                report.close()
             return EntityExtractionOutput(**merged_output)
         except ValidationError as e:
             errors_str = "; ".join(
                 f"{err['loc']}: {err['msg']}" for err in e.errors()
             )
             console.print(f"  [yellow]⚠[/yellow] Pydantic 校验失败，尝试 Repair Loop...")
+            report.record_error("pydantic_validation", errors_str)
 
             # Repair: 修正 related_event_entity 不匹配
             spreaders = merged_output.get("opinion_spreaders", [])
@@ -114,20 +137,45 @@ def extract_entities_with_validation(seed_text: str) -> EntityExtractionOutput:
                     match = difflib.get_close_matches(ref, entity_names, n=1, cutoff=0.6)
                     if match:
                         console.print(f"  [cyan]  Repair: {s.get('group_name', '?')} related_event_entity '{ref}' -> '{match[0]}'[/cyan]")
+                        report.record_repair_action(
+                            "entity_ref_fix",
+                            spreader=s.get("group_name", "?"),
+                            from_ref=ref,
+                            to_ref=match[0],
+                            method="difflib",
+                        )
                         s["related_event_entity"] = match[0]
                         repaired = True
             # Repair: 修正 missing P=+1 / P=-1
             if not any(s.get("P") == +1 for s in spreaders) and spreaders:
+                report.record_repair_action(
+                    "p_flip",
+                    spreader=spreaders[0].get("group_name", "?"),
+                    from_p=spreaders[0].get("P"),
+                    to_p=+1,
+                    reason="missing_support",
+                )
                 spreaders[0]["P"] = +1
                 console.print(f"  [cyan]  Repair: {spreaders[0].get('group_name', '?')} P 设为 +1（补充支持阵营）[/cyan]")
                 repaired = True
             elif not any(s.get("P") == -1 for s in spreaders) and spreaders:
+                report.record_repair_action(
+                    "p_flip",
+                    spreader=spreaders[0].get("group_name", "?"),
+                    from_p=spreaders[0].get("P"),
+                    to_p=-1,
+                    reason="missing_opposition",
+                )
                 spreaders[0]["P"] = -1
                 console.print(f"  [cyan]  Repair: {spreaders[0].get('group_name', '?')} P 设为 -1（补充反对阵营）[/cyan]")
                 repaired = True
 
             if repaired:
                 try:
+                    if report_path:
+                        report.record_total_time(time.perf_counter() - t0)
+                        report.write(report_path)
+                        report.close()
                     return EntityExtractionOutput(**merged_output)
                 except ValidationError as e2:
                     errors_str = "; ".join(
@@ -143,6 +191,10 @@ def extract_entities_with_validation(seed_text: str) -> EntityExtractionOutput:
             error_feedback = errors_str
             continue
 
+    if report_path:
+        report.record_total_time(time.perf_counter() - t0)
+        report.write(report_path)
+        report.close()
     raise ValueError(
         "Phase 1 校验失败，超过最大重试次数。"
         f" 最后一次校验结果: {last_validation}"
@@ -153,20 +205,27 @@ def extract_entities_with_validation(seed_text: str) -> EntityExtractionOutput:
 # 兼容函数
 # =============================================================================
 
-def extract_entities(seed_text: str) -> EntityExtractionOutput:
+def extract_entities(
+    seed_text: str,
+    report_path: Optional[Path] = None,
+) -> EntityExtractionOutput:
     """
     兼容函数：直接调用 orchestrator 入口
 
     Args:
         seed_text: 种子文本内容
+        report_path: 可选，写入 phase1_report.json 的路径
 
     Returns:
         EntityExtractionOutput
     """
-    return extract_entities_with_validation(seed_text)
+    return extract_entities_with_validation(seed_text, report_path=report_path)
 
 
-def extract_entities_from_file(seed_file: str) -> EntityExtractionOutput:
+def extract_entities_from_file(
+    seed_file: str,
+    report_path: Optional[Path] = None,
+) -> EntityExtractionOutput:
     """
     从种子文件提取实体
 
@@ -177,7 +236,7 @@ def extract_entities_from_file(seed_file: str) -> EntityExtractionOutput:
         EntityExtractionOutput 对象
     """
     seed_text = Path(seed_file).read_text(encoding="utf-8")
-    return extract_entities_with_validation(seed_text)
+    return extract_entities_with_validation(seed_text, report_path=report_path)
 
 
 def save_entities_output(

@@ -2,6 +2,7 @@
 
 from typing import Any, Dict
 
+from .reporter import Phase1Reporter
 from .utils import console
 
 
@@ -81,6 +82,9 @@ def _post_process_entities(
             new_sum = sum(s["estimated_percentage"] for s in spreaders)
             if new_sum != raw_sum:
                 console.print(f"  [cyan] 归一化: estimated_percentage {raw_sum} -> {new_sum}")
+                rep = Phase1Reporter.get_current()
+                if rep:
+                    rep.record_compiler_normalization("estimated_percentage", raw_sum, new_sum)
 
     return entities_data
 
