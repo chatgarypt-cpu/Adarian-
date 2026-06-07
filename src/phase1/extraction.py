@@ -762,7 +762,7 @@ def extract_entities_with_validation(seed_text: str) -> EntityExtractionOutput:
             )
             continue
 
-        # Step 3: 校验（确定性 Pydantic 校验，替代 LLM Validator）
+        # Step 3: 校验 + Repair Loop（确定性 Pydantic 校验 + 定向修复）
         from pydantic import ValidationError
         merged_output = {
             "event_summary": params["event_summary"],
@@ -779,10 +779,44 @@ def extract_entities_with_validation(seed_text: str) -> EntityExtractionOutput:
             errors_str = "; ".join(
                 f"{err['loc']}: {err['msg']}" for err in e.errors()
             )
-            console.print(f"  [yellow]⚠[/yellow] Pydantic 校验失败: {e.errors()[0].get('msg', str(e))}")
+            console.print(f"  [yellow]⚠[/yellow] Pydantic 校验失败，尝试 Repair Loop...")
+
+            # Repair: 修正 related_event_entity 不匹配
+            spreaders = merged_output.get("opinion_spreaders", [])
+            entities = merged_output.get("event_entities", [])
+            entity_names = {e["name"] for e in entities}
+            import difflib
+            repaired = False
+            for s in spreaders:
+                ref = s.get("related_event_entity", "")
+                if ref not in entity_names:
+                    match = difflib.get_close_matches(ref, entity_names, n=1, cutoff=0.6)
+                    if match:
+                        console.print(f"  [cyan]  Repair: {s.get('group_name', '?')} related_event_entity '{ref}' -> '{match[0]}'[/cyan]")
+                        s["related_event_entity"] = match[0]
+                        repaired = True
+            # Repair: 修正 missing P=+1 / P=-1
+            if not any(s.get("P") == +1 for s in spreaders) and spreaders:
+                spreaders[0]["P"] = +1
+                console.print(f"  [cyan]  Repair: {spreaders[0].get('group_name', '?')} P 设为 +1（补充支持阵营）[/cyan]")
+                repaired = True
+            elif not any(s.get("P") == -1 for s in spreaders) and spreaders:
+                spreaders[0]["P"] = -1
+                console.print(f"  [cyan]  Repair: {spreaders[0].get('group_name', '?')} P 设为 -1（补充反对阵营）[/cyan]")
+                repaired = True
+
+            if repaired:
+                try:
+                    return EntityExtractionOutput(**merged_output)
+                except ValidationError as e2:
+                    errors_str = "; ".join(
+                        f"{err['loc']}: {err['msg']}" for err in e2.errors()
+                    )
+
+            console.print(f"  [yellow]✗[/yellow] Repair 未能修复，全量重试: {e.errors()[0].get('msg', str(e))}")
             last_validation = {
                 "pass": False,
-                "message": "Pydantic 校验失败",
+                "message": "Pydantic / Repair 校验失败",
                 "errors": [errors_str],
             }
             error_feedback = errors_str
