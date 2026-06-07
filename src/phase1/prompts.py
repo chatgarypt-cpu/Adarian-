@@ -208,7 +208,6 @@ VALIDATOR_SYSTEM_PROMPT = """你是一位严格的格式校验专家。你的任
 15. opinion_spreaders 中每个元素必须包含 persona_name、age_range、occupation、personality、motivation、typical_phrases 字段
 16. typical_phrases 必须是长度为 2-3 的字符串数组
 17. 不同 opinion_spreader 的 persona_name 不能重复
-18. age_range 必须是有效的年龄段格式（如：18-24、20-30、25-34、30-45、35-50、45-60 等），前后两位数字相差 ≥ 3
 
 【重要】不要对 relations 字段报错，该字段是可选的。
 
