@@ -106,7 +106,7 @@ class StatusBar:
                     else:
                         parts.append(f"  {name} [cyan]⏱[/cyan] {elapsed:.1f}s")
                 for i in range(0, len(parts), 3):
-                    t.add_row(Text(""), Text(""), Text(""), Text("".join(parts[i:i + 3])))
+                    t.add_row(Text(""), Text(""), Text(""), Text.from_markup("".join(parts[i:i + 3])))
 
         panel = Panel(t, border_style="cyan", title="[bold]仿真引擎[/bold]")
         return panel
