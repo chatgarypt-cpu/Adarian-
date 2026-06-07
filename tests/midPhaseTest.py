@@ -20,7 +20,6 @@ Phase 1→3 Pipeline Smoke — 跑 Phase1-3 完整管线到 parser 输出 simula
 from __future__ import annotations
 
 import json
-import os
 import subprocess
 import sys
 import time
