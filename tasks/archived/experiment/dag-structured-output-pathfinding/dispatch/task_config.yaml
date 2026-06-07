@@ -7,7 +7,6 @@ execution_mode: tmux_interactive
 executor_options:
   workdir: /Users/gary/项目开发/AdarianMigration/adarian mvp
   prompt_file: dispatch/prompt.md
-  teammate_mode: auto  # MiMo 串行 mode
   expected_outputs:
     - outputs/fan-in-recommendation.md
   observer:

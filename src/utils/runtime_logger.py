@@ -5,12 +5,41 @@ from __future__ import annotations
 import json
 import logging
 import sys
+import threading
 import time
+import traceback
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
 _LOG = logging.getLogger("runtime")
+
+# 保存原有的 excepthook，避免覆盖第三方工具的 hook
+_orig_sys_excepthook: Any = None
+_orig_threading_excepthook: Any = None
+
+
+def _make_sys_excepthook(log_path: Path):
+    """构造 sys.excepthook 替代函数，将未捕获异常写入 run.log。"""
+    def _hook(exc_type, exc_value, exc_tb):
+        tb_text = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
+        _LOG.error("未捕获异常 (sys.excepthook):\n%s", tb_text)
+        if _orig_sys_excepthook:
+            _orig_sys_excepthook(exc_type, exc_value, exc_tb)
+    return _hook
+
+
+def _make_threading_excepthook(log_path: Path):
+    """构造 threading.excepthook 替代函数，将线程池中的未捕获异常写入 run.log。"""
+    def _hook(args: threading.ExceptHookArgs):
+        tb_text = "".join(traceback.format_exception(
+            args.exc_type, args.exc_value, args.exc_traceback,
+        ))
+        thread_name = args.thread.name if args.thread else "unknown"
+        _LOG.error("未捕获异常 (threading.excepthook) thread=%s:\n%s", thread_name, tb_text)
+        if _orig_threading_excepthook:
+            _orig_threading_excepthook(args)
+    return _hook
 
 
 class RuntimeLogger:
@@ -19,15 +48,14 @@ class RuntimeLogger:
     def __init__(self) -> None:
         self.run_dir: Optional[Path] = None
         self.log_path: Optional[Path] = None
-        self.timing_path: Optional[Path] = None
         self.summary: Dict[str, Any] = {}
         self._configured = False
+        self._excepthooks_installed = False
 
     def configure(self, run_dir: Path) -> None:
         self.run_dir = Path(run_dir)
         self.run_dir.mkdir(parents=True, exist_ok=True)
-        self.log_path = self.run_dir / "whitebox" / "run.log"
-        self.timing_path = self.run_dir / "whitebox" / "timing_summary.json"
+        self.log_path = self.run_dir / "run.log"
 
         # Initialize logger: file + console, no duplicate logs on reconfigure
         _LOG.setLevel(logging.INFO)
@@ -35,7 +63,7 @@ class RuntimeLogger:
 
         fmt = logging.Formatter("%(asctime)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
 
-        # File handler
+        # File handler（接所有日志，含 error 级别）
         fh = logging.FileHandler(self.log_path, mode="a", encoding="utf-8")
         fh.setFormatter(fmt)
         _LOG.addHandler(fh)
@@ -64,8 +92,22 @@ class RuntimeLogger:
             "ticks": [],
             "errors": [],
         }
+
+        # 安装异常钩子（只在首次 configure 时安装一次）
+        if not self._excepthooks_installed:
+            self._install_excepthooks()
+            self._excepthooks_installed = True
+
         self._write_summary()
         self._configured = True
+
+    def _install_excepthooks(self) -> None:
+        """安装 sys.excepthook + threading.excepthook，未捕获异常也进 run.log。"""
+        global _orig_sys_excepthook, _orig_threading_excepthook
+        _orig_sys_excepthook = sys.excepthook
+        sys.excepthook = _make_sys_excepthook(self.log_path)
+        _orig_threading_excepthook = threading.excepthook
+        threading.excepthook = _make_threading_excepthook(self.log_path)
 
     def _ensure_summary_shape(self) -> None:
         self.summary.setdefault("run", {})
@@ -84,10 +126,8 @@ class RuntimeLogger:
         self.summary.setdefault("errors", [])
 
     def _write_summary(self) -> None:
-        if not self.timing_path:
-            return
-        with open(self.timing_path, "w", encoding="utf-8") as f:
-            json.dump(self.summary, f, ensure_ascii=False, indent=2)
+        # 仍在内存中维护 summary dict（供其他模块读），不再写独立文件
+        pass
 
     def log_run_start(self, mode: str, seed_file: str, run_dir: str) -> None:
         self._ensure_summary_shape()
@@ -99,7 +139,6 @@ class RuntimeLogger:
             "status": "running",
         })
         _LOG.info("RUN START mode=%s seed=%s run_dir=%s", mode, seed_file, run_dir)
-        self._write_summary()
 
     def log_run_end(self, status: str, elapsed: float) -> None:
         self._ensure_summary_shape()
@@ -109,14 +148,12 @@ class RuntimeLogger:
             "status": status,
         })
         _LOG.info("RUN END status=%s elapsed=%.2fs", status, elapsed)
-        self._write_summary()
 
     def log_phase_start(self, name: str) -> None:
         self._ensure_summary_shape()
         self.summary["phases"].setdefault(name, {})
         self.summary["phases"][name]["start_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         _LOG.info("PHASE START name=%s", name)
-        self._write_summary()
 
     def log_phase_end(self, name: str, elapsed: float) -> None:
         self._ensure_summary_shape()
@@ -124,7 +161,6 @@ class RuntimeLogger:
         self.summary["phases"][name]["end_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.summary["phases"][name]["elapsed_seconds"] = round(elapsed, 2)
         _LOG.info("PHASE END name=%s elapsed=%.2fs", name, elapsed)
-        self._write_summary()
 
     def log_llm_start(self, caller: str, model: str) -> None:
         _LOG.info("LLM START caller=%s model=%s", caller, model)
@@ -139,7 +175,6 @@ class RuntimeLogger:
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         })
         _LOG.info("LLM END caller=%s model=%s elapsed=%.2fs", caller, model, elapsed)
-        self._write_summary()
 
     def log_persona_start(self, group: str) -> None:
         _LOG.info("PERSONA START group=%s", group)
@@ -153,7 +188,6 @@ class RuntimeLogger:
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         })
         _LOG.info("PERSONA END group=%s elapsed=%.2fs", group, elapsed)
-        self._write_summary()
 
     def log_tick_start(self, tick: int) -> None:
         _LOG.info("TICK START tick=%d", tick)
@@ -188,7 +222,6 @@ class RuntimeLogger:
             "is_full_selection": is_full_selection,
             "full_selection_reason": full_selection_reason,
         }
-        self._write_summary()
 
     def log_tick_end(self, tick: int, elapsed: float, speakers: int, llm_calls: int) -> None:
         self._ensure_summary_shape()
@@ -203,7 +236,6 @@ class RuntimeLogger:
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         })
         _LOG.info("TICK END tick=%d elapsed=%.2fs speakers=%d llm_calls=%d", tick, elapsed, speakers, llm_calls)
-        self._write_summary()
 
     def log_error(self, stage: str, error: str) -> None:
         self._ensure_summary_shape()
@@ -213,7 +245,10 @@ class RuntimeLogger:
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         })
         _LOG.error("ERROR stage=%s error=%s", stage, error)
-        self._write_summary()
+
+    def get_summary(self) -> Dict[str, Any]:
+        """返回当前运行时摘要 dict。"""
+        return dict(self.summary)
 
     def get_llm_call_count(self) -> int:
         return int(self.summary.get("llm", {}).get("count", 0))

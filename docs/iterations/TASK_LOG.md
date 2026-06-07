@@ -1,4 +1,12 @@
 
+## 2026-06-07: Generator max_tokens 修复 + 平行世界调度器设计
+
+- **task_id**: generator-max-tokens-fix + parallel-worlds-design
+- **executor**: hermes
+- **status**: completed (设计文档已定稿，待实现)
+- **details**: Generator 实体提取分配独立 max_tokens=16384，避免推理链截断导致 repair loop 重试。平行世界调度器设计文档 v0.1 完成（5 个世界并行、各配不同模型、失败兜底）。
+- **carryover**: 平行世界调度器待实现；产品侧风险映射需求待跟进
+
 ## 2026-06-07: code-reality-review-v1.3.1
 
 - **task_id**: code-reality-review-v1.3.1

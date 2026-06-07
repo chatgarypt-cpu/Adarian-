@@ -7,6 +7,7 @@ from rich.console import Console
 from src.llm_client import get_llm_client
 from src.schemas import EntityExtractionOutput, InflectionPoint, Phase2Output, Phase4Output, TickLog
 from .report_prompts import REPORT_SYSTEM_PROMPT, REPORT_USER_PROMPT_SUFFIX
+from .report_agent import _build_code_owned_report_contract_block, parse_llm_report_response
 
 
 console = Console()
@@ -92,53 +93,70 @@ def build_full_report_context(
     return "\n".join(lines)
 
 
-def build_report_context_new(
-    extraction_output, tick_logs, x_t_sequence, phase2_output, dataset,
-) -> str:
-    """Build the LLM report context using Phase3 parser data (v1.3.1 flow)."""
-    sim = dataset["simulation_result"]
+def build_report_context_new(dataset: dict) -> str:
+    """Build the LLM report context entirely from simulation_dataset. No external parameters needed."""
+    sim = dataset.get("simulation_result", {})
+    source = dataset.get("source_context", {})
+    run_info = dataset.get("run_info", {})
     rv = sim.get("risk_verdict", {})
     rt = sim.get("risk_type_classification", {})
     matrix = sim.get("agent_stance_matrix", [])
     inflection_points = sim.get("inflection_points", [])
     emotion_trajectory = sim.get("emotion_trajectory", [])
+    x_t_sequence = sim.get("x_t_sequence", [])
+    tick_entries = sim.get("tick_entries", [])
 
     lines = []
 
     # 1. 事件概要
     lines.append("【事件概要】")
-    lines.append(f"事件摘要：{extraction_output.event_summary}")
-    lines.append(f"事件类型：{extraction_output.event_type}")
+    lines.append(f"事件摘要：{source.get('event_summary', '')}")
+    lines.append(f"事件类型：{source.get('event_type', '')}")
 
     # 2. 实体图谱
     lines.append("\n【实体图谱】")
-    lines.append(f"事件实体：{len(extraction_output.event_entities)} 个")
-    for entity in extraction_output.event_entities:
-        lines.append(f"  - {entity.name}（{entity.type}）: {entity.role} | can_speak={entity.can_speak}")
-        if entity.original_statement:
-            lines.append(f"    原始发言：{entity.original_statement[:50]}...")
-    lines.append(f"\n意见传播者：{len(extraction_output.opinion_spreaders)} 个")
-    for s in extraction_output.opinion_spreaders:
-        lines.append(f"  - {s.group_name} | 关联实体：{s.related_event_entity}，立场：{s.stance_score}，占比：{s.estimated_percentage}%")
+    entities = source.get("event_entities", [])
+    lines.append(f"事件实体：{len(entities)} 个")
+    for entity in entities:
+        name = entity.get("name", "?")
+        etype = entity.get("type", "?")
+        role = entity.get("role", "?")
+        can_speak = entity.get("can_speak", False)
+        stmt = entity.get("original_statement", "")
+        lines.append(f"  - {name}（{etype}）: {role} | can_speak={can_speak}")
+        if stmt:
+            lines.append(f"    原始发言：{stmt[:50]}...")
+    spreaders = source.get("opinion_spreaders", [])
+    lines.append(f"\n意见传播者：{len(spreaders)} 个")
+    for s in spreaders:
+        lines.append(f"  - {s.get('group_name', '?')} | 关联实体：{s.get('related_event_entity', '?')}，立场：{s.get('stance_score', 0)}，占比：{s.get('estimated_percentage', 0)}%")
 
     # 3. 轮次 0 发言
     lines.append("\n【轮次 0 事件实体发言】")
-    if tick_logs:
-        for entry in tick_logs[0].entries:
-            if entry.comment:
-                lines.append(f"  [{entry.group_name}]: {entry.comment[:80]}...")
+    if tick_entries:
+        for entry in tick_entries[0].get("entries", []):
+            comment = entry.get("comment", "")
+            if comment:
+                lines.append(f"  [{entry.get('group_name', '?')}]: {comment[:80]}...")
 
-    # 4. 模拟立场演化（从 Phase3 parser 输出的 emotion_trajectory）
+    # 4. 模拟立场演化
     lines.append("\n【模拟立场演化数据】")
     lines.append("轮次 | 模拟立场均值 | 标准差 | 模拟极化指数 | 关键变化")
     lines.append("-" * 70)
     prev_pol = None
     for et in emotion_trajectory:
         key_event = et.get("key_event", "")
-        lines.append(f"| {et['tick']} | {et['mean_stance']:.2f} | {et['std_stance']:.2f} | {et['polarization_index']:.2f} | {key_event} |")
-        prev_pol = et.get("polarization_index")
+        tick = et.get("tick", 0)
+        ms = et.get("mean_stance", 5.0)
+        ss = et.get("std_stance", 0.0)
+        pi = et.get("polarization_index", 0.0)
+        change = ""
+        if prev_pol is not None:
+            change = f"({pi - prev_pol:+.2f})"
+        lines.append(f"{tick:4d} | {ms:5.2f} | {ss:5.2f} | {pi:5.2f} {change:8s} | {key_event}")
+        prev_pol = pi
 
-    # 5. 立场矩阵（从 Phase3 parser 输出）
+    # 5. 立场矩阵
     lines.append("\n【立场矩阵】")
     if not matrix:
         lines.append("无可用 opinion spreader 立场矩阵。")
@@ -147,9 +165,14 @@ def build_report_context_new(
         lines.append("| Agent | 群体 | 起始立场 | 结束立场 | Delta |")
         lines.append("|---|---:|---:|---:|---:|")
         for row in matrix:
-            lines.append(f"| #{row['agent_id']} | {row['group_name']} | {row['initial_stance']:.2f} | {row['final_stance']:.2f} | {row.get('max_delta', row['final_stance'] - row['initial_stance']):+.2f} |")
+            aid = row.get("agent_id", "?")
+            gn = row.get("group_name", "?")
+            ist = row.get("initial_stance", 5.0)
+            fst = row.get("final_stance", 5.0)
+            md = row.get("max_delta", fst - ist)
+            lines.append(f"| #{aid} | {gn} | {ist:.2f} | {fst:.2f} | {md:+.2f} |")
 
-    # 6. 拐点（从 Phase3 parser 输出）
+    # 6. 拐点
     lines.append("\n【模拟关键变化点】")
     if not inflection_points:
         lines.append("本轮模拟未发现显著模拟关键变化点。")
@@ -161,13 +184,13 @@ def build_report_context_new(
         for p in inflection_points:
             lines.append(f"| {p.get('tick', '')} | {p.get('agent_id', '')} | {p.get('group_name', '')} | {p.get('description', '')} |")
 
-    # 7. 风险判定（从 Phase3 parser 输出的 risk_verdict）
+    # 7. 风险判定
     lines.append("\n【风险判定】（由 Phase3 RiskAnalyzer 计算）")
     lines.append(f"风险等级: {rv.get('level', 'unknown')}")
     lines.append(f"风险标签: {rv.get('label', '')}")
     lines.append(f"风险依据: {rv.get('basis_text', '')}")
 
-    # 8. 最终风险类型
+    # 8. 风险类型
     if rt:
         lines.append("\n【风险类型分类】")
         for t, l in zip(rt.get("primary_types", []), rt.get("type_labels", [])):
@@ -199,32 +222,22 @@ def build_report_user_prompt(code_owned_contract_block: str, report_context: str
 
 
 def generate_report_with_llm_narrative(
-    extraction_output: EntityExtractionOutput,
-    tick_logs: List[TickLog],
-    x_t_sequence: List[float],
-    phase2_output: Phase2Output,
+    dataset: dict,
     *,
-    build_report_context: Callable[..., str],
-    build_code_owned_contract_block: Callable[..., str],
-    parse_llm_report_response: Callable[..., Phase4Output],
+    build_report_context: Callable[..., str] = build_report_context_new,
+    build_code_owned_contract_block: Callable[..., str] = _build_code_owned_report_contract_block,
+    parse_llm_report_response: Callable[..., Phase4Output] = parse_llm_report_response,
     get_llm_client_func: Callable[[], object] = get_llm_client,
-    simulation_dataset: Optional[dict[str, Any]] = None,
 ) -> Tuple[Phase4Output, str]:
-    """Run the LLM narrative path and return both parsed output and raw Markdown."""
+    """Run the LLM narrative path using only simulation_dataset.
+
+    All Phase3-derived data (entities, spreaders, tick data, risk, inflection, stance)
+    is consumed from the single dataset dict. No external pipeline artifacts needed.
+    """
     llm = get_llm_client_func()
 
-    report_context = build_report_context(
-        extraction_output,
-        tick_logs,
-        x_t_sequence,
-        phase2_output=phase2_output,
-    )
-    code_owned_contract_block = build_code_owned_contract_block(
-        extraction_output,
-        tick_logs,
-        x_t_sequence,
-        simulation_dataset=simulation_dataset,
-    )
+    report_context = build_report_context(dataset)
+    code_owned_contract_block = build_code_owned_contract_block(dataset)
     user_prompt = build_report_user_prompt(code_owned_contract_block, report_context)
 
     console.print("[cyan]正在调用 LLM 生成报告...[/cyan]")
@@ -237,9 +250,6 @@ def generate_report_with_llm_narrative(
 
     phase4_output = parse_llm_report_response(
         response,
-        extraction_output,
-        tick_logs,
-        x_t_sequence,
-        simulation_dataset=simulation_dataset,
+        dataset,
     )
     return phase4_output, response

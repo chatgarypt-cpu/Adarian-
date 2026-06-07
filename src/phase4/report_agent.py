@@ -65,17 +65,18 @@ def _risk_level_label_for(risk_level: RiskLevel) -> str:
 
 
 def build_report_meta(
-    extraction_output: EntityExtractionOutput,
-    tick_logs: List,
+    dataset: dict,
     output_path: Path = None,
     generated_at: str = None,
 ) -> ReportMeta:
+    run_info = dataset.get("run_info", {})
+    source = dataset.get("source_context", {})
     return ReportMeta(
         generated_at=generated_at or _generate_report_timestamp(),
         timezone=_current_timezone_label(),
         report_type=REPORT_TYPE,
-        event_name=extraction_output.event_summary,
-        total_ticks=len(tick_logs),
+        event_name=source.get("event_summary", ""),
+        total_ticks=run_info.get("total_ticks", 0),
         simulation_run_id=_infer_simulation_run_id(output_path),
     )
 
@@ -104,12 +105,10 @@ def _controversy_description(value: float) -> str:
 
 
 def _build_phase4_output_from_simulation_dataset(
-    simulation_dataset: dict,
-    extraction_output: EntityExtractionOutput,
-    tick_logs: List,
-    x_t_sequence: List[float],
+    dataset: dict,
 ) -> Phase4Output:
-    sim = simulation_dataset.get("simulation_result", {})
+    sim = dataset.get("simulation_result", {})
+    source = dataset.get("source_context", {})
 
     risk_verdict = sim.get("risk_verdict", {})
     risk_level_str = risk_verdict.get("level", RiskLevel.LOW.value)
@@ -150,19 +149,23 @@ def _build_phase4_output_from_simulation_dataset(
     )
 
     from src.schemas import AudienceMode
-    audience_mode_str = simulation_dataset.get("run_info", {}).get(
+    audience_mode_str = dataset.get("run_info", {}).get(
         "audience_mode",
         AudienceMode.GENERIC_GOVERNMENT.value,
     )
     audience_mode = AudienceMode(audience_mode_str)
 
-    event_entities_str = ", ".join([entity.name for entity in extraction_output.event_entities])
-    spreaders_str = ", ".join([spreader.group_name for spreader in extraction_output.opinion_spreaders])
+    event_entities = source.get("event_entities", [])
+    opinion_spreaders = source.get("opinion_spreaders", [])
+    event_entities_str = ", ".join(e.get("name", "?") for e in event_entities)
+    spreaders_str = ", ".join(s.get("group_name", "?") for s in opinion_spreaders)
     stakeholder_map = f"事件实体: {event_entities_str} | 传播者: {spreaders_str}"
 
+    x_t_sequence = sim.get("x_t_sequence", [])
+
     return Phase4Output(
-        report_meta=build_report_meta(extraction_output, tick_logs),
-        event_summary=extraction_output.event_summary,
+        report_meta=build_report_meta(dataset),
+        event_summary=source.get("event_summary", ""),
         stakeholder_map=stakeholder_map,
         emotion_trajectory=emotion_trajectory,
         inflection_points=inflection_points,
@@ -178,9 +181,6 @@ def _build_phase4_output_from_simulation_dataset(
 
 def parse_llm_report_response(
     response: str,
-    extraction_output: EntityExtractionOutput,
-    tick_logs: List,
-    x_t_sequence: List[float],
     simulation_dataset: dict,
 ) -> Phase4Output:
     """解析 LLM 报告响应（v1.3.1：纯消费 simulation_dataset）。
@@ -190,20 +190,13 @@ def parse_llm_report_response(
     del response  # 兼容旧调用方；不再用于分支
     return _build_phase4_output_from_simulation_dataset(
         simulation_dataset,
-        extraction_output,
-        tick_logs,
-        x_t_sequence,
     )
 
 
 def _build_code_owned_report_contract_block(
-    extraction_output: EntityExtractionOutput,
-    tick_logs: List,
-    x_t_sequence: List[float],
     simulation_dataset: dict,
 ) -> str:
     """构建 code-owned report contract block（v1.3.1：纯消费 simulation_dataset）。"""
-    del x_t_sequence  # 不再自行重算
     sim = simulation_dataset.get("simulation_result", {})
     risk_verdict = sim.get("risk_verdict", {})
     risk_type_classification = sim.get("risk_type_classification", {})
@@ -252,7 +245,6 @@ def save_report(phase4_output: Phase4Output, output_path: Path = None):
 
 def save_markdown_report(
     phase4_output: Phase4Output,
-    extraction_output: EntityExtractionOutput,
     output_path: Path = None,
     *,
     markdown: str,

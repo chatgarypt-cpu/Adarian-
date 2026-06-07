@@ -18,8 +18,6 @@ def build_run_paths(seed_file: Path) -> dict:
     batch_dir.mkdir(parents=True, exist_ok=True)
     run_dir = batch_dir / run_id
     run_dir.mkdir(parents=True, exist_ok=False)
-    whitebox_dir = run_dir / "whitebox"
-    whitebox_dir.mkdir(parents=True, exist_ok=True)
 
     seed_copy = run_dir / "seed_input.txt"
     shutil.copyfile(seed_file, seed_copy)
@@ -31,11 +29,8 @@ def build_run_paths(seed_file: Path) -> dict:
         "simulation_dataset": run_dir / "simulation_dataset.json",
         "final_report_json": run_dir / "final_report.json",
         "final_report_md": run_dir / "final_report.md",
-        "whitebox_summary": whitebox_dir / "whitebox_summary.json",
-        "whitebox_dir": whitebox_dir,
-        "run_log": whitebox_dir / "run.log",
-        "timing_summary": whitebox_dir / "timing_summary.json",
-        "run_meta": whitebox_dir / "run_meta.json",
+        "run_log": run_dir / "run.log",
+        "run_meta": run_dir / "run_meta.json",
     }
 
     return {

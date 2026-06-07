@@ -238,14 +238,62 @@ midPhaseTest.py
 c688a8a  config: PHASE1_MAX_CONCURRENT_SPREADERS = 0
 5edb40d  phase1 concurrent: 传播者并发生成 + 二分降级
 e9656cc  phase3 tick: 并发调度加二分降级
-9c342df  parallel: concurrent LLM calls per tick + tick_entries in dataset
-```
+|9c342df  parallel: concurrent LLM calls per tick + tick_entries in dataset
+|36d3552  phase1: Compiler 归一化 estimated_percentage 缩放至 100
+|ec86854  phase1: Repair Loop — difflib entity 匹配 + P 翻转
+|be0f89b  phase1 OCP: extraction.py → 6 文件
+|c373319  whitebox: Phase1Reporter 全生命周期记录
+|e56711a  whitebox: 统一路径到 run_dir/whitebox/
+|601b9ad  RuntimeLogger: _Tee → logging 重构
+|0fb089c  generator: max_tokens=16384（2026-06-07）
+|```
 
 ---
 
-## 五、下一步建议
+## 六、本次遗漏补录（2026-06-07 检查）
 
-1. **Repair Loop**（治理文档 v1.2.7）：Pydantic 校验失败后，不重做全部 Generator，只定向修复出错的字段
-2. **ConcurrencyTracker 持久化**：将每次并发的耗时散布写入 timing_summary.json，方便长期 profiling
-3. **Phase 1 Generator prompt 缩减**：Entity Generator prompt 目前仍请求完整 11 字段人设，可精简为只请求框架字段以节省 token
-4. **Phase 3 tick 收敛检测**：恢复被注释掉的收敛检测逻辑（目前跑满 10 tick，可提前停止）
+### 1. Compiler 归一化（已落地，但未在报告体现）
+
+`src/phase1/compiler.py` 的 `_post_process_entities()` 新增：`estimated_percentage` 等比缩放至 100。
+确保即使 LLM 输出比例之和 ≠ 100，也不触发 Pydantic 校验失败。Gary 明确表态支持："通过代码进行归一化控制"。
+
+### 2. Repair Loop（已落地，但报告写成了"下一步建议"）
+
+`orchestrator.py` 和 `generator.py` 中的修复流程：
+- **difflib 模糊匹配**：LLM 输出的 `related_event_entity` 名称与实际 entity 不完全匹配时，用 difflib 自动找最近的 entity 名
+- **P 翻转修复**：如果 LLM 输出的 P 值与 estimated_percentage 分布矛盾，自动翻转
+
+修复后通过 Pydantic 校验才放行，不走 LLM 重试。
+
+### 3. OCP 重构（已落地）
+
+`src/phase1/extraction.py` 从 300+ 行单体降级为 33 行 re-export，拆成 6 个关注点文件：utils.py / analyzer.py / generator.py / compiler.py / orchestrator.py / extraction.py（re-export）
+
+### 4. 白盒系统（已落地）
+
+`src/whitebox/phase1_reporter.py` — Phase1Reporter，全生命周期记录：Analyzer 耗时、Entity Generator 每次 attempt、Spreader 并发耗时、Compiler 归一化、错误追踪。产物统一进 `run_dir/whitebox/`。下游不依赖 whitebox 产物（LSP 原则）。
+
+### 5. RuntimeLogger 重构（已落地）
+
+`src/utils/runtime_logger.py`：从 `_Tee`（子进程重定向 stdout）改为 `logging` 库。
+
+### 6. 今日实验结论（2026-06-07）
+
+结构化输出路径实验：
+- Baseline（当前纯 prompt 方案）10 次全部通过 ✅
+- `response_format=json_object` / `json_schema` / `guided_json` → Qwen 集群 Connection Reset ❌
+- **结论**：当前方案（prompt + 思维链清洗 + repair loop + compiler）就是 Qwen 内网集群下最优解
+
+Generator 修复：实体提取独立 max_tokens=16384，避免推理链截断导致重试
+
+平行世界调度器设计文档 v0.1：docs/design/parallel_worlds_scheduler_v0.1.md
+
+---
+
+## 七、修正：原报告"下一步建议"中 Repair Loop 状态
+
+原第 246-251 行的"下一步建议 #1 Repair Loop"实际已在 v1.2.8 落地（commit ec86854），不应列为待办。已在本节第 2 条记录。移除后待办剩：
+
+1. ConcurrencyTracker 持久化到 timing_summary.json
+2. Phase 1 Generator prompt 缩减（精简 11 字段人设请求）
+3. Phase 3 tick 收敛检测（恢复被注释掉的收敛逻辑）

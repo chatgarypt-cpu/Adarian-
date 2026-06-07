@@ -37,11 +37,14 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 
 import config
 from config import ensure_dirs
-from src.llm_client import init_llm_client, get_llm_client
+from src.llm_client import init_llm_client, get_llm_client, register_observer
 from src.schemas import EntityExtractionOutput, Phase2Output, Phase4Output, TickLog
 from src.utils.runtime_logger import get_runtime_logger
 from src.phase4.paths import build_run_paths
-from src.whitebox.run_meta import write_run_meta, write_whitebox_artifacts
+from src.whitebox.run_meta import write_run_meta
+from src.whitebox.token_tracker import TokenTracker
+from src.display.run_log_writer import append_run_summary
+from src.whitebox.dataset_spec_writer import generate_spec_yaml_from_files
 
 console = Console()
 
@@ -172,32 +175,18 @@ def run_phase3_parser(
 
 
 def run_phase4(
-    extraction_output: EntityExtractionOutput,
-    phase2_output: Phase2Output,
-    tick_logs: List[TickLog],
-    x_t_sequence: List[float],
     dataset: dict,
     json_output_path: Optional[Path] = None,
     markdown_output_path: Optional[Path] = None,
 ) -> Phase4Output:
-    """执行 Phase 4：宏观洞察生成（Phase3 驱动版）
+    """执行 Phase 4：宏观洞察生成（纯消费 simulation_dataset）
 
-    消费 Phase3 parser 输出的 risk_verdict / inflection_points /
-    agent_stance_matrix，不调 report_agent 内联函数。
+    只依赖 dataset（simulation_dataset.json），不再需要外部 pipeline 参数。
     """
-    from src.phase4.report_narrative import generate_report_with_llm_narrative, build_report_context_new
-    from src.phase4.report_agent import (
-        _build_code_owned_report_contract_block,
-        parse_llm_report_response,
-        save_report,
-        save_markdown_report,
-    )
+    from src.phase4.report_narrative import generate_report_with_llm_narrative
+    from src.phase4.report_agent import save_report, save_markdown_report
 
     console.print(Panel("[bold]Phase 4: 宏观洞察生成（Phase3 驱动）[/bold]", border_style="cyan"))
-
-    report_context = build_report_context_new(
-        extraction_output, tick_logs, x_t_sequence, phase2_output, dataset,
-    )
 
     with Progress(
         SpinnerColumn(),
@@ -206,22 +195,14 @@ def run_phase4(
     ) as progress:
         task = progress.add_task("[cyan]生成报告...", total=1)
         phase4_output, markdown = generate_report_with_llm_narrative(
-            extraction_output,
-            tick_logs,
-            x_t_sequence,
-            phase2_output=phase2_output,
-            build_report_context=lambda *a, **kw: report_context,
-            build_code_owned_contract_block=_build_code_owned_report_contract_block,
-            parse_llm_report_response=parse_llm_report_response,
+            dataset,
             get_llm_client_func=get_llm_client,
-            simulation_dataset=dataset,
         )
         progress.update(task, completed=1)
 
     save_report(phase4_output, output_path=json_output_path)
     save_markdown_report(
         phase4_output,
-        extraction_output,
         output_path=markdown_output_path,
         markdown=markdown,
     )
@@ -241,6 +222,10 @@ def main():
 
     init_llm_client()
     console.print(f"[green]OK[/green] LLM: {config.LLM_PROVIDER} / {config.get_model_name()}\n")
+
+    # Token 追踪（Observer 模式，不侵入 LLMClient）
+    _token_tracker = TokenTracker()
+    register_observer(_token_tracker.on_llm_response)
 
     if len(sys.argv) > 1:
         seed_file = Path(sys.argv[1])
@@ -305,6 +290,15 @@ def main():
         )
         with open(outputs["simulation_dataset"], "w", encoding="utf-8") as f:
             json.dump(dataset, f, ensure_ascii=False, indent=2)
+        # 生成带规格说明的 YAML 版（给人读）
+        try:
+            generate_spec_yaml_from_files(
+                outputs["simulation_dataset"],
+                config.PROJECT_ROOT / "spec" / "dataset_fields.yaml",
+                run_dir / "simulation_dataset_spec.yaml",
+            )
+        except Exception:
+            pass  # YAML 生成失败不影响主流程
         phase3p_time = time.time() - phase3p_start
         logger.log_phase_end("phase3_parser_aggregation", phase3p_time)
 
@@ -312,10 +306,6 @@ def main():
         logger.log_phase_start("phase4_report_agent")
         phase4_start = time.time()
         phase4_output = run_phase4(
-            extraction_output,
-            phase2_output,
-            tick_logs,
-            x_t_sequence,
             dataset,
             json_output_path=outputs["final_report_json"],
             markdown_output_path=outputs["final_report_md"],
@@ -337,8 +327,6 @@ def main():
             final_polarization_index=tick_logs[-1].global_metrics.polarization_index,
             risk_level=phase4_output.risk_level.value,
         )
-        whitebox_artifacts = write_whitebox_artifacts(run_context)
-        report_completeness = whitebox_artifacts["report_completeness"]["result"]
 
         console.print("\n" + "=" * 60)
         console.print("[bold green]舆情预判完成！[/bold green]")
@@ -366,16 +354,8 @@ def main():
   Simulation Dataset: {outputs["simulation_dataset"]}
   JSON 报告: {outputs["final_report_json"]}
   Markdown 报告: {outputs["final_report_md"]}
-  Whitebox 摘要: {outputs["whitebox_summary"]}
-  Whitebox 目录: {outputs["whitebox_dir"]}
   运行日志: {outputs["run_log"]}
-  时间摘要: {outputs["timing_summary"]}
   运行元数据: {outputs["run_meta"]}
-
-[bold]白盒报告完整性：[/bold]
-  截断: {str(report_completeness["report_truncated"]).lower()}
-  完整性评分: {report_completeness["report_completeness_score"]}
-  字数: {report_completeness["report_char_count"]}
 """)
 
     except KeyboardInterrupt:
@@ -407,6 +387,26 @@ def main():
         )
         console.print(f"\n[bold red]错误：[/bold red] {e}")
         sys.exit(1)
+    finally:
+        # 无论成功/失败/中断，都追加运行摘要到 run.log
+        if 'run_context' in dir() and 'logger' in dir():
+            try:
+                _run_status = logger.summary.get("run", {}).get("status", "unknown")
+                _elapsed = time.time() - start_time if 'start_time' in dir() else None
+                _seed_name = seed_file.name if 'seed_file' in dir() else None
+                _token_summ = _token_tracker.get_summary() if '_token_tracker' in dir() else None
+                append_run_summary(
+                    outputs["run_log"],
+                    run_status=_run_status,
+                    run_started_at=started_at,
+                    run_elapsed=_elapsed,
+                    seed_name=_seed_name,
+                    model_name=config.get_model_name(),
+                    runtime_summary=logger.get_summary(),
+                    token_summary=_token_summ,
+                )
+            except Exception:
+                pass  # 摘要写入失败不影响主流程
 
 
 if __name__ == "__main__":

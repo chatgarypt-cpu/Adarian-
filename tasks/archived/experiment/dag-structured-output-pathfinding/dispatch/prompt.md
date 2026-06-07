@@ -1,8 +1,5 @@
-/agent team
-
-载入 karpathy-coding 行为准则。
-
-通过串行 agent team 实验，找到从 Qwen 集群获取可靠 JSON 输出的最佳路径。每个 agent 依次执行一种方案并测试，最后的 fan-in agent 汇总推荐。
+@skill karpathy-coding
+use a workflow to: 通过多 agent 串行实验，找到从 Qwen 集群获取可靠 JSON 输出的最佳路径。一共 5 个 agent 依次执行，每个 agent 完成后下一个才启动。不用 @agent 引用，所有 agent 定义在 workflow 的 agent 节中。
 
 ## 背景
 
@@ -26,17 +23,17 @@ Adarian MVP 的 Phase 1 Entity Generator（`src/phase1/generator.py`）用 LLM �
 
 ## 实验要求
 
-5 个 agent 依次串行执行：
+5 个 workflow step 依次串行执行：
 
-1. @agent-baseline — 跑当前代码 10 次，量化失败率
-2. @agent-json-mode — 测试 `response_format=json_object`
-3. @agent-json-schema — 测试 `response_format=json_schema`
-4. @agent-guided-json — 测试 `guided_json` (vLLM)
-5. @agent-fan-in — 汇总 4 份 report，推荐方案
+Step 1 — baseline: 跑当前 Generator 的 JSON 输出 10 次，量化失败率
+Step 2 — json-mode: 测试 `response_format=json_object`
+Step 3 — json-schema: 测试 `response_format=json_schema`
+Step 4 — guided-json: 测试 `guided_json` (vLLM)
+Step 5 — fan-in: 汇总 4 份 report，推荐方案
 
 ---
 
-### @agent-baseline: Baseline — 测试当前 Generator 的 JSON 输出成功率
+### Step 1: baseline — 测试当前 Generator 的 JSON 输出成功率
 
 **目标：** 只测 Entity Generator 最核心的 LLM 调用——发送 prompt + 拿回 JSON。不跑全 pipeline。每次测试就是一个 request 的事。
 
@@ -63,7 +60,7 @@ Adarian MVP 的 Phase 1 Entity Generator（`src/phase1/generator.py`）用 LLM �
 - 用 `requests` 直调 API，不走 LLMClient
 - 用 `.venv/bin/python` 运行
 
-### @agent-json-mode: JSON Mode — response_format={"type":"json_object"}
+### Step 2: json-mode — JSON Mode response_format={"type":"json_object"}
 
 **目标：** 测试 OpenAI JSON mode 是否能防止 JSON 截断——同样是单次 LLM 调用。
 
@@ -83,7 +80,7 @@ Adarian MVP 的 Phase 1 Entity Generator（`src/phase1/generator.py`）用 LLM �
 - 不修改 `src/` 任何代码
 - 用 `requests` 直调 API
 
-### @agent-json-schema: Structured Outputs — response_format={"type":"json_schema", ...}
+### Step 3: json-schema — Structured Outputs response_format={"type":"json_schema", ...}
 
 **目标：** 测试 Qwen endpoint 是否支持 OpenAI 兼容的 json_schema 结构化输出。
 
@@ -96,9 +93,9 @@ Adarian MVP 的 Phase 1 Entity Generator（`src/phase1/generator.py`）用 LLM �
    - **关键注意：** Qwen 的 vLLM/SGLang 后端可能不支持 json_schema（返回 400 或忽略参数）
 2. 写报告 `tests/structured_output/json_schema/report.md`
 
-### @agent-guided-json: Guided JSON (vLLM) — guided_json 参数
+### Step 4: guided-json — Guided JSON (vLLM) guided_json 参数
 
-**目标：** 测试 vLLM 原生 guided_json 参数是否能在 Qwen endpoint 上工作。
+**目标：** 测试 vLLM 原生 guided_json 参数是否能在 Qwen endpoint 上工作。依赖 Step 3 完成后再执行。
 
 **做法：**
 1. 创建 `tests/structured_output/guided_json/test_guided_json.py`：
@@ -109,9 +106,9 @@ Adarian MVP 的 Phase 1 Entity Generator（`src/phase1/generator.py`）用 LLM �
    - **关键注意：** guided_json 是 vLLM 原生参数，如果 Qwen 集群用 vLLM 部署则此方案最可靠。但 endpoint 可能不认识此参数（返回错误或忽略）
 2. 写报告 `tests/structured_output/guided_json/report.md`
 
-### @agent-fan-in: 汇总并推荐最优方案
+### Step 5: fan-in — 汇总并推荐最优方案
 
-**依赖：@agent-baseline, @agent-json-mode, @agent-json-schema, @agent-guided-json 全部完成**
+**依赖：Step 1, 2, 3, 4 全部完成**
 
 **做法：**
 1. 读取 A、B、C、D 四份 report

@@ -1,4 +1,13 @@
 
+## 2026-06-07: Generator max_tokens 修复 + 平行世界调度器设计
+
+- **task_id**: generator-max-tokens-fix + parallel-worlds-design
+- **status**: committed (0fb089c)
+- **changes**:
+  - `src/phase1/generator.py`: Generator 实体提取的 LLMClient 单独设 max_tokens=16384（原默认 8192），防止推理链挤占 JSON 输出 budget
+  - `docs/design/parallel_worlds_scheduler_v0.1.md`: 平行世界调度器设计文档 v0.1（5 进程并行 / 各自模型 / 失败兜底）
+- **next**: 产品侧风险映射更新；平行世界调度器实现
+
 ## 2026-06-07: code-reality-review-v1.3.1 (Closeout)
 
 - **task_id**: code-reality-review-v1.3.1

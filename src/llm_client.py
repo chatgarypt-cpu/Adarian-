@@ -48,6 +48,18 @@ class LLMResponse(BaseModel):
     usage: Optional[dict] = None
 
 
+# 全局 observer 列表（TokenTracker 等通过 register_observer 注册）
+_llm_observers: list = []
+
+
+def register_observer(callback) -> None:
+    """注册 LLM 调用完成后的观察者回调。
+
+    callback 签名: fn(*, usage: dict, caller: str, elapsed: float, model: str)
+    """
+    _llm_observers.append(callback)
+
+
 class LLMClient:
     """LLM 统一客户端
 
@@ -155,7 +167,7 @@ class LLMClient:
                 logger.log_llm_end(caller, self.model, elapsed)
 
                 content = response.choices[0].message.content
-                return LLMResponse(
+                llm_response = LLMResponse(
                     content=content,
                     raw_response=response.model_dump(),
                     model=self.model,
@@ -165,6 +177,20 @@ class LLMClient:
                         "total_tokens": response.usage.total_tokens if response.usage else 0,
                     }
                 )
+
+                # 通知外部观察者（TokenTracker 等）
+                for _obs in _llm_observers:
+                    try:
+                        _obs(
+                            usage=llm_response.usage,
+                            caller=caller,
+                            elapsed=elapsed,
+                            model=self.model,
+                        )
+                    except Exception:
+                        pass  # 观察者失败不影响主流程
+
+                return llm_response
 
             except Exception as e:
                 self._diag_log(

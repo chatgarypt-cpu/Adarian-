@@ -1,0 +1,47 @@
+task_id: dag-structured-output-pathfinding
+task_status: failed
+runtime_state: summary_written
+runtime_states_supported:
+  - aborted
+  - aborting
+  - artifact_detected
+  - artifact_missing
+  - completed
+  - created
+  - dispatch_ready
+  - environment_blocked
+  - error
+  - executor_completed
+  - executor_failed
+  - failed
+  - healthy_running
+  - hold
+  - hold_required
+  - launching
+  - missing_receipt
+  - missing_report
+  - not_started
+  - partial_output
+  - partial_output_recovered
+  - permission_blocked
+  - pre_action_checking
+  - prompt_sent
+  - recovered
+  - recovering
+  - rerun_required
+  - running
+  - sandbox_denied
+  - session_lost
+  - slow_but_progressing
+  - starting
+  - summary_written
+  - suspected_blocked
+  - timeout
+  - waiting_for_input
+  - waiting_for_ready
+  - waiting_input
+known_issues:
+  - runtime_state values intentionally overlap task_status for MVP compatibility
+config_path: /Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/dag-structured-output-pathfinding/dispatch/task_config.yaml
+updated_at: "2026-06-07T18:38:00+08:00"
+closeout_claimed: false
