@@ -1,46 +1,50 @@
-"""运行时观测日志，集成 stdout 捕获。"""
+"""运行时观测日志，基于 logging 库。"""
 
 from __future__ import annotations
 
 import json
-import os
+import logging
 import sys
 import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-
-class _Tee:
-    """双写流：print → terminal + run.log"""
-    def __init__(self, original_stream, file_path: Path):
-        self._stream = original_stream
-        self._file = open(file_path, "a", encoding="utf-8")
-
-    def write(self, text: str) -> None:
-        self._stream.write(text)
-        self._file.write(text)
-        self._file.flush()
-
-    def flush(self) -> None:
-        self._stream.flush()
-        self._file.flush()
+_LOG = logging.getLogger("runtime")
 
 
 class RuntimeLogger:
-    """最小运行观测器。"""
+    """最小运行观测器，所有输出通过 logging 库统一管理。"""
 
     def __init__(self) -> None:
         self.run_dir: Optional[Path] = None
         self.log_path: Optional[Path] = None
         self.timing_path: Optional[Path] = None
         self.summary: Dict[str, Any] = {}
+        self._configured = False
 
     def configure(self, run_dir: Path) -> None:
         self.run_dir = Path(run_dir)
         self.run_dir.mkdir(parents=True, exist_ok=True)
         self.log_path = self.run_dir / "run.log"
         self.timing_path = self.run_dir / "timing_summary.json"
+
+        # Initialize logger: file + console, no duplicate logs on reconfigure
+        _LOG.setLevel(logging.INFO)
+        _LOG.handlers.clear()
+
+        fmt = logging.Formatter("%(asctime)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+
+        # File handler
+        fh = logging.FileHandler(self.log_path, mode="a", encoding="utf-8")
+        fh.setFormatter(fmt)
+        _LOG.addHandler(fh)
+
+        # Console handler (stdout)
+        ch = logging.StreamHandler(sys.stdout)
+        ch.setFormatter(fmt)
+        _LOG.addHandler(ch)
+
         self.summary = {
             "run": {
                 "start_time": None,
@@ -61,12 +65,7 @@ class RuntimeLogger:
             "errors": [],
         }
         self._write_summary()
-        # Redirect stdout: print goes to both terminal and run.log
-        sys.stdout = _Tee(sys.stdout, self.log_path)
-        sys.stderr = _Tee(sys.stderr, self.log_path)
-
-    def _timestamp(self) -> str:
-        return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self._configured = True
 
     def _ensure_summary_shape(self) -> None:
         self.summary.setdefault("run", {})
@@ -84,12 +83,6 @@ class RuntimeLogger:
         self.summary.setdefault("ticks", [])
         self.summary.setdefault("errors", [])
 
-    def _append_log(self, message: str) -> None:
-        if not self.log_path:
-            return
-        with open(self.log_path, "a", encoding="utf-8") as f:
-            f.write(f"[{self._timestamp()}] {message}\n")
-
     def _write_summary(self) -> None:
         if not self.timing_path:
             return
@@ -99,42 +92,42 @@ class RuntimeLogger:
     def log_run_start(self, mode: str, seed_file: str, run_dir: str) -> None:
         self._ensure_summary_shape()
         self.summary["run"].update({
-            "start_time": self._timestamp(),
+            "start_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "mode": mode,
             "seed_file": seed_file,
             "run_dir": run_dir,
             "status": "running",
         })
-        self._append_log(f"RUN START mode={mode} seed={seed_file} run_dir={run_dir}")
+        _LOG.info("RUN START mode=%s seed=%s run_dir=%s", mode, seed_file, run_dir)
         self._write_summary()
 
     def log_run_end(self, status: str, elapsed: float) -> None:
         self._ensure_summary_shape()
         self.summary["run"].update({
-            "end_time": self._timestamp(),
+            "end_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "elapsed_seconds": round(elapsed, 2),
             "status": status,
         })
-        self._append_log(f"RUN END status={status} elapsed={elapsed:.2f}s")
+        _LOG.info("RUN END status=%s elapsed=%.2fs", status, elapsed)
         self._write_summary()
 
     def log_phase_start(self, name: str) -> None:
         self._ensure_summary_shape()
         self.summary["phases"].setdefault(name, {})
-        self.summary["phases"][name]["start_time"] = self._timestamp()
-        self._append_log(f"PHASE START name={name}")
+        self.summary["phases"][name]["start_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        _LOG.info("PHASE START name=%s", name)
         self._write_summary()
 
     def log_phase_end(self, name: str, elapsed: float) -> None:
         self._ensure_summary_shape()
         self.summary["phases"].setdefault(name, {})
-        self.summary["phases"][name]["end_time"] = self._timestamp()
+        self.summary["phases"][name]["end_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.summary["phases"][name]["elapsed_seconds"] = round(elapsed, 2)
-        self._append_log(f"PHASE END name={name} elapsed={elapsed:.2f}s")
+        _LOG.info("PHASE END name=%s elapsed=%.2fs", name, elapsed)
         self._write_summary()
 
     def log_llm_start(self, caller: str, model: str) -> None:
-        self._append_log(f"LLM START caller={caller} model={model}")
+        _LOG.info("LLM START caller=%s model=%s", caller, model)
 
     def log_llm_end(self, caller: str, model: str, elapsed: float) -> None:
         self._ensure_summary_shape()
@@ -143,13 +136,13 @@ class RuntimeLogger:
             "caller": caller,
             "model": model,
             "elapsed_seconds": round(elapsed, 2),
-            "timestamp": self._timestamp(),
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         })
-        self._append_log(f"LLM END caller={caller} model={model} elapsed={elapsed:.2f}s")
+        _LOG.info("LLM END caller=%s model=%s elapsed=%.2fs", caller, model, elapsed)
         self._write_summary()
 
     def log_persona_start(self, group: str) -> None:
-        self._append_log(f"PERSONA START group={group}")
+        _LOG.info("PERSONA START group=%s", group)
 
     def log_persona_end(self, group: str, elapsed: float) -> None:
         self._ensure_summary_shape()
@@ -157,27 +150,35 @@ class RuntimeLogger:
         self.summary["persona"]["groups"].append({
             "group": group,
             "elapsed_seconds": round(elapsed, 2),
-            "timestamp": self._timestamp(),
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         })
-        self._append_log(f"PERSONA END group={group} elapsed={elapsed:.2f}s")
+        _LOG.info("PERSONA END group=%s elapsed=%.2fs", group, elapsed)
         self._write_summary()
 
     def log_tick_start(self, tick: int) -> None:
-        self._append_log(f"TICK START tick={tick}")
+        _LOG.info("TICK START tick=%d", tick)
 
     def log_speaker_selection(
-        self,
-        tick: int,
-        spreader_count: int,
-        computed_num_speakers: int,
-        expected_selected_count: int,
-        actual_selected_count: int,
-        selected_speakers_count: int,
-        is_full_selection: bool,
+        self, tick: int, spreader_count: int, computed_num_speakers: int,
+        expected_selected_count: int, actual_selected_count: int,
+        selected_speakers_count: int, is_full_selection: bool,
         full_selection_reason: str,
     ) -> None:
         self._ensure_summary_shape()
-        payload = {
+        _LOG.info(
+            "SPEAKER SELECTION tick=%d spreader_count=%d "
+            "computed_num_speakers=%d expected_selected_count=%d "
+            "actual_selected_count=%d selected_speakers_count=%d "
+            "is_full_selection=%s full_selection_reason=%s",
+            tick, spreader_count, computed_num_speakers,
+            expected_selected_count, actual_selected_count,
+            selected_speakers_count, is_full_selection, full_selection_reason,
+        )
+        tick_entry = next((e for e in self.summary["ticks"] if e.get("tick") == tick), None)
+        if tick_entry is None:
+            tick_entry = {"tick": tick}
+            self.summary["ticks"].append(tick_entry)
+        tick_entry["speaker_selection"] = {
             "tick": tick,
             "spreader_count": spreader_count,
             "computed_num_speakers": computed_num_speakers,
@@ -187,27 +188,11 @@ class RuntimeLogger:
             "is_full_selection": is_full_selection,
             "full_selection_reason": full_selection_reason,
         }
-        self._append_log(
-            "SPEAKER SELECTION "
-            f"tick={tick} "
-            f"spreader_count={spreader_count} "
-            f"computed_num_speakers={computed_num_speakers} "
-            f"expected_selected_count={expected_selected_count} "
-            f"actual_selected_count={actual_selected_count} "
-            f"selected_speakers_count={selected_speakers_count} "
-            f"is_full_selection={is_full_selection} "
-            f"full_selection_reason={full_selection_reason}"
-        )
-        tick_entry = next((entry for entry in self.summary["ticks"] if entry.get("tick") == tick), None)
-        if tick_entry is None:
-            tick_entry = {"tick": tick}
-            self.summary["ticks"].append(tick_entry)
-        tick_entry["speaker_selection"] = payload
         self._write_summary()
 
     def log_tick_end(self, tick: int, elapsed: float, speakers: int, llm_calls: int) -> None:
         self._ensure_summary_shape()
-        tick_entry = next((entry for entry in self.summary["ticks"] if entry.get("tick") == tick), None)
+        tick_entry = next((e for e in self.summary["ticks"] if e.get("tick") == tick), None)
         if tick_entry is None:
             tick_entry = {"tick": tick}
             self.summary["ticks"].append(tick_entry)
@@ -215,11 +200,9 @@ class RuntimeLogger:
             "elapsed_seconds": round(elapsed, 2),
             "speakers": speakers,
             "llm_calls": llm_calls,
-            "timestamp": self._timestamp(),
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         })
-        self._append_log(
-            f"TICK END tick={tick} elapsed={elapsed:.2f}s speakers={speakers} llm_calls={llm_calls}"
-        )
+        _LOG.info("TICK END tick=%d elapsed=%.2fs speakers=%d llm_calls=%d", tick, elapsed, speakers, llm_calls)
         self._write_summary()
 
     def log_error(self, stage: str, error: str) -> None:
@@ -227,13 +210,17 @@ class RuntimeLogger:
         self.summary["errors"].append({
             "stage": stage,
             "error": error,
-            "timestamp": self._timestamp(),
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         })
-        self._append_log(f"ERROR stage={stage} error={error}")
+        _LOG.error("ERROR stage=%s error=%s", stage, error)
         self._write_summary()
 
     def get_llm_call_count(self) -> int:
         return int(self.summary.get("llm", {}).get("count", 0))
+
+    def info(self, msg: str, *args) -> None:
+        """Public interface for pipeline scripts to log info messages."""
+        _LOG.info(msg, *args)
 
 
 _runtime_logger = RuntimeLogger()

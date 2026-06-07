@@ -91,74 +91,77 @@ def main():
         sys.exit(1)
 
     seed_text = seed_file.read_text(encoding="utf-8")
-    print(f"[新路径] 种子: {seed_file.name} ({len(seed_text)} chars)")
-
-    init_llm_client()
+    logger = get_runtime_logger()
 
     # 白盒：构建运行目录
     run_context = build_run_paths(seed_file)
     run_dir = run_context["run_dir"]
-    logger = get_runtime_logger()
     logger.configure(run_dir=run_dir)
     started_at = datetime.now().isoformat()
     write_run_meta(run_context, seed_file=seed_file, status="running", started_at=started_at)
 
+    logger.info("[新路径] 种子: %s (%d chars)", seed_file.name, len(seed_text))
+    init_llm_client()
+
     # Phase 1
     logger.log_phase_start("phase1_extraction")
-    print("[Phase 1] 实体提取...")
+    logger.info("[Phase 1] 实体提取...")
     t1 = time.time()
     extraction_output = run_phase1(str(seed_file))
     t1 = time.time() - t1
     logger.log_phase_end("phase1_extraction", elapsed=t1)
-    print(f"  √ {t1:.1f}s")
+    logger.info("  √ %.1fs", t1)
 
     # Phase 2
     logger.log_phase_start("phase2_topology")
-    print("[Phase 2] 社交拓扑构建...")
+    logger.info("[Phase 2] 社交拓扑构建...")
     t2 = time.time()
     phase2_output = run_phase2(extraction_output)
     t2 = time.time() - t2
     logger.log_phase_end("phase2_topology", elapsed=t2)
-    print(f"  √ {t2:.1f}s")
+    logger.info("  √ %.1fs", t2)
 
     # Phase 3 tick simulation
     logger.log_phase_start("phase3_tick_simulation")
-    print("[Phase 3] 多轮涌现推演...")
+    logger.info("[Phase 3] 多轮涌现推演...")
     t3 = time.time()
     tick_logs, x_t_sequence = run_phase3_tick_simulation(
         extraction_output, phase2_output, seed_text,
     )
     t3 = time.time() - t3
     logger.log_phase_end("phase3_tick_simulation", elapsed=t3)
-    print(f"  √ {t3:.1f}s | {len(tick_logs)} ticks | x(t): {[round(x,2) for x in x_t_sequence]}")
+    x_str = ", ".join(f"{x:.2f}" for x in x_t_sequence)
+    logger.info("  √ %.1fs | %d ticks | x(t): [%s]", t3, len(tick_logs), x_str)
 
-    # Phase 3 parser aggregation（新路径核心）
+    # Phase 3 parser aggregation
     logger.log_phase_start("phase3_parser")
-    print("[Phase 3 Parser] 聚合分析（消费所有 Phase3 模块）...")
+    logger.info("[Phase 3 Parser] 聚合分析...")
     t4 = time.time()
     dataset = run_phase3_parser(
         extraction_output, phase2_output, tick_logs, x_t_sequence,
     )
     t4 = time.time() - t4
     logger.log_phase_end("phase3_parser", elapsed=t4)
-    print(f"  √ {t4:.2f}s")
+    logger.info("  √ %.2fs", t4)
 
     # 输出摘要
     sim = dataset["simulation_result"]
     rv = sim["risk_verdict"]
     rt = sim["risk_type_classification"]
-    print(f"\n  风险等级: {rv['level']} ({rv['label']})")
-    print(f"  风险类型: {rt['primary_types']}")
-    print(f"  拐点数量: {len(sim['inflection_points'])}")
-    print(f"  最终 x(t): {sim['final_x']}")
-    print(f"  极化指数: {sim['final_polarization_index']:.4f}")
+    logger.info("")
+    logger.info("  风险等级: %s (%s)", rv["level"], rv["label"])
+    logger.info("  风险类型: %s", rt["primary_types"])
+    logger.info("  拐点数量: %d", len(sim["inflection_points"]))
+    logger.info("  最终 x(t): %s", sim["final_x"])
+    logger.info("  极化指数: %.4f", sim["final_polarization_index"])
 
-    # 保存 simulation_dataset（结构化目录内）
+    # 保存 simulation_dataset
     dataset_path = run_dir / "simulation_dataset.json"
     dataset_path.write_text(
         json.dumps(dataset, ensure_ascii=False, indent=2), encoding="utf-8"
     )
-    print(f"\n✅ simulation_dataset 已保存: {dataset_path}")
+    logger.info("")
+    logger.info("✅ simulation_dataset 已保存: %s", dataset_path)
 
     # 白盒：验证产物完整性
     logger.log_phase_start("whitebox_artifacts")
@@ -169,7 +172,9 @@ def main():
     write_run_meta(run_context, seed_file=seed_file, status="success", started_at=started_at)
 
     total = t1 + t2 + t3 + t4
-    print(f"\n总耗时: {total:.1f}s")
+    logger.info("")
+    logger.info("总耗时: %.1fs", total)
+
 
 if __name__ == "__main__":
     main()
