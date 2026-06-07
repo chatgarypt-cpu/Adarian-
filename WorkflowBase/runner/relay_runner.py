@@ -870,7 +870,7 @@ def run_task(task_dir: str | Path) -> RunResult:
     if executor_cls is not None:
         executor = executor_cls(config)
         result = executor.run()
-        write_pm_runtime_summary(task_dir)
+        write_pm_runtime_summary(task_dir, dirs=dirs, config=config)
         return RunResult(
             result.exit_code,
             result.classification,
@@ -1143,7 +1143,7 @@ def run_task(task_dir: str | Path) -> RunResult:
         session_id=config.get("session_id") or "session-local",
         round_id=config.get("round_id") or "round-1",
     )
-    write_pm_runtime_summary(task_dir)
+    write_pm_runtime_summary(task_dir, dirs=dirs, config=config)
     return RunResult(exit_code, classification, stdout_path, stderr_path, raw_output_path)
 
 
@@ -1527,11 +1527,12 @@ def _summarize_output_content(output_path: Path) -> str:
     return f"内容摘要：{excerpt}" if excerpt else ""
 
 
-def write_pm_runtime_summary(task_dir: str | Path) -> Path:
+def write_pm_runtime_summary(task_dir: str | Path, dirs: dict[str, Path] | None = None, config: dict[str, Any] | None = None) -> Path:
     """Generate a concise post-task briefing from runtime state and result.json.
     Called automatically at the end of run_task() for both tmux and subprocess paths."""
-    config = _load_config_from_task_dir(task_dir)
-    dirs = ensure_task_dirs(config)
+    if dirs is None or config is None:
+        config = _load_config_from_task_dir(task_dir)
+        dirs = ensure_task_dirs(config)
     state_path = dirs["runtime_dir"] / "task_state.yaml"
     result_path = dirs["runtime_dir"] / "result.json"
     events = read_registry_events(dirs["task_dir"])

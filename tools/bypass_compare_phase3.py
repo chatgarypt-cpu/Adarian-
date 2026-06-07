@@ -38,10 +38,11 @@ if str(_proj) not in sys.path:
 import config
 from src.llm_client import init_llm_client
 
-# ── 旧路径（Phase 4 report_agent 内联函数）──────────────
-# 这些函数原本在 report_agent.py 中被 Phase 4 的 generate_report_with_llm 调用。
+# ── 旧路径（v1.3.1 归档至 legacy.phase4.legacy_analytics）──────────────
+# v1.3.1: 这些函数原位于 src.phase4.report_agent，
+# 现在作为 legacy.phase4.legacy_analytics 一部分归档。
 # 新路径的 Phase3 模块是它们的独立重建，功能等价。
-from src.phase4.report_agent import (
+from legacy.phase4.legacy_analytics import (
     assess_risk as old_assess_risk,
     determine_audience_mode as old_determine_audience,
     identify_inflection_points as old_identify_inflection,

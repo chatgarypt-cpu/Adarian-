@@ -231,9 +231,9 @@ class SimulationEngine:
         # LLM 客户端（差异化温度）
         from src.llm_client import LLMClient
         # 事件实体：温度 0.3，输出更稳定
-        self.llm_event_entity = LLMClient(temperature=0.3)
+        self.llm_event_entity = LLMClient(temperature=0.3, task_type="phase3_tick")
         # 传播者：温度 0.8，输出更多样化
-        self.llm_spreader = LLMClient(temperature=0.8)
+        self.llm_spreader = LLMClient(temperature=0.8, task_type="phase3_tick")
         # 默认客户端（保持兼容）
         self.llm = get_llm_client()
 

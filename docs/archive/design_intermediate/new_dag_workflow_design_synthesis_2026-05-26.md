@@ -662,7 +662,7 @@ Milestone Reset Mode
   → 记录开始时间到 ~/.hermes/.session_start
   → 注入时间上下文：开始时间 + 已耗时
   → 搜索 .session_handoff.md → 注入“会话进度恢复”
-  → 搜索 资产/memory_governance/handoffs/ 最近一条 → 注入“上一轮会话存档”
+  → 搜索 WorkflowBase/memory/handoff/handoffs.db（SQLite）最近一条 → 注入"上一轮会话存档"
   → 注入到 LLM 上下文
 ```
 

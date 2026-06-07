@@ -1,0 +1,91 @@
+task_id: review-v1.3.1-plan
+task_status: completed
+runtime_state: executor_completed
+runtime_states_supported:
+  - aborted
+  - aborting
+  - artifact_detected
+  - artifact_missing
+  - completed
+  - created
+  - dispatch_ready
+  - environment_blocked
+  - error
+  - executor_completed
+  - executor_failed
+  - failed
+  - healthy_running
+  - hold
+  - hold_required
+  - launching
+  - missing_receipt
+  - missing_report
+  - not_started
+  - partial_output
+  - partial_output_recovered
+  - permission_blocked
+  - pre_action_checking
+  - prompt_sent
+  - recovered
+  - recovering
+  - rerun_required
+  - running
+  - sandbox_denied
+  - session_lost
+  - slow_but_progressing
+  - starting
+  - summary_written
+  - suspected_blocked
+  - timeout
+  - waiting_for_input
+  - waiting_for_ready
+  - waiting_input
+known_issues:
+  - runtime_state values intentionally overlap task_status for MVP compatibility
+config_path: /Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/review-v1.3.1-plan/dispatch/task_config.yaml
+updated_at: "2026-06-06T15:31:56+08:00"
+closeout_claimed: false
+classification: expected_outputs_stable
+tmux_session_id: adarian_review-v1_3_1-plan
+hold_reason: 
+session_preserved: false
+clauderemote:
+  attempted: true
+  active: true
+  fallback_used: true
+  fallback_strategy: safe_whitelist_enter
+dialog_handling:
+  initialized: true
+  last_dialog_type: FILE_CREATION_DIALOG
+  last_dialog_action: accept_file_creation
+  last_dialog_signature: FILE_CREATION_DIALOG|accept_file_creation|create file|/Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/review-v1.3.1-plan/outputs/plan_review_report.md
+  matched_keyword: Create file
+  raw_target: /Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/review-v1.3.1-plan/outputs/plan_review_report.md
+  resolved_target: /Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/review-v1.3.1-plan/outputs/plan_review_report.md
+  target_resolution_strategy: absolute_expected_output_match
+  target_path: /Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/review-v1.3.1-plan/outputs/plan_review_report.md
+  choice_letter: 
+  auto_approved: false
+  dedup_hit: true
+  fallback_used: true
+  action_skipped: true
+  message: expected output file creation accepted
+expected_outputs:
+  configured:
+    - outputs/plan_review_report.md
+  resolved_absolute:
+    - /Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/review-v1.3.1-plan/outputs/plan_review_report.md
+  detected:
+    -
+      path: /Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/review-v1.3.1-plan/outputs/plan_review_report.md
+      exists: true
+      size_bytes: 24895
+      ready: true
+      truncated_marker_detected: false
+  path_mismatch:
+    []
+error_retry:
+  error_counts:
+
+  error_retry_limit: 3
+  last_error_at: 

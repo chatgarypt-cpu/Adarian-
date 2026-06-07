@@ -238,7 +238,7 @@
   applicable_lanes: [ALL]
   inputs: [stdin handoff content with record_protocol]
   outputs: [.session_handoff.md, archive copy, update summary YAML]
-  allowed_paths: ["~/项目开发/**/.session_handoff.md", "~/项目开发/AdarianMigration/adarian mvp/WorkflowBase/governance/handoffs/"]
+  allowed_paths: ["~/项目开发/**/.session_handoff.md", "~/项目开发/AdarianMigration/adarian mvp/WorkflowBase/memory/handoffs/"]
   forbidden_paths: []
   tools_required: [python3, pyyaml]
   permission_level: write_within_scope

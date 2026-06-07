@@ -2062,9 +2062,16 @@ E2E: 5/5
 - **executor**: unknown
 - **status**: completed
 - **timestamp**: 2026-06-04T11:00:23.936553+00:00
-## 2026-06-05: task-v1.3.0-reality-review
+## 2026-06-06: task-v1.3.1-phase4-streamlining
 
-- **task_id**: task-v1.3.0-reality-review
-- **executor**: unknown
-- **status**: completed
-- **timestamp**: 2026-06-05T14:03:30.645074+00:00
+- **task_id**: task-v1.3.1-phase4-streamlining
+- **executor**: claude (MiniMax)
+- **status**: completed ✅
+- **timestamp**: 2026-06-06T16:53:32+08:00
+- **details**: v1.3.1 Phase4 Pure Consumer — 5-Goal DAG via relay runner dispatch
+  - Goal A-E 全部完成
+  - 136 tests passed / 0 failed
+  - Smoke test8: exit 0, 632s, 35 LLM calls all qwen36-35b
+  - whitebox pass
+  - 修复 run_meta.py 重复调用 bug + legacy/main_legacy.py 双 docstring
+  - 已归档到 tasks/archived/development/

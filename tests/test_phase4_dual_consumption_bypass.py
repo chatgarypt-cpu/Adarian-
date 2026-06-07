@@ -1,14 +1,11 @@
 """
-Phase 4 dual-consumption bypass tests.
+Phase 4 dual-consumption bypass tests (v1.3.1 — legacy archive path).
 
-Verifies that the new Phase 3 code-owned path produces identical results to
-the old Phase 4 path for every deterministic computation:
-  - risk level assessment
-  - inflection point detection
-  - audience mode classification
-  - risk type classification
-  - full pipeline output
-  - stance matrix max-negative-shift
+v1.3.1: src.phase4 no longer carries the old compute functions. This
+test now imports the old helpers from ``legacy.phase4.legacy_analytics``
+and ``legacy.phase4.legacy_generation`` to keep verifying that the
+new Phase 3 code-owned path produces identical results to the
+archived old Phase 4 path.
 """
 
 import statistics
@@ -25,11 +22,14 @@ from src.phase3.parser import SimulationDatasetParser
 from src.phase3.risk_analyzer import RiskAnalyzer
 from src.phase3.inflection_detector import InflectionDetector
 from src.phase3.stance_analyzer import StanceAnalyzer
-from src.phase4.report_agent import (
+from legacy.phase4.legacy_analytics import (
     assess_risk as old_assess_risk,
     identify_inflection_points as old_identify_inflection_points,
     determine_audience_mode as old_determine_audience_mode,
     select_primary_risk_types as old_select_primary_risk_types,
+    _max_negative_shift_from_stance_matrix as old_max_shift,
+)
+from legacy.phase4.legacy_generation import (
     run_old_path,
     run_new_path,
 )
@@ -346,7 +346,8 @@ def test_full_pipeline_bypass():
 
 def test_stance_matrix_max_negative_shift_bypass():
     """Old and new max-negative-shift calculation must agree."""
-    from src.phase4.report_agent import (
+    # v1.3.1: _max_negative_shift_from_stance_matrix now lives in legacy.
+    from legacy.phase4.legacy_analytics import (
         _max_negative_shift_from_stance_matrix as old_max_shift,
     )
 

@@ -44,7 +44,24 @@
   evidence_paths: [task_dir/runtime/result.json, task_dir/logs/stdout.log]
   depends_on: [executor-codex]
 
-### Category: pm-runtime (12 skills)
+- id: skill-hermes-agent
+  name: Configure, extend, or contribute to Hermes Agent.
+  type: skill
+  status: active
+  purpose: Configure, extend, or contribute to Hermes Agent.
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="hermes-agent")'
+
+### Category: pm-runtime (13 skills)
 
 - id: skill-pm-runtime
   name: PM Runtime Index
@@ -301,22 +318,41 @@
   depends_on: [skill-path-resolver]
   call_pattern: 'cd adarian\ mvp && python3 WorkflowBase/runner/pm_runtime_self_maint.py [--fast]'
 
+- id: skill-artifact-presentation-protocol
+  name: Artifact Presentation Protocol
+  type: skill
+  status: active
+  purpose: PM Runtime 原生能力 — 展示审查/报告/产物时必须先贴原始内容（cat -n/read_file），再附分析总结
+  applicable_lanes: [A_LINE_FORMAL, WORKYB_RUNTIME]
+  inputs: [artifact file, review report, feature delivery]
+  outputs: [original content + analysis summary]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [cat, read_file, python3]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [original content shown first, analysis appended]
+  call_pattern: 'skill_view(name="artifact-presentation-protocol")'
+
+### Category: memory-governance
+
 - id: skill-memory-audit-format
   name: Memory Governance — Handoff 格式审计
   type: skill
   status: active
-  purpose: 扫描 memory_governance/handoffs/ 下的存档文件，检查 record_protocol 存在性、枚举值合法性、时间戳格式
+  purpose: 从 handoffs.db（SQLite）读取历史记录，检查 record_protocol 存在性、枚举值合法性、时间戳格式
   applicable_lanes: [WORKYB_RUNTIME]
   inputs: [handoff 文件]
   outputs: [合规报告]
-  allowed_paths: ["~/项目开发/AdarianMigration/adarian mvp/WorkflowBase/governance/**"]
+  allowed_paths: ["~/项目开发/AdarianMigration/adarian mvp/WorkflowBase/memory/**"]
   forbidden_paths: []
   tools_required: [python3]
   permission_level: readonly
   risk_level: low
   owner_approval_required: false
   validation: [exit code 0]
-  call_pattern: 'python3 WorkflowBase/governance/self-maint/audit_format.py'
+  call_pattern: 'python3 WorkflowBase/memory/self-maint/audit_format.py'
 
 - id: skill-memory-audit-scope-recall
   name: Memory Governance — scope_recall 数据库审计
@@ -333,17 +369,17 @@
   risk_level: low
   owner_approval_required: false
   validation: [exit code 0]
-  call_pattern: 'python3 WorkflowBase/governance/self-maint/audit_scope_recall.py'
+  call_pattern: 'python3 WorkflowBase/memory/self-maint/audit_scope_recall.py'
 
 - id: skill-memory-compress-handoffs
   name: Memory Governance — Handoff 里程碑压缩
   type: skill
   status: active
-  purpose: 通过 closeout-gate 触发，扫描 handoffs/ 下有关闭证据的存档，合并为 milestone 摘要（milestone_snapshot.md + task_index.yaml）
+  purpose: 从 handoffs.db（SQLite）读取历史记录，提取 task_id 信息并检查 closeout 证据，按分区生成里程碑摘要（milestone_snapshot.md + task_index.yaml）
   applicable_lanes: [WORKYB_RUNTIME]
   inputs: [handoff 文件, closeout 证据]
   outputs: [milestone snapshot, task index]
-  allowed_paths: ["~/项目开发/AdarianMigration/adarian mvp/WorkflowBase/governance/**", "~/项目开发/AdarianMigration/adarian mvp/tasks/archived/**"]
+  allowed_paths: ["~/项目开发/AdarianMigration/adarian mvp/WorkflowBase/memory/**", "~/项目开发/AdarianMigration/adarian mvp/tasks/archived/**"]
   forbidden_paths: []
   tools_required: [python3, pyyaml]
   permission_level: readonly
@@ -351,7 +387,7 @@
   owner_approval_required: false
   validation: [exit code 0]
   depends_on: [skill-closeout-gate]
-  call_pattern: 'python3 WorkflowBase/governance/self-maint/compress_handoffs.py'
+  call_pattern: 'python3 WorkflowBase/memory/self-maint/compress_handoffs.py'
 
 - id: skill-opencode
   name: OpenCode CLI
@@ -409,6 +445,363 @@
   return_format: file path
   evidence_paths: []
 
+- id: skill-architecture-diagram
+  name: Dark-themed SVG architecture/cloud/infra diagrams as HTML.
+  type: skill
+  status: active
+  purpose: Dark-themed SVG architecture/cloud/infra diagrams as HTML.
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="architecture-diagram")'
+
+- id: skill-ascii-art
+  name: "ASCII art: pyfiglet, cowsay, boxes, image-to-ascii."
+  type: skill
+  status: active
+  purpose: "ASCII art: pyfiglet, cowsay, boxes, image-to-ascii."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="ascii-art")'
+
+- id: skill-ascii-video
+  name: "ASCII video: convert video/audio to colored ASCII MP4/GIF."
+  type: skill
+  status: active
+  purpose: "ASCII video: convert video/audio to colored ASCII MP4/GIF."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="ascii-video")'
+
+- id: skill-baoyu-article-illustrator
+  name: "Article illustrations: type × style × palette consistency."
+  type: skill
+  status: active
+  purpose: "Article illustrations: type × style × palette consistency."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="baoyu-article-illustrator")'
+
+- id: skill-baoyu-comic
+  name: "Knowledge comics (知识漫画): educational, biography, tutorial."
+  type: skill
+  status: active
+  purpose: "Knowledge comics (知识漫画): educational, biography, tutorial."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="baoyu-comic")'
+
+- id: skill-baoyu-infographic
+  name: "Infographics: 21 layouts x 21 styles (信息图, 可视化)."
+  type: skill
+  status: active
+  purpose: "Infographics: 21 layouts x 21 styles (信息图, 可视化)."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="baoyu-infographic")'
+
+- id: skill-claude-design
+  name: Design one-off HTML artifacts (landing, deck, prototype).
+  type: skill
+  status: active
+  purpose: Design one-off HTML artifacts (landing, deck, prototype).
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="claude-design")'
+
+- id: skill-comfyui
+  name: Generate images, video, and audio with ComfyUI — install, launch, manage nodes/models, run workflows…
+  type: skill
+  status: active
+  purpose: Generate images, video, and audio with ComfyUI — install, launch, manage nodes/models, run workflows…
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="comfyui")'
+
+- id: skill-creative-ideation
+  name: Generate project ideas via creative constraints.
+  type: skill
+  status: active
+  purpose: Generate project ideas via creative constraints.
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="creative-ideation")'
+
+- id: skill-design-md
+  name: Author/validate/export Google's DESIGN.md token spec files.
+  type: skill
+  status: active
+  purpose: Author/validate/export Google's DESIGN.md token spec files.
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="design-md")'
+
+- id: skill-excalidraw
+  name: Hand-drawn Excalidraw JSON diagrams (arch, flow, seq).
+  type: skill
+  status: active
+  purpose: Hand-drawn Excalidraw JSON diagrams (arch, flow, seq).
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="excalidraw")'
+
+- id: skill-humanizer
+  name: "Humanize text: strip AI-isms and add real voice."
+  type: skill
+  status: active
+  purpose: "Humanize text: strip AI-isms and add real voice."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="humanizer")'
+
+- id: skill-manim-video
+  name: "Manim CE animations: 3Blue1Brown math/algo videos."
+  type: skill
+  status: active
+  purpose: "Manim CE animations: 3Blue1Brown math/algo videos."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="manim-video")'
+
+- id: skill-matplotlib-chinese-font
+  name: Fix Chinese text rendering in matplotlib/seaborn PNGs on macOS. The standard rcParams approach fails…
+  type: skill
+  status: active
+  purpose: Fix Chinese text rendering in matplotlib/seaborn PNGs on macOS. The standard rcParams approach fails…
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="matplotlib-chinese-font")'
+
+- id: skill-p5js
+  name: "p5.js sketches: gen art, shaders, interactive, 3D."
+  type: skill
+  status: active
+  purpose: "p5.js sketches: gen art, shaders, interactive, 3D."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="p5js")'
+
+- id: skill-pixel-art
+  name: Pixel art w/ era palettes (NES, Game Boy, PICO-8).
+  type: skill
+  status: active
+  purpose: Pixel art w/ era palettes (NES, Game Boy, PICO-8).
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="pixel-art")'
+
+- id: skill-popular-web-designs
+  name: 54 real design systems (Stripe, Linear, Vercel) as HTML/CSS.
+  type: skill
+  status: active
+  purpose: 54 real design systems (Stripe, Linear, Vercel) as HTML/CSS.
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="popular-web-designs")'
+
+- id: skill-pretext
+  name: Use when building creative browser demos with @chenglou/pretext — DOM-free text layout for ASCII art…
+  type: skill
+  status: active
+  purpose: Use when building creative browser demos with @chenglou/pretext — DOM-free text layout for ASCII art…
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="pretext")'
+
+- id: skill-sketch
+  name: "Throwaway HTML mockups: 2-3 design variants to compare."
+  type: skill
+  status: active
+  purpose: "Throwaway HTML mockups: 2-3 design variants to compare."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="sketch")'
+
+- id: skill-songwriting-and-ai-music
+  name: Songwriting craft and Suno AI music prompts.
+  type: skill
+  status: active
+  purpose: Songwriting craft and Suno AI music prompts.
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="songwriting-and-ai-music")'
+
+- id: skill-touchdesigner-mcp
+  name: Control a running TouchDesigner instance via twozero MCP — create operators, set parameters, wire co…
+  type: skill
+  status: active
+  purpose: Control a running TouchDesigner instance via twozero MCP — create operators, set parameters, wire co…
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="touchdesigner-mcp")'
+
 ### Category: data-science (8 skills)
 
 - id: skill-data-science-group
@@ -428,6 +821,91 @@
   validation: [file exists, chart renders]
   return_format: file path
   evidence_paths: []
+
+- id: skill-academic-chart-pdf
+  name: "Academic-grade Chinese data visualization PDFs: matplotlib charting, Chinese font fixes, reportlab P…"
+  type: skill
+  status: active
+  purpose: "Academic-grade Chinese data visualization PDFs: matplotlib charting, Chinese font fixes, reportlab P…"
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="academic-chart-pdf")'
+
+- id: skill-course-work-dataset-exploration
+  name: B线课程作业数据集第一轮探查工作流：双搜索引擎检索（Brave + Zhipu）、三平台字段分析（豆瓣/当当/京东）、样本采集、对比评估、报告生成。
+  type: skill
+  status: active
+  purpose: B线课程作业数据集第一轮探查工作流：双搜索引擎检索（Brave + Zhipu）、三平台字段分析（豆瓣/当当/京东）、样本采集、对比评估、报告生成。
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="course-work-dataset-exploration")'
+
+- id: skill-jupyter-live-kernel
+  name: Iterative Python via live Jupyter kernel (hamelnb).
+  type: skill
+  status: active
+  purpose: Iterative Python via live Jupyter kernel (hamelnb).
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="jupyter-live-kernel")'
+
+- id: skill-mcp-data-collection
+  name: Collect structured data from web sources using only MCP tools (Brave + Fetch) plus local Python proc…
+  type: skill
+  status: active
+  purpose: Collect structured data from web sources using only MCP tools (Brave + Fetch) plus local Python proc…
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="mcp-data-collection")'
+
+- id: skill-mcp-first-dataset-production
+  name: MCP-first Dataset Production Protocol — 先用 MCP 做探针看清页面结构，再生成最小批量脚本，跑出数据集，发现异常后用 MCP 定点排查修复。适用 B 线课程作…
+  type: skill
+  status: active
+  purpose: MCP-first Dataset Production Protocol — 先用 MCP 做探针看清页面结构，再生成最小批量脚本，跑出数据集，发现异常后用 MCP 定点排查修复。适用 B 线课程作…
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="mcp-first-dataset-production")'
 
 ### Category: devops (4 skills)
 
@@ -449,6 +927,91 @@
   return_format: status
   evidence_paths: []
 
+- id: skill-cc-switch
+  name: CC Switch desktop app integration — proxy routing, provider management, rectifier features, and comp…
+  type: skill
+  status: active
+  purpose: CC Switch desktop app integration — proxy routing, provider management, rectifier features, and comp…
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="cc-switch")'
+
+- id: skill-kanban-orchestrator
+  name: Decomposition playbook + anti-temptation rules for an orchestrator profile routing work through Kanb…
+  type: skill
+  status: active
+  purpose: Decomposition playbook + anti-temptation rules for an orchestrator profile routing work through Kanb…
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="kanban-orchestrator")'
+
+- id: skill-kanban-worker
+  name: Pitfalls, examples, and edge cases for Hermes Kanban workers. The lifecycle itself is auto-injected …
+  type: skill
+  status: active
+  purpose: Pitfalls, examples, and edge cases for Hermes Kanban workers. The lifecycle itself is auto-injected …
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="kanban-worker")'
+
+- id: skill-macos-power-management
+  name: >-
+  type: skill
+  status: active
+  purpose: >-
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="macos-power-management")'
+
+- id: skill-webhook-subscriptions
+  name: "Webhook subscriptions: event-driven agent runs."
+  type: skill
+  status: active
+  purpose: "Webhook subscriptions: event-driven agent runs."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="webhook-subscriptions")'
+
 ### Category: github (7 skills)
 
 - id: skill-github-group
@@ -468,6 +1031,108 @@
   validation: [gh CLI exit 0]
   return_format: URL
   evidence_paths: []
+
+- id: skill-codebase-inspection
+  name: "Inspect codebases w/ pygount: LOC, languages, ratios."
+  type: skill
+  status: active
+  purpose: "Inspect codebases w/ pygount: LOC, languages, ratios."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="codebase-inspection")'
+
+- id: skill-github-auth
+  name: "GitHub auth setup: HTTPS tokens, SSH keys, gh CLI login."
+  type: skill
+  status: active
+  purpose: "GitHub auth setup: HTTPS tokens, SSH keys, gh CLI login."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="github-auth")'
+
+- id: skill-github-code-review
+  name: "Review PRs: diffs, inline comments via gh or REST."
+  type: skill
+  status: active
+  purpose: "Review PRs: diffs, inline comments via gh or REST."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="github-code-review")'
+
+- id: skill-github-issues
+  name: Create, triage, label, assign GitHub issues via gh or REST.
+  type: skill
+  status: active
+  purpose: Create, triage, label, assign GitHub issues via gh or REST.
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="github-issues")'
+
+- id: skill-github-pr-workflow
+  name: "GitHub PR lifecycle: branch, commit, open, CI, merge."
+  type: skill
+  status: active
+  purpose: "GitHub PR lifecycle: branch, commit, open, CI, merge."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="github-pr-workflow")'
+
+- id: skill-github-repo-management
+  name: Clone/create/fork repos; manage remotes, releases.
+  type: skill
+  status: active
+  purpose: Clone/create/fork repos; manage remotes, releases.
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="github-repo-management")'
 
 ### Category: mlops (9 skills)
 
@@ -489,6 +1154,40 @@
   return_format: result
   evidence_paths: []
 
+- id: skill-gateway-model-profiling
+  name: Discover, test, and document available models on OpenAI-compatible LLM gateways (internal or externa…
+  type: skill
+  status: active
+  purpose: Discover, test, and document available models on OpenAI-compatible LLM gateways (internal or externa…
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="gateway-model-profiling")'
+
+- id: skill-huggingface-hub
+  name: "HuggingFace hf CLI: search/download/upload models, datasets."
+  type: skill
+  status: active
+  purpose: "HuggingFace hf CLI: search/download/upload models, datasets."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="huggingface-hub")'
+
 ### Category: productivity (11 skills)
 
 - id: skill-productivity-group
@@ -508,6 +1207,193 @@
   validation: [file exists]
   return_format: file path
   evidence_paths: []
+
+- id: skill-airtable
+  name: Airtable REST API via curl. Records CRUD, filters, upserts.
+  type: skill
+  status: active
+  purpose: Airtable REST API via curl. Records CRUD, filters, upserts.
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="airtable")'
+
+- id: skill-compress-pdf
+  name: PDF 操作工具箱：压缩、合并、A4 归一化、N-up 排版、图+文页面生成。核心依赖 PyMuPDF(fitz) + reportlab + img2pdf。
+  type: skill
+  status: active
+  purpose: PDF 操作工具箱：压缩、合并、A4 归一化、N-up 排版、图+文页面生成。核心依赖 PyMuPDF(fitz) + reportlab + img2pdf。
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="compress-pdf")'
+
+- id: skill-downloads-iteration-archive
+  name: When user drops an iteration plan or design spec in ~/Downloads/, validate naming convention, classi…
+  type: skill
+  status: active
+  purpose: When user drops an iteration plan or design spec in ~/Downloads/, validate naming convention, classi…
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="downloads-iteration-archive")'
+
+- id: skill-google-workspace
+  name: Gmail, Calendar, Drive, Docs, Sheets via gws CLI or Python.
+  type: skill
+  status: active
+  purpose: Gmail, Calendar, Drive, Docs, Sheets via gws CLI or Python.
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="google-workspace")'
+
+- id: skill-linear
+  name: "Linear: manage issues, projects, teams via GraphQL + curl."
+  type: skill
+  status: active
+  purpose: "Linear: manage issues, projects, teams via GraphQL + curl."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="linear")'
+
+- id: skill-maps
+  name: Geocode, POIs, routes, timezones via OpenStreetMap/OSRM.
+  type: skill
+  status: active
+  purpose: Geocode, POIs, routes, timezones via OpenStreetMap/OSRM.
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="maps")'
+
+- id: skill-nano-pdf
+  name: Edit PDF text/typos/titles via nano-pdf CLI (NL prompts).
+  type: skill
+  status: active
+  purpose: Edit PDF text/typos/titles via nano-pdf CLI (NL prompts).
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="nano-pdf")'
+
+- id: skill-notion
+  name: "Notion API + ntn CLI: pages, databases, markdown, Workers."
+  type: skill
+  status: active
+  purpose: "Notion API + ntn CLI: pages, databases, markdown, Workers."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="notion")'
+
+- id: skill-ocr-and-documents
+  name: Extract text from PDFs/scans (pymupdf, marker-pdf).
+  type: skill
+  status: active
+  purpose: Extract text from PDFs/scans (pymupdf, marker-pdf).
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="ocr-and-documents")'
+
+- id: skill-powerpoint
+  name: Create, read, edit .pptx decks, slides, notes, templates.
+  type: skill
+  status: active
+  purpose: Create, read, edit .pptx decks, slides, notes, templates.
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="powerpoint")'
+
+- id: skill-teams-meeting-pipeline
+  name: Operate the Teams meeting summary pipeline via Hermes CLI — summarize meetings, inspect pipeline sta…
+  type: skill
+  status: active
+  purpose: Operate the Teams meeting summary pipeline via Hermes CLI — summarize meetings, inspect pipeline sta…
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="teams-meeting-pipeline")'
 
 ### Category: software-development (18 skills)
 
@@ -530,6 +1416,295 @@
   evidence_paths: [task_dir/runtime/]
 
 
+- id: skill-debugging-hermes-tui-commands
+  name: "Debug Hermes TUI slash commands: Python, gateway, Ink UI."
+  type: skill
+  status: active
+  purpose: "Debug Hermes TUI slash commands: Python, gateway, Ink UI."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="debugging-hermes-tui-commands")'
+
+- id: skill-hermes-agent-skill-authoring
+  name: "Author in-repo SKILL.md: frontmatter, validator, structure."
+  type: skill
+  status: active
+  purpose: "Author in-repo SKILL.md: frontmatter, validator, structure."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="hermes-agent-skill-authoring")'
+
+- id: skill-hermes-s6-container-supervision
+  name: Modify, debug, or extend the s6-overlay supervision tree inside the Hermes Agent Docker image — addi…
+  type: skill
+  status: active
+  purpose: Modify, debug, or extend the s6-overlay supervision tree inside the Hermes Agent Docker image — addi…
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="hermes-s6-container-supervision")'
+
+- id: skill-macos-app-builder
+  name: Build, sign, icon, and deploy macOS SwiftUI apps from the CLI without Xcode. Covers the full pipelin…
+  type: skill
+  status: active
+  purpose: Build, sign, icon, and deploy macOS SwiftUI apps from the CLI without Xcode. Covers the full pipelin…
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="macos-app-builder")'
+
+- id: skill-macos-gui-development
+  name: Build native macOS GUI apps (.app bundles) with SwiftUI — compile, sign, bundle, and debug launch fa…
+  type: skill
+  status: active
+  purpose: Build native macOS GUI apps (.app bundles) with SwiftUI — compile, sign, bundle, and debug launch fa…
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="macos-gui-development")'
+
+- id: skill-node-inspect-debugger
+  name: Debug Node.js via --inspect + Chrome DevTools Protocol CLI.
+  type: skill
+  status: active
+  purpose: Debug Node.js via --inspect + Chrome DevTools Protocol CLI.
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="node-inspect-debugger")'
+
+- id: skill-phase-retrospective
+  name: 阶段复盘简报：长程任务或版本迭代完成后，结构化汇报执行情况、问题反思、抽象原则沉淀。适合 relay runner 多轮执行后、DAG 节点收口后、或任何 agent 系任务完成后的复盘场景。
+  type: skill
+  status: active
+  purpose: 阶段复盘简报：长程任务或版本迭代完成后，结构化汇报执行情况、问题反思、抽象原则沉淀。适合 relay runner 多轮执行后、DAG 节点收口后、或任何 agent 系任务完成后的复盘场景。
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="phase-retrospective")'
+
+- id: skill-plan
+  name: "Plan mode: write markdown plan to .hermes/plans/, no exec."
+  type: skill
+  status: active
+  purpose: "Plan mode: write markdown plan to .hermes/plans/, no exec."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="plan")'
+
+- id: skill-post-implementation-code-review
+  name: Orchestrate Team Review parallel code review via relay tmux executor — Codex writes, Hermes verifies…
+  type: skill
+  status: active
+  purpose: Orchestrate Team Review parallel code review via relay tmux executor — Codex writes, Hermes verifies…
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="post-implementation-code-review")'
+
+- id: skill-python-debugpy
+  name: "Debug Python: pdb REPL + debugpy remote (DAP)."
+  type: skill
+  status: active
+  purpose: "Debug Python: pdb REPL + debugpy remote (DAP)."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="python-debugpy")'
+
+- id: skill-relay-executor-maintenance
+  name: Patch and maintain the Relay Runtime Claude tmux executor (WorkflowBase/runner/claude/tmux_executor.…
+  type: skill
+  status: active
+  purpose: Patch and maintain the Relay Runtime Claude tmux executor (WorkflowBase/runner/claude/tmux_executor.…
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="relay-executor-maintenance")'
+
+- id: skill-requesting-code-review
+  name: "Pre-commit review: security scan, quality gates, auto-fix."
+  type: skill
+  status: active
+  purpose: "Pre-commit review: security scan, quality gates, auto-fix."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="requesting-code-review")'
+
+- id: skill-spike
+  name: Throwaway experiments to validate an idea before build.
+  type: skill
+  status: active
+  purpose: Throwaway experiments to validate an idea before build.
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="spike")'
+
+- id: skill-subagent-driven-development
+  name: Execute plans via delegate_task subagents (2-stage review).
+  type: skill
+  status: active
+  purpose: Execute plans via delegate_task subagents (2-stage review).
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="subagent-driven-development")'
+
+- id: skill-systematic-debugging
+  name: "4-phase root cause debugging: understand bugs before fixing."
+  type: skill
+  status: active
+  purpose: "4-phase root cause debugging: understand bugs before fixing."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="systematic-debugging")'
+
+- id: skill-test-driven-development
+  name: "TDD: enforce RED-GREEN-REFACTOR, tests before code."
+  type: skill
+  status: active
+  purpose: "TDD: enforce RED-GREEN-REFACTOR, tests before code."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="test-driven-development")'
+
+- id: skill-writing-plans
+  name: "Write implementation plans: bite-sized tasks, paths, code."
+  type: skill
+  status: active
+  purpose: "Write implementation plans: bite-sized tasks, paths, code."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="writing-plans")'
+
 ### Category: adarian (4 skills)
 
 - id: skill-adarian-group
@@ -549,6 +1724,57 @@
   validation: [protocol field present]
   return_format: Markdown
   evidence_paths: []
+
+- id: skill-adarian-workflow-governance
+  name: Hermes 在 Adarian MVP 中的 PM Coordinator + 流程治理：workflow node 判定、Gate 检查、Agent 路由、上下文打包、handoff prompt…
+  type: skill
+  status: active
+  purpose: Hermes 在 Adarian MVP 中的 PM Coordinator + 流程治理：workflow node 判定、Gate 检查、Agent 路由、上下文打包、handoff prompt…
+  applicable_lanes: ['A_LINE_FORMAL', 'WORKYB_RUNTIME']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="adarian-workflow-governance")'
+
+- id: skill-hermes-status-protocol
+  name: Hermes 状态汇报规范：短摘要优先，不阻塞状态更新的长解释。
+  type: skill
+  status: active
+  purpose: Hermes 状态汇报规范：短摘要优先，不阻塞状态更新的长解释。
+  applicable_lanes: ['A_LINE_FORMAL', 'WORKYB_RUNTIME']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="hermes-status-protocol")'
+
+- id: skill-relay-completion-sound
+  name: Watch a task heartbeat file and play a macOS sound when it completes — works with relay and any back…
+  type: skill
+  status: active
+  purpose: Watch a task heartbeat file and play a macOS sound when it completes — works with relay and any back…
+  applicable_lanes: ['A_LINE_FORMAL', 'WORKYB_RUNTIME']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="relay-completion-sound")'
 
 ### Category: apple (6 skills)
 
@@ -993,3 +2219,483 @@
   owner_approval_required: false
   validation: [目录结构合规]
   depends_on: [hook-iteration-gate]
+
+- id: skill-apple-notes
+  name: "Manage Apple Notes via memo CLI: create, search, edit."
+  type: skill
+  status: active
+  purpose: "Manage Apple Notes via memo CLI: create, search, edit."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="apple-notes")'
+
+- id: skill-apple-reminders
+  name: "Apple Reminders via remindctl: add, list, complete."
+  type: skill
+  status: active
+  purpose: "Apple Reminders via remindctl: add, list, complete."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="apple-reminders")'
+
+- id: skill-findmy
+  name: Track Apple devices/AirTags via FindMy.app on macOS.
+  type: skill
+  status: active
+  purpose: Track Apple devices/AirTags via FindMy.app on macOS.
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="findmy")'
+
+- id: skill-imessage
+  name: Send and receive iMessages/SMS via the imsg CLI on macOS.
+  type: skill
+  status: active
+  purpose: Send and receive iMessages/SMS via the imsg CLI on macOS.
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="imessage")'
+
+- id: skill-macos-computer-use
+  name: |
+  type: skill
+  status: active
+  purpose: |
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="macos-computer-use")'
+
+- id: skill-macos-power-diagnostics
+  name: Systematic diagnosis of macOS sleep, battery drain, and thermal issues — wake reason analysis, DarkW…
+  type: skill
+  status: active
+  purpose: Systematic diagnosis of macOS sleep, battery drain, and thermal issues — wake reason analysis, DarkW…
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="macos-power-diagnostics")'
+
+### Category: email
+
+- id: skill-himalaya
+  name: "Himalaya CLI: IMAP/SMTP email from terminal."
+  type: skill
+  status: active
+  purpose: "Himalaya CLI: IMAP/SMTP email from terminal."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="himalaya")'
+
+### Category: gaming
+
+- id: skill-minecraft-modpack-server
+  name: Host modded Minecraft servers (CurseForge, Modrinth).
+  type: skill
+  status: active
+  purpose: Host modded Minecraft servers (CurseForge, Modrinth).
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="minecraft-modpack-server")'
+
+- id: skill-pokemon-player
+  name: Play Pokemon via headless emulator + RAM reads.
+  type: skill
+  status: active
+  purpose: Play Pokemon via headless emulator + RAM reads.
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="pokemon-player")'
+
+### Category: mcp
+
+- id: skill-native-mcp
+  name: "MCP client: connect servers, register tools (stdio/HTTP)."
+  type: skill
+  status: active
+  purpose: "MCP client: connect servers, register tools (stdio/HTTP)."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="native-mcp")'
+
+### Category: media
+
+- id: skill-gif-search
+  name: Search/download GIFs from Tenor via curl + jq.
+  type: skill
+  status: active
+  purpose: Search/download GIFs from Tenor via curl + jq.
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="gif-search")'
+
+- id: skill-heartmula
+  name: "HeartMuLa: Suno-like song generation from lyrics + tags."
+  type: skill
+  status: active
+  purpose: "HeartMuLa: Suno-like song generation from lyrics + tags."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="heartmula")'
+
+- id: skill-songsee
+  name: Audio spectrograms/features (mel, chroma, MFCC) via CLI.
+  type: skill
+  status: active
+  purpose: Audio spectrograms/features (mel, chroma, MFCC) via CLI.
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="songsee")'
+
+- id: skill-spotify
+  name: "Spotify: play, search, queue, manage playlists and devices."
+  type: skill
+  status: active
+  purpose: "Spotify: play, search, queue, manage playlists and devices."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="spotify")'
+
+- id: skill-youtube-content
+  name: YouTube transcripts to summaries, threads, blogs.
+  type: skill
+  status: active
+  purpose: YouTube transcripts to summaries, threads, blogs.
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="youtube-content")'
+
+### Category: note-taking
+
+- id: skill-memory-governance
+  name: Memory governance invocation — scan, classify, show, hook-confirm, archive. Not a replacement for th…
+  type: skill
+  status: active
+  purpose: Memory governance invocation — scan, classify, show, hook-confirm, archive. Not a replacement for th…
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="memory-governance")'
+
+- id: skill-obsidian
+  name: Read, search, create, and edit notes in the Obsidian vault.
+  type: skill
+  status: active
+  purpose: Read, search, create, and edit notes in the Obsidian vault.
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="obsidian")'
+
+### Category: red-teaming
+
+- id: skill-godmode
+  name: "Jailbreak LLMs: Parseltongue, GODMODE, ULTRAPLINIAN."
+  type: skill
+  status: active
+  purpose: "Jailbreak LLMs: Parseltongue, GODMODE, ULTRAPLINIAN."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: high
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="godmode")'
+
+### Category: research
+
+- id: skill-academic-paper-research
+  name: 学术论文检索：arxiv-mcp-server（分析）与 paper-search-mcp（搜索+下载）的高低搭配。
+  type: skill
+  status: active
+  purpose: 学术论文检索：arxiv-mcp-server（分析）与 paper-search-mcp（搜索+下载）的高低搭配。
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="academic-paper-research")'
+
+- id: skill-arxiv
+  name: Search arXiv papers by keyword, author, category, or ID.
+  type: skill
+  status: active
+  purpose: Search arXiv papers by keyword, author, category, or ID.
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="arxiv")'
+
+- id: skill-blogwatcher
+  name: Monitor blogs and RSS/Atom feeds via blogwatcher-cli tool.
+  type: skill
+  status: active
+  purpose: Monitor blogs and RSS/Atom feeds via blogwatcher-cli tool.
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="blogwatcher")'
+
+- id: skill-llm-wiki
+  name: "Karpathy's LLM Wiki: build/query interlinked markdown KB."
+  type: skill
+  status: active
+  purpose: "Karpathy's LLM Wiki: build/query interlinked markdown KB."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="llm-wiki")'
+
+- id: skill-polymarket
+  name: "Query Polymarket: markets, prices, orderbooks, history."
+  type: skill
+  status: active
+  purpose: "Query Polymarket: markets, prices, orderbooks, history."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="polymarket")'
+
+- id: skill-research-paper-writing
+  name: "Write ML papers for NeurIPS/ICML/ICLR: design→submit."
+  type: skill
+  status: active
+  purpose: "Write ML papers for NeurIPS/ICML/ICLR: design→submit."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="research-paper-writing")'
+
+### Category: session-handoff
+
+- id: skill-huihua-handoff
+  name: 会话交接：结束时提醒保存进度，开启时手动触发恢复上下文。支持多任务并行和多分支对话。适用于任意工作区。
+  type: skill
+  status: active
+  purpose: 会话交接：结束时提醒保存进度，开启时手动触发恢复上下文。支持多任务并行和多分支对话。适用于任意工作区。
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="huihua-handoff")'
+
+### Category: smart-home
+
+- id: skill-openhue
+  name: Control Philips Hue lights, scenes, rooms via OpenHue CLI.
+  type: skill
+  status: active
+  purpose: Control Philips Hue lights, scenes, rooms via OpenHue CLI.
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="openhue")'
+
+### Category: social-media
+
+- id: skill-xurl
+  name: "X/Twitter via xurl CLI: post, search, DM, media, v2 API."
+  type: skill
+  status: active
+  purpose: "X/Twitter via xurl CLI: post, search, DM, media, v2 API."
+  applicable_lanes: ['ALL']
+  inputs: [prompt, context]
+  outputs: [result]
+  allowed_paths: ["~/项目开发/**"]
+  forbidden_paths: []
+  tools_required: [hermes]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0]
+  call_pattern: 'skill_view(name="xurl")'
+

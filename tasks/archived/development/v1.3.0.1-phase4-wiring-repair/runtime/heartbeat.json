@@ -1,0 +1,8 @@
+{
+  "task_id": "task-v1.3.0.1-phase4-wiring-repair",
+  "runtime_state": "executor_failed",
+  "timestamp": "2026-06-05T23:59:30+08:00",
+  "runtime_pid": 12878,
+  "executor_pid": null,
+  "heartbeat_seq": 0
+}

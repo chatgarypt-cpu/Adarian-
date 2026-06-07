@@ -34,10 +34,18 @@ def _phase4_output() -> Phase4Output:
     )
 
 
-def test_report_agent_reexports_extracted_normalizer_helpers():
-    assert report_agent._replace_report_metric_terms is _replace_report_metric_terms
-    assert report_agent._replace_reality_claims_about_inflection is _replace_reality_claims_about_inflection
-    assert report_agent._normalize_saved_markdown is _normalize_saved_markdown
+def test_report_agent_does_not_reexport_unused_normalizer_helpers():
+    """v1.3.1: src.phase4.report_agent is a pure consumer; metric-term / reality
+    replacements live in src.phase4.report_normalizer and must NOT be re-exported
+    by report_agent (they are only used by the legacy fallback path).
+    _normalize_saved_markdown stays as a thin re-export because the clean
+    save_markdown_report runs it on the explicit markdown argument.
+    """
+    for name in (
+        "_replace_report_metric_terms",
+        "_replace_reality_claims_about_inflection",
+    ):
+        assert not hasattr(report_agent, name), f"report_agent should not re-export {name}"
 
 
 def test_extracted_metric_term_replacement_does_not_duplicate_prefixes():

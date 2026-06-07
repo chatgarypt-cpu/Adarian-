@@ -1,4 +1,8 @@
-"""Targeted checks for v1.2.8.1 risk directionality and metric explanation."""
+"""Targeted checks for v1.2.8.1 risk directionality and metric explanation.
+
+v1.3.1: assess_risk / generate_fallback_report are archived in
+``legacy.phase4``. This test now drives the legacy archive.
+"""
 
 import sys
 from pathlib import Path
@@ -10,12 +14,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 
 from src.phase4 import report_agent
-from src.phase4.report_agent import (
-    _build_code_owned_report_contract_block,
-    assess_risk,
-    generate_fallback_report,
-    save_markdown_report,
-)
+from src.phase4.report_agent import _build_code_owned_report_contract_block
 from src.phase4.report_prompts import METRIC_EXPLANATION_PREFILL, REPORT_USER_PROMPT_SUFFIX
 from src.schemas import (
     AgentEntry,
@@ -32,6 +31,12 @@ from src.schemas import (
     TickLog,
 )
 from src.schemas.phase4 import RiskLevel
+from legacy.phase4 import legacy_generation
+from legacy.phase4.legacy_analytics import assess_risk
+from legacy.phase4.legacy_generation import (
+    generate_fallback_report,
+    save_markdown_report as legacy_save_markdown_report,
+)
 
 
 def _extraction(
@@ -126,6 +131,27 @@ def _ticks_for_shift(initial: float, final: float, polarization: float = 0.1) ->
         _tick(1, polarization, [_entry(8, initial, initial)]),
         _tick(2, polarization, [_entry(8, initial, final)]),
     ]
+
+
+def _dataset() -> dict:
+    return {
+        "run_info": {"audience_mode": "generic_government"},
+        "simulation_result": {
+            "risk_verdict": {
+                "level": RiskLevel.LOW.value,
+                "label": "低风险",
+                "basis_text": "code-owned basis",
+                "signals": {},
+            },
+            "risk_type_classification": {
+                "primary_types": ["negative_narrative_risk"],
+                "type_labels": ["负面叙事聚合风险"],
+            },
+            "inflection_points": [],
+            "emotion_trajectory": [],
+            "agent_stance_matrix": [],
+        },
+    }
 
 
 def _phase2_output(entity_name: str = "某主体") -> Phase2Output:
@@ -230,6 +256,7 @@ def test_llm_prompt_does_not_ask_llm_to_decide_risk_level():
         _extraction(),
         [_tick(0), _tick(1)],
         [5.2, 5.2],
+        simulation_dataset=_dataset(),
     )
 
     assert "risk_level_label:" in contract
@@ -246,7 +273,7 @@ def test_metric_explanation_prefill_is_code_owned_and_deduplicated(tmp_path):
         [5.2, 5.2],
         phase2_output=_phase2_output(),
     )
-    report_agent._llm_generated_markdown = (
+    legacy_generation._llm_generated_markdown = (
         "# LLM 报告\n\n"
         "## 一、舆情概要\n\n内容。\n\n"
         "## 二、演化分析\n\n内容。\n\n"
@@ -258,8 +285,8 @@ def test_metric_explanation_prefill_is_code_owned_and_deduplicated(tmp_path):
     )
 
     path = tmp_path / "run_001" / "final_report.md"
-    save_markdown_report(output, extraction, path)
-    report_agent._llm_generated_markdown = ""
+    legacy_save_markdown_report(output, extraction, path)
+    legacy_generation._llm_generated_markdown = ""
 
     markdown = path.read_text(encoding="utf-8")
     assert METRIC_EXPLANATION_PREFILL in markdown
@@ -275,7 +302,7 @@ def test_saved_markdown_uses_metric_terminology(tmp_path):
         [5.2, 5.2],
         phase2_output=_phase2_output(),
     )
-    report_agent._llm_generated_markdown = (
+    legacy_generation._llm_generated_markdown = (
         "# LLM 报告\n\n"
         "## 一、舆情概要\n\nTick 1 情绪均值和极化指数出现拐点，x(t)下降。\n\n"
         "## 二、演化分析\n\n内容。\n\n"
@@ -285,8 +312,8 @@ def test_saved_markdown_uses_metric_terminology(tmp_path):
     )
 
     path = tmp_path / "run_002" / "final_report.md"
-    save_markdown_report(output, extraction, path)
-    report_agent._llm_generated_markdown = ""
+    legacy_save_markdown_report(output, extraction, path)
+    legacy_generation._llm_generated_markdown = ""
 
     markdown = path.read_text(encoding="utf-8")
     body = markdown.split("## 五、附录", 1)[0]

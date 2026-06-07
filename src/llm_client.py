@@ -8,6 +8,7 @@ Why: 统一接口便于切换 provider，统一错误处理和重试机制。
 import json
 import inspect
 import re
+import os
 import time
 import httpx
 from typing import Type, TypeVar, Generic, Optional
@@ -62,11 +63,13 @@ class LLMClient:
         temperature: float = config.DEFAULT_TEMPERATURE,
         max_tokens: int = config.DEFAULT_MAX_TOKENS,
         request_timeout: float | None = None,
+        task_type: str = "default",
     ):
         self.provider = provider
         self.temperature = temperature
         self.max_tokens = max_tokens
         self.request_timeout = request_timeout
+        self.task_type = task_type
 
         # 初始化 OpenAI 客户端
         #兼容 DeepSeek/Zhipu/Qwen 等 provider
@@ -83,7 +86,7 @@ class LLMClient:
         )
 
         # 确定模型名称
-        self.model = model or config.get_model_name()
+        self.model = model or config.get_model_name(task_type=self.task_type)
 
     def _diag_log(self, stage: str, caller: str | None = None, extra: str | None = None) -> None:
         parts = [
@@ -336,14 +339,29 @@ def init_llm_client(
     api_key: str = None,
     base_url: str = None,
     model: str = None,
+    task_type: Optional[str] = None,
 ) -> LLMClient:
     """初始化全局 LLM 客户端
 
     应在应用启动时调用一次。
 
     自动检测内网端点是否可达，不可达时切换到外网 fallback 模型。
+    
+    Parameters
+    ----------
+    task_type : str, optional
+        任务类型，用于模型路由器选择内网模型（如 'phase4_report', 'code_review'）。
+        不传则用 router 的默认模型。
     """
     global _llm_client
+
+    # ── Proxy 绕过：内网地址不走系统代理 ──────────────────────
+    _gateway = (base_url or config.LLM_BASE_URL)
+    if _gateway and ("100.89.3.59" in _gateway.lower() or "localhost" in _gateway.lower()):
+        existing = os.environ.get("NO_PROXY", "")
+        if "100.89.3.59" not in existing:
+            os.environ["NO_PROXY"] = f"100.89.3.59,localhost,127.0.0.1,{existing}"
+            os.environ["no_proxy"] = os.environ["NO_PROXY"]
 
     # ── Fallback 检查：内网不通时切外网 ──────────────────────
     if config.FALLBACK_ENABLED:
@@ -354,6 +372,11 @@ def init_llm_client(
             api_key = config.FALLBACK_API_KEY
             base_url = config.FALLBACK_BASE_URL
             model = config.FALLBACK_MODEL
+
+    # ── 内网模式下用 router 选模型 ──────────────────────────
+    if model is None and provider is None:
+        from src.model_router import select as _select_model
+        model = _select_model(task_type or "default")
 
     _llm_client = LLMClient(
         provider=provider or config.LLM_PROVIDER,

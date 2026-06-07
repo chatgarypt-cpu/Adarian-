@@ -94,7 +94,10 @@ DEEPSEEK_MODEL = "deepseek-chat"
 ZHIPU_MODEL = "glm-4"
 
 # Qwen 模型
-QWEN_MODEL = os.getenv("QWEN_MODEL", "qwen35-122b-a10b")
+QWEN_MODEL = os.getenv("QWEN_MODEL") or ""
+
+# 默认模型（非 qwen/deepseek/zhipu 时的兜底）
+DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", "gpt-3.5-turbo")
 
 # =============================================================================
 # LLM 调用参数
@@ -172,14 +175,18 @@ CHROMA_PERSISTENT = True
 # 工具函数
 # =============================================================================
 
-def get_model_name() -> str:
+def get_model_name(task_type: str = "default") -> str:
     """根据 provider 返回对应的模型名称"""
     if LLM_PROVIDER == "deepseek":
         return DEEPSEEK_MODEL
     elif LLM_PROVIDER == "zhipu":
         return ZHIPU_MODEL
     elif LLM_PROVIDER == "qwen":
-        return QWEN_MODEL
+        if QWEN_MODEL:
+            return QWEN_MODEL
+        # .env 未显式指定时走 router
+        from src.model_router import select as _select_model
+        return _select_model(task_type)
     else:
         return DEFAULT_MODEL
 

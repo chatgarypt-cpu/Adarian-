@@ -24,7 +24,7 @@ metadata:
 | 底座 | 位置 | 用途 |
 |------|------|------|
 | **Registry（资产管理）** | `WorkflowBase/registry/` | skill/MCP/hook/executor 都在册。找某个能力先翻注册表，不在记忆里记。 |
-| **Memory Governance（记忆治理）** | `WorkflowBase/governance/` | 记忆治理规则、审计/清理协议、registry。 |
+| **Memory Governance（记忆治理）** | `WorkflowBase/memory/` | 记忆治理规则、审计/清理协议、registry。 |
 | **Dispatch Runtime（派发通讯层）** | `tools/pm_runtime/relay/` | relay 引擎、executor 实现、dispatch 协议。 |
 
 ### 找 skill 的正确路径

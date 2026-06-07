@@ -1,4 +1,15 @@
-"""Targeted Markdown grounding checks for v1.2.8 attempt-01."""
+"""Targeted Markdown grounding checks (v1.3.1 — legacy archive path).
+
+v1.3.1: ``generate_fallback_report`` and the legacy module-level
+``_llm_generated_markdown`` cache were archived under
+``legacy.phase4``. This test now drives the legacy archive directly so
+the same content-level assertions still hold.
+
+The new src.phase4 ``save_markdown_report`` requires an explicit
+``markdown=`` argument (v1.3.1 contract); the legacy archive's own
+``save_markdown_report`` keeps the module-global LLM cache for
+diagnostic parity.
+"""
 
 import ast
 import json
@@ -12,7 +23,9 @@ if str(PROJECT_ROOT) not in sys.path:
 
 
 from src.phase4 import report_agent
-from src.phase4.report_agent import generate_fallback_report, save_markdown_report, save_report
+from src.phase4.report_agent import save_report
+from legacy.phase4 import legacy_generation
+from legacy.phase4.legacy_generation import generate_fallback_report, save_markdown_report
 from src.phase4.report_prompts import (
     ENTERPRISE_PR_FORBIDDEN_PHRASES,
     DATA_TO_JUDGMENT_RULES,
@@ -172,7 +185,7 @@ def _markdown(tmp_path: Path) -> str:
         [5.0, 4.8],
         phase2_output=_phase2_output(),
     )
-    report_agent._llm_generated_markdown = ""
+    legacy_generation._llm_generated_markdown = ""
     md_path = tmp_path / "run_001" / "final_report.md"
     save_markdown_report(output, extraction, md_path)
     return md_path.read_text(encoding="utf-8")
@@ -342,11 +355,11 @@ def test_generated_at_consistent_in_json_fallback_and_llm_paths(tmp_path):
     llm_path = tmp_path / "run_002" / "llm.md"
 
     save_report(output, json_path)
-    report_agent._llm_generated_markdown = ""
+    legacy_generation._llm_generated_markdown = ""
     save_markdown_report(output, extraction, fallback_path)
-    report_agent._llm_generated_markdown = "# LLM 报告\n\n" + ("模拟内容" * 80)
+    legacy_generation._llm_generated_markdown = "# LLM 报告\n\n" + ("模拟内容" * 80)
     save_markdown_report(output, extraction, llm_path)
-    report_agent._llm_generated_markdown = ""
+    legacy_generation._llm_generated_markdown = ""
 
     data = json.loads(json_path.read_text(encoding="utf-8"))
     generated_at = data["report_meta"]["generated_at"]
@@ -358,7 +371,7 @@ def test_saved_markdown_header_and_body_risk_level_are_code_owned(tmp_path):
     extraction, output = _output()
     path = tmp_path / "run_003" / "final_report.md"
 
-    report_agent._llm_generated_markdown = (
+    legacy_generation._llm_generated_markdown = (
         "# LLM 报告\n\n"
         "## 三、风险研判\n\n"
         "风险等级：中等偏高\n\n"
@@ -370,7 +383,7 @@ def test_saved_markdown_header_and_body_risk_level_are_code_owned(tmp_path):
         "补齐事实链。\n"
     )
     save_markdown_report(output, extraction, path)
-    report_agent._llm_generated_markdown = ""
+    legacy_generation._llm_generated_markdown = ""
 
     markdown = path.read_text(encoding="utf-8")
     risk_section = _risk_section(markdown)
@@ -383,7 +396,7 @@ def test_fallback_markdown_header_and_body_risk_level_are_code_owned(tmp_path):
     extraction, output = _output()
     path = tmp_path / "run_003_fallback" / "final_report.md"
 
-    report_agent._llm_generated_markdown = ""
+    legacy_generation._llm_generated_markdown = ""
     save_markdown_report(output, extraction, path)
 
     markdown = path.read_text(encoding="utf-8")
@@ -396,7 +409,7 @@ def test_saved_markdown_risk_types_are_code_owned(tmp_path):
     extraction, output = _output()
     path = tmp_path / "run_004" / "final_report.md"
 
-    report_agent._llm_generated_markdown = (
+    legacy_generation._llm_generated_markdown = (
         "# LLM 报告\n\n"
         "## 三、风险研判\n\n"
         "风险等级：中等偏高\n\n"
@@ -409,7 +422,7 @@ def test_saved_markdown_risk_types_are_code_owned(tmp_path):
         "补齐事实链。\n"
     )
     save_markdown_report(output, extraction, path)
-    report_agent._llm_generated_markdown = ""
+    legacy_generation._llm_generated_markdown = ""
 
     risk_section = _risk_section(path.read_text(encoding="utf-8"))
     risk_type_block = risk_section.split("主要风险类型：", 1)[1].split("风险解释：", 1)[0]
@@ -424,7 +437,7 @@ def test_llm_saved_markdown_hides_internal_labels_and_raw_metric_fields(tmp_path
     extraction, output = _output()
     path = tmp_path / "run_005" / "final_report.md"
 
-    report_agent._llm_generated_markdown = (
+    legacy_generation._llm_generated_markdown = (
         "# LLM 报告\n\n"
         "【CODE_OWNED_REPORT_CONTRACT】\n"
         "risk_level_label: 高风险\n"
@@ -441,7 +454,7 @@ def test_llm_saved_markdown_hides_internal_labels_and_raw_metric_fields(tmp_path
         "补齐事实链。\n"
     )
     save_markdown_report(output, extraction, path)
-    report_agent._llm_generated_markdown = ""
+    legacy_generation._llm_generated_markdown = ""
 
     markdown = path.read_text(encoding="utf-8")
     for label in INTERNAL_CODE_OWNED_LABELS:
@@ -456,7 +469,7 @@ def test_saved_markdown_removes_enterprise_pr_phrases_and_fabricated_quotes(tmp_
     extraction, output = _output()
     path = tmp_path / "run_006" / "final_report.md"
 
-    report_agent._llm_generated_markdown = (
+    legacy_generation._llm_generated_markdown = (
         "# OPPO品牌在母亲节发布争议海报引发多方讨论舆情风险研判报告\n\n"
         "报告类型：模拟推演型舆情风险研判报告\n"
         f"生成时间：{output.report_meta.generated_at}\n\n"
@@ -474,7 +487,7 @@ def test_saved_markdown_removes_enterprise_pr_phrases_and_fabricated_quotes(tmp_
         "event_scale risk_score\n"
     )
     save_markdown_report(output, extraction, path)
-    report_agent._llm_generated_markdown = ""
+    legacy_generation._llm_generated_markdown = ""
 
     markdown = path.read_text(encoding="utf-8")
     for phrase in ENTERPRISE_PR_FORBIDDEN_PHRASES:
@@ -493,7 +506,7 @@ def test_incomplete_llm_markdown_rebuilds_to_five_chapter_fallback(tmp_path):
     extraction, output = _output()
     path = tmp_path / "run_007" / "final_report.md"
 
-    report_agent._llm_generated_markdown = (
+    legacy_generation._llm_generated_markdown = (
         "# 残缺 LLM 报告\n\n"
         "## 三、风险研判\n\n"
         "风险等级：中等偏高\n\n"
@@ -502,7 +515,7 @@ def test_incomplete_llm_markdown_rebuilds_to_five_chapter_fallback(tmp_path):
         "建议OPPO开展危机公关。有网民表示：待评估。\n\n"
     )
     save_markdown_report(output, extraction, path)
-    report_agent._llm_generated_markdown = ""
+    legacy_generation._llm_generated_markdown = ""
 
     markdown = path.read_text(encoding="utf-8")
     _assert_five_chapters(markdown)
@@ -518,13 +531,13 @@ def test_question_style_llm_markdown_rebuilds_to_five_chapter_fallback(tmp_path)
     extraction, output = _output()
     path = tmp_path / "run_008" / "final_report.md"
 
-    report_agent._llm_generated_markdown = (
+    legacy_generation._llm_generated_markdown = (
         "我注意到输入数据中缺少 risk_level_label 和 risk_type_labels 这两个关键字段。"
         "请补充 risk_level_label / risk_type_labels 后再生成报告。"
         "当前不能自行发明风险等级和主要风险类型，因此无法输出完整报告。"
     )
     save_markdown_report(output, extraction, path)
-    report_agent._llm_generated_markdown = ""
+    legacy_generation._llm_generated_markdown = ""
 
     markdown = path.read_text(encoding="utf-8")
     _assert_five_chapters(markdown)
@@ -539,7 +552,7 @@ def test_complete_five_chapter_llm_markdown_is_not_unconditionally_replaced(tmp_
     extraction, output = _output()
     path = tmp_path / "run_009" / "final_report.md"
 
-    report_agent._llm_generated_markdown = (
+    legacy_generation._llm_generated_markdown = (
         "# LLM 完整报告\n\n"
         "## 一、舆情概要\n\n"
         "LLM_UNIQUE_SUMMARY_MARKER\n\n"
@@ -556,7 +569,7 @@ def test_complete_five_chapter_llm_markdown_is_not_unconditionally_replaced(tmp_
         "LLM_UNIQUE_APPENDIX_MARKER\n"
     )
     save_markdown_report(output, extraction, path)
-    report_agent._llm_generated_markdown = ""
+    legacy_generation._llm_generated_markdown = ""
 
     markdown = path.read_text(encoding="utf-8")
     _assert_five_chapters(markdown)

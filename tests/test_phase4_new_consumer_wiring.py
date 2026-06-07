@@ -1,3 +1,13 @@
+"""v1.3.1 consumer-wiring checks (post Phase3 decoupling).
+
+v1.3.1: src.phase4 no longer carries old compute functions. The legacy
+assess_risk / identify_inflection_points / etc. live under
+``legacy.phase4.legacy_analytics`` and ``legacy.phase4.legacy_generation``.
+The new product main flow only consumes ``simulation_dataset``, so we
+monkeypatch the legacy helpers in their legacy module to verify the
+new path never reaches them.
+"""
+
 import statistics
 import sys
 from pathlib import Path
@@ -11,9 +21,7 @@ if str(PROJECT_ROOT) not in sys.path:
 from src.phase4 import report_agent
 from src.phase4.report_agent import (
     _build_code_owned_report_contract_block,
-    generate_fallback_report,
     parse_llm_report_response,
-    save_markdown_report,
 )
 from src.schemas import (
     AgentEntry,
@@ -29,6 +37,9 @@ from src.schemas import (
     TickLog,
 )
 from src.schemas.phase4 import AudienceMode, RiskLevel
+
+import legacy.phase4.legacy_analytics as legacy_analytics
+import legacy.phase4.legacy_generation as legacy_generation
 
 
 def _extraction() -> EntityExtractionOutput:
@@ -181,89 +192,23 @@ def _dataset() -> dict:
     }
 
 
-def _valid_llm_markdown(sentinel: str) -> str:
-    return f"""# 测试报告
-
-## 一、舆情概要
-
-{sentinel} 舆情概要内容足够长，用于验证显式 markdown 参数优先于旧全局缓存。
-
-## 二、演化分析
-
-演化分析内容足够长，包含模拟立场变化描述。
-
-## 三、风险研判
-
-风险等级：高风险
-
-主要风险类型：
-1. 信息不透明风险
-
-风险解释：dataset risk basis
-
-## 四、对策建议
-
-治理动作：及时回应。
-
-## 五、附录
-
-模拟说明与口径说明。
-"""
-
-
-def test_new_path_explicit_markdown_is_saved(tmp_path):
-    extraction = _extraction()
-    output = generate_fallback_report(
-        extraction,
-        _tick_logs(),
-        [5.0, 4.7],
-        phase2_output=_phase2_output(),
-    )
-    report_agent._llm_generated_markdown = _valid_llm_markdown("LEGACY_MARKDOWN_SENTINEL")
-
-    path = tmp_path / "run_explicit" / "final_report.md"
-    save_markdown_report(
-        output,
-        extraction,
-        path,
-        markdown=_valid_llm_markdown("EXPLICIT_MARKDOWN_SENTINEL"),
-    )
-    markdown = path.read_text(encoding="utf-8")
-    report_agent._llm_generated_markdown = ""
-
-    assert "EXPLICIT_MARKDOWN_SENTINEL" in markdown
-    assert "LEGACY_MARKDOWN_SENTINEL" not in markdown
-
-
-def test_old_path_without_explicit_markdown_uses_legacy_global(tmp_path):
-    extraction = _extraction()
-    output = generate_fallback_report(
-        extraction,
-        _tick_logs(),
-        [5.0, 4.7],
-        phase2_output=_phase2_output(),
-    )
-    report_agent._llm_generated_markdown = _valid_llm_markdown("LEGACY_MARKDOWN_SENTINEL")
-
-    path = tmp_path / "run_legacy" / "final_report.md"
-    save_markdown_report(output, extraction, path)
-    markdown = path.read_text(encoding="utf-8")
-    report_agent._llm_generated_markdown = ""
-
-    assert "LEGACY_MARKDOWN_SENTINEL" in markdown
-
-
 def test_parse_llm_response_uses_dataset_risk_verdict(monkeypatch):
-    def fail_old_risk(*args, **kwargs):
-        raise AssertionError("old assess_risk should not be called when dataset exists")
+    """The new parse_llm_report_response must NOT call legacy assess_risk.
 
-    monkeypatch.setattr(report_agent, "assess_risk", fail_old_risk)
+    v1.3.1: parse_llm_report_response lives in src.phase4.report_agent
+    and is a pure consumer of simulation_dataset. We assert that even
+    if legacy.phase4.legacy_analytics.assess_risk is rigged to raise,
+    the parse path still succeeds by reading the dataset.
+    """
+    def fail_old_risk(*args, **kwargs):
+        raise AssertionError("legacy assess_risk should not be called when dataset exists")
+
+    monkeypatch.setattr(legacy_analytics, "assess_risk", fail_old_risk)
     output = parse_llm_report_response(
         "short",
         _extraction(),
         _tick_logs(),
         [5.0, 4.7],
-        phase2_output=_phase2_output(),
         simulation_dataset=_dataset(),
     )
 
@@ -274,16 +219,16 @@ def test_parse_llm_response_uses_dataset_risk_verdict(monkeypatch):
 
 
 def test_parse_llm_response_uses_dataset_inflection_points(monkeypatch):
+    """The new parse_llm_report_response must NOT call legacy identify_inflection_points."""
     def fail_old_inflection(*args, **kwargs):
-        raise AssertionError("old identify_inflection_points should not be called when dataset exists")
+        raise AssertionError("legacy identify_inflection_points should not be called when dataset exists")
 
-    monkeypatch.setattr(report_agent, "identify_inflection_points", fail_old_inflection)
+    monkeypatch.setattr(legacy_analytics, "identify_inflection_points", fail_old_inflection)
     output = parse_llm_report_response(
         "short",
         _extraction(),
         _tick_logs(),
         [5.0, 4.7],
-        phase2_output=_phase2_output(),
         simulation_dataset=_dataset(),
     )
 
@@ -294,10 +239,11 @@ def test_parse_llm_response_uses_dataset_inflection_points(monkeypatch):
 
 
 def test_contract_block_uses_dataset_values(monkeypatch):
+    """The new _build_code_owned_report_contract_block must NOT call legacy assess_risk."""
     def fail_old_risk(*args, **kwargs):
-        raise AssertionError("old assess_risk should not be called when dataset exists")
+        raise AssertionError("legacy assess_risk should not be called when dataset exists")
 
-    monkeypatch.setattr(report_agent, "assess_risk", fail_old_risk)
+    monkeypatch.setattr(legacy_analytics, "assess_risk", fail_old_risk)
     block = _build_code_owned_report_contract_block(
         _extraction(),
         _tick_logs(),
@@ -310,22 +256,3 @@ def test_contract_block_uses_dataset_values(monkeypatch):
     assert "audience_mode: regulator_facing" in block
     assert "primary_risk_types: information_opacity_risk" in block
     assert "risk_assessment: dataset risk basis" in block
-
-
-def test_old_path_without_dataset_keeps_legacy_behavior(monkeypatch):
-    called = {"risk": False}
-
-    def legacy_risk(*args, **kwargs):
-        called["risk"] = True
-        return RiskLevel.LOW, "legacy risk basis"
-
-    monkeypatch.setattr(report_agent, "assess_risk", legacy_risk)
-    block = _build_code_owned_report_contract_block(
-        _extraction(),
-        _tick_logs(),
-        [5.0, 4.7],
-    )
-
-    assert called["risk"] is True
-    assert "risk_level_label: 低风险" in block
-    assert "risk_assessment: legacy risk basis" in block

@@ -1,0 +1,25 @@
+task_id: task-v1.3.1-phase4-streamlining
+session_id: session-local
+round_id: round-1
+action_type: launch_executor
+intended_executor: claude
+task_domain: development
+task_level: 
+artifact_expected: true
+artifact_target_paths:
+  - /Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/task-v1.3.1-phase4-streamlining/runtime
+  - /Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/task-v1.3.1-phase4-streamlining/logs
+  - /Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/task-v1.3.1-phase4-streamlining/summary/pm_runtime_summary.md
+role_boundary_checked: true
+allowed_by_role: true
+needs_ds_team: false
+needs_owner_approval: false
+mcp_or_tool_preflight_required: false
+scope_checked: true
+allowed_files:
+  []
+forbidden_files:
+  []
+result: pass
+hold_reason: 
+created_at: "2026-06-06T16:53:32+08:00"

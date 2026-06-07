@@ -12,7 +12,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 import config
 import main
-from main import build_run_paths
+from src.phase4.paths import build_run_paths
 
 
 class FixedSecondDatetime:

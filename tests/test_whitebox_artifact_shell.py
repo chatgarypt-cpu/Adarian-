@@ -8,7 +8,7 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from main import write_whitebox_summary
+from src.whitebox.run_meta import write_whitebox_summary
 from src.whitebox import (
     check_report_completeness,
     check_run_artifacts,
@@ -92,7 +92,7 @@ def test_whitebox_summary_index_shape() -> None:
         written = json.loads((run_dir / "whitebox_summary.json").read_text(encoding="utf-8"))
 
         assert summary == written
-        assert written["whitebox_version"] == "v1.2.5"
+        assert written["whitebox_version"] == "v1.3.1"
         assert written["status"] == "pass"
         assert set(written.keys()) == {
             "whitebox_version",

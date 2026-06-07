@@ -1,4 +1,9 @@
-"""Targeted checks for v1.2.8.1.1 inflection point output guards."""
+"""Targeted checks for v1.2.8.1.1 inflection point output guards.
+
+v1.3.1: identify_inflection_points and the legacy _replace_* helpers
+are archived. This test drives the legacy archive to keep the
+guard semantics validated.
+"""
 
 import sys
 from pathlib import Path
@@ -9,14 +14,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 
-from src.phase4 import report_agent
-from src.phase4.report_agent import (
-    _replace_reality_claims_about_inflection,
-    _replace_report_metric_terms,
-    generate_fallback_report,
-    identify_inflection_points,
-    save_markdown_report,
-)
+from src.phase4 import report_normalizer
 from src.schemas import (
     AgentEntry,
     Entity,
@@ -29,6 +27,16 @@ from src.schemas import (
     Phase2Output,
     Relation,
     TickLog,
+)
+from src.phase4.report_normalizer import (
+    _replace_reality_claims_about_inflection,
+    _replace_report_metric_terms,
+)
+from legacy.phase4.legacy_analytics import identify_inflection_points
+from legacy.phase4 import legacy_generation
+from legacy.phase4.legacy_generation import (
+    generate_fallback_report,
+    save_markdown_report as legacy_save_markdown_report,
 )
 
 
@@ -187,7 +195,7 @@ def test_empty_code_owned_inflections_do_not_allow_reality_claims(tmp_path):
     )
     assert output.inflection_points == []
 
-    report_agent._llm_generated_markdown = (
+    legacy_generation._llm_generated_markdown = (
         "# LLM 报告\n\n"
         "## 一、舆情概要\n\n第3轮出现现实舆情拐点。\n\n"
         "## 二、演化分析\n\n第2轮公众态度已经改变。\n\n"
@@ -197,8 +205,8 @@ def test_empty_code_owned_inflections_do_not_allow_reality_claims(tmp_path):
     )
 
     path = tmp_path / "run_001" / "final_report.md"
-    save_markdown_report(output, extraction, path)
-    report_agent._llm_generated_markdown = ""
+    legacy_save_markdown_report(output, extraction, path)
+    legacy_generation._llm_generated_markdown = ""
 
     markdown = path.read_text(encoding="utf-8")
     assert output.inflection_points == []
@@ -218,7 +226,7 @@ def test_non_empty_code_owned_inflections_do_not_allow_extra_reality_node(tmp_pa
     )
     assert output.inflection_points
 
-    report_agent._llm_generated_markdown = (
+    legacy_generation._llm_generated_markdown = (
         "# LLM 报告\n\n"
         "## 一、舆情概要\n\n内容。\n\n"
         "## 二、演化分析\n\n第3轮现实舆情已经出现拐点。\n\n"
@@ -228,8 +236,8 @@ def test_non_empty_code_owned_inflections_do_not_allow_extra_reality_node(tmp_pa
     )
 
     path = tmp_path / "run_002" / "final_report.md"
-    save_markdown_report(output, extraction, path)
-    report_agent._llm_generated_markdown = ""
+    legacy_save_markdown_report(output, extraction, path)
+    legacy_generation._llm_generated_markdown = ""
 
     markdown = path.read_text(encoding="utf-8")
     assert "第3轮现实舆情已经出现拐点" not in markdown

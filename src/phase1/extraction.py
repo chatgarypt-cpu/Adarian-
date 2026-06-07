@@ -349,7 +349,7 @@ def generator_create_entities(
     """
     # Generator 使用较高的 temperature 使输出更发散
     from src.llm_client import LLMClient
-    llm = LLMClient(temperature=0.7)
+    llm = LLMClient(temperature=0.7, task_type="phase1_extraction")
 
     user_prompt = GENERATOR_USER_PROMPT.format(
         seed_text=seed_text,

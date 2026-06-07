@@ -1,11 +1,16 @@
-"""Targeted checks for Phase 4 Markdown metric grounding."""
+"""Targeted checks for Phase 4 Markdown metric grounding (v1.3.1).
+
+v1.3.1: legacy code-owned stance/inflection helpers moved to
+``legacy.phase4.legacy_analytics``. This test now imports from the legacy
+archive to keep verifying the exact formatting/edge behaviour.
+"""
 
 import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.phase4.report_agent import (
+from legacy.phase4.legacy_analytics import (
     _build_code_owned_agent_stance_matrix,
     _format_code_owned_inflection_points,
 )

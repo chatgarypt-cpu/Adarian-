@@ -1,0 +1,37 @@
+task_id: v1.3.0-parser-aggregation
+task_domain: development
+task_level: M
+description: 'Phase 3 Parser Aggregation Layer & Phase 4 Dual-Consumption Validation
+  R0. 一次性抽离 Phase 3 结构化分析能力（risk_analyzer, inflection_detector, stance_analyzer, parser），
+  通过旧/新双路径 bypass 对比验证抽离成功。
+
+  '
+execution_profile: standard
+executor_type: claude-tmux
+git_reference: 761958f (v1.3.0 baseline) + 620b2a7 (v1.3.0.1 wiring fix)
+closeout:
+  status: closed
+  decided_by: Owner-Control (Gary)
+  decided_at: '2026-06-06T16:37:00+08:00'
+  rationale: 'Phase 3 解析器聚合层完成，新旧双路径 bypass 对比全部 4 个维度 all_match:true (risk_level,
+    audience_mode, inflection_count, risk_types)。 新路径 wiring 修复（B1/B2/B3）已由 Owner
+    手动完成并提交 620b2a7。 编译检查通过，targeted tests (331行) 已创建。
+
+    '
+  verification:
+  - compile_check: passed (report_agent.py, report_narrative.py, main_new.py, run_pipeline_new.py)
+  - bypass_comparison: all_match:true (test8)
+  - git_commit: 620b2a7 — fix phase4 new consumer wiring
+  checklist_done:
+  - task_status.yaml: done
+  - dispatch/: done
+  - runtime/result.json: done
+  - outputs/: done (simulation_dataset_sample, bypass_comparison, closeout_evidence,
+      offline_phase4_smoke)
+  - receipts/: not_applicable (relay dispatch, receipts in runtime/)
+  - summary/summary.md: not_applicable (standard development task, no separate summary
+      needed)
+  carryover:
+    carr1: 新路径 Phase3 模块替换旧路径切换策略 — Owner 决定后再执行
+    carr2: Phase 4 旧内联函数保留还是删除 — 取决于切换策略
+updated_at: '2026-06-06T15:04:09+08:00'

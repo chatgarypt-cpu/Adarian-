@@ -1748,6 +1748,11 @@ outputs/
 ## 2026-06-04: review-v1.3.0-plan (unknown)
 
 - 状态：completed
-## 2026-06-05: task-v1.3.0-reality-review (unknown)
+## 2026-06-06: v1.3.1 Phase4 Streamlining & Entrypoint Unification
 
-- 状态：completed
+- **task_id**: task-v1.3.1-phase4-streamlining
+- **executor**: claude (MiniMax backend via CC Switch)
+- **status**: completed (closed 2026-06-06)
+- **summary**: 5-Goal DAG. Phase4 收束为纯消费端（report_agent.py 1309→283行），入口归一（main.py 替换, main_new.py→legacy/），函数抽取（paths.py, run_meta.py），测试迁移（17更新+4新建），136 passed/0 failed
+- **smoke**: test8 exit 0, 632s, 35 LLM calls all qwen36-35b
+- **carryover**: whitebox_summary.json 自引用（v1.3.2）, detail version stale v1.2.5

@@ -1,0 +1,31 @@
+task_id: review-v1.3.1-plan
+task_domain: review
+short_task: review-v1.3.1-plan
+task_type: review
+node_id: node-review-v1.3.1-plan-review
+node_goal: Pre-Execution Plan Review — 审查 v1.3.1 Phase4 Streamlining 方案
+executor_type: claude
+execution_mode: agent_team
+
+executor_options:
+  workdir: /Users/gary/项目开发/AdarianMigration/adarian mvp
+  prompt_file: dispatch/prompt.md
+  teammate_mode: tmux
+  expected_outputs:
+    - outputs/plan_review_report.md
+  observer:
+    mode: always
+    attach: terminal_window
+
+input:
+  iteration_plan: docs/iterations/active/v1.3.1_phase4_streamlining_and_entrypoint_unification.md
+
+expected_outputs:
+  - outputs/plan_review_report.md
+
+stop_conditions:
+  - 误修改了 src/ 下任何文件（只读审查）
+  - import 了 Phase 4 / Phase 3 内部模块执行验证
+  - 超出了审查范围进入了代码落盘
+
+language: 中文

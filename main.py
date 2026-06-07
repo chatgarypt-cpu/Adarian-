@@ -1,13 +1,9 @@
 """
-Adarian: 主入口
+Adarian v1.3.1 — Phase4 Pure Consumer Pipeline
 ---
-串联 Phase 1-4，执行完整的舆情预判流程。
-
-v1.1.4 架构变化：
-- Phase 0 → Phase 1：Analyzer/Generator/Validator 协作架构
-- 实体分类：事件实体 vs 意见传播实体
-- Tick 0：事件实体发言
-- Tick 1+：意见传播实体发言
+主入口：串联 Phase 1-4 + Phase 3 Parser Aggregation。
+Phase 4 消费 Phase3 parser 输出的 risk_verdict / inflection_points /
+agent_stance_matrix，不调 report_agent 内联函数。
 
 用法：
     python main.py [seed_file]
@@ -20,25 +16,32 @@ v1.1.4 架构变化：
 - v1.1.1: 增加 Phase 0 调用，增加实体提取步骤
 - v1.1.4: Phase 0 → Phase 1 重构，Analyzer/Generator/Validator 协作架构
 - v1.1.10: LLM1/2/3 → Analyzer/Generator/Validator
+- v1.3.0: Phase 3 Parser Aggregation + reality review + LLM fallback
+- v1.3.1: Entrypoint Unification & Function Extraction
+          - build_run_paths -> src/phase4/paths.py
+          - write_run_meta / write_whitebox_* -> src/whitebox/run_meta.py
+          - _build_report_context_new -> src/phase4/report_narrative.build_report_context_new
+          - 移除 _run_bypass_comparison
+          - 移除 legacy 导入
 """
 
 import sys
 import time
 import json
-import os
-import shutil
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional, Tuple
 from rich.console import Console
 from rich.panel import Panel
-from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
+from rich.progress import Progress, SpinnerColumn, TextColumn
 
 import config
 from config import ensure_dirs
 from src.llm_client import init_llm_client, get_llm_client
 from src.schemas import EntityExtractionOutput, Phase2Output, Phase4Output, TickLog
 from src.utils.runtime_logger import get_runtime_logger
+from src.phase4.paths import build_run_paths
+from src.whitebox.run_meta import write_run_meta, write_whitebox_artifacts
 
 console = Console()
 
@@ -47,23 +50,14 @@ def print_banner():
     """打印横幅"""
     banner = """
 ╔══════════════════════════════════════════════════════════════╗
-║              Adarian 多智能体舆情预判系统                   ║
-║                    MVP V1.1.4 - 端到端演示                 ║
+║         Adarian v1.3.1 — Phase4 Pure Consumer Pipeline      ║
 ╚══════════════════════════════════════════════════════════════╝
     """
     console.print(banner, style="bold cyan")
 
 
 def run_phase1(seed_file: str, output_path: Path = None):
-    """执行 Phase 1：实体提取与分类（Analyzer/Generator/Validator 协作）
-
-    Args:
-        seed_file: 种子文件路径
-
-    Returns:
-        extraction_output: Phase 1 实体提取结果
-        entities_file: 保存的文件路径
-    """
+    """执行 Phase 1：实体提取与分类（Analyzer/Generator/Validator 协作）"""
     from src.phase1 import extract_entities_from_file, save_entities_output
 
     console.print(Panel("[bold]Phase 1: 实体提取与分类（Analyzer/Generator/Validator 协作）[/bold]", border_style="cyan"))
@@ -77,7 +71,6 @@ def run_phase1(seed_file: str, output_path: Path = None):
         extraction_output = extract_entities_from_file(seed_file)
         progress.update(task, completed=1)
 
-    # 保存 Phase 1 输出
     entities_file = save_entities_output(extraction_output, output_path=output_path)
 
     console.print(f"  事件实体数量: {len(extraction_output.event_entities)}")
@@ -93,18 +86,11 @@ def run_phase2(
     extraction_output: EntityExtractionOutput,
     output_path: Optional[Path] = None,
 ) -> Phase2Output:
-    """执行 Phase 2：社交拓扑构建
-
-    Args:
-        extraction_output: Phase 1 实体提取结果
-
-    Returns:
-        Phase2Output
-    """
+    """执行 Phase 2：社交拓扑构建"""
     from src.phase2 import (
         build_topology_from_extraction,
         validate_topology,
-        save_social_graph
+        save_social_graph,
     )
 
     console.print(Panel("[bold]Phase 2: 社交拓扑构建[/bold]", border_style="cyan"))
@@ -138,26 +124,15 @@ def run_phase3(
     seed_text: str,
     output_path: Optional[Path] = None,
 ) -> Tuple[List[TickLog], List[float]]:
-    """执行 Phase 3：多轮涌现推演
-
-    Args:
-        extraction_output: Phase 1 输出
-        phase2_output: Phase 2 输出
-        seed_text: 种子文本
-
-    Returns:
-        (tick_logs, x_t_sequence) tuple
-    """
+    """执行 Phase 3：多轮涌现推演"""
     from src.phase3 import (
-        SimulationEngine, save_tick_logs, print_simulation_summary
+        SimulationEngine, save_tick_logs, print_simulation_summary,
     )
 
     console.print(Panel("[bold]Phase 3: 多轮涌现推演[/bold]", border_style="cyan"))
 
     engine = SimulationEngine(extraction_output, phase2_output, seed_text)
-
     tick_logs = engine.run_simulation(max_ticks=config.MAX_TICKS)
-
     save_tick_logs(tick_logs, output_path=output_path)
     print_simulation_summary(tick_logs)
 
@@ -167,29 +142,62 @@ def run_phase3(
     return tick_logs, x_t_sequence
 
 
+def run_phase3_parser(
+    extraction_output: EntityExtractionOutput,
+    phase2_output: Phase2Output,
+    tick_logs: List[TickLog],
+    x_t_sequence: List[float],
+) -> dict:
+    """执行 Phase 3 Parser Aggregation — 消费所有 Phase3 模块。"""
+    from src.phase3.parser import SimulationDatasetParser
+
+    console.print(Panel("[bold]Phase 3 Parser: 聚合分析（消费所有 Phase3 模块）[/bold]", border_style="cyan"))
+
+    parser = SimulationDatasetParser()
+    dataset = parser.parse(
+        extraction_output,
+        phase2_output,
+        tick_logs,
+        x_t_sequence,
+    )
+
+    rv = dataset["simulation_result"]["risk_verdict"]
+    rt = dataset["simulation_result"]["risk_type_classification"]
+    console.print(f"  风险等级: {rv['level']} ({rv['label']})")
+    console.print(f"  风险类型: {rt['primary_types']}")
+    console.print(f"  拐点数量: {len(dataset['simulation_result']['inflection_points'])}")
+    console.print(f"  极化指数: {dataset['simulation_result']['final_polarization_index']:.4f}\n")
+
+    return dataset
+
+
 def run_phase4(
     extraction_output: EntityExtractionOutput,
     phase2_output: Phase2Output,
     tick_logs: List[TickLog],
     x_t_sequence: List[float],
+    dataset: dict,
     json_output_path: Optional[Path] = None,
     markdown_output_path: Optional[Path] = None,
 ) -> Phase4Output:
-    """执行 Phase 4：宏观洞察生成
+    """执行 Phase 4：宏观洞察生成（Phase3 驱动版）
 
-    Args:
-        extraction_output: Phase 1 输出
-        tick_logs: TickLog 列表
-        x_t_sequence: x(t) 序列
-
-    Returns:
-        Phase4Output
+    消费 Phase3 parser 输出的 risk_verdict / inflection_points /
+    agent_stance_matrix，不调 report_agent 内联函数。
     """
-    from src.phase4 import (
-        generate_report_with_llm, save_report, save_markdown_report
+    from src.phase4.report_narrative import generate_report_with_llm_narrative, build_report_context_new
+    from src.phase4.report_agent import (
+        _build_code_owned_report_contract_block,
+        parse_llm_report_response,
+        save_report,
+        save_markdown_report,
     )
 
-    console.print(Panel("[bold]Phase 4: 宏观洞察生成[/bold]", border_style="cyan"))
+    console.print(Panel("[bold]Phase 4: 宏观洞察生成（Phase3 驱动）[/bold]", border_style="cyan"))
+
+    report_context = build_report_context_new(
+        extraction_output, tick_logs, x_t_sequence, phase2_output, dataset,
+    )
 
     with Progress(
         SpinnerColumn(),
@@ -197,157 +205,43 @@ def run_phase4(
         console=console,
     ) as progress:
         task = progress.add_task("[cyan]生成报告...", total=1)
-        phase4_output = generate_report_with_llm(
+        phase4_output, markdown = generate_report_with_llm_narrative(
             extraction_output,
             tick_logs,
             x_t_sequence,
             phase2_output=phase2_output,
+            build_report_context=lambda *a, **kw: report_context,
+            build_code_owned_contract_block=_build_code_owned_report_contract_block,
+            parse_llm_report_response=parse_llm_report_response,
+            get_llm_client_func=get_llm_client,
+            simulation_dataset=dataset,
         )
         progress.update(task, completed=1)
 
     save_report(phase4_output, output_path=json_output_path)
-    save_markdown_report(phase4_output, extraction_output, output_path=markdown_output_path)
+    save_markdown_report(
+        phase4_output,
+        extraction_output,
+        output_path=markdown_output_path,
+        markdown=markdown,
+    )
 
     return phase4_output
-
-
-def build_run_paths(seed_file: Path) -> dict:
-    """Create the run directory and return all authoritative output paths."""
-    now = datetime.now()
-    batch_id = f"{seed_file.stem}_{now.strftime('%Y%m%d_%H%M%S')}"
-    run_id = f"run_{now.strftime('%f')}_{os.getpid()}"
-    batch_dir = config.OUTPUTS_DIR / "runs" / batch_id
-    batch_dir.mkdir(parents=True, exist_ok=True)
-    run_dir = batch_dir / run_id
-    run_dir.mkdir(parents=True, exist_ok=False)
-    whitebox_dir = run_dir / "whitebox"
-    whitebox_dir.mkdir(parents=True, exist_ok=True)
-
-    seed_copy = run_dir / "seed_input.txt"
-    shutil.copyfile(seed_file, seed_copy)
-
-    outputs = {
-        "entities": run_dir / "entities_and_relations.json",
-        "social_graph": run_dir / "social_graph.json",
-        "tick_logs": run_dir / "tick_logs.json",
-        "final_report_json": run_dir / "final_report.json",
-        "final_report_md": run_dir / "final_report.md",
-        "whitebox_summary": run_dir / "whitebox_summary.json",
-        "whitebox_dir": whitebox_dir,
-        "run_log": run_dir / "run.log",
-        "timing_summary": run_dir / "timing_summary.json",
-        "run_meta": run_dir / "run_meta.json",
-    }
-
-    return {
-        "batch_id": batch_id,
-        "batch_dir": batch_dir,
-        "run_id": run_id,
-        "run_dir": run_dir,
-        "seed_copy": seed_copy,
-        "outputs": outputs,
-    }
-
-
-def write_run_meta(run_context: dict, seed_file: Path, status: str, started_at: str, **extra) -> None:
-    """Write run metadata for replay and acceptance checks."""
-    outputs = run_context["outputs"]
-    payload = {
-        "batch_id": run_context.get("batch_id"),
-        "batch_dir": str(run_context.get("batch_dir")) if run_context.get("batch_dir") else None,
-        "run_id": run_context["run_id"],
-        "seed_file": str(seed_file),
-        "seed_copy": str(run_context["seed_copy"]),
-        "run_dir": str(run_context["run_dir"]),
-        "started_at": started_at,
-        "provider": config.LLM_PROVIDER,
-        "model": config.get_model_name(),
-        "status": status,
-        "outputs": {key: str(path) for key, path in outputs.items()},
-    }
-    payload.update(extra)
-
-    with open(outputs["run_meta"], "w", encoding="utf-8") as f:
-        json.dump(payload, f, ensure_ascii=False, indent=2)
-
-
-def write_whitebox_summary(
-    run_context: dict,
-    report_completeness: dict,
-    artifact_check: dict,
-) -> dict:
-    """Write the top-level whitebox summary as an index plus status."""
-    outputs = run_context["outputs"]
-    checks = {
-        "report_completeness": {
-            "status": report_completeness["status"],
-            "path": report_completeness["path"],
-        },
-        "artifact_check": {
-            "status": artifact_check["status"],
-            "path": artifact_check["path"],
-        },
-    }
-
-    if artifact_check["status"] != "pass":
-        status = "fail"
-    elif report_completeness["status"] != "pass":
-        status = "pass_with_warnings"
-    else:
-        status = "pass"
-
-    payload = {
-        "whitebox_version": "v1.2.5",
-        "status": status,
-        "checks": checks,
-        "raw_sources": artifact_check["raw_sources"],
-    }
-
-    with open(outputs["whitebox_summary"], "w", encoding="utf-8") as f:
-        json.dump(payload, f, ensure_ascii=False, indent=2)
-
-    return payload
-
-
-def write_whitebox_artifacts(run_context: dict) -> dict:
-    """Write whitebox detail artifacts and the top-level index."""
-    from src.whitebox import check_run_artifacts, write_artifact_check, write_report_completeness_summary
-
-    run_dir = run_context["run_dir"]
-    outputs = run_context["outputs"]
-    report_completeness = write_report_completeness_summary(
-        run_dir,
-        outputs["final_report_md"],
-    )
-    artifact_check = check_run_artifacts(run_dir)
-    summary = write_whitebox_summary(run_context, report_completeness, artifact_check)
-    artifact_check = write_artifact_check(run_dir)
-    summary = write_whitebox_summary(run_context, report_completeness, artifact_check)
-    return {
-        "report_completeness": report_completeness,
-        "artifact_check": artifact_check,
-        "summary": summary,
-    }
 
 
 def main():
     """主函数"""
     print_banner()
 
-    # 初始化
     ensure_dirs()
-
-    # 检查 API 配置
     if not config.LLM_API_KEY:
         console.print("[bold red]错误：[/bold red] 未配置 LLM API Key")
         console.print("请创建 .env 文件或设置环境变量 LLM_API_KEY")
         sys.exit(1)
 
-    # 初始化 LLM 客户端
     init_llm_client()
     console.print(f"[green]OK[/green] LLM: {config.LLM_PROVIDER} / {config.get_model_name()}\n")
 
-    # 加载种子文本
     if len(sys.argv) > 1:
         seed_file = Path(sys.argv[1])
     else:
@@ -374,25 +268,24 @@ def main():
     with open(seed_file, "r", encoding="utf-8") as f:
         seed_text = f.read()
 
-    # 计时
     start_time = time.time()
 
     try:
-        # Phase 1: 实体提取与分类（Analyzer/Generator/Validator 协作）
+        # Phase 1
         logger.log_phase_start("phase1_entity_extraction")
         phase1_start = time.time()
         extraction_output, entities_file = run_phase1(str(seed_file), output_path=outputs["entities"])
         phase1_time = time.time() - phase1_start
         logger.log_phase_end("phase1_entity_extraction", phase1_time)
 
-        # Phase 2: 社交拓扑构建
+        # Phase 2
         logger.log_phase_start("phase2_topology_builder")
         phase2_start = time.time()
         phase2_output = run_phase2(extraction_output, output_path=outputs["social_graph"])
         phase2_time = time.time() - phase2_start
         logger.log_phase_end("phase2_topology_builder", phase2_time)
 
-        # Phase 3: 多轮涌现推演
+        # Phase 3 tick simulation
         logger.log_phase_start("phase3_tick_simulation")
         phase3_start = time.time()
         tick_logs, x_t_sequence = run_phase3(
@@ -404,7 +297,18 @@ def main():
         phase3_time = time.time() - phase3_start
         logger.log_phase_end("phase3_tick_simulation", phase3_time)
 
-        # Phase 4: 宏观洞察生成
+        # Phase 3 Parser Aggregation
+        logger.log_phase_start("phase3_parser_aggregation")
+        phase3p_start = time.time()
+        dataset = run_phase3_parser(
+            extraction_output, phase2_output, tick_logs, x_t_sequence,
+        )
+        with open(outputs["simulation_dataset"], "w", encoding="utf-8") as f:
+            json.dump(dataset, f, ensure_ascii=False, indent=2)
+        phase3p_time = time.time() - phase3p_start
+        logger.log_phase_end("phase3_parser_aggregation", phase3p_time)
+
+        # Phase 4（消费 Phase3 输出）
         logger.log_phase_start("phase4_report_agent")
         phase4_start = time.time()
         phase4_output = run_phase4(
@@ -412,6 +316,7 @@ def main():
             phase2_output,
             tick_logs,
             x_t_sequence,
+            dataset,
             json_output_path=outputs["final_report_json"],
             markdown_output_path=outputs["final_report_md"],
         )
@@ -435,7 +340,6 @@ def main():
         whitebox_artifacts = write_whitebox_artifacts(run_context)
         report_completeness = whitebox_artifacts["report_completeness"]["result"]
 
-        # 打印最终结果
         console.print("\n" + "=" * 60)
         console.print("[bold green]舆情预判完成！[/bold green]")
         console.print("=" * 60)
@@ -445,6 +349,7 @@ def main():
   Phase 1 (实体提取): {phase1_time:.1f}s
   Phase 2 (拓扑构建): {phase2_time:.1f}s
   Phase 3 (模拟推演): {phase3_time:.1f}s
+  Phase 3 Parser: {phase3p_time:.1f}s
   Phase 4 (报告生成): {phase4_time:.1f}s
   总计: {total_time:.1f}s
 
@@ -458,6 +363,7 @@ def main():
   实体提取: {entities_file}
   社交拓扑: {outputs["social_graph"]}
   交互日志: {outputs["tick_logs"]}
+  Simulation Dataset: {outputs["simulation_dataset"]}
   JSON 报告: {outputs["final_report_json"]}
   Markdown 报告: {outputs["final_report_md"]}
   Whitebox 摘要: {outputs["whitebox_summary"]}
@@ -500,20 +406,7 @@ def main():
             error=str(e),
         )
         console.print(f"\n[bold red]错误：[/bold red] {e}")
-        import traceback
-        traceback.print_exc()
         sys.exit(1)
-
-
-def get_risk_color(risk: str) -> str:
-    """获取风险等级对应的颜色"""
-    colors = {
-        "low": "green",
-        "medium": "yellow",
-        "high": "red",
-        "critical": "bold red",
-    }
-    return colors.get(risk, "white")
 
 
 if __name__ == "__main__":

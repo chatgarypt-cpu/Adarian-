@@ -49,7 +49,7 @@ TERMINAL_STATES = {"executor_completed", "executor_failed", "hold", "timeout", "
 SESSION_PREFIX = "codex-tmux-"
 
 # ── Codex blocker keywords ───────────────────────────────────────────
-CODEX_AUTH_ERRORS = {"401", "token_expired", "refresh_token", "unauthorized", "forbidden"}
+CODEX_AUTH_ERRORS = {"401", "token_expired", "refresh_token", "unauthorized"}
 CODEX_SANDBOX_KEYWORDS = {"sandbox denied", "permission denied", "cannot access"}
 CODEX_HOLD_KEYWORDS = {"approval needed", "blocker", "NEEDS_CLARIFICATION", "NO_GO"}
 CODEX_COMPLETION_MARKERS = {"[codex-agent: Session complete", "task complete"}
@@ -214,13 +214,12 @@ class CodexBlockerInfo:
 
 
 def _classify_codex_stdout(stdout_text: str) -> CodexBlockerInfo:
-    """Classify Codex stdout for known blocker patterns."""
+    """Classify Codex stdout for known blocker patterns.
+    
+    Auth errors are handled separately via stderr (line 280).
+    This function only checks sandbox/permission and hold blockers.
+    """
     lower = stdout_text.lower()
-
-    # Auth errors (from stderr usually, but check stdout too)
-    # Already handled by CodexExecutor._classify_result — here for stdout text
-    if any(p in lower for p in CODEX_AUTH_ERRORS):
-        return CodexBlockerInfo("auth_failure", "Codex auth token appears invalid", "401/unauthorized")
 
     # Sandbox/permission blockers
     for kw in CODEX_SANDBOX_KEYWORDS:
@@ -722,6 +721,7 @@ class CodexTmuxExecutor:
 
         # --no-alt-screen for capture-pane compatibility
         parts.append("--no-alt-screen")
+        parts.append("--ephemeral")
 
         return " ".join(parts)
 

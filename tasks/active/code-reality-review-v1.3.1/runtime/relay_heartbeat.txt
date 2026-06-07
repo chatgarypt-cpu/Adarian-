@@ -1,0 +1,8 @@
+legacy_compat: true
+compat_for: hermes_old_relay
+task_id: code-reality-review-v1.3.1
+runtime_state: running
+timestamp: 2026-06-07T13:55:03+08:00
+runtime_pid: 73004
+executor_pid:
+heartbeat_seq: 6

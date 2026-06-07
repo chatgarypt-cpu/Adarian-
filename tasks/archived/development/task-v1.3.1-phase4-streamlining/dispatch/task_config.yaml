@@ -1,0 +1,23 @@
+task_id: task-v1.3.1-phase4-streamlining
+task_domain: development
+short_task: task-v1.3.1-phase4-streamlining
+task_type: workflow
+node_id: node-v1.3.1-dag
+node_goal: v1.3.1 Phase4 Pure Consumer — 5-Goal DAG
+executor_type: claude
+execution_mode: tmux_interactive
+
+executor_options:
+  workdir: /Users/gary/项目开发/AdarianMigration/adarian mvp
+  prompt_file: dispatch/prompt.md
+  teammate_mode: tmux
+  expected_outputs:
+    - outputs/execution_receipt.md
+  observer:
+    mode: always
+    attach: terminal_window
+
+expected_outputs:
+  - outputs/execution_receipt.md
+
+language: 中文

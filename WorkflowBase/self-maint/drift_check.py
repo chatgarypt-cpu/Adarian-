@@ -862,8 +862,8 @@ def generate_workflow_map() -> dict:
                     "writer_script": "~/.hermes/scripts/task-status-writer.py",
                 },
                 "memory_governance": {
-                    "registry": "WorkflowBase/governance/memory_registry.yaml",
-                    "retrieval_protocol": "WorkflowBase/governance/retrieval_protocol.yaml",
+                    "registry": "WorkflowBase/memory/memory_registry.yaml",
+                    "retrieval_protocol": "WorkflowBase/memory/retrieval_protocol.yaml",
                 },
             },
             "key_paths": {

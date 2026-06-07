@@ -1,0 +1,6 @@
+[heartbeat] monitoring: /Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/review-v1.3.1-plan
+[heartbeat] sound: Glass → /System/Library/Sounds/Glass.aiff
+[heartbeat] tmux session: adarian_review-v1_3_1-plan
+[15:31:56] 🔍 outputs detected while runtime_state='running' — task likely completed (artifact detector blind spot)
+[15:32:01] ✅ task reached terminal state: executor_completed
+[15:37:59] ⏹️ tmux session 'adarian_review-v1_3_1-plan' gone — exiting
