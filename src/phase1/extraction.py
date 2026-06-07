@@ -565,7 +565,8 @@ def generator_create_spreaders_concurrent(
 
     results: List[Optional[Dict[str, Any]]] = [None] * total_N
     pending = list(range(total_N))
-    max_workers = max(1, min(total_N, config.PHASE1_MAX_CONCURRENT_SPREADERS))
+    cap = config.PHASE1_MAX_CONCURRENT_SPREADERS
+    max_workers = max(1, min(total_N, cap)) if cap > 0 else total_N
 
     while pending:
         batch = _submit_batch(pending, max_workers)

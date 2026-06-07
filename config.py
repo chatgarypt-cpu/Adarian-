@@ -144,9 +144,9 @@ CORE_NODE_RATIO = 0.2
 # 最大模拟轮数
 MAX_TICKS = 5
 
-# Phase 1 传播者并发生成最大并发数（默认 4）
-# 模型扛不住全量并发时会二分降级到 1
-PHASE1_MAX_CONCURRENT_SPREADERS = 4
+# Phase 1 传播者并发生成最大并发数（默认 N = 无人工上限）
+# 实际并发由二分降级自动控制：N → N/2 → ... → 1
+PHASE1_MAX_CONCURRENT_SPREADERS = 0
 
 # 收敛阈值 (当极化指数变化小于此值时停止)
 CONVERGENCE_THRESHOLD = 0.05
