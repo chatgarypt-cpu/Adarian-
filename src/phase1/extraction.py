@@ -24,6 +24,7 @@ Phase 1: 实体提取与分类模块（Analyzer/Generator/Validator 协作架构
 import json
 import ast
 import re
+import time
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 from rich.console import Console
@@ -441,11 +442,13 @@ def generator_create_spreader(
     )
 
     console.print(f"  [cyan]Spreader {idx+1}/{total_N}:[/cyan] {group_name}...")
+    t0 = time.perf_counter()
     result = llm.generate(
         system=system_prompt,
         user=user_prompt,
         response_model=None,
     )
+    elapsed = time.perf_counter() - t0
 
     try:
         detail = _coerce_top_level_object(_parse_llm_json_payload(result), f"Spreader {group_name}")
@@ -470,7 +473,7 @@ def generator_create_spreader(
         "motivation": detail.get("motivation"),
         "typical_phrases": detail.get("typical_phrases"),
     }
-    console.print(f"    [green]✓[/green] 人设完成: {spreader.get('persona_name', '?')} ({spreader.get('occupation', '?')})")
+    console.print(f"    [green]✓[/green] {spreader.get('persona_name', '?')} ({spreader.get('occupation', '?')}) [{elapsed:.1f}s]")
     return spreader
 
 

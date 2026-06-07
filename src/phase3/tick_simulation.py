@@ -593,6 +593,7 @@ class SimulationEngine:
         )
 
         try:
+            t0 = time.perf_counter()
             # 传播者使用高温度客户端（输出更多样化）
             response = self.llm_spreader.generate(
                 system=system_prompt,
@@ -613,6 +614,8 @@ class SimulationEngine:
                 mean_stance=sum(self.agent_stances.values()) / len(self.agent_stances),
             )
 
+            elapsed = time.perf_counter() - t0
+            console.print(f"    [green]✓[/green] #{agent.id} {agent.group_name} [{elapsed:.1f}s]")
             return comment, final_stance, reasoning, change_reason
 
         except Exception as e:
