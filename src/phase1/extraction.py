@@ -674,6 +674,22 @@ def _post_process_entities(
                 console.print(f"  [yellow]⚠[/yellow] 自动修正：{entity.get('name')} 不可发言，original_statement 设为 null")
                 entity["original_statement"] = None
 
+    # 3. 归一化 opinion_spreaders 的 estimated_percentage 之和到 100
+    spreaders = entities_data.get("opinion_spreaders", [])
+    if spreaders:
+        raw_sum = sum(s.get("estimated_percentage", 0) for s in spreaders)
+        if raw_sum != 100 and raw_sum > 0:
+            scale = 100.0 / raw_sum
+            new_vals = [max(1, round(s.get("estimated_percentage", 0) * scale)) for s in spreaders]
+            diff = 100 - sum(new_vals)
+            if diff != 0:
+                new_vals[0] += diff
+            for s, v in zip(spreaders, new_vals):
+                s["estimated_percentage"] = v
+            new_sum = sum(s["estimated_percentage"] for s in spreaders)
+            if new_sum != raw_sum:
+                console.print(f"  [cyan] 归一化: estimated_percentage {raw_sum} -> {new_sum}")
+
     return entities_data
 
 
