@@ -818,6 +818,10 @@ class SimulationEngine:
         node_lookup = {n.id: n for n in spreader_nodes}
         cap = cfg.PHASE3_TICK_MAX_CONCURRENT_WORKERS
         max_workers = max(1, min(len(pending_ids), cap)) if cap > 0 else len(pending_ids)
+        total_speakers = len(pending_ids)
+
+        if total_speakers:
+            console.print(f"  [cyan]→ 并 {max_workers}[/cyan] {total_speakers} 个 Agent 发言并发生成...")
 
         while pending_ids:
             batch_size = min(max_workers, len(pending_ids))
@@ -847,6 +851,9 @@ class SimulationEngine:
                 for nid in still_failed:
                     llm_results[nid] = ("（无评论）", self.agent_stances[nid], "生成失败", "exception")
                 break
+
+        if total_speakers:
+            console.print(f"  [green]← 并[/green] {total_speakers}/{total_speakers} Agent 全部返回")
 
         # Step 2: Build entries (state updates happen here, in main thread)
         for node in spreader_nodes:

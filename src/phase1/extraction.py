@@ -566,6 +566,8 @@ def generator_create_spreaders_concurrent(
     cap = config.PHASE1_MAX_CONCURRENT_SPREADERS
     max_workers = max(1, min(total_N, cap)) if cap > 0 else total_N
 
+    console.print(f"  [cyan]→ 并 {max_workers}[/cyan] {total_N} 个传播者人设并发生成...")
+
     while pending:
         batch = _submit_batch(pending, max_workers)
         still_failed = []
@@ -590,6 +592,7 @@ def generator_create_spreaders_concurrent(
                 results[idx] = _make_fallback(idx)
             break
 
+    console.print(f"  [green]← 并[/green] {total_N}/{total_N} 全部返回")
     return results
 
 
