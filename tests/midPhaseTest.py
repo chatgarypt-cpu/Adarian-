@@ -9,7 +9,7 @@ Phase 1→3 Pipeline Smoke — 跑 Phase1-3 完整管线到 parser 输出 simula
   - 产出的 simulation_dataset.json 可直接给产品端验证
 
 用法：
-    .venv/bin/python tests/run_phase1_thru_parser.py seeds/test8.txt
+    .venv/bin/python tests/midPhaseTest.py seeds/test8.txt
 
 与 main.py 的区别：
   - Phase 1-2-3 tick simulation 逻辑相同
