@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
 """
-New Phase 3 Pipeline — 独立进程，消费所有 Phase3 模块。
+Phase 1→3 Pipeline Smoke — 跑 Phase1-3 完整管线到 parser 输出 simulation_dataset.json。
 
-用法:
-    .venv/bin/python tools/run_phase3_new.py seeds/test8.txt
+用途：
+  - 单独验证 Phase 3 parser 产出是否完整
+  - 不调 Phase 4，不生成 final_report
+  - 产出的 simulation_dataset.json 可直接给产品端验证
 
-与 main.py 的区别:
+用法：
+    .venv/bin/python tests/run_phase1_thru_parser.py seeds/test8.txt
+
+与 main.py 的区别：
   - Phase 1-2-3 tick simulation 逻辑相同
-  - 不调 Phase 4 report_agent，改调 Phase3 模块
+  - 不调 Phase 4 report_agent
   - 输出: parser.py → simulation_dataset.json（含风险判定/拐点/立场矩阵）
 """
 
