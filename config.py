@@ -148,6 +148,10 @@ MAX_TICKS = 5
 # 实际并发由二分降级自动控制：N → N/2 → ... → 1
 PHASE1_MAX_CONCURRENT_SPREADERS = 0
 
+# Phase 3 tick 并发调度最大并发数（默认 N = 无人工上限）
+# 实际并发由二分降级自动控制：N → N/2 → ... → 1
+PHASE3_TICK_MAX_CONCURRENT_WORKERS = 0
+
 # 收敛阈值 (当极化指数变化小于此值时停止)
 CONVERGENCE_THRESHOLD = 0.05
 

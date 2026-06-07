@@ -809,22 +809,44 @@ class SimulationEngine:
         selected_lookup = set(selection.selected_speakers)
         selected_nodes = [n for n in spreader_nodes if n.id in selected_lookup]
 
-        # Step 1: Parallel LLM calls for selected speakers
+        # Step 1: Parallel LLM calls for selected speakers (带二分降级)
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        import config as cfg
+
         llm_results = {}  # node.id -> (comment, final_stance, reasoning, change_reason)
-        if selected_nodes:
-            from concurrent.futures import ThreadPoolExecutor, as_completed
-            with ThreadPoolExecutor(max_workers=len(selected_nodes)) as pool:
+        pending_ids = [n.id for n in selected_nodes]
+        node_lookup = {n.id: n for n in spreader_nodes}
+        cap = cfg.PHASE3_TICK_MAX_CONCURRENT_WORKERS
+        max_workers = max(1, min(len(pending_ids), cap)) if cap > 0 else len(pending_ids)
+
+        while pending_ids:
+            batch_size = min(max_workers, len(pending_ids))
+            with ThreadPoolExecutor(max_workers=batch_size) as pool:
                 futures = {
-                    pool.submit(self.generate_opinion_spreader_post, node, tick): node
-                    for node in selected_nodes
+                    pool.submit(self.generate_opinion_spreader_post, node_lookup[nid], tick): nid
+                    for nid in pending_ids
                 }
                 for future in as_completed(futures):
-                    node = futures[future]
+                    nid = futures[future]
                     try:
-                        llm_results[node.id] = future.result()
+                        llm_results[nid] = future.result()
                     except Exception as e:
-                        console.print(f"  [yellow]警告：[/yellow] Agent {node.id} 生成发言失败: {e}")
-                        llm_results[node.id] = ("（无评论）", self.agent_stances[node.id], "生成失败", "exception")
+                        console.print(f"  [yellow]警告：[/yellow] Agent {nid} 生成发言失败: {e}")
+                        llm_results[nid] = None
+
+            still_failed = [nid for nid in pending_ids if llm_results.get(nid) is None]
+            if not still_failed:
+                break
+
+            if max_workers > 1:
+                max_workers = max(1, max_workers // 2)
+                console.print(f"  [yellow]Tick 二分降级: 并发数 {max_workers * 2} → {max_workers}，重试 {len(still_failed)} 个[/yellow]")
+                pending_ids = still_failed
+            else:
+                console.print(f"  [yellow]单线程仍失败，fallback: {len(still_failed)} 个[/yellow]")
+                for nid in still_failed:
+                    llm_results[nid] = ("（无评论）", self.agent_stances[nid], "生成失败", "exception")
+                break
 
         # Step 2: Build entries (state updates happen here, in main thread)
         for node in spreader_nodes:
