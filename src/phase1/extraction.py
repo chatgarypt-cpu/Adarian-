@@ -279,6 +279,8 @@ from .prompts import (
     ANALYZER_USER_PROMPT,
     GENERATOR_SYSTEM_PROMPT,
     GENERATOR_USER_PROMPT,
+    SPREADER_SYSTEM_PROMPT,
+    SPREADER_USER_PROMPT,
     VALIDATOR_SYSTEM_PROMPT,
     VALIDATOR_USER_PROMPT,
 )
@@ -325,7 +327,7 @@ def analyzer_set_parameters(seed_text: str) -> Dict[str, Any]:
 # Generator: 生成实体
 # =============================================================================
 
-def generator_create_entities(
+def generator_create_event_entities(
     seed_text: str,
     event_scale: float,
     event_controversy: float,
@@ -334,7 +336,12 @@ def generator_create_entities(
     error_feedback: str = ""
 ) -> Dict[str, Any]:
     """
-    Generator: 提取事件实体 + 生成意见传播者
+    Generator: 提取事件实体 + 规划传播者框架
+
+    只负责：
+    - 提取 event_entities
+    - 规划 opinion_spreaders 框架（确定数量和分布，不含完整人设）
+    - 提取 relations
 
     Args:
         seed_text: 种子文本内容
@@ -345,9 +352,8 @@ def generator_create_entities(
         error_feedback: 上一轮的错误反馈（用于重试）
 
     Returns:
-        包含 event_entities, opinion_spreaders, relations 的字典
+        包含 event_entities, spreader_plan（stubs）, relations 的字典
     """
-    # Generator 使用较高的 temperature 使输出更发散
     from src.llm_client import LLMClient
     llm = LLMClient(temperature=0.7, task_type="phase1_extraction")
 
@@ -357,31 +363,235 @@ def generator_create_entities(
         event_controversy=event_controversy,
         event_type=event_type,
         event_summary=event_summary,
-        error_feedback=error_feedback
+        error_feedback=error_feedback,
     )
 
-    console.print("[bold cyan]Generator:[/bold cyan] 正在提取事件实体与生成意见传播者...")
+    console.print("[bold cyan]Generator:[/bold cyan] 正在提取事件实体与规划传播者框架...")
 
     result = llm.generate(
         system=GENERATOR_SYSTEM_PROMPT,
         user=user_prompt,
-        response_model=None,  # Generator 返回自由 JSON
+        response_model=None,
     )
 
     try:
         entities_data = _coerce_top_level_object(_parse_llm_json_payload(result), "Generator")
     except (json.JSONDecodeError, ValueError, SyntaxError, TypeError) as e:
-        # JSON 解析失败，抛出错误让上层重试
         raise ValueError(f"Generator 返回内容无法解析为 JSON: {e}\n原始内容: {result[:200] if result else '空'}")
 
-    event_entities_count = len(entities_data.get('event_entities', []))
-    opinion_spreaders_count = len(entities_data.get('opinion_spreaders', []))
-    console.print(f"  [green]✓[/green] 事件实体: {event_entities_count}, 意见传播者: {opinion_spreaders_count}")
+    event_count = len(entities_data.get("event_entities", []))
+    spreader_count = len(entities_data.get("opinion_spreaders", []))
+    console.print(f"  [green]✓[/green] 事件实体: {event_count}, 规划传播者: {spreader_count}")
 
-    # v1.1.11 后处理：自动修正常见错误
+    # 后处理
     entities_data = _post_process_entities(entities_data, seed_text)
-
     return entities_data
+
+
+def generator_create_spreader(
+    group_name: str,
+    related_event_entity: str,
+    description: str,
+    I: float,
+    P: int,
+    estimated_percentage: int,
+    idx: int,
+    total_N: int,
+    event_summary: str,
+    event_type: str,
+    event_entities_text: str,
+) -> Dict[str, Any]:
+    """
+    单个传播者完整人设生成（可并发调用）。
+
+    Args:
+        每个参数对应一个传播者的属性
+
+    Returns:
+        Dict with full persona fields: susceptibility, communication_style,
+        persona_name, age_range, occupation, personality, motivation, typical_phrases
+    """
+    from src.llm_client import LLMClient
+
+    camp = "支持" if P == +1 else "反对"
+    camp_detail = "维护品牌/支持立场" if P == +1 else "批评/表达不满"
+
+    llm = LLMClient(temperature=0.7, task_type="phase1_extraction")
+    system_prompt = SPREADER_SYSTEM_PROMPT.format(
+        group_name=group_name,
+        camp=camp,
+        camp_detail=camp_detail,
+        related_event_entity=related_event_entity,
+        estimated_percentage=estimated_percentage,
+        I=I,
+        P=P,
+        description=description,
+        event_summary=event_summary,
+        event_type=event_type,
+        event_entities_text=event_entities_text,
+        total_N=total_N,
+        idx=idx + 1,
+    )
+    user_prompt = SPREADER_USER_PROMPT.format(
+        group_name=group_name,
+        related_event_entity=related_event_entity,
+        total_N=total_N,
+        idx=idx + 1,
+        camp=camp,
+        camp_detail=camp_detail,
+        I=I,
+    )
+
+    console.print(f"  [cyan]Spreader {idx+1}/{total_N}:[/cyan] {group_name}...")
+    result = llm.generate(
+        system=system_prompt,
+        user=user_prompt,
+        response_model=None,
+    )
+
+    try:
+        detail = _coerce_top_level_object(_parse_llm_json_payload(result), f"Spreader {group_name}")
+    except (json.JSONDecodeError, ValueError, SyntaxError, TypeError) as e:
+        raise ValueError(f"Spreader '{group_name}' 人设生成失败: {e}\n原始内容: {result[:200] if result else '空'}")
+
+    # Merge stub + detail into full OpinionSpreader
+    spreader = {
+        "group_name": group_name,
+        "related_event_entity": related_event_entity,
+        "description": description,
+        "I": I,
+        "P": P,
+        "estimated_percentage": estimated_percentage,
+        "entity_category": "opinion_spreader",
+        "susceptibility": detail.get("susceptibility"),
+        "communication_style": detail.get("communication_style"),
+        "persona_name": detail.get("persona_name"),
+        "age_range": detail.get("age_range"),
+        "occupation": detail.get("occupation"),
+        "personality": detail.get("personality"),
+        "motivation": detail.get("motivation"),
+        "typical_phrases": detail.get("typical_phrases"),
+    }
+    console.print(f"    [green]✓[/green] 人设完成: {spreader.get('persona_name', '?')} ({spreader.get('occupation', '?')})")
+    return spreader
+
+
+def generator_create_spreaders_concurrent(
+    spreaders_plan: List[Dict[str, Any]],
+    event_summary: str,
+    event_type: str,
+    event_entities: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    """
+    并发生成所有传播者的完整人设（带二分并发降级）。
+
+    策略：
+    1. 以 config.PHASE1_MAX_CONCURRENT_SPREADERS 为上限全量并发
+    2. 若单个失败 → LLMClient 内部重试兜底
+    3. 若批量失败（模型限流）→ 并发数砍半重新提交，直到 1
+
+    Args:
+        spreaders_plan: Generator 规划出的传播者框架列表
+        event_summary: 事件摘要
+        event_type: 事件类型
+        event_entities: 事件实体列表
+
+    Returns:
+        完整 OpinionSpreader dict 列表
+    """
+    import config
+    event_entities_text = "\n".join(
+        f"- {e.get('name', '?')}（{e.get('type', '?')}）: {e.get('role', '?')}"
+        for e in event_entities
+    )
+    total_N = len(spreaders_plan)
+
+    if total_N == 0:
+        return []
+
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    def _submit_batch(pending_indices: List[int], max_workers: int) -> List[Optional[Dict[str, Any]]]:
+        """提交一批传播者生成任务，返回结果列表。"""
+        batch_results: List[Optional[Dict[str, Any]]] = [None] * total_N
+        with ThreadPoolExecutor(max_workers=max_workers) as pool:
+            future_map = {}
+            for idx in pending_indices:
+                stub = spreaders_plan[idx]
+                future = pool.submit(
+                    generator_create_spreader,
+                    group_name=stub.get("group_name", f"群体{idx}"),
+                    related_event_entity=stub.get("related_event_entity", ""),
+                    description=stub.get("description", ""),
+                    I=stub.get("I", 5.0),
+                    P=stub.get("P", +1),
+                    estimated_percentage=stub.get("estimated_percentage", 0),
+                    idx=idx,
+                    total_N=total_N,
+                    event_summary=event_summary,
+                    event_type=event_type,
+                    event_entities_text=event_entities_text,
+                )
+                future_map[future] = idx
+
+            for future in as_completed(future_map):
+                idx = future_map[future]
+                try:
+                    batch_results[idx] = future.result()
+                except Exception as e:
+                    console.print(f"  [yellow]警告：[/yellow] 第 {idx+1} 个传播者生成失败: {e}")
+                    batch_results[idx] = None  # mark for retry
+        return batch_results
+
+    def _make_fallback(idx: int) -> Dict[str, Any]:
+        stub = spreaders_plan[idx]
+        return {
+            "group_name": stub.get("group_name", f"群体{idx}"),
+            "related_event_entity": stub.get("related_event_entity", ""),
+            "description": stub.get("description", ""),
+            "I": stub.get("I", 5.0),
+            "P": stub.get("P", +1),
+            "estimated_percentage": stub.get("estimated_percentage", 0),
+            "entity_category": "opinion_spreader",
+            "susceptibility": 0.5,
+            "communication_style": "常规表达",
+            "persona_name": "用户",
+            "age_range": "25-45",
+            "occupation": "普通公众",
+            "personality": "理性中立",
+            "motivation": "表达观点",
+            "typical_phrases": ["我觉得吧", "说实话"],
+        }
+
+    results: List[Optional[Dict[str, Any]]] = [None] * total_N
+    pending = list(range(total_N))
+    max_workers = max(1, min(total_N, config.PHASE1_MAX_CONCURRENT_SPREADERS))
+
+    while pending:
+        batch = _submit_batch(pending, max_workers)
+        still_failed = []
+
+        for idx in pending:
+            if batch[idx] is not None:
+                results[idx] = batch[idx]
+            else:
+                still_failed.append(idx)
+
+        if not still_failed:
+            break
+
+        if max_workers > 1:
+            max_workers = max(1, max_workers // 2)
+            console.print(f"  [yellow]二分降级: 并发数 {max_workers * 2} → {max_workers}，重试 {len(still_failed)} 个[/yellow]")
+            pending = still_failed
+        else:
+            # 已经到 1 了，给 fallback
+            console.print(f"  [yellow]单线程仍失败，使用 fallback 人设: {len(still_failed)} 个[/yellow]")
+            for idx in still_failed:
+                results[idx] = _make_fallback(idx)
+            break
+
+    return results
 
 
 def _post_process_entities(
@@ -511,7 +721,7 @@ MAX_RETRIES = 3
 
 def extract_entities_with_validation(seed_text: str) -> EntityExtractionOutput:
     """
-    兼容入口：转发到 v1.1.14 的 Phase 1 Orchestrator。
+    Phase 1 Orchestrator: Analyzer → Entity Generator → Concurrent Spreader Generator → Validator
 
     Args:
         seed_text: 种子文本内容
@@ -528,7 +738,8 @@ def extract_entities_with_validation(seed_text: str) -> EntityExtractionOutput:
             console.print(f"[yellow]重试第 {attempt + 1}/{MAX_RETRIES} 轮...[/yellow]")
 
         try:
-            entities_data = generator_create_entities(
+            # Step 1: 提取事件实体 + 规划传播者框架
+            entities_data = generator_create_event_entities(
                 seed_text=seed_text,
                 event_scale=params["event_scale"],
                 event_controversy=params["event_controversy"],
@@ -549,6 +760,29 @@ def extract_entities_with_validation(seed_text: str) -> EntityExtractionOutput:
             )
             continue
 
+        # Step 2: 并发生成每个传播者的完整人设
+        try:
+            spreader_plan = entities_data.get("opinion_spreaders", [])
+            event_entities = entities_data.get("event_entities", [])
+            spreaders = generator_create_spreaders_concurrent(
+                spreaders_plan=spreader_plan,
+                event_summary=params["event_summary"],
+                event_type=params["event_type"],
+                event_entities=event_entities,
+            )
+            entities_data["opinion_spreaders"] = spreaders
+        except ValueError as e:
+            last_validation = {
+                "pass": False,
+                "message": "传播者人设生成失败",
+                "errors": [str(e)],
+            }
+            error_feedback = (
+                f"传播者人设生成失败: {e}"
+            )
+            continue
+
+        # Step 3: 校验
         validation = validator_check_format(entities_data, seed_text)
         last_validation = validation
 
