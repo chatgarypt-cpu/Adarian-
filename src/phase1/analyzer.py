@@ -1,10 +1,15 @@
 """Phase 1 Analyzer — seed material analysis."""
 
+import json
 from typing import Any, Dict
 
 from src.llm_client import get_llm_client
 
-from .utils import console
+from .utils import (
+    _coerce_top_level_object,
+    _parse_llm_json_payload,
+    console,
+)
 from .prompts import ANALYZER_SYSTEM_PROMPT, ANALYZER_USER_PROMPT
 
 
