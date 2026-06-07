@@ -20,6 +20,7 @@ Phase 1→3 Pipeline Smoke — 跑 Phase1-3 完整管线到 parser 输出 simula
 from __future__ import annotations
 
 import json
+import shlex
 import subprocess
 import sys
 import time
@@ -35,10 +36,10 @@ def _ensure_visible_window():
     """如 stdout 非 TTY（后台/Hermes 调用），自动通过 osascript 开可见窗口。"""
     if sys.stdout.isatty():
         return  # 前台终端，正常运行
-    args = " ".join(sys.argv)
+    wrapped = shlex.join(sys.argv)
     cmd = (
         f'tell application "Terminal" to do script '
-        f'"cd {_proj} && {sys.executable} {args}"'
+        f'"cd {shlex.quote(str(_proj))} && {wrapped}"'
     )
     subprocess.run(["osascript", "-e", cmd])
     sys.exit(0)
