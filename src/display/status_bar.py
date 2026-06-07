@@ -44,6 +44,7 @@ class StatusBar:
 
     def __init__(self) -> None:
         self.phase = PhaseTracker()
+        self.phase.start("就绪")
         self._concurrency: Optional[ConcurrencyTracker] = None
         self._live: Optional[Live] = None
         self._stop = False
@@ -57,7 +58,7 @@ class StatusBar:
 
     def set_concurrency(self) -> ConcurrencyTracker:
         """创建一个新的并发池跟踪器并激活。返回跟踪器以便外部调用。"""
-        self._concurrency = ConcurrencyTracker()
+        self._concurrency = ConcurrencyTracker(on_change=self.refresh)
         return self._concurrency
 
     @property
@@ -105,7 +106,7 @@ class StatusBar:
                 for i in range(0, len(parts), 3):
                     t.add_row(Text(""), Text(""), Text(""), Text("".join(parts[i:i + 3])))
 
-        panel = Panel(t, border_style="cyan", title="[bold]仿真引擎[/bold]", width=_console.width)
+        panel = Panel(t, border_style="cyan", title="[bold]仿真引擎[/bold]")
         return panel
 
     # ── 生命周期 ──────────────────────────────────────────────
@@ -117,7 +118,7 @@ class StatusBar:
         self._live = Live(
             self._render(),
             refresh_per_second=4,
-            transient=True,
+            transient=False,
             console=_console,
         )
         self._live.start()
@@ -134,13 +135,17 @@ class StatusBar:
         if self._live:
             self._live.stop()
         _current_bar = None
-        # 清理面板：打印一个空行让终端回到正常
         _console.print()
 
+    def refresh(self) -> None:
+        """状态变更后调用（如 worker 完成），触发面板刷新。"""
+        if self._live:
+            self._live.update(self._render())
+
     def _refresh_loop(self) -> None:
-        """后台线程：每 250ms 刷新 Live 面板。"""
+        """后台线程：每秒刷新一次（让计时器和 Spinner 走动）。"""
         while not self._stop:
-            time.sleep(0.25)
+            time.sleep(1)
             try:
                 if self._live:
                     self._live.update(self._render())
