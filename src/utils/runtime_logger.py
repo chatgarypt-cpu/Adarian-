@@ -1,12 +1,30 @@
-"""运行时观测日志。"""
+"""运行时观测日志，集成 stdout 捕获。"""
 
 from __future__ import annotations
 
 import json
+import os
+import sys
 import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
+
+
+class _Tee:
+    """双写流：print → terminal + run.log"""
+    def __init__(self, original_stream, file_path: Path):
+        self._stream = original_stream
+        self._file = open(file_path, "a", encoding="utf-8")
+
+    def write(self, text: str) -> None:
+        self._stream.write(text)
+        self._file.write(text)
+        self._file.flush()
+
+    def flush(self) -> None:
+        self._stream.flush()
+        self._file.flush()
 
 
 class RuntimeLogger:
@@ -43,6 +61,9 @@ class RuntimeLogger:
             "errors": [],
         }
         self._write_summary()
+        # Redirect stdout: print goes to both terminal and run.log
+        sys.stdout = _Tee(sys.stdout, self.log_path)
+        sys.stderr = _Tee(sys.stderr, self.log_path)
 
     def _timestamp(self) -> str:
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
