@@ -44,7 +44,7 @@ def generator_create_event_entities(
         包含 event_entities, spreader_plan（stubs）, relations 的字典
     """
     from src.llm_client import LLMClient
-    llm = LLMClient(temperature=0.7, task_type="phase1_extraction")
+    llm = LLMClient(temperature=0.7, task_type="phase1_extraction", max_tokens=16384)
 
     user_prompt = GENERATOR_USER_PROMPT.format(
         seed_text=seed_text,
