@@ -22,7 +22,6 @@ from pathlib import Path
 from typing import List, Dict, Optional, Tuple
 import networkx as nx
 from rich.console import Console
-from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeRemainingColumn
 from rich.table import Table
 
 import config
@@ -968,36 +967,22 @@ class SimulationEngine:
         )
 
         # Tick 1+: 意见传播实体发言
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            BarColumn(),
-            TextColumn("[progress.percentage]{task.completed}/{task.total}"),
-            TimeRemainingColumn(),
-            console=console,
-        ) as progress:
-            task = progress.add_task("[cyan]模拟进度", total=max_ticks)
+        console.print(f"  [cyan]→ 模拟 {max_ticks} 轮...[/cyan]")
 
-            for tick in range(1, max_ticks + 1):
-                tick_start = time.perf_counter()
-                llm_before = logger.get_llm_call_count()
-                logger.log_tick_start(tick)
-                tick_log = self.run_tick(tick)
-                self.tick_logs.append(tick_log)
-                logger.log_tick_end(
-                    tick,
-                    time.perf_counter() - tick_start,
-                    len([entry for entry in tick_log.entries if entry.comment != "（未发言）"]),
-                    logger.get_llm_call_count() - llm_before,
-                )
+        for tick in range(1, max_ticks + 1):
+            tick_start = time.perf_counter()
+            llm_before = logger.get_llm_call_count()
+            logger.log_tick_start(tick)
+            tick_log = self.run_tick(tick)
+            self.tick_logs.append(tick_log)
+            logger.log_tick_end(
+                tick,
+                time.perf_counter() - tick_start,
+                len([entry for entry in tick_log.entries if entry.comment != "（未发言）"]),
+                logger.get_llm_call_count() - llm_before,
+            )
 
-                progress.update(
-                    task,
-                    description=f"[cyan]Tick {tick}/{max_ticks}",
-                    completed=tick,
-                )
-
-                # TODO: 收敛检测暂时禁用，跑满 10 轮
+            # TODO: 收敛检测暂时禁用，跑满 10 轮
                 # if tick > 1:
                 #     prev_metrics = self.tick_logs[-2].global_metrics
                 #     curr_metrics = tick_log.global_metrics
