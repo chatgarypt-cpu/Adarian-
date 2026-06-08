@@ -47,6 +47,8 @@ def _kill_stale_executors(task_dir: str) -> None:
             continue
         if pid == my_pid:
             continue
+        if "hermes" in cmd.lower():
+            continue
         if task_dir_abs in cmd and ("python" in cmd or "relay_runner" in cmd):
             killers.append(pid)
 

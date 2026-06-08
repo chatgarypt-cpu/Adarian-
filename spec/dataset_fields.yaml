@@ -71,6 +71,11 @@
   source: extraction_output（Phase 1 EntityExtractor）
   notes: 观点传播者列表，spread_percentage 经 Compiler 等比缩放至 100%
 
+- path: source_context.relations
+  trustworthiness: stable
+  source: extraction_output（Phase 1 EntityExtractor）
+  notes: 实体间关系列表，含 source / target / type 三字段
+
 # ── simulation_result ──────────────────────────
 - path: simulation_result.x_t_sequence
   trustworthiness: stable

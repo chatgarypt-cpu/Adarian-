@@ -174,6 +174,8 @@ def _parse_json_candidate(candidate: str) -> Any:
     normalized = re.sub(r"\bNone\b", "null", normalized)
     normalized = re.sub(r"\bTrue\b", "true", normalized)
     normalized = re.sub(r"\bFalse\b", "false", normalized)
+    # 中文全角逗号 → 英文逗号（minimax 等模型可能输出中文标点）
+    normalized = normalized.replace("，", ",")
 
     # 第二次 json.loads 尝试（保留原始行为）
     try:

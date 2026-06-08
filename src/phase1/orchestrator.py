@@ -182,7 +182,33 @@ def extract_entities_with_validation(
                         f"{err['loc']}: {err['msg']}" for err in e2.errors()
                     )
 
-            console.print(f"  [yellow]✗[/yellow] Repair 未能修复，全量重试: {e.errors()[0].get('msg', str(e))}")
+            console.print(f"  [yellow]✗[/yellow] Repair 未能修复，尝试 Repair Agent (LLM 定向修复)...")
+            from src.phase1.repair_agent import repair_with_agent
+            agent_errors = e2.errors() if 'e2' in dir() else e.errors()
+            agent_fixed = repair_with_agent(merged_output, agent_errors, max_attempts=3)
+            if agent_fixed:
+                for k in ("event_entities", "opinion_spreaders", "relations",
+                          "event_summary", "event_scale", "event_controversy", "event_type"):
+                    if k in agent_fixed:
+                        merged_output[k] = agent_fixed[k]
+                try:
+                    validated = EntityExtractionOutput(**merged_output)
+                    if report_path:
+                        report.record_total_time(time.perf_counter() - t0)
+                        report.write(report_path)
+                        report.close()
+                    return validated
+                except ValidationError as e3:
+                    console.print(f"  [yellow]✗[/yellow] Repair Agent 修复后仍校验失败: {e3.errors()[0].get('msg', str(e3))[:80]}")
+                    last_validation = {
+                        "pass": False,
+                        "message": "Repair Agent 修复失败",
+                        "errors": ["; ".join(f"{err['loc']}: {err['msg']}" for err in e3.errors())],
+                    }
+                    error_feedback = str(e3)
+                    continue
+
+            console.print(f"  [red]✗[/red] Repair Agent + 代码 Repair 均未修复，全量重试: {e.errors()[0].get('msg', str(e))}")
             last_validation = {
                 "pass": False,
                 "message": "Pydantic / Repair 校验失败",

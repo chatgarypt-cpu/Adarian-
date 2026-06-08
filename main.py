@@ -24,6 +24,7 @@ from src.llm_client import init_llm_client, get_llm_client, register_observer
 from src.schemas import Phase4Output
 from src.utils.runtime_logger import get_runtime_logger
 from src.phase4.paths import build_run_paths
+from src.output_paths import create_run_paths
 from src.phase4.report_narrative import generate_report_with_llm_narrative
 from src.phase4.report_agent import save_report, save_markdown_report
 from src.whitebox.run_meta import write_run_meta
@@ -78,7 +79,7 @@ def main():
     register_observer(_token_tracker.on_llm_response)
 
     logger = get_runtime_logger()
-    run_context = build_run_paths(seed_file)
+    run_context = create_run_paths(seed_file).build()
     run_dir = run_context["run_dir"]
     outputs = run_context["outputs"]
     logger.configure(run_dir=run_dir)

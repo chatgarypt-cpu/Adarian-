@@ -1,0 +1,28 @@
+outputs/runs/
+└── 2026-06-08/
+    └── probe_<batchTag>_183000/     ← 一次探针运行
+        ├── probe_config.yaml        ← 该次使用的配置（模型列表、seed等）
+        │
+        ├── probe_latency_report.txt ← 探针分析：延迟矩阵 + 池拓扑推断
+        │
+        ├── world_0_qwen36-35b_seed18/    ← 单世界产物，跟正式跑一个结构
+        │   ├── simulation_dataset.json
+        │   ├── simulation_dataset_spec.yaml
+        │   ├── run.log
+        │   └── whitebox/
+        │       ├── run_meta.json
+        │       ├── timing_summary.json
+        │       ├── token_tracker.json
+        │       └── latency_per_call.json    ← 每次LLM请求的起止耗时
+        │
+        ├── world_1_qwen3-30b-tke_seed18/
+        │   └── ...
+        │
+        ├── world_2_qwen3-80b_seed18/
+        │   └── ...
+        │
+        ├── world_3_qwen35-122b_seed18/
+        │   └── ...
+        │
+        └── world_4_qwen36-35b_seed18_v2/   ← 同模型但不同端点的兜底世界
+            └── ...

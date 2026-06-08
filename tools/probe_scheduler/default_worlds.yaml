@@ -1,0 +1,41 @@
+# 平行世界探针配置 — 5 候选模型
+seed_path: seeds/test8.txt
+batch_tag: pool_probe
+max_concurrent: 5
+skip_phase4: true
+
+worlds:
+  - name: world_0
+    label: "Qwen 36B 基线"
+    model: qwen36-35b
+    base_url: http://100.89.3.59:8090/v1
+    api_key_from_env: LLM_API_KEY
+    max_tokens: 16384
+
+  - name: world_1
+    label: "Qwen 80B 对照"
+    model: qwen3-80b-tke
+    base_url: http://100.89.3.59:8090/v1
+    api_key_from_env: LLM_API_KEY
+    max_tokens: 16384
+
+  - name: world_2
+    label: "DeepSeek v4 Flash"
+    model: deepseek-v4f
+    base_url: http://100.89.3.59:8090/v1
+    api_key_from_env: LLM_API_KEY
+    max_tokens: 16384
+
+  - name: world_3
+    label: "DeepSeek 基础版"
+    model: ds
+    base_url: http://100.89.3.59:8090/v1
+    api_key_from_env: LLM_API_KEY
+    max_tokens: 16384
+
+  - name: world_4
+    label: "MiniMax 对照"
+    model: minimax
+    base_url: http://100.89.3.59:8090/v1
+    api_key_from_env: LLM_API_KEY
+    max_tokens: 16384

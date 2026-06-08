@@ -167,6 +167,8 @@ class LLMClient:
                 logger.log_llm_end(caller, self.model, elapsed)
 
                 content = response.choices[0].message.content
+                if not content:
+                    content = getattr(response.choices[0].message, 'reasoning_content', '') or ''
                 llm_response = LLMResponse(
                     content=content,
                     raw_response=response.model_dump(),

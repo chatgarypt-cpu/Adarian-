@@ -86,5 +86,15 @@ def _post_process_entities(
                 if rep:
                     rep.record_compiler_normalization("estimated_percentage", raw_sum, new_sum)
 
+    # 4. 截断 typical_phrases 到 schema 上限（3 条）
+    truncated = 0
+    for s in spreaders:
+        phrases = s.get("typical_phrases", [])
+        if len(phrases) > 3:
+            s["typical_phrases"] = phrases[:3]
+            truncated += 1
+    if truncated:
+        console.print(f"  [cyan] 归一化: {truncated} 个 spreader 的 typical_phrases 从 >3 条截断到 3 条")
+
     return entities_data
 

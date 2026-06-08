@@ -158,6 +158,14 @@ class SimulationDatasetParser:
                     }
                     for s in extraction_output.opinion_spreaders
                 ],
+                "relations": [
+                    {
+                        "source": r.source,
+                        "target": r.target,
+                        "type": r.type,
+                    }
+                    for r in extraction_output.relations
+                ],
             },
             "simulation_result": {
                 "x_t_sequence": x_t_sequence,
