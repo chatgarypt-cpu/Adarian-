@@ -28,9 +28,10 @@ from src.phase4.report_narrative import generate_report_with_llm_narrative
 from src.phase4.report_agent import save_report, save_markdown_report
 from src.whitebox.run_meta import write_run_meta
 from src.whitebox.token_tracker import TokenTracker
+from src.whitebox.dataset_spec_writer import generate_spec_yaml_from_files
+from src.whitebox.classifier_reporter import write_classification_summary
 from src.display.run_log_writer import append_run_summary, log_token_summary
 from src.display import StatusBar
-from src.whitebox.dataset_spec_writer import generate_spec_yaml_from_files
 
 
 def run_phase4(
@@ -124,15 +125,24 @@ def main():
             x_str = ", ".join(f"{x:.2f}" for x in x_t_sequence)
             logger.info("  √ %.1fs | %d ticks | x(t): [%s]", t3, len(tick_logs), x_str)
 
-            # Phase 3 Parser Aggregation
-            logger.log_phase_start("phase3_parser_aggregation")
-            bar.set_phase("Phase 3 聚合分析")
+            # 分析聚合（analysis → parser 编排）
+            logger.log_phase_start("analysis_aggregation")
+            bar.set_phase("分析聚合")
             t4 = time.time()
             from src.parser import SimulationDatasetParser
             parser = SimulationDatasetParser()
             dataset = parser.parse(extraction_output, phase2_output, tick_logs, x_t_sequence)
             with open(outputs["simulation_dataset"], "w", encoding="utf-8") as f:
                 json.dump(dataset, f, ensure_ascii=False, indent=2)
+            # 白盒：分类摘要
+            rtc = dataset.get("simulation_result", {}).get("risk_type_classification", {})
+            write_classification_summary(
+                run_dir / "whitebox",
+                primary_types=rtc.get("primary_types", []),
+                type_labels=rtc.get("type_labels", []),
+                primary_domain=rtc.get("primary_domain"),
+                primary_domain_label=rtc.get("primary_domain_label"),
+            )
             try:
                 generate_spec_yaml_from_files(
                     outputs["simulation_dataset"],
@@ -142,8 +152,14 @@ def main():
             except Exception:
                 pass
             t4 = time.time() - t4
-            logger.log_phase_end("phase3_parser_aggregation", t4)
-            logger.info("  √ %.2fs", t4)
+            logger.log_phase_end("analysis_aggregation", t4)
+            # 捕获分析层行为：风险类型和域
+            rtc = dataset.get("simulation_result", {}).get("risk_type_classification", {})
+            pts = rtc.get("primary_types", [])
+            labels = rtc.get("type_labels", [])
+            domain = rtc.get("primary_domain_label", "")
+            types_str = "、".join(labels) if labels else "（无）"
+            logger.info("  √ %.2fs | 风险类型: %s | 一级域: %s", t4, types_str, domain if domain else "（无）")
 
             # Phase 4
             logger.log_phase_start("phase4_report_agent")
@@ -174,7 +190,7 @@ def main():
         logger.info("Phase 1 (实体提取):  %.1fs", t1)
         logger.info("Phase 2 (拓扑构建):  %.1fs", t2)
         logger.info("Phase 3 (模拟推演):  %.1fs", t3)
-        logger.info("Phase 3 Parser:      %.1fs", t4)
+        logger.info("分析层:              %.1fs", t4)
         logger.info("Phase 4 (报告生成):  %.1fs", t5)
         logger.info("总计:                %.1fs", total_time)
         logger.info("")

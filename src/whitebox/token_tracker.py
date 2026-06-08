@@ -18,6 +18,8 @@ _PHASE_MAP: Dict[str, str] = {
     "generate_opinion_spreader_post": "Phase 3",
     # Phase 4
     "generate_report_with_llm_narrative": "Phase 4",
+    # 分析层 / RiskClassifier
+    "classify": "分析层",
     # 默认
 }
 

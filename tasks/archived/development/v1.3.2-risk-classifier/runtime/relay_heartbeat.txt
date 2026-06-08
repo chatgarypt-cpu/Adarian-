@@ -1,0 +1,8 @@
+legacy_compat: true
+compat_for: hermes_old_relay
+task_id: v1.3.2-risk-classifier
+runtime_state: hold
+timestamp: 2026-06-08T16:18:58+08:00
+runtime_pid: 96390
+executor_pid:
+heartbeat_seq: 76

@@ -177,6 +177,8 @@ def _build_phase4_output_from_simulation_dataset(
         risk_assessment=risk_assessment,
         x_t_sequence=x_t_sequence,
         agent_stance_matrix=sim.get("agent_stance_matrix"),
+        primary_domain=risk_type_classification.get("primary_domain"),
+        primary_domain_label=risk_type_classification.get("primary_domain_label"),
     )
 
 
@@ -194,10 +196,10 @@ def parse_llm_report_response(
     )
 
 
-def _build_code_owned_report_contract_block(
+def _build_report_contract_block(
     simulation_dataset: dict,
 ) -> str:
-    """构建 code-owned report contract block（v1.3.1：纯消费 simulation_dataset）。"""
+    """构建上游分析层 contract block（消费 simulation_dataset 中的风险研判结果）。"""
     sim = simulation_dataset.get("simulation_result", {})
     risk_verdict = sim.get("risk_verdict", {})
     risk_type_classification = sim.get("risk_type_classification", {})

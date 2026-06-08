@@ -1,0 +1,11 @@
+task_id: v1.3.2-post-refactor-reality-review
+tmux_session_id: adarian_v1_3_2-post-refactor-reality-review
+executor_type: claude
+execution_mode: tmux_interactive
+workdir: /Users/gary/项目开发/AdarianMigration/adarian mvp
+command:
+  - claude
+  - --teammate-mode
+  - tmux
+reuse_existing_session: false
+created_at: "2026-06-08T02:00:53+08:00"

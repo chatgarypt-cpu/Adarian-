@@ -1,5 +1,6 @@
 """Phase 3: Simulation Dataset Parser — 纯编排聚合层"""
 import json
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from src.schemas.phase1 import EntityExtractionOutput
@@ -8,6 +9,13 @@ from src.schemas.phase3 import TickLog
 from src.analysis.risk_analyzer import RiskAnalyzer
 from src.analysis.inflection_detector import InflectionDetector
 from src.analysis.stance_analyzer import StanceAnalyzer
+from src.analysis.classifier import RiskClassifier
+from src.schemas.phase4 import (
+    DOMAIN_LABELS,
+    RISK_LEVEL_LABELS,
+    RISK_TYPE_LABELS,
+    TYPE_TO_DOMAIN_MAP,
+)
 
 
 class SimulationDatasetParser:
@@ -15,6 +23,7 @@ class SimulationDatasetParser:
         self._risk_analyzer = RiskAnalyzer()
         self._inflection_detector = InflectionDetector()
         self._stance_analyzer = StanceAnalyzer()
+        self._risk_classifier = RiskClassifier()
 
     def parse(
         self,
@@ -38,11 +47,10 @@ class SimulationDatasetParser:
             x_t_sequence, tick_logs, extraction_output=extraction_output
         )
 
-        # Risk type classification
+        # Risk type classification (keyword path, v1.2.x legacy)
         risk_types = self._risk_analyzer.classify_risk_types(
             audience_mode, risk_basis, tick_logs
         )
-        from src.schemas.phase4 import RISK_LEVEL_LABELS, RISK_TYPE_LABELS
         risk_type_labels = [RISK_TYPE_LABELS.get(rt, rt) for rt in risk_types]
 
         # Inflection detection
@@ -52,6 +60,33 @@ class SimulationDatasetParser:
 
         # Stance analysis
         agent_stance_matrix = self._stance_analyzer.build_agent_stance_matrix(tick_logs)
+
+        # RiskClassifier — LLM-based Top-3 from the 26-type taxonomy.
+        # Must run after agent_stance_matrix is built (consumed in query text)
+        # and before risk_type_classification dict is assembled.
+        from src.utils.runtime_logger import get_runtime_logger
+        _log = get_runtime_logger()
+        _log.log_phase_start("analysis_risk_classifier")
+        _risk_t0 = time.time()
+        classification_output = self._risk_classifier.classify(
+            extraction_output,
+            tick_logs,
+            x_t_sequence,
+            {  # simulation_result is built last; assemble a minimal one for the classifier
+                "x_t_sequence": x_t_sequence,
+                "risk_verdict": {
+                    "level": risk_level.value if hasattr(risk_level, 'value') else str(risk_level),
+                    "label": RISK_LEVEL_LABELS.get(
+                        risk_level.value if hasattr(risk_level, 'value') else str(risk_level),
+                        str(risk_level),
+                    ),
+                    "basis_text": risk_basis,
+                    "signals": signals,
+                },
+                "agent_stance_matrix": agent_stance_matrix,
+            },
+        )
+        _log.log_phase_end("analysis_risk_classifier", time.time() - _risk_t0)
 
         # Emotion trajectory
         emotion_trajectory = []
@@ -138,8 +173,12 @@ class SimulationDatasetParser:
                     "signals": signals,
                 },
                 "risk_type_classification": {
-                    "primary_types": risk_types,
-                    "type_labels": risk_type_labels,
+                    "primary_types": classification_output.primary_types,
+                    "type_labels": [RISK_TYPE_LABELS[t] for t in classification_output.primary_types],
+                    "primary_domain": TYPE_TO_DOMAIN_MAP.get(classification_output.primary_types[0], ""),
+                    "primary_domain_label": DOMAIN_LABELS.get(
+                        TYPE_TO_DOMAIN_MAP.get(classification_output.primary_types[0], ""), ""
+                    ),
                 },
                 "agent_stance_matrix": agent_stance_matrix,
             },

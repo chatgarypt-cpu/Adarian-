@@ -12,7 +12,7 @@ def test_exports_contain_exactly_five_symbols():
 def test_exports_match_expected_set():
     import src.phase4
     expected = {
-        "_build_code_owned_report_contract_block",
+        "_build_report_contract_block",
         "_build_phase4_output_from_simulation_dataset",
         "parse_llm_report_response",
         "save_markdown_report",

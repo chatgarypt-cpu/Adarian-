@@ -53,8 +53,9 @@ class StatusBar:
     # ── 外部接口 ──────────────────────────────────────────────
 
     def set_phase(self, name: str) -> None:
-        """切换当前阶段。"""
+        """切换当前阶段，并清除上一阶段的并发状态。"""
         self.phase.start(name)
+        self._concurrency = None
 
     def set_concurrency(self) -> ConcurrencyTracker:
         """创建一个新的并发池跟踪器并激活。返回跟踪器以便外部调用。"""

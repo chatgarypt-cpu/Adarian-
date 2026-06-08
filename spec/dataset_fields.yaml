@@ -1,0 +1,175 @@
+# Adarian 模拟数据集字段规格 v1.0
+#
+# 仿真 dataset（simulation_dataset.json）的字段信任度标注。
+# 唯一维护入口。新增字段时同步追加此文件。
+#
+# trustworthiness 等级：
+#   stable       — 经验证、可信任的产品级字段
+#   placeholder  — 占位符实现，当前输出不可信或无用
+#   legacy       — 存留的旧版本字段，将被移除
+
+# ── 顶层元信息 ───────────────────────────────────
+- path: _schema_version
+  trustworthiness: stable
+  source: parser.py
+  notes: schema 版本号，控制 dataset 契约兼容性
+
+- path: _generated_by
+  trustworthiness: stable
+  source: parser.py
+  notes: 生成模块标识
+
+# ── run_info ────────────────────────────────────
+- path: run_info.event_name
+  trustworthiness: placeholder
+  source: extraction_output.event_summary（直接复制）
+  notes: 直接从 event_summary 复制，无摘要压缩或去重处理
+
+- path: run_info.event_scale
+  trustworthiness: stable
+  source: extraction_output（Phase 1 EntityExtractor）
+  notes: LLM 在实体提取阶段打分，经 Compiler 归一化
+
+- path: run_info.event_controversy
+  trustworthiness: stable
+  source: extraction_output（Phase 1 EntityExtractor）
+  notes: 同 event_scale
+
+- path: run_info.event_type
+  trustworthiness: stable
+  source: extraction_output（Phase 1 EntityExtractor）
+  notes: UL/商业营销/安全事件 三分类
+
+- path: run_info.total_ticks
+  trustworthiness: stable
+  source: parser（len(tick_logs)）
+  notes: 纯计数，无歧义
+
+- path: run_info.audience_mode
+  trustworthiness: stable
+  source: RiskAnalyzer.determine_audience_mode()
+  notes: 确定性规则，从 event_type + entity roles 判断
+
+# ── source_context ─────────────────────────────
+- path: source_context.event_summary
+  trustworthiness: stable
+  source: extraction_output（Phase 1 EntityExtractor）
+  notes: LLM 生成的事件摘要
+
+- path: source_context.event_type
+  trustworthiness: stable
+  source: extraction_output（Phase 1 EntityExtractor）
+  notes: 同上
+
+- path: source_context.event_entities
+  trustworthiness: stable
+  source: extraction_output（Phase 1 EntityExtractor）
+  notes: 实体列表，经 Compiler 归一化 + Repair Loop 修正
+
+- path: source_context.opinion_spreaders
+  trustworthiness: stable
+  source: extraction_output（Phase 1 EntityExtractor）
+  notes: 观点传播者列表，spread_percentage 经 Compiler 等比缩放至 100%
+
+# ── simulation_result ──────────────────────────
+- path: simulation_result.x_t_sequence
+  trustworthiness: stable
+  source: Phase 3 模拟引擎
+  notes: 每轮 x(t) 数值，模拟核心输出
+
+- path: simulation_result.final_x
+  trustworthiness: stable
+  source: x_t_sequence[-1]
+  notes: 最后一轮 x(t)
+
+- path: simulation_result.final_polarization_index
+  trustworthiness: stable
+  source: tick_logs[-1].global_metrics.polarization_index
+  notes: 最后一轮极化指数
+
+- path: simulation_result.emotion_trajectory
+  trustworthiness: stable
+  source: parser（从 tick_logs 聚合）
+  notes: 每轮 mean_stance / std_stance / polarization_index
+
+- path: simulation_result.emotion_trajectory[*].key_event
+  trustworthiness: placeholder
+  source: parser（固定空字符串）
+  notes: 设计意图为标注关键事件，当前始终写入空串
+
+- path: simulation_result.tick_entries
+  trustworthiness: stable
+  source: tick_logs（Phase 3 模拟）
+  notes: 逐轮逐 Agent 发言/立场/推理，模拟核心输出
+
+- path: simulation_result.inflection_points
+  trustworthiness: placeholder
+  source: InflectionDetector.detect()
+  notes: 仅检出相邻轮次极化指数突变帧（abs(pol_delta) > 0.1），无趋势转向判断，阈值未经验证。名不副实，不可作为"拐点"信任
+
+- path: simulation_result.risk_verdict
+  trustworthiness: stable
+  source: RiskAnalyzer.assess_risk() / compute_signals()
+  notes: 确定性算法（交叉信号矩阵 + 阈值规则），无 LLM
+
+- path: simulation_result.risk_verdict.level
+  trustworthiness: stable
+  source: RiskAnalyzer.assess_risk()
+  notes: RiskLevel enum 值
+
+- path: simulation_result.risk_verdict.label
+  trustworthiness: stable
+  source: RISK_LEVEL_LABELS 映射
+  notes: 中文风险等级标签
+
+- path: simulation_result.risk_verdict.basis_text
+  trustworthiness: stable
+  source: RiskAnalyzer.assess_risk()
+  notes: 风险判定依据文本
+
+- path: simulation_result.risk_verdict.signals
+  trustworthiness: stable
+  source: RiskAnalyzer.compute_signals()
+  notes: 交叉信号矩阵值
+
+- path: simulation_result.risk_type_classification
+  trustworthiness: stable
+  source: RiskClassifier.classify()（LLM-based）
+  notes: Agent 从 26 类型选 top-3，code 映射一级域。单次 LLM 调用，Pydantic 约束输出。结果可靠但受 LLM 波动影响
+
+- path: simulation_result.risk_type_classification.primary_types
+  trustworthiness: stable
+  source: RiskClassifier.classify()
+  notes: Agent 输出的 top-3 类型 ID 列表
+
+- path: simulation_result.risk_type_classification.type_labels
+  trustworthiness: stable
+  source: RISK_TYPE_LABELS 映射
+  notes: top-3 类型的中文标签
+
+- path: simulation_result.risk_type_classification.primary_domain
+  trustworthiness: stable
+  source: TYPE_TO_DOMAIN_MAP 映射
+  notes: code 从 primary_types[0] 映射的一级域 ID
+
+- path: simulation_result.risk_type_classification.primary_domain_label
+  trustworthiness: stable
+  source: DOMAIN_LABELS 映射
+  notes: 一级域中文标签
+
+- path: simulation_result.agent_stance_matrix
+  trustworthiness: stable
+  source: StanceAnalyzer.build_agent_stance_matrix()
+  notes: 确定性聚合，从 tick_logs 提取每个 Agent 的起始/最终立场和 Delta
+
+# ── source_artifact_refs ───────────────────────
+- path: source_artifact_refs
+  trustworthiness: placeholder
+  source: parser.py（默认空字典）
+  notes: 设计意图为引用上游 artifact 路径，当前所有值为""
+
+# ── known_limitations ──────────────────────────
+- path: known_limitations
+  trustworthiness: placeholder
+  source: parser.py（固定空列表）
+  notes: 设计意图为记录已知模拟局限，当前始终为空

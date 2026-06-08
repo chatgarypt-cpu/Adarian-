@@ -83,7 +83,7 @@ QUOTE_FABRICATION_PATTERNS = (
 
 REPORT_RULE_PRIORITY = """【规则优先级】
 T0（永不违反）：模拟推演口径 + 禁止伪造引语。必须保留模拟推演声明，不得生成虚构公众发言或引号式代表性评论。
-T1（硬合同）：code-owned 标签 + 五章模板 + 禁止短语。risk_level_label / risk_type_labels 必须逐字复制输入，五章模板不可变，禁止现实事实化表达。
+T1（硬合同）：上游分析层标签 + 五章模板 + 禁止短语。risk_level_label / risk_type_labels 必须逐字复制输入，五章模板不可变，禁止现实事实化表达。
 T2（视角规则）：政府视角 + 治理动作语言。默认面向政府舆情治理、宣传网信、属地公共管理或相关主管部门，不写成涉事主体公关建议书。
 T3（叙事质量）：阶段叙事 + 结构性展开 + 指标标签转译。演化分析写 2-3 阶段，风险研判至少写 3 个结构性风险点，指标使用业务标签。"""
 
@@ -91,10 +91,10 @@ MARKDOWN_GROUNDING_RULES = """【Markdown Grounding 硬约束】
 - 必须使用五章模板：一、舆情概要；二、演化分析；三、风险研判；四、对策建议；五、附录。
 - 必须明确模拟推演口径，不得把模拟输出写成现实舆情事实。
 - 风险研判必须包含风险等级、主要风险类型、风险解释。
-- 风险等级只能使用输入中的 code-owned risk_level_label。
-- 主要风险类型只能使用输入中的 code-owned risk_type_labels，不得自由发明风险类型。
+- 风险等级只能使用输入中的上游 risk_level_label。
+- 主要风险类型只能使用输入中的上游 risk_type_labels，不得自由发明风险类型。
 - 不得自行重算全局指标、立场矩阵、风险等级或模拟关键变化点。
-- 无 code-owned inflection_points 时必须写：本轮模拟未发现显著模拟关键变化点。
+- 无上游 inflection_points 时必须写：本轮模拟未发现显著模拟关键变化点。
 - 正文应将技术指标转译为业务判断，避免裸露 event_scale、event_controversy、polarization_index、stance_delta、risk_score。
 - 对策建议只能是舆情风险防范与回应建议，不输出行政决策、法律判断或责任定性。
 - 不得使用：全网已经、公众普遍认为、现实中已经形成、综合全网信息显示、依据相关法规建议、系统已识别最具代表性观点。
@@ -137,12 +137,12 @@ EVOLUTION_STAGE_NARRATIVE_RULES = """【演化分析写作要求】
 - 禁止逐轮次报数反例：第1轮模拟立场均值上升，第2轮回落，第3轮再度上升，第4轮降至某值。"""
 
 RISK_ANALYSIS_EXPANSION_RULES = """【风险研判写作要求】
-- risk_level_label / risk_type_labels 属于 code-owned contract，不得改写。
+- risk_level_label / risk_type_labels 属于上游分析层产出，不得改写。
 - 风险研判必须展开为至少 3 个结构性风险点。
 - 每个风险点包含：风险名称、触发机制、关键群体、升级路径、缓释条件。
 - “主要风险类型”必须逐字复制输入中的 risk_type_labels。
 - “结构性风险点名称”是业务化描述，不等同于主要风险类型。
-- 不得在主要风险类型中写入未在 code-owned risk_type_labels 中出现的标签。
+- 不得在主要风险类型中写入未在上游 risk_type_labels 中出现的标签。
 - 不得将“品牌声誉风险”“舆论极化风险”“衍生争议风险”等非白名单表达写入主要风险类型。"""
 
 GOVERNANCE_RECOMMENDATION_RULES = """【对策建议写作要求】
@@ -190,7 +190,7 @@ QUOTE_FABRICATION_RULES = """【禁止虚构引语】
 - 不得虚构代表性发言或公众引语。
 - 禁止使用“有网民表示：”“据网友反映：”“一位市民说：”“部分网友称：”“有评论指出：”等虚构引语格式。
 - 如需概括群体观点，应使用“模拟显示”“部分群体倾向于”“该类群体在模拟中表现为”等模拟口径。
-- 除非内容来自系统真实输入、tick_logs、final_report.json 或其他 code-owned artifact，否则不得写引号式发言。
+- 除非内容来自系统真实输入、tick_logs、final_report.json 或其他系统产出，否则不得写引号式发言。
 - 本规则为 T0 硬约束，优先级与模拟推演口径同级。"""
 
 SECTION_LEVEL_FEWSHOT_EVOLUTION = """【演化分析参考写法 — 企业品牌事件（无明确政府承压主体）】
@@ -205,10 +205,10 @@ SECTION_LEVEL_FEWSHOT_EVOLUTION = """【演化分析参考写法 — 企业品�
 以上参考写法仅学习结构、论述层次和语言风格，不得复制事件描述、数值判断和风险结论。"""
 
 SECTION_LEVEL_FEWSHOT_RISK_ANALYSIS = """【风险研判参考写法 — 企业品牌事件（无明确政府承压主体）】
-风险等级：[code-owned label]
+风险等级：[上游 risk_level_label]
 
 主要风险类型：
-[code-owned risk_type_labels，不得自行新增]
+[上游 risk_type_labels]
 
 结构性风险点一：个案争议向公共价值议题外溢
 
@@ -223,7 +223,7 @@ SECTION_LEVEL_FEWSHOT_RISK_ANALYSIS = """【风险研判参考写法 — 企业�
 FEWSHOT_USAGE_RULES = """【Few-shot 使用规则】
 - few-shot 只学习结构、论述层次和语言风格。
 - 不得复制事件名称、主体名称、风险结论、数值判断或具体实体。
-- 必须基于当前模拟输入、code-owned labels 和当前事件主体生成。
+- 必须基于当前模拟输入、上游标签和当前事件主体生成。
 - 风险等级、风险类型标签必须使用本轮模拟输入实际值。
 - 运行时 prompt 只接入企业品牌事件 few-shot，不接入政府执法类 appendix few-shot。"""
 
@@ -268,7 +268,7 @@ RISK_CONFLICT_ANALYSIS_RULES = """【矛盾焦点与风险展开规则】
 企业品牌事件可参考三层矛盾：消费者/青年群体 vs 品牌营销表达；行业规范 vs 商业传播惯性；多主体发声 vs 事件解释权。
 “三、风险研判”内部建议结构： （一）矛盾焦点分析；（二）结构性风险点一；（三）结构性风险点二；（四）结构性风险点三；（五）短中期态势判断。
 结构性风险点至少 3 个，每个风险点包含风险判断、触发机制、关键群体、升级路径、缓释条件、政府侧观察信号。
-主要风险类型仍必须逐字使用 code-owned risk_type_labels；结构性风险点名称是业务描述，不得新增 risk_type_labels。
+主要风险类型仍必须逐字使用上游 risk_type_labels；结构性风险点名称是业务描述，不得新增 risk_type_labels。
 短中期态势判断需说明未来 1-2 个传播周期的短期方向、中期升级路径，以及哪些信号出现后需要从监测转向协调或提示。"""
 
 GOVERNANCE_RECOMMENDATION_DEPTH_RULES = """【对策建议四要素规则】
@@ -353,7 +353,7 @@ REPORT_SYSTEM_PROMPT = f"""你是一位资深的社会舆情分析师。你的�
 REPORT_USER_PROMPT_SUFFIX = f"""请根据以上数据生成完整 Markdown 报告。
 必须严格使用五章模板：一、舆情概要；二、演化分析；三、风险研判；四、对策建议；五、附录。
 必须保持模拟推演口径。
-风险等级必须逐字使用 code-owned risk_level_label；主要风险类型必须逐字使用 code-owned risk_type_labels。
+风险等级必须逐字使用上游 risk_level_label；主要风险类型必须逐字使用上游 risk_type_labels。
 标题必须采用“核心主体 + 核心争议类型 + 舆情风险研判报告”，尽量不超过 25 个汉字。
 演化分析必须包含 2-3 个阶段叙事。
 风险研判必须包含至少 3 个结构性风险点。

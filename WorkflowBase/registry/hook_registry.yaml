@@ -223,6 +223,27 @@
     - rm_detection: true
     - archive_protocol_enforcement: true
 
+- id: hook-dataset-spec
+  name: Dataset Spec Gate
+  type: hook
+  status: active
+  version: '0.1'
+  purpose: write_file/patch 到 parser.py 或 dataset_fields.yaml 时，自动检查 dataset 字段是否全部标注在 spec 中。新增字段未更新 spec 则 block
+  hook_type: python_script
+  trigger: pre_tool_call
+  hook_path: /Users/gary/项目开发/AdarianMigration/adarian mvp/tools/dataset-spec-hook.py
+  auto_accept: true
+  timeout_sec: 15
+  applicable_lanes: [A_LINE_FORMAL]
+  allowed_paths: ["~/项目开发/AdarianMigration/adarian mvp/**"]
+  permission_level: readonly
+  risk_level: low
+  owner_approval_required: false
+  validation: [exit code 0, spec coverage check passed]
+  features:
+    - dataset_field_coverage_check: true
+    - spec_updated_before_code_change: true
+
 # ── Gate Scripts（手动调用，"skill 写规则，script 做门"）────
 
 - id: script-handoff-writer

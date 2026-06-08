@@ -7,7 +7,7 @@ from rich.console import Console
 from src.llm_client import get_llm_client
 from src.schemas import Phase4Output
 from .report_prompts import REPORT_SYSTEM_PROMPT, REPORT_USER_PROMPT_SUFFIX
-from .report_agent import _build_code_owned_report_contract_block, parse_llm_report_response
+from .report_agent import _build_report_contract_block, parse_llm_report_response
 
 
 console = Console()
@@ -145,7 +145,7 @@ def generate_report_with_llm_narrative(
     dataset: dict,
     *,
     build_report_context: Callable[..., str] = build_report_context_new,
-    build_code_owned_contract_block: Callable[..., str] = _build_code_owned_report_contract_block,
+    build_code_owned_contract_block: Callable[..., str] = _build_report_contract_block,
     parse_llm_report_response: Callable[..., Phase4Output] = parse_llm_report_response,
     get_llm_client_func: Callable[[], object] = get_llm_client,
 ) -> Tuple[Phase4Output, str]:

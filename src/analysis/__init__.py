@@ -11,9 +11,11 @@
 from .risk_analyzer import RiskAnalyzer
 from .inflection_detector import InflectionDetector
 from .stance_analyzer import StanceAnalyzer
+from .classifier import RiskClassifier
 
 __all__ = [
     "RiskAnalyzer",
     "InflectionDetector",
     "StanceAnalyzer",
+    "RiskClassifier",
 ]

@@ -1,0 +1,9 @@
+task_id: v1.3.2-risk-classifier
+tmux_session_id: adarian_v1_3_2-risk-classifier
+executor_type: claude
+execution_mode: tmux_interactive
+workdir: /Users/gary/项目开发/AdarianMigration/adarian mvp
+command:
+  - claude
+reuse_existing_session: false
+created_at: "2026-06-08T16:16:19+08:00"

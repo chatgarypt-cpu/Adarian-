@@ -102,10 +102,21 @@ class SilentAgentUpdate(BaseModel):
     activity_state: str = Field(default="silent", description="为未来 state machine 预留的活动状态入口")
 
 
+class ClassificationOutput(BaseModel):
+    """RiskClassifier 输出：Top-3 风险类型 ID。"""
+    primary_types: List[str] = Field(
+        ...,
+        min_length=3,
+        max_length=3,
+        description="Top 3 risk types from the 26-type taxonomy, ordered by relevance",
+    )
+
+
 __all__ = [
     "AgentEntry",
     "GlobalMetrics",
     "TickLog",
     "SpeakerSelectionResult",
     "SilentAgentUpdate",
+    "ClassificationOutput",
 ]
