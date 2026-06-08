@@ -89,7 +89,7 @@ def run_phase3_parser(extraction_output, phase2_output, tick_logs, x_t_sequence)
 
     返回结构化 simulation_dataset（含 risk_verdict、inflection_points、agent_stance_matrix）。
     """
-    from src.phase3.parser import SimulationDatasetParser
+    from src.parser import SimulationDatasetParser
     parser = SimulationDatasetParser()
     dataset = parser.parse(
         extraction_output,

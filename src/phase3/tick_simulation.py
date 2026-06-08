@@ -17,9 +17,12 @@ Phase 3: 异步时间步推演
 """
 
 import json
+import re
+import statistics
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import List, Dict, Optional, Tuple
+from typing import Any, List, Dict, Optional, Tuple
 import networkx as nx
 from rich.console import Console
 from rich.table import Table
@@ -30,7 +33,8 @@ from src.schemas import (
     Entity, OpinionSpreader,
     TickLog, AgentEntry, GlobalMetrics
 )
-from src.llm_client import get_llm_client
+from src.llm_client import get_llm_client, LLMClient
+from src.display import get_bar
 from src.utils.runtime_logger import get_runtime_logger
 from .context_builder import build_lightweight_context
 from .simulation_card import build_simulation_card
@@ -228,7 +232,6 @@ class SimulationEngine:
         self.activity_state: Dict[int, str] = {node.id: "active" for node in phase2_output.nodes}
 
         # LLM 客户端（差异化温度）
-        from src.llm_client import LLMClient
         # 事件实体：温度 0.3，输出更稳定
         self.llm_event_entity = LLMClient(temperature=0.3, task_type="phase3_tick")
         # 传播者：温度 0.8，输出更多样化
@@ -310,8 +313,7 @@ class SimulationEngine:
                     entity = e
                     break
 
-            if not entity:
-                continue
+            assert entity is not None, f"event entity {node.related_entity} not found in Phase 1 extraction output"
 
             # v1.1.6: 检查 can_speak
             if not entity.can_speak:
@@ -615,7 +617,6 @@ class SimulationEngine:
 
             elapsed = time.perf_counter() - t0
             console.print(f"    [green]✓[/green] #{agent.id} {agent.group_name} [{elapsed:.1f}s]")
-            from src.display import get_bar
             _bar = get_bar()
             if _bar and _bar.concurrency:
                 _bar.concurrency.done(agent.group_name, elapsed)
@@ -682,81 +683,49 @@ class SimulationEngine:
         final_stance = round(max(1.0, min(10.0, final_stance)), 2)
         return final_stance, change_reason
 
-    def _parse_event_entity_response(self, response: str) -> Tuple[str, str]:
-        """解析事件实体发言响应
-
-        Args:
-            response: LLM 返回的原始字符串
-
-        Returns:
-            (comment, reasoning) tuple
-        """
-        import re
-
-        # 提取 JSON
+    def _try_parse_json_fields(self, response: str, fields: List[str]) -> Optional[Dict[str, Any]]:
+        """尝试从 LLM 响应中提取 JSON 字段。失败返回 None。"""
         json_match = re.search(r'\{[^{}]*\}', response, re.DOTALL)
         if json_match:
             try:
                 data = json.loads(json_match.group())
-                comment = self._normalize_text(data.get("comment", ""), 200, "（解析失败）")
-                reasoning = self._normalize_text(data.get("reasoning", ""), 100)
-                return comment, reasoning
+                return {f: data.get(f) for f in fields}
             except (json.JSONDecodeError, ValueError):
                 pass
+        return None
+
+    def _parse_event_entity_response(self, response: str) -> Tuple[str, str]:
+        """解析事件实体发言响应"""
+        parsed = self._try_parse_json_fields(response, ["comment", "reasoning"])
+        if parsed:
+            comment = self._normalize_text(parsed.get("comment", ""), 200, "（解析失败）")
+            reasoning = self._normalize_text(parsed.get("reasoning", ""), 100)
+            return comment, reasoning
 
         # 备用解析
         comment_match = re.search(r'"comment":\s*"([^"]*)"', response)
         reasoning_match = re.search(r'"reasoning":\s*"([^"]*)"', response)
-
-        comment = self._normalize_text(
-            comment_match.group(1) if comment_match else "",
-            200,
-            "（解析失败）",
-        )
+        comment = self._normalize_text(comment_match.group(1) if comment_match else "", 200, "（解析失败）")
         reasoning = self._normalize_text(reasoning_match.group(1) if reasoning_match else "", 100)
-
         return comment, reasoning
 
     def _parse_agent_response(self, response: str) -> Tuple[str, float, str]:
-        """解析 LLM 返回的 JSON
-
-        Args:
-            response: LLM 返回的原始字符串
-
-        Returns:
-            (comment, new_stance, reasoning) tuple
-        """
-        import re
-
-        # 提取 JSON
-        json_match = re.search(r'\{[^{}]*\}', response, re.DOTALL)
-        if json_match:
-            try:
-                data = json.loads(json_match.group())
-                comment = self._normalize_text(data.get("comment", ""), 200, "（解析失败）")
-                new_stance = float(data.get("new_stance", 5.0))
-                reasoning = self._normalize_text(data.get("reasoning", ""), 100)
-
-                new_stance = max(1.0, min(10.0, new_stance))
-                return comment, new_stance, reasoning
-            except (json.JSONDecodeError, ValueError):
-                pass
+        """解析 LLM 返回的 JSON"""
+        parsed = self._try_parse_json_fields(response, ["comment", "new_stance", "reasoning"])
+        if parsed:
+            comment = self._normalize_text(parsed.get("comment", ""), 200, "（解析失败）")
+            new_stance = max(1.0, min(10.0, float(parsed.get("new_stance", 5.0) or 5.0)))
+            reasoning = self._normalize_text(parsed.get("reasoning", ""), 100)
+            return comment, new_stance, reasoning
 
         # 备用解析
         comment_match = re.search(r'"comment":\s*"([^"]*)"', response)
         stance_match = re.search(r'"new_stance":\s*([\d.]+)', response)
         reasoning_match = re.search(r'"reasoning":\s*"([^"]*)"', response)
-
-        comment = self._normalize_text(
-            comment_match.group(1) if comment_match else "",
-            200,
-            "（解析失败）",
-        )
+        comment = self._normalize_text(comment_match.group(1) if comment_match else "", 200, "（解析失败）")
         new_stance = float(stance_match.group(1)) if stance_match else 5.0
         reasoning = self._normalize_text(reasoning_match.group(1) if reasoning_match else "", 100)
-
         new_stance = max(1.0, min(10.0, new_stance))
-
         return comment, new_stance, reasoning
 
     def calculate_global_metrics(self) -> GlobalMetrics:
@@ -765,8 +734,6 @@ class SimulationEngine:
         Returns:
             GlobalMetrics 对象
         """
-        import statistics
-
         stances = list(self.agent_stances.values())
         mean_stance = statistics.mean(stances)
         std_stance = statistics.stdev(stances) if len(stances) > 1 else 0.0
@@ -816,13 +783,11 @@ class SimulationEngine:
         selected_nodes = [n for n in spreader_nodes if n.id in selected_lookup]
 
         # Step 1: Parallel LLM calls for selected speakers (带二分降级)
-        from concurrent.futures import ThreadPoolExecutor, as_completed
-        import config as cfg
 
         llm_results = {}  # node.id -> (comment, final_stance, reasoning, change_reason)
         pending_ids = [n.id for n in selected_nodes]
         node_lookup = {n.id: n for n in spreader_nodes}
-        cap = cfg.PHASE3_TICK_MAX_CONCURRENT_WORKERS
+        cap = config.PHASE3_TICK_MAX_CONCURRENT_WORKERS
         max_workers = max(1, min(len(pending_ids), cap)) if cap > 0 else len(pending_ids)
         total_speakers = len(pending_ids)
 
@@ -830,7 +795,6 @@ class SimulationEngine:
             console.print(f"  [cyan]→ 并 {max_workers}[/cyan] {total_speakers} 个 Agent 发言并发生成...")
 
         # 注册到状态栏
-        from src.display import get_bar
         _tick_bar = get_bar()
         if _tick_bar:
             _tick_ct = _tick_bar.set_concurrency()
@@ -981,15 +945,6 @@ class SimulationEngine:
                 len([entry for entry in tick_log.entries if entry.comment != "（未发言）"]),
                 logger.get_llm_call_count() - llm_before,
             )
-
-            # TODO: 收敛检测暂时禁用，跑满 10 轮
-                # if tick > 1:
-                #     prev_metrics = self.tick_logs[-2].global_metrics
-                #     curr_metrics = tick_log.global_metrics
-                #     delta = abs(curr_metrics.polarization_index - prev_metrics.polarization_index)
-                #     if delta < config.CONVERGENCE_THRESHOLD:
-                #         console.print(f"\n[yellow]检测到收敛，停止模拟（Tick {tick}）[/yellow]")
-                #         break
 
         return self.tick_logs
 

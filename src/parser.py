@@ -5,9 +5,9 @@ from typing import Any, Dict, List, Optional
 from src.schemas.phase1 import EntityExtractionOutput
 from src.schemas.phase2 import Phase2Output
 from src.schemas.phase3 import TickLog
-from src.phase3.risk_analyzer import RiskAnalyzer
-from src.phase3.inflection_detector import InflectionDetector
-from src.phase3.stance_analyzer import StanceAnalyzer
+from src.analysis.risk_analyzer import RiskAnalyzer
+from src.analysis.inflection_detector import InflectionDetector
+from src.analysis.stance_analyzer import StanceAnalyzer
 
 
 class SimulationDatasetParser:
@@ -152,8 +152,3 @@ class SimulationDatasetParser:
         }
 
         return dataset
-
-    def save_dataset(self, dataset: Dict[str, Any], output_path: str) -> None:
-        path = Path(output_path)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(dataset, ensure_ascii=False, indent=2), encoding="utf-8")

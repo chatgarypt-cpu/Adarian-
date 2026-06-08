@@ -1,0 +1,15 @@
+task_id: v1.3.2-post-refactor-reality-review
+task_domain: review
+short_task: v1.3.2-post-refactor-reality-review
+task_type: review
+executor_type: claude
+execution_mode: tmux_interactive
+
+executor_options:
+  teammate_mode: tmux
+  workdir: /Users/gary/项目开发/AdarianMigration/adarian mvp
+  prompt_file: dispatch/prompt.md
+  expected_outputs:
+    - outputs/code_reality_mapping_review.md
+
+language: 中文

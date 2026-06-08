@@ -7,7 +7,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.phase3.stance_analyzer import StanceAnalyzer
+from src.analysis.stance_analyzer import StanceAnalyzer
 from src.schemas import AgentEntry, GlobalMetrics, TickLog
 
 

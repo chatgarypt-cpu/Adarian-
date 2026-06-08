@@ -176,6 +176,7 @@ def _build_phase4_output_from_simulation_dataset(
         risk_type_labels=risk_type_labels,
         risk_assessment=risk_assessment,
         x_t_sequence=x_t_sequence,
+        agent_stance_matrix=sim.get("agent_stance_matrix"),
     )
 
 

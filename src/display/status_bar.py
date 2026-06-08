@@ -30,7 +30,7 @@ from rich.text import Text
 from .concurrency_tracker import ConcurrencyTracker
 from .phase_tracker import PhaseTracker
 
-_console = Console()
+_console = Console(stderr=True)
 _current_bar: Optional["StatusBar"] = None
 
 

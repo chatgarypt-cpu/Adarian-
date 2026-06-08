@@ -1,7 +1,7 @@
 """Phase 4 schema contracts."""
 
 from enum import Enum
-from typing import Dict, List
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -90,6 +90,10 @@ class Phase4Output(BaseModel):
     risk_type_labels: List[str] = Field(default_factory=list)
     risk_assessment: str
     x_t_sequence: List[float] = Field(..., description="x(t) 序列，用于后续 AD/SEIR 模块")
+    agent_stance_matrix: Optional[List[Dict[str, Any]]] = Field(
+        default=None,
+        description="Agent 立场矩阵（从 simulation_dataset 透传）",
+    )
 
     @field_validator("risk_level_label")
     @classmethod

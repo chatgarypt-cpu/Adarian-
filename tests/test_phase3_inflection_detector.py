@@ -6,7 +6,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 import pytest
 
-from src.phase3.inflection_detector import InflectionDetector
+from src.analysis.inflection_detector import InflectionDetector
 from src.schemas import (
     AgentEntry, GlobalMetrics, GraphEdge, GraphNode, NodeRole,
     Phase2Output, TickLog,

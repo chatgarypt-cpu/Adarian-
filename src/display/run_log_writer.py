@@ -120,6 +120,29 @@ def append_run_summary(
         f.write(text)
 
 
+def log_token_summary(
+    logger: Any,
+    token_summary: Dict[str, Any],
+) -> None:
+    """将 Token 摘要通过 logger.info() 输出到终端。
+
+    与 append_run_summary() 共享数据源，一个落文件，一个打终端。
+    """
+    logger.info("")
+    logger.info("Token 统计:")
+    logger.info("  总调用:     %d 次", token_summary.get("total_calls", 0))
+    logger.info("  总 Tokens:  %d", token_summary.get("total_tokens", 0))
+    logger.info("  LLM 累计耗时:   %.1fs（调用累加，含并发）", token_summary.get("total_elapsed_seconds", 0))
+    for phase_name, p in sorted(token_summary.get("per_phase", {}).items()):
+        logger.info(
+            "    %s: %d calls, %d tokens, 累计 %.1fs",
+            phase_name,
+            p["calls"],
+            p["total_tokens"],
+            p["elapsed_seconds"],
+        )
+
+
 # ── 内部辅助 ──────────────────────────────────────────────────
 
 _SEP = "=" * 55
