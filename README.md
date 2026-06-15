@@ -1,17 +1,24 @@
-# Adarian: 多智能体异步舆情预判系统 / Adarian-多智能体舆情推演系统
+# Adarian — 多智能体舆情推演系统
 
-基于**宏微观结合 (Macro-Micro Linkage)** 的舆情推演系统原型。通过让多个具有独立人格的 LLM 驱动智能体 (Agent) 在微型社交网络中进行多轮交互，观察群体情绪的涌现与演化，最终提取宏观社会情绪指标 $x(t)$。
-
----
-
-## 项目愿景
-
-验证"微观涌现 → 宏观预测"闭环：
-$$\text{种子文本} \xrightarrow{\text{LLM解析}} \text{实体分类} \xrightarrow{\text{多轮交互}} \text{情绪涌现} \xrightarrow{\text{Report Agent}} x(t)$$
-
-该指标将在后续版本中分别喂入 **AD 快模块**（热度峰值预判）和**增强型 SEIR 慢模块**（90天情绪演化推演）。
+基于 **宏微观结合（Macro-Micro Linkage）** 的舆情推演系统。通过让多个具有独立人格的 LLM 驱动智能体在微型社交网络中进行多轮交互，观察群体情绪的涌现与演化，最终识别风险类型并生成舆情研判报告。
 
 ---
+
+## 核心流程
+
+```
+种子文本/事件描述
+    ↓ Phase 1 — 实体提取与群体生成
+事件实体 + 意见传播群体（含立场/易感性等参数）
+    ↓ Phase 2 — 社交拓扑构建
+带拓扑结构的微型社交网络
+    ↓ Phase 3 — 多轮模拟推演
+Tick 0~N 群体互动，情绪涌现
+    ↓ 分析层
+风险分析 + 拐点检测 + 立场演变 + 风险类型分类
+    ↓ Phase 4 — 报告生成
+舆情研判报告
+```
 
 ## 快速开始
 
@@ -21,12 +28,12 @@ $$\text{种子文本} \xrightarrow{\text{LLM解析}} \text{实体分类} \xright
 pip install -r requirements.txt
 ```
 
-### 2. 配置环境变量
+### 2. 配置 LLM
 
-创建 `.env` 文件：
+复制 `.env.example` 为 `.env`，填入你的 LLM API 信息（支持 DeepSeek、Qwen 等兼容 OpenAI 接口的模型）：
+
 ```bash
-LLM_PROVIDER=deepseek
-LLM_API_KEY=***
+LLM_API_KEY=your_api_key
 LLM_BASE_URL=https://api.deepseek.com
 DEFAULT_MODEL=deepseek-chat
 ```
@@ -34,79 +41,64 @@ DEFAULT_MODEL=deepseek-chat
 ### 3. 运行模拟
 
 ```bash
-# 运行完整流程
-py main.py seeds/test1.txt
-
-# 查看输出
-cat outputs/final_report.md
+python main.py seeds/test1.txt
 ```
 
-### 4. 当前可用种子
+输出产物（`outputs/runs/YYYY-MM-DD/` 目录下）：
+- `simulation_dataset.json` — 完整推演数据集（规范输出）
+- `run.log` — 运行摘要（含 Token 消耗、阶段耗时）
+- `whitebox/` — 诊断数据（白盒追踪）
+
+### 当前可用种子
 
 | 文件 | 事件 |
 |------|------|
 | `seeds/test1.txt` | 示例事件 |
-| `seeds/test2.txt` | 胖猫事件 |
-| `seeds/test3.txt` | 某事件 |
-| `seeds/test5.txt` | 南通文旅事件 |
+| `seeds/test2.txt` | 网络热点事件 |
+| `seeds/test3.txt` | 公共事件 |
+| `seeds/test5.txt` | 文旅事件 |
 
 ---
 
 ## 项目结构
 
 ```
-adarian/
-├── README.md                      # 本文件（项目入口）
-├── CLAUDE.md                      # Claude Code 开发规范
-├── config.py                      # 全局配置
-├── main.py                        # 主入口
-│
-├── docs/
-│   ├── dev_spec.md                # 【权威技术文档】架构、参数定义、版本变更
-│   ├── dev_workflow.md            # 开发流程指南
-│   └── iterations/                # 详细迭代记录
-│       ├── CHANGELOG.md          # 版本变更历史
-│       ├── TASK_LOG.md           # 开发任务日志
-│       └── v1.1.*.md             # 各版本详细文档
-│
-├── seeds/                         # 种子材料
-├── src/                           # 源代码
-│   ├── schemas.py                 # Pydantic 数据模型
-│   ├── llm_client.py              # LLM 统一调用
-│   ├── phase1/                    # 实体提取与群体生成 package
-│   │   ├── __init__.py            # Phase 1 package 入口
-│   │   ├── extraction.py          # Analyzer/Generator/Validator 主链
-│   │   └── prompts.py             # Phase 1 prompt 常量
-│   ├── phase2/                    # 社交拓扑构建 package
-│   │   ├── __init__.py
-│   │   └── topology_builder.py
-│   ├── phase3/                    # 多轮模拟推演 package
-│   │   ├── __init__.py
-│   │   ├── tick_simulation.py
-│   │   ├── speaker_selector.py
-│   │   ├── context_builder.py
-│   │   ├── simulation_card.py
-│   │   └── state_updater.py
-│   ├── phase4/                    # 报告生成 package
-│   │   ├── __init__.py
-│   │   └── report_agent.py
-│   └── whitebox/                  # 白盒运行产物检查
-│
-├── outputs/                       # 运行结果
-│   ├── entities_and_relations.json
-│   ├── agents_profile.json
-│   ├── social_graph.json
-│   ├── final_report.md
-│   └── tick_logs/
-│
-└── tests/                         # 单元测试
+├── main.py              # 入口
+├── config.py            # 全局配置
+├── seeds/               # 种子材料
+├── src/
+│   ├── schemas/         # Pydantic 数据模型
+│   ├── llm_client.py    # LLM 统一调用
+│   ├── phase1/          # 实体提取与群体生成
+│   ├── phase2/          # 社交拓扑构建
+│   ├── phase3/          # 多轮模拟推演
+│   ├── phase4/          # 报告生成（纯消费端）
+│   ├── analysis/        # 分析层（风险/拐点/立场/分类）
+│   ├── parser/          # 数据集编排聚合
+│   ├── display/         # CLI 可视化
+│   └── whitebox/        # 诊断追踪
+├── spec/                # 规格文档（风险映射表等）
+├── tools/               # 工具脚本
+├── tests/               # 单元测试
+└── docs/                # 开发文档
 ```
+
+---
+
+## 最新特性
+
+| 版本 | 日期 | 主要变更 |
+|------|------|---------|
+| v1.3.2 | 2026-06 | 26 类型 RiskClassifier Agent、6 域风险映射体系 |
+| v1.3.1.x | 2026-06 | 观测层 consolidation、Phase4 dataset-only 重构、平行世界调度器 |
+| v1.2.8 | 2026-06 | 三层 error recovery、OCP 输出路径 |
+| v1.2.5.1 | 2026-05 | Source Tree Governance closeout |
 
 ---
 
 ## 核心概念
 
-### 两种实体类型
+### 实体类型
 
 | 类型 | 说明 | 发言时机 |
 |------|------|---------|
@@ -115,88 +107,15 @@ adarian/
 
 ### 关键参数
 
-| 参数 | 说明 | 取值 |
+| 参数 | 说明 | 范围 |
 |------|------|------|
-| `stance_score` | 立场分（1=最支持，10=最批评） | 1.0-10.0 |
-| `susceptibility` | 易感性（被说服程度） | 0.0-1.0 |
-| `confirmation_bias` | 确认偏差（接受倾向） | none/weak/strong |
-| `event_temperature` | 事件热度 | 0.0-1.0 |
-| `event_intensity` | 事件烈度 | 0.0-1.0 |
-
-**详细定义见 [dev_spec.md](./docs/dev_spec.md) 第3章「核心参数定义手册」**
+| `stance_score` | 立场分（越批评越接近 10） | 1.0 - 10.0 |
+| `susceptibility` | 易感性（被说服程度） | 0.0 - 1.0 |
+| `confirmation_bias` | 确认偏差 | none / weak / strong |
+| `event_temperature` | 事件热度 | 0.0 - 1.0 |
 
 ---
 
-## 当前版本
+## 许可
 
-**v1.2.8** | 详细技术文档：[docs/dev_spec.md](./docs/dev_spec.md)
-
-### 版本历史
-
-| 版本 | 日期 | 主要变更 |
-|------|------|---------|
-| v1.2.8 | 2026-06-08 | 平行世界调度器、三层 error recovery、OCP 输出路径、v1.3.2 风险类型扩展 |
-| v1.3.1.x | 2026-06-07 | 观测层 consolidation、Phase4 dataset-only 重构 |
-| v1.2.5.1 | 2026-05-07 | Source Tree Governance closeout |
-| v1.1.10 | 2026-03-31 | stance描述修正、LLM角色重命名 |
-| v1.1.9 | 2026-03-30 | susceptibility 接入、立场数据修复 |
-| v1.1.8 | 2026-03-29 | 报告 Agent 优化（10章节结构） |
-| v1.1.7 | 2026-03-29 | 群体分布策略优化 |
-| v1.1.0 | 2026-03-25 | MVP 基线版本 |
-
-完整变更记录：[docs/iterations/CHANGELOG.md](./docs/iterations/CHANGELOG.md)
-
----
-
-## 开发指南
-
-### 工作流程
-
-本项目使用 superpowers 进行流程管理：
-
-```
-brainstorming → writing-plans → executing → verification → review
-```
-
-### 开发步骤
-
-1. **需求探索**：使用 `superpowers:brainstorming`
-2. **生成计划**：使用 `superpowers:writing-plans`
-3. **执行实现**：使用 `superpowers:executing-plans`
-4. **验证完成**：使用 `superpowers:verification-before-completion`
-5. **代码审查**：使用 `superpowers:requesting-code-review`
-
-详细流程：[docs/dev_workflow.md](./docs/dev_workflow.md)
-
-### 开发规范
-
-1. **所有 LLM 调用必须通过 `llm_client.py`**
-2. **所有数据结构必须在 `schemas.py` 中定义**
-3. **文档驱动开发**：所有修改基于迭代文档
-4. **每次运行后同步 outputs 到百度云**
-
----
-
-## 硬性约束 (Hard Constraints)
-
-| 约束 | 内容 | 理由 |
-|------|------|------|
-| HC-01 | 禁止使用云端 RAG，本地 ChromaDB | 数据主权安全 |
-| HC-02 | Agent 数量由 LLM 动态推断，≤15 | 避免冗余 |
-| HC-03 | 输入仅为本地文本文件 | 降低复杂度 |
-| HC-04 | LLM 输出必须经过 Pydantic 校验 | 保证可靠性 |
-| HC-05 | Phase 1 必须经过 Validator 校验 | 保证质量 |
-
----
-
-## 后续版本路线图
-
-| 版本 | 目标 | 规模 |
-|------|------|------|
-| V1.1 (当前) | MVP：验证微观涌现 | 5-15 Agents |
-| V1.2 | Zep Docker + Graph RAG | ≤15 Agents |
-| V1.3 | CAMEL-AI 底座集成 | ≤15 Agents |
-| V2.0 | AD 快模块 | 50-100 Agents |
-| V3.0 | SEIR 慢模块 + 前端 | 500+ Agents |
-
-详细路线图：[docs/dev_spec.md](./docs/dev_spec.md) 第8章
+内部项目。
