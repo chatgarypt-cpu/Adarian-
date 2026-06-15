@@ -1,5 +1,0 @@
-[heartbeat] monitoring: /Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/v1.3.2-risk-classifier
-[heartbeat] sound: Glass → /System/Library/Sounds/Glass.aiff
-[heartbeat] tmux session: adarian_v1_3_2-risk-classifier
-[16:19:01] ✅ task reached terminal state: hold
-[16:20:04] ⏹️ tmux session 'adarian_v1_3_2-risk-classifier' gone — exiting

@@ -1,5 +1,0 @@
-[heartbeat] monitoring: /Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/task-v1.3.1-phase4-streamlining
-[heartbeat] sound: Glass → /System/Library/Sounds/Glass.aiff
-[heartbeat] tmux session: adarian_task-v1_3_1-phase4-streamlining
-[17:05:46] ✅ task reached terminal state: hold
-[18:28:21] ⏹️ tmux session 'adarian_task-v1_3_1-phase4-streamlining' gone — exiting

@@ -1,8 +1,0 @@
-legacy_compat: true
-compat_for: hermes_old_relay
-task_id: workflowbase-v4.2-reality-review
-runtime_state: running
-timestamp: 2026-06-04T01:38:19+08:00
-runtime_pid: 69092
-executor_pid:
-heartbeat_seq: 7

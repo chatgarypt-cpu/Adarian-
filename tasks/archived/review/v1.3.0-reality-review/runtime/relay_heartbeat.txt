@@ -1,8 +1,0 @@
-legacy_compat: true
-compat_for: hermes_old_relay
-task_id: task-v1.3.0-reality-review
-runtime_state: running
-timestamp: 2026-06-05T22:17:19+08:00
-runtime_pid: 93415
-executor_pid:
-heartbeat_seq: 7

@@ -1,4 +1,0 @@
-[heartbeat] monitoring: /Users/gary/项目开发/AdarianMigration/adarian mvp/tasks/active/v1.3.0-reality-review
-[heartbeat] sound: Glass → /System/Library/Sounds/Glass.aiff
-[heartbeat] tmux session: adarian_task-v1_3_0-reality-review
-[22:25:07] 🔍 outputs detected while runtime_state='running' — task likely completed (artifact detector blind spot)

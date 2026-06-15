@@ -33,6 +33,14 @@ profiling/output/
 # Claude Code 配置（不上传 GitHub）
 .claude/
 
+# 内部工作流基础设施（不上传 GitHub）
+WorkflowBase/
+tasks/
+.session_handoff.md
+CLAUDE.md
+workflow_map.yaml
+modelslist.txt
+
 # OS
 .DS_Store
 Thumbs.db
