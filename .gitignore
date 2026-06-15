@@ -30,6 +30,9 @@ profiling/output/
 .env
 .env.local
 
+# Claude Code 配置（不上传 GitHub）
+.claude/
+
 # OS
 .DS_Store
 Thumbs.db
