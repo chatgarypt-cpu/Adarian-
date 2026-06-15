@@ -1,4 +1,4 @@
-# Adarian: 多智能体异步舆情预判系统
+# Adarian: 多智能体异步舆情预判系统 / Adarian-多智能体舆情推演系统
 
 基于**宏微观结合 (Macro-Micro Linkage)** 的舆情推演系统原型。通过让多个具有独立人格的 LLM 驱动智能体 (Agent) 在微型社交网络中进行多轮交互，观察群体情绪的涌现与演化，最终提取宏观社会情绪指标 $x(t)$。
 
@@ -26,7 +26,7 @@ pip install -r requirements.txt
 创建 `.env` 文件：
 ```bash
 LLM_PROVIDER=deepseek
-LLM_API_KEY=your_api_key_here
+LLM_API_KEY=***
 LLM_BASE_URL=https://api.deepseek.com
 DEFAULT_MODEL=deepseek-chat
 ```
@@ -129,18 +129,19 @@ adarian/
 
 ## 当前版本
 
-**v1.2.5.1** | 详细技术文档：[docs/dev_spec.md](./docs/dev_spec.md)
+**v1.2.8** | 详细技术文档：[docs/dev_spec.md](./docs/dev_spec.md)
 
 ### 版本历史
 
 | 版本 | 日期 | 主要变更 |
 |------|------|---------|
-| v1.2.5.1 | 2026-05-07 | Source Tree Governance closeout：归档 legacy 文件、迁移 phase package import、删除旧 shim |
-| v1.1.10 | 2026-03-31 | stance描述修正、LLM角色重命名（Analyzer/Generator/Validator） |
+| v1.2.8 | 2026-06-08 | 平行世界调度器、三层 error recovery、OCP 输出路径、v1.3.2 风险类型扩展 |
+| v1.3.1.x | 2026-06-07 | 观测层 consolidation、Phase4 dataset-only 重构 |
+| v1.2.5.1 | 2026-05-07 | Source Tree Governance closeout |
+| v1.1.10 | 2026-03-31 | stance描述修正、LLM角色重命名 |
 | v1.1.9 | 2026-03-30 | susceptibility 接入、立场数据修复 |
 | v1.1.8 | 2026-03-29 | 报告 Agent 优化（10章节结构） |
 | v1.1.7 | 2026-03-29 | 群体分布策略优化 |
-| v1.1.6 | 2026-03-29 | can_speak 机制、original_statement |
 | v1.1.0 | 2026-03-25 | MVP 基线版本 |
 
 完整变更记录：[docs/iterations/CHANGELOG.md](./docs/iterations/CHANGELOG.md)
