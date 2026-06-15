@@ -1772,4 +1772,26 @@ outputs/
 - **status**: completed (closed 2026-06-06)
 - **summary**: 5-Goal DAG. Phase4 收束为纯消费端（report_agent.py 1309→283行），入口归一（main.py 替换, main_new.py→legacy/），函数抽取（paths.py, run_meta.py），测试迁移（17更新+4新建），136 passed/0 failed
 - **smoke**: test8 exit 0, 632s, 35 LLM calls all qwen36-35b
-- **carryover**: whitebox_summary.json 自引用（v1.3.2）, detail version stale v1.2.5
+| **carryover**: whitebox_summary.json 自引用（v1.3.2）, detail version stale v1.2.5
+
+## 2026-06-08: v1.3.2 风险类型分类扩展 + 平行世界调度器
+
+- **task_id**: v1.3.2-risk-classifier + parallel-worlds-bypass
+- **executor**: Claude Code (MiniMax) + Qwen cluster
+- **status**: completed (closed 2026-06-08)
+- **summary**: 两轮 DAG 派发，核心产出：
+  - `spec/risk_mapping.yaml` — 6 域 26 类型风险映射表（唯一源）
+  - `src/analysis/classifier.py` — RiskClassifier Agent（单次 LLM 分拣 top-3）
+  - `src/schemas/phase4.py` — RiskDomain enum + TYPE_TO_DOMAIN_MAP
+  - `tools/probe_scheduler/` — 平行世界调度器（产品入口 bypass 版）
+  - `src/output_paths.py` — OCP 输出路径（ParallelRunPaths）
+  - `src/phase1/repair_agent.py` — 4 层 error recovery（Compiler → Repair → Repair Agent → Generator retry）
+  - `src/model_router.py` — 内网模型路由
+  - `spec/dataset_fields.yaml` — dataset 字段规格文档
+  - `tools/check_dataset_spec.py` — 规格校验工具
+- **smoke**: 6 模型平行推演全部跑通（qwen36-35b/qwen3-30b-tke/qwen3-80b-tke/minimax/ds/122b-sg）
+- **findings**:
+  - ds 唯一发现 transparency_risk（盲区探测价值确认）
+  - 122b-sg 1800s 太慢 + 疑似 herd bias，淘汰
+  - TKE 后缀模型比内部集群快（287s vs 410s）
+- **carryover**: probe_scheduler 前端对比展示 tab（v1.4）, Report Agent 下游 skill 编写
