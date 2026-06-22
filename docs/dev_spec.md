@@ -765,3 +765,23 @@ Phase 3 重构
 8. 不允许在未完成 baseline closeout 前推进下一版本。
 9. 新增观测字段优先服务白盒解释，不服务炫技。
 10. 每次 closeout 必须记录 carry_over。
+
+---
+
+## 14. Scheduler Product Entry R0（v1.4.0）
+
+`scheduler/` 是平行世界推演控制台的产品入口，独立于旧 `tools/probe_scheduler/` bypass 探针路径。
+
+当前 R0 职责：
+
+- 启动单页控制台：`.venv/bin/python -m scheduler ui --host 127.0.0.1 --port 9788`
+- 直接运行 batch：`.venv/bin/python -m scheduler run --models qwen36-35b,ds --seed-text "..."`
+- 检查已有 batch：`.venv/bin/python -m scheduler inspect <batch_dir>`
+- 通过 `PARALLEL_MODE=true`、`PARALLEL_BATCH_DIR`、`PARALLEL_WORLD_NAME` 复用现有输出路径策略。
+- 每个 world 的权威 dataset 位于 `{batch_dir}/world_N/simulation_dataset.json`。
+- UI success、`dataset_exists`、`risk_type_classification.primary_types` 必须来自真实文件检查。
+
+下游预留：
+
+- Report Agent Consumer 后续应消费 `batch_dir` 或 `worlds[].dataset_path`。
+- v1.4.0 不实现 Report Agent batch consumer，也不重构 Phase 4。

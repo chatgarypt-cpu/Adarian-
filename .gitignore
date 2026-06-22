@@ -44,3 +44,5 @@ modelslist.txt
 # OS
 .DS_Store
 Thumbs.db
+.codex/
+AGENTS.md

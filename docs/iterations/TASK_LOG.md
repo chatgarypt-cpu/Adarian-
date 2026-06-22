@@ -30,6 +30,71 @@
 
 ---
 
+## 2026-06-22: v1.4.0 Scheduler MVP Proof / Parallel World Console R0
+
+- **task_id**: task-v1.4.0-scheduler-mvp-proof
+- **executor**: Codex
+- **status**: delivered / Owner-Control closeout pending
+- **iteration_doc**: `docs/iterations/active/v1.4.0_scheduler_mvp_proof_iteration_contract.md`
+
+**实际新增文件**：
+- `scheduler/__init__.py`
+- `scheduler/__main__.py`
+- `scheduler/run.py`
+- `scheduler/config_ui.py`
+- `scheduler/config_ui.html`
+- `tests/test_scheduler_mvp.py`
+- `outputs/codex_receipt.yaml`
+- `runtime/result.json`
+- `runtime/pane_capture.log`
+- `summary/summary.md`
+
+**实际修改文件**：
+- `docs/iterations/TASK_LOG.md`
+- `docs/iterations/CHANGELOG.md`
+- `docs/iterations/active/v1.4.0_scheduler_mvp_proof_iteration_contract.md`
+- `docs/dev_spec.md`
+
+**验收结果**：
+```text
+.venv/bin/python -m py_compile scheduler/*.py
+  pass
+
+.venv/bin/python -m scheduler --help
+  pass
+
+.venv/bin/python -m pytest tests/test_scheduler_mvp.py -v
+  3 passed
+
+UI HTTP smoke:
+  http://127.0.0.1:9788
+  pass
+
+2-model batch smoke:
+  batch_dir: outputs/runs/2026-06-22/batch_smoke_183131
+  world_0 simulation_dataset.json: exists
+  world_1 simulation_dataset.json: exists
+  world_0 primary_types: food_product_safety_risk, transparency_risk, negative_narrative_aggregation_risk
+  world_1 primary_types: food_product_safety_risk, rumor_fact_confusion_risk, transparency_risk
+```
+
+**未修改**：
+- `src/phase1/`
+- `src/phase2/`
+- `src/phase3/`
+- `src/phase4/`
+- `src/analysis/`
+- `src/schemas/`
+- `simulation_dataset.json` schema
+- Report Agent Consumer
+
+**known issues**：
+- in-app browser `iab` 不可用，UI 可视 smoke 通过 HTTP/API/HTML 内容检查完成。
+- 早期 UI server 自动 open 系统浏览器时误触发 `batch_183510`；已停止其子进程，并改为默认不自动打开系统浏览器。该 batch 不作为验收证据。
+- Report Agent Consumer 仅预留下游入口，不在本轮接入 Phase 4。
+
+---
+
 ## 2026-05-15: v1.2.9 Phase 4 Report Agent Decoupling R0 — Closeout
 
 - **task_id**: task-v1.2.9-phase4-report-agent-decoupling-r0

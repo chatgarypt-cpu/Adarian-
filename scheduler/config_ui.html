@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adarian Parallel World Console</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #06111f;
+  --panel: rgba(9, 24, 42, .76);
+  --panel-strong: rgba(10, 31, 53, .92);
+  --line: rgba(64, 207, 255, .28);
+  --line-strong: rgba(81, 220, 255, .72);
+  --cyan: #51dcff;
+  --blue: #1f8cff;
+  --green: #35f0a0;
+  --red: #ff5e73;
+  --amber: #f2c94c;
+  --text: #e8f7ff;
+  --muted: #7f9db6;
+  --shadow: 0 24px 80px rgba(0, 0, 0, .42);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  font: 14px/1.55 -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 18% 12%, rgba(44, 156, 255, .20), transparent 32%),
+    radial-gradient(circle at 88% 0%, rgba(31, 140, 255, .16), transparent 28%),
+    linear-gradient(180deg, #06111f 0%, #071827 52%, #03080f 100%);
+  overflow-x: hidden;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(81, 220, 255, .07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(81, 220, 255, .07) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(to bottom, #000 0%, transparent 92%);
+}
+.shell { width: min(1440px, calc(100vw - 36px)); margin: 0 auto; padding: 24px 0 34px; position: relative; }
+.topbar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 20px;
+  align-items: start;
+  padding: 20px 0 18px;
+}
+.eyebrow { color: var(--cyan); letter-spacing: .18em; text-transform: uppercase; font-size: 12px; }
+h1 { margin: 4px 0 6px; font-size: clamp(28px, 4vw, 52px); line-height: 1.02; font-weight: 720; letter-spacing: 0; }
+.subtitle { color: #aac6d9; font-size: 16px; max-width: 720px; }
+.system-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(120px, 1fr));
+  gap: 10px;
+  min-width: 430px;
+}
+.mini {
+  border: 1px solid var(--line);
+  background: rgba(6, 17, 31, .62);
+  border-radius: 8px;
+  padding: 10px 12px;
+  box-shadow: inset 0 0 28px rgba(81, 220, 255, .06);
+}
+.mini span { display: block; color: var(--muted); font-size: 12px; }
+.mini strong { display: block; font-size: 18px; margin-top: 2px; }
+.grid {
+  display: grid;
+  grid-template-columns: 390px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+.panel {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 8px;
+  box-shadow: var(--shadow), inset 0 0 38px rgba(81, 220, 255, .045);
+  backdrop-filter: blur(16px);
+}
+.panel-head {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(81, 220, 255, .16);
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+.panel-title { font-weight: 680; letter-spacing: .02em; }
+.panel-note { color: var(--muted); font-size: 12px; }
+.panel-body { padding: 16px; }
+label { display: block; color: #a7c7db; font-size: 12px; margin-bottom: 7px; }
+textarea, input {
+  width: 100%;
+  color: var(--text);
+  background: rgba(2, 10, 18, .76);
+  border: 1px solid rgba(81, 220, 255, .26);
+  border-radius: 8px;
+  outline: none;
+  padding: 11px 12px;
+  font: inherit;
+}
+textarea { min-height: 170px; resize: vertical; }
+textarea:focus, input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(81, 220, 255, .12); }
+.preset-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 14px; }
+button {
+  border: 1px solid rgba(81, 220, 255, .30);
+  color: var(--text);
+  background: rgba(13, 42, 68, .82);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font: inherit;
+  cursor: pointer;
+}
+button:hover { border-color: var(--cyan); }
+button:disabled { cursor: not-allowed; opacity: .48; }
+.primary {
+  width: 100%;
+  margin-top: 14px;
+  padding: 13px 16px;
+  border-color: rgba(81, 220, 255, .74);
+  background: linear-gradient(135deg, rgba(31, 140, 255, .95), rgba(28, 211, 255, .75));
+  color: #02101c;
+  font-weight: 760;
+  box-shadow: 0 0 28px rgba(81, 220, 255, .22);
+}
+.workflow {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.step {
+  position: relative;
+  min-height: 86px;
+  border: 1px solid rgba(81, 220, 255, .22);
+  border-radius: 8px;
+  padding: 12px;
+  background: rgba(6, 17, 31, .56);
+}
+.step::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -11px;
+  width: 11px;
+  height: 1px;
+  background: var(--line-strong);
+}
+.step:last-child::after { display: none; }
+.step strong { display: block; margin-bottom: 4px; }
+.step span { color: var(--muted); font-size: 12px; }
+.model-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+  max-height: 318px;
+  overflow: auto;
+  padding-right: 4px;
+}
+.model-card {
+  border: 1px solid rgba(81, 220, 255, .20);
+  background: rgba(5, 18, 31, .72);
+  border-radius: 8px;
+  padding: 12px;
+}
+.model-card.selected { border-color: var(--cyan); box-shadow: inset 0 0 28px rgba(81, 220, 255, .08); }
+.model-card input { width: auto; margin-right: 8px; }
+.model-name { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 13px; }
+.model-desc { color: var(--muted); font-size: 12px; margin-top: 5px; min-height: 34px; }
+.model-actions { margin-top: 9px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.test-btn { padding: 5px 9px; font-size: 12px; }
+.test-status { color: var(--muted); font-size: 12px; }
+.run-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+.metric {
+  border: 1px solid rgba(81, 220, 255, .20);
+  background: rgba(2, 10, 18, .58);
+  border-radius: 8px;
+  padding: 12px;
+}
+.metric span { display: block; color: var(--muted); font-size: 12px; }
+.metric strong { display: block; margin-top: 2px; font-size: 22px; }
+.path {
+  color: #b4d6ea;
+  overflow-wrap: anywhere;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+}
+.world-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 12px;
+}
+.world {
+  position: relative;
+  border: 1px solid rgba(81, 220, 255, .20);
+  background: linear-gradient(180deg, rgba(10, 31, 53, .82), rgba(4, 13, 24, .88));
+  border-radius: 8px;
+  padding: 14px;
+  overflow: hidden;
+}
+.world::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(81, 220, 255, .10), transparent);
+  transform: translateX(-100%);
+  animation: scan 3.4s linear infinite;
+  opacity: .45;
+}
+@keyframes scan { to { transform: translateX(100%); } }
+.world > * { position: relative; }
+.world-top { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+.badge {
+  border: 1px solid rgba(81, 220, 255, .22);
+  border-radius: 999px;
+  padding: 3px 8px;
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+.badge.success { color: var(--green); border-color: rgba(53, 240, 160, .55); }
+.badge.failed { color: var(--red); border-color: rgba(255, 94, 115, .55); }
+.badge.running { color: var(--cyan); border-color: rgba(81, 220, 255, .55); }
+.badge.pending { color: var(--amber); border-color: rgba(242, 201, 76, .42); }
+.world h3 { margin: 10px 0 4px; font-size: 18px; }
+.evidence { margin-top: 12px; display: grid; gap: 7px; }
+.ev { display: flex; justify-content: space-between; gap: 10px; border-top: 1px solid rgba(81, 220, 255, .11); padding-top: 7px; }
+.ev span:first-child { color: var(--muted); }
+.ok { color: var(--green); }
+.bad { color: var(--red); }
+.warn { color: var(--amber); }
+.logbox {
+  margin-top: 16px;
+  background: rgba(1, 7, 13, .78);
+  border: 1px solid rgba(81, 220, 255, .18);
+  border-radius: 8px;
+  padding: 12px;
+  min-height: 136px;
+  max-height: 230px;
+  overflow: auto;
+  white-space: pre-wrap;
+  color: #a9d7e9;
+  font: 12px/1.5 "SF Mono", Menlo, Consolas, monospace;
+}
+.downstream {
+  margin-top: 16px;
+  border: 1px dashed rgba(81, 220, 255, .32);
+  border-radius: 8px;
+  padding: 13px;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.disabled-pill { color: #06111f; background: rgba(81, 220, 255, .72); border-radius: 999px; padding: 3px 9px; font-size: 12px; white-space: nowrap; }
+.message { margin-top: 10px; min-height: 22px; color: var(--muted); }
+@media (max-width: 960px) {
+  .topbar, .grid { grid-template-columns: 1fr; }
+  .system-strip { min-width: 0; }
+  .workflow, .run-grid { grid-template-columns: 1fr; }
+  .step::after { display: none; }
+}
+</style>
+</head>
+<body>
+<main class="shell">
+  <section class="topbar">
+    <div>
+      <div class="eyebrow">Parallel World Scheduler R0</div>
+      <h1>Adarian Parallel World Console</h1>
+      <div class="subtitle">输入事件，分派多个模型，生成多份舆情演化平行世界 dataset。</div>
+    </div>
+    <div class="system-strip">
+      <div class="mini"><span>System</span><strong id="system-status">Ready</strong></div>
+      <div class="mini"><span>Batch</span><strong id="batch-status">Idle</strong></div>
+      <div class="mini"><span>Time</span><strong id="clock">--:--:--</strong></div>
+    </div>
+  </section>
+
+  <section class="grid">
+    <aside class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Seed Event</div>
+        <div class="panel-note">自定义输入 / 预设</div>
+      </div>
+      <div class="panel-body">
+        <label for="seed-text">舆情事件文本</label>
+        <textarea id="seed-text" placeholder="在这里输入本次推演事件..."></textarea>
+        <div class="preset-row">
+          <button type="button" data-preset="校园食堂食品安全争议在短视频平台发酵，学生、家长、商家和监管部门形成多方讨论。">校园食品安全</button>
+          <button type="button" data-preset="新能源车企发布降价策略，引发老车主维权、竞品舆论战和平台热搜扩散。">车企降价争议</button>
+          <button type="button" data-preset="地方文旅活动出现接待争议，游客投诉、媒体报道和官方回应连续触发舆情反转。">文旅接待争议</button>
+        </div>
+        <label for="seed-path">备用 seed 文件路径</label>
+        <input id="seed-path" value="seeds/test8.txt">
+        <label for="batch-tag" style="margin-top:12px;">Batch tag</label>
+        <input id="batch-tag" value="batch">
+        <button class="primary" id="launch">开始生成平行世界</button>
+        <div class="message" id="message"></div>
+      </div>
+    </aside>
+
+    <section>
+      <div class="workflow">
+        <div class="step"><strong>Seed Event</strong><span>事件输入与批次配置</span></div>
+        <div class="step"><strong>Model Dispatch</strong><span>多模型并行分派</span></div>
+        <div class="step"><strong>Parallel Worlds</strong><span>world_0 / world_1 / ...</span></div>
+        <div class="step"><strong>Simulation Dataset</strong><span>真实 dataset evidence</span></div>
+        <div class="step"><strong>Report Agent Ready</strong><span>下游消费入口预留</span></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">Model Dispatch</div>
+          <div class="panel-note"><span id="selected-count">0</span> selected</div>
+        </div>
+        <div class="panel-body">
+          <div id="model-grid" class="model-grid"></div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:16px;">
+        <div class="panel-head">
+          <div class="panel-title">Batch Monitor</div>
+          <div class="panel-note path" id="batch-dir">batch_dir: --</div>
+        </div>
+        <div class="panel-body">
+          <div class="run-grid">
+            <div class="metric"><span>Worlds</span><strong id="m-total">0</strong></div>
+            <div class="metric"><span>Success</span><strong class="ok" id="m-success">0</strong></div>
+            <div class="metric"><span>Running</span><strong id="m-running">0</strong></div>
+            <div class="metric"><span>Failed</span><strong class="bad" id="m-failed">0</strong></div>
+          </div>
+          <div id="world-grid" class="world-grid"></div>
+          <div class="logbox" id="logbox">等待启动...</div>
+          <div class="downstream">
+            <div>
+              <strong>Report Agent Consumer</strong>
+              <div>预留接口：后续 Phase 4 重构可消费 batch_dir 或 worlds[].dataset_path。</div>
+            </div>
+            <span class="disabled-pill">coming soon</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </section>
+</main>
+
+<script>
+const state = {
+  models: [],
+  selected: new Set(),
+  tests: {},
+  batchDir: "",
+  poller: null
+};
+
+function tickClock() {
+  document.getElementById("clock").textContent = new Date().toLocaleTimeString("zh-CN", {hour12:false});
+}
+setInterval(tickClock, 1000);
+tickClock();
+
+function msg(text, kind = "") {
+  const el = document.getElementById("message");
+  el.textContent = text;
+  el.className = "message " + kind;
+}
+
+async function loadModels() {
+  const resp = await fetch("/api/models");
+  const data = await resp.json();
+  state.models = Object.entries(data).map(([id, desc]) => ({id, desc}));
+  state.models.slice(0, 2).forEach(m => state.selected.add(m.id));
+  renderModels();
+}
+
+function renderModels() {
+  const grid = document.getElementById("model-grid");
+  grid.innerHTML = state.models.map(model => {
+    const selected = state.selected.has(model.id);
+    const test = state.tests[model.id];
+    const testText = test ? (test.status === "ok" ? `ok ${test.elapsed}s` : `fail ${test.error || ""}`) : "not tested";
+    return `
+      <div class="model-card ${selected ? "selected" : ""}">
+        <label style="margin:0;">
+          <input type="checkbox" data-model="${model.id}" ${selected ? "checked" : ""}>
+          <span class="model-name">${escapeHtml(model.id)}</span>
+        </label>
+        <div class="model-desc">${escapeHtml(model.desc)}</div>
+        <div class="model-actions">
+          <button class="test-btn" data-test="${model.id}" type="button">hello test</button>
+          <span class="test-status">${escapeHtml(testText)}</span>
+        </div>
+      </div>
+    `;
+  }).join("");
+  document.getElementById("selected-count").textContent = state.selected.size;
+}
+
+document.addEventListener("change", event => {
+  const model = event.target.dataset ? event.target.dataset.model : "";
+  if (!model) return;
+  if (event.target.checked) state.selected.add(model);
+  else state.selected.delete(model);
+  renderModels();
+});
+
+document.addEventListener("click", async event => {
+  const preset = event.target.dataset ? event.target.dataset.preset : "";
+  if (preset) {
+    document.getElementById("seed-text").value = preset;
+    return;
+  }
+  const testModel = event.target.dataset ? event.target.dataset.test : "";
+  if (testModel) {
+    state.tests[testModel] = {status: "testing", error: ""};
+    renderModels();
+    try {
+      const resp = await fetch("/api/hello-test", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({model: testModel})
+      });
+      state.tests[testModel] = await resp.json();
+    } catch (err) {
+      state.tests[testModel] = {status: "fail", error: err.message};
+    }
+    renderModels();
+  }
+});
+
+document.getElementById("launch").addEventListener("click", launchBatch);
+
+async function launchBatch() {
+  const models = [...state.selected];
+  if (models.length < 1) {
+    msg("至少选择 1 个模型", "bad");
+    return;
+  }
+  const btn = document.getElementById("launch");
+  btn.disabled = true;
+  btn.textContent = "启动中...";
+  msg("正在创建 batch 并启动 world 进程...");
+  try {
+    const resp = await fetch("/api/launch", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        models,
+        seed_text: document.getElementById("seed-text").value.trim(),
+        seed_path: document.getElementById("seed-path").value.trim(),
+        tag: document.getElementById("batch-tag").value.trim() || "batch"
+      })
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || "launch failed");
+    state.batchDir = data.batch_dir;
+    document.getElementById("batch-dir").textContent = "batch_dir: " + data.batch_dir;
+    document.getElementById("batch-status").textContent = "Running";
+    document.getElementById("system-status").textContent = "Dispatching";
+    msg("batch 已启动，状态来自真实产物检查。");
+    clearInterval(state.poller);
+    await pollSession();
+    state.poller = setInterval(pollSession, 3000);
+  } catch (err) {
+    msg("启动失败：" + err.message, "bad");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "开始生成平行世界";
+  }
+}
+
+async function pollSession() {
+  if (!state.batchDir) return;
+  const resp = await fetch("/api/session?dir=" + encodeURIComponent(state.batchDir));
+  const data = await resp.json();
+  renderSession(data);
+  if (data.summary && data.summary.running === 0 && data.summary.pending === 0 && data.summary.total > 0) {
+    clearInterval(state.poller);
+    state.poller = null;
+  }
+}
+
+function renderSession(data) {
+  const summary = data.summary || {total:0, success:0, completed:0, running:0, failed:0};
+  const success = summary.success ?? summary.completed ?? 0;
+  document.getElementById("m-total").textContent = summary.total || 0;
+  document.getElementById("m-success").textContent = success;
+  document.getElementById("m-running").textContent = summary.running || 0;
+  document.getElementById("m-failed").textContent = summary.failed || 0;
+  document.getElementById("batch-status").textContent = data.status || "Running";
+  document.getElementById("system-status").textContent = (summary.running || summary.pending) ? "Running" : "Ready";
+  document.getElementById("batch-dir").textContent = "batch_dir: " + (data.batch_dir || state.batchDir || "--");
+  const worlds = data.worlds || [];
+  document.getElementById("world-grid").innerHTML = worlds.map(renderWorld).join("") || `<div class="panel-note">等待 world 状态...</div>`;
+  const logs = data.logs || [];
+  document.getElementById("logbox").textContent = logs.length ? logs.join("\n") : "等待日志...";
+}
+
+function renderWorld(world) {
+  const status = world.status || "pending";
+  const badgeClass = status === "success" ? "success" : status === "failed" ? "failed" : status === "running" ? "running" : "pending";
+  const exists = !!world.dataset_exists;
+  const primary = world.primary_types || (world.risk_type_classification ? world.risk_type_classification.primary_types : []) || [];
+  const primaryExists = !!(world.primary_types_exists || (world.risk_type_classification && world.risk_type_classification.primary_types_exists));
+  return `
+    <article class="world">
+      <div class="world-top">
+        <span class="model-name">${escapeHtml(world.world_id || world.name || "")}</span>
+        <span class="badge ${badgeClass}">${escapeHtml(status)}</span>
+      </div>
+      <h3>${escapeHtml(world.model_name || world.model || "")}</h3>
+      <div class="path">${escapeHtml(world.output_dir || world.dir || "")}</div>
+      <div class="evidence">
+        <div class="ev"><span>simulation_dataset.json</span><strong class="${exists ? "ok" : "warn"}">${exists ? "exists" : "missing"}</strong></div>
+        <div class="ev"><span>primary_types</span><strong class="${primaryExists ? "ok" : "warn"}">${primaryExists ? escapeHtml(primary.join(", ")) : "missing"}</strong></div>
+        <div class="ev"><span>elapsed</span><strong>${world.elapsed_seconds || world.elapsed || "--"}s</strong></div>
+        ${world.error_summary || world.error ? `<div class="ev"><span>error</span><strong class="bad">${escapeHtml(world.error_summary || world.error)}</strong></div>` : ""}
+      </div>
+    </article>
+  `;
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+loadModels().catch(err => msg("模型列表加载失败：" + err.message, "bad"));
+</script>
+</body>
+</html>

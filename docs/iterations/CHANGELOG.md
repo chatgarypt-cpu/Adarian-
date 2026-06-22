@@ -21,6 +21,62 @@
 
 ---
 
+## v1.4.0 (2026-06-22) — Scheduler MVP Proof / Parallel World Console R0
+
+**主题**：平行世界推演控制台 R0
+
+### 新增
+
+- `scheduler/` 产品入口包。
+- `scheduler/run.py`：基于 `PARALLEL_MODE=true` 的真实 batch runner，产物落到 `batch_dir/world_N/`。
+- `scheduler/config_ui.py`：stdlib HTTP API，提供模型列表、hello test、launch、session status。
+- `scheduler/config_ui.html`：深色科技风单页控制台。
+- `tests/test_scheduler_mvp.py`：dataset evidence、batch config、磁盘 inspect 回归测试。
+- `outputs/codex_receipt.yaml`、`runtime/result.json`、`runtime/pane_capture.log`、`summary/summary.md`：本轮 runtime evidence。
+
+### 功能
+
+- 支持 `python -m scheduler --help`。
+- 支持 `python -m scheduler ui --host 127.0.0.1 --port 9788`。
+- 支持输入 seed 文本、选择模型、发起多 world batch。
+- UI 展示真实 `batch_dir`、world 状态、`simulation_dataset.json` existence、`risk_type_classification.primary_types`。
+- 预留 disabled `Report Agent Consumer` 下游入口，contract 为 `batch_dir` 或 `worlds[].dataset_path`。
+
+### 验收
+
+```text
+.venv/bin/python -m py_compile scheduler/*.py
+  pass
+
+.venv/bin/python -m scheduler --help
+  pass
+
+.venv/bin/python -m pytest tests/test_scheduler_mvp.py -v
+  3 passed
+
+2-model batch smoke:
+  outputs/runs/2026-06-22/batch_smoke_183131/batch_config.yaml
+  outputs/runs/2026-06-22/batch_smoke_183131/world_0/simulation_dataset.json
+  outputs/runs/2026-06-22/batch_smoke_183131/world_1/simulation_dataset.json
+```
+
+### 边界
+
+- 未修改 Phase 1-4。
+- 未修改 `src/analysis/`。
+- 未修改 `src/schemas/`。
+- 未修改 `simulation_dataset.json` schema。
+- 未实现 Report Agent Consumer。
+- 未新增外部依赖。
+
+### Known issues
+
+- in-app browser `iab` 不可用，UI 可视 smoke 以 HTTP/API/HTML 检查替代。
+- 误触发的 `batch_183510` 已停止，不作为验收证据。
+- Owner-Control closeout 仍待 Owner 判断。
+
+---
+
 ## v1.2.9 (2026-05-15) — Closeout
 
 **主题**：Phase 4 Report Agent Decoupling R0
