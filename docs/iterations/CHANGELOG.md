@@ -113,6 +113,31 @@ Owner-Control closeout 确认于 2026-06-24。UI 后续再逐步完善。
 
 ---
 
+## v1.4.1.1 (2026-06-24) — src layout 重构
+
+**主题**：项目结构改为 src layout
+
+### 变更
+
+- `src/adarian/` 新建为唯一代码包
+- `adarian/`（旧包）删除，内容迁入 `src/adarian/`
+- `config.py`（根目录）迁入 `src/adarian/config.py`
+- `src/phase*/`、`src/analysis/`、`src/display/` 等全部迁入 `src/adarian/`
+- 所有 `from src.xxx` → `from adarian.xxx`
+- `import config` → `from adarian import config`
+- `pyproject.toml` 新建（`pip install -e .` 支持）
+- `requirements.txt` 更新（精简为实际依赖）
+- `modelslist.txt` 更新（完整 CATALOG 清单）
+- `adarian.sh` / `start.command` 改用 `python -m src.adarian`
+
+### 边界
+
+- 未改业务逻辑
+- 未改 `src/adarian/` 内部调用链
+- 未改 `docs/archive/`、`profiling/`、`tools/` 等非核心目录
+
+---
+
 ## v1.2.9 (2026-05-15) — Closeout
 
 **主题**：Phase 4 Report Agent Decoupling R0

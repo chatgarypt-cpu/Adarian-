@@ -8,14 +8,14 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.whitebox.run_meta import write_whitebox_summary
-from src.whitebox import (
+from adarian.whitebox.run_meta import write_whitebox_summary
+from adarian.whitebox import (
     check_report_completeness,
     check_run_artifacts,
     write_artifact_check,
     write_report_completeness_summary,
 )
-from src.whitebox.artifact_check import REQUIRED_ARTIFACTS, RAW_SOURCES
+from adarian.whitebox.artifact_check import REQUIRED_ARTIFACTS, RAW_SOURCES
 
 
 def _create_run_dir(path: Path) -> None:

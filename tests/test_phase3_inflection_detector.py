@@ -6,8 +6,8 @@ if str(PROJECT_ROOT) not in sys.path:
 
 import pytest
 
-from src.analysis.inflection_detector import InflectionDetector
-from src.schemas import (
+from adarian.analysis.inflection_detector import InflectionDetector
+from adarian.schemas import (
     AgentEntry, GlobalMetrics, GraphEdge, GraphNode, NodeRole,
     Phase2Output, TickLog,
 )

@@ -18,21 +18,21 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-import config
-from config import ensure_dirs
-from src.llm_client import init_llm_client, get_llm_client, register_observer
-from src.schemas import Phase4Output
-from src.utils.runtime_logger import get_runtime_logger
-from src.phase4.paths import build_run_paths
-from src.output_paths import create_run_paths
-from src.phase4.report_narrative import generate_report_with_llm_narrative
-from src.phase4.report_agent import save_report, save_markdown_report
-from src.whitebox.run_meta import write_run_meta
-from src.whitebox.token_tracker import TokenTracker
-from src.whitebox.dataset_spec_writer import generate_spec_yaml_from_files
-from src.whitebox.classifier_reporter import write_classification_summary
-from src.display.run_log_writer import append_run_summary, log_token_summary
-from src.display import StatusBar
+from adarian import config
+from adarian.config import ensure_dirs
+from adarian.llm_client import init_llm_client, get_llm_client, register_observer
+from adarian.schemas import Phase4Output
+from adarian.utils.runtime_logger import get_runtime_logger
+from adarian.phase4.paths import build_run_paths
+from adarian.output_paths import create_run_paths
+from adarian.phase4.report_narrative import generate_report_with_llm_narrative
+from adarian.phase4.report_agent import save_report, save_markdown_report
+from adarian.whitebox.run_meta import write_run_meta
+from adarian.whitebox.token_tracker import TokenTracker
+from adarian.whitebox.dataset_spec_writer import generate_spec_yaml_from_files
+from adarian.whitebox.classifier_reporter import write_classification_summary
+from adarian.display.run_log_writer import append_run_summary, log_token_summary
+from adarian.display import StatusBar
 
 
 def run_phase4(
@@ -97,7 +97,7 @@ def main(seed_path: str | Path | None = None):
             logger.log_phase_start("phase1_entity_extraction")
             bar.set_phase("Phase 1 实体提取")
             t1 = time.time()
-            from src.phase1 import extract_entities_from_file, save_entities_output
+            from adarian.phase1 import extract_entities_from_file, save_entities_output
             extraction_output = extract_entities_from_file(str(seed_file))
             entities_file = save_entities_output(extraction_output, output_path=outputs["entities"])
             t1 = time.time() - t1
@@ -108,7 +108,7 @@ def main(seed_path: str | Path | None = None):
             logger.log_phase_start("phase2_topology_builder")
             bar.set_phase("Phase 2 拓扑构建")
             t2 = time.time()
-            from src.phase2 import build_topology_from_extraction
+            from adarian.phase2 import build_topology_from_extraction
             phase2_output = build_topology_from_extraction(extraction_output)
             t2 = time.time() - t2
             logger.log_phase_end("phase2_topology_builder", t2)
@@ -118,7 +118,7 @@ def main(seed_path: str | Path | None = None):
             logger.log_phase_start("phase3_tick_simulation")
             bar.set_phase("Phase 3 推演")
             t3 = time.time()
-            from src.phase3 import SimulationEngine, save_tick_logs, print_simulation_summary
+            from adarian.phase3 import SimulationEngine, save_tick_logs, print_simulation_summary
             engine = SimulationEngine(extraction_output, phase2_output, seed_text)
             tick_logs = engine.run_simulation(max_ticks=config.MAX_TICKS)
             save_tick_logs(tick_logs, output_path=outputs["tick_logs"])
@@ -132,7 +132,7 @@ def main(seed_path: str | Path | None = None):
             logger.log_phase_start("analysis_aggregation")
             bar.set_phase("分析聚合")
             t4 = time.time()
-            from src.parser import SimulationDatasetParser
+            from adarian.parser import SimulationDatasetParser
             parser = SimulationDatasetParser()
             dataset = parser.parse(extraction_output, phase2_output, tick_logs, x_t_sequence, seed_text=seed_text)
             with open(outputs["simulation_dataset"], "w", encoding="utf-8") as f:

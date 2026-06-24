@@ -4,13 +4,13 @@ import importlib
 
 
 def test_exports_contain_exactly_five_symbols():
-    import src.phase4
+    import adarian.phase4
     assert isinstance(src.phase4.__all__, list)
     assert len(src.phase4.__all__) == 5
 
 
 def test_exports_match_expected_set():
-    import src.phase4
+    import adarian.phase4
     expected = {
         "_build_report_contract_block",
         "_build_phase4_output_from_simulation_dataset",
@@ -22,7 +22,7 @@ def test_exports_match_expected_set():
 
 
 def test_each_exported_symbol_is_importable():
-    import src.phase4
+    import adarian.phase4
     for name in src.phase4.__all__:
         obj = getattr(src.phase4, name, None)
         assert obj is not None, f"src.phase4.{name} is None or missing"
@@ -33,7 +33,7 @@ def test_each_exported_symbol_is_importable():
 
 def test_old_compute_symbols_not_accessible_via_src_phase4():
     """Even via attribute access, src.phase4 should not expose compute symbols."""
-    import src.phase4
+    import adarian.phase4
     forbidden = [
         "assess_risk",
         "generate_report_with_llm",
@@ -52,6 +52,6 @@ def test_old_compute_symbols_not_accessible_via_src_phase4():
 
 def test_no_double_underscore_dunders_exported():
     """Public API must not contain Python dunders except __all__ itself."""
-    import src.phase4
+    import adarian.phase4
     leaks = [name for name in src.phase4.__all__ if name.startswith("__") and name != "__all__"]
     assert leaks == [], f"Dunder leaks: {leaks}"

@@ -13,7 +13,7 @@ import os
 # 添加项目路径
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.phase1 import (
+from adarian.phase1 import (
     _normalize_unescaped_quotes_inside_string_values,
     _normalize_inner_cjk_quotes,
     _parse_json_candidate

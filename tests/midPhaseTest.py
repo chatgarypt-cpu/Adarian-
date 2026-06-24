@@ -45,32 +45,32 @@ def _ensure_visible_window():
     subprocess.run(["osascript", "-e", cmd])
     sys.exit(0)
 
-import config
-from src.llm_client import init_llm_client, register_observer
-from src.phase4.paths import build_run_paths
-from src.whitebox.run_meta import write_run_meta
-from src.whitebox.token_tracker import TokenTracker
-from src.display.run_log_writer import append_run_summary
-from src.whitebox.dataset_spec_writer import generate_spec_yaml_from_files
-from src.utils.runtime_logger import get_runtime_logger
-from src.display import StatusBar
+from adarian import config
+from adarian.llm_client import init_llm_client, register_observer
+from adarian.phase4.paths import build_run_paths
+from adarian.whitebox.run_meta import write_run_meta
+from adarian.whitebox.token_tracker import TokenTracker
+from adarian.display.run_log_writer import append_run_summary
+from adarian.whitebox.dataset_spec_writer import generate_spec_yaml_from_files
+from adarian.utils.runtime_logger import get_runtime_logger
+from adarian.display import StatusBar
 
 
 def run_phase1(seed_file: str, report_path=None):
     """Phase 1 实体提取（LLM）。"""
-    from src.phase1 import extract_entities_from_file
+    from adarian.phase1 import extract_entities_from_file
     return extract_entities_from_file(seed_file, report_path=report_path)
 
 
 def run_phase2(extraction_output):
     """Phase 2 社交拓扑构建。"""
-    from src.phase2 import build_topology_from_extraction
+    from adarian.phase2 import build_topology_from_extraction
     return build_topology_from_extraction(extraction_output)
 
 
 def run_phase3_tick_simulation(extraction_output, phase2_output, seed_text):
     """Phase 3 tick 模拟。"""
-    from src.phase3 import SimulationEngine
+    from adarian.phase3 import SimulationEngine
     engine = SimulationEngine(extraction_output, phase2_output, seed_text)
     tick_logs = engine.run_simulation(max_ticks=config.MAX_TICKS)
     x_t_sequence = engine.get_x_t_sequence()
@@ -89,7 +89,7 @@ def run_phase3_parser(extraction_output, phase2_output, tick_logs, x_t_sequence)
 
     返回结构化 simulation_dataset（含 risk_verdict、inflection_points、agent_stance_matrix）。
     """
-    from src.parser import SimulationDatasetParser
+    from adarian.parser import SimulationDatasetParser
     parser = SimulationDatasetParser()
     dataset = parser.parse(
         extraction_output,

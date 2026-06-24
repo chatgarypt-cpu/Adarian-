@@ -35,10 +35,10 @@ sys.path.insert(0, str(PROJECT_ROOT))
 os.environ["NO_PROXY"] = "100.89.3.59"
 os.environ["no_proxy"] = "100.89.3.59"
 
-from config import LLM_API_KEY, LLM_BASE_URL
-from src.phase1.prompts import GENERATOR_SYSTEM_PROMPT, GENERATOR_USER_PROMPT
-from src.phase1.utils import _parse_llm_json_payload, _coerce_top_level_object, console
-from src.phase1.compiler import _post_process_entities
+from adarian.config import LLM_API_KEY, LLM_BASE_URL
+from adarian.phase1.prompts import GENERATOR_SYSTEM_PROMPT, GENERATOR_USER_PROMPT
+from adarian.phase1.utils import _parse_llm_json_payload, _coerce_top_level_object, console
+from adarian.phase1.compiler import _post_process_entities
 
 HEADERS = {"Authorization": f"Bearer {LLM_API_KEY}", "Content-Type": "application/json"}
 NO_PROXY = {"http": None, "https": None}

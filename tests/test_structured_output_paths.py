@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ["NO_PROXY"] = "100.89.3.59"
 os.environ["no_proxy"] = "100.89.3.59"
 
-from config import LLM_API_KEY, LLM_BASE_URL
+from adarian.config import LLM_API_KEY, LLM_BASE_URL
 
 HEADERS = {
     "Authorization": f"Bearer {LLM_API_KEY}",

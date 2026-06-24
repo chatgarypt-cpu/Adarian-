@@ -9,8 +9,8 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 
-from src.analysis.risk_analyzer import RiskAnalyzer
-from src.schemas import (
+from adarian.analysis.risk_analyzer import RiskAnalyzer
+from adarian.schemas import (
     AgentEntry,
     Entity,
     EntityExtractionOutput,
@@ -19,7 +19,7 @@ from src.schemas import (
     Relation,
     TickLog,
 )
-from src.schemas.phase4 import RiskLevel
+from adarian.schemas.phase4 import RiskLevel
 
 
 # ---------------------------------------------------------------------------

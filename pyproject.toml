@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=64.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "adarian"
+version = "1.4.1"
+description = "Adarian — 平行世界舆情推演系统"
+requires-python = ">=3.10"
+dependencies = [
+    "httpx",
+    "rich",
+    "pydantic",
+    "python-dotenv",
+    "pyyaml",
+]
+
+[project.scripts]
+adarian = "adarian.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["*.html"]

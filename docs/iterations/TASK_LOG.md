@@ -30,6 +30,19 @@
 
 ---
 
+## 2026-06-24: v1.4.1.1 patch — src layout 重构
+
+- **task_id**: task-v1.4.1.1-src-layout
+- **status**: closed
+- **changes**:
+  - 全部代码迁入 `src/adarian/`
+  - `from src.xxx` → `from adarian.xxx`，`import config` → `from adarian import config`
+  - `pyproject.toml` 新建，`requirements.txt` / `modelslist.txt` 更新
+  - `adarian.sh` / `start.command` 改用 `python -m src.adarian`
+  - py_compile 全部 76 文件通过
+
+---
+
 ## 2026-06-24: v1.4.1 closeout
 
 - **task_id**: task-v1.4.1-entry-convergence

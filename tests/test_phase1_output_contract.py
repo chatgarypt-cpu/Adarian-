@@ -1,4 +1,4 @@
-from src.schemas import Entity, EntityExtractionOutput, OpinionSpreader, Relation
+from adarian.schemas import Entity, EntityExtractionOutput, OpinionSpreader, Relation
 
 
 DERIVED_FIELDS = {"C", "stance_score", "confirmation_bias_level"}

@@ -10,9 +10,9 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 
-import config
+from adarian import config
 import main
-from src.phase4.paths import build_run_paths
+from adarian.phase4.paths import build_run_paths
 
 
 class FixedSecondDatetime:
