@@ -73,7 +73,43 @@
 
 - in-app browser `iab` 不可用，UI 可视 smoke 以 HTTP/API/HTML 检查替代。
 - 误触发的 `batch_183510` 已停止，不作为验收证据。
-- Owner-Control closeout 仍待 Owner 判断。
+
+### 状态
+
+Owner-Control closeout 确认于 2026-06-24。UI 后续再逐步完善。
+
+---
+
+## v1.4.1 (2026-06-24) — 入口收敛 + 多世界实时面板
+
+**主题**：统一入口 + batch 可视化
+
+### 新增
+
+- `adarian/` 产品入口包（`__init__.py`, `__main__.py`, `run.py`, `serve.py`, `batch.py`, `inspect.py`）
+- `adarian.sh` 命令行统一入口（`up` / `run` / `serve` / `batch` / `inspect`）
+- `start.command` macOS 双击入口
+- batch 多世界实时面板（Rich Live，每秒刷新 Phase + 线程计时）
+
+### 修改
+
+- `src/parser.py` — `parse()` 加 `seed_text` 参数，写入 `run_info.seed_text`
+- `main.py` — `main(seed_path)` 参数，保留 `if __name__` 向后兼容
+- `src/llm_client.py` — `[llm_diag]` 从 stdout 改到 stderr
+- `spec/dataset_fields.yaml` — 加 `run_info.seed_text` 规格
+- `adarian/batch.py` — batch runner 子进程调用改为 `python -m adarian run`
+
+### 删除
+
+- `scheduler/` — 内容已迁入 `adarian/`
+
+### 边界
+
+- 未修改 `src/phase1/` 到 `src/phase4/`
+- 未修改 `src/analysis/`
+- 未修改 `src/schemas/`
+- 未修改 `config.py`
+- 未修改 `tools/probe_scheduler/`
 
 ---
 

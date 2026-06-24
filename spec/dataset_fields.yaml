@@ -50,6 +50,11 @@
   source: RiskAnalyzer.determine_audience_mode()
   notes: 确定性规则，从 event_type + entity roles 判断
 
+- path: run_info.seed_text
+  trustworthiness: stable
+  source: parser.parse(seed_text=...) from main.py / adarian.run
+  notes: 用户输入的原始种子文本，经 parser 直接写入 dataset
+
 # ── source_context ─────────────────────────────
 - path: source_context.event_summary
   trustworthiness: stable

@@ -32,6 +32,7 @@ class SimulationDatasetParser:
         tick_logs: List[TickLog],
         x_t_sequence: List[float],
         *,
+        seed_text: str = "",
         source_artifact_refs: Optional[Dict[str, str]] = None,
     ) -> Dict[str, Any]:
         """Parse simulation outputs into a structured dataset."""
@@ -135,6 +136,7 @@ class SimulationDatasetParser:
                 "event_type": extraction_output.event_type,
                 "total_ticks": len(tick_logs),
                 "audience_mode": audience_mode,
+                "seed_text": seed_text,
             },
             "source_context": {
                 "event_summary": extraction_output.event_summary,

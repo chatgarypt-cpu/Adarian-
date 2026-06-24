@@ -30,11 +30,28 @@
 
 ---
 
-## 2026-06-22: v1.4.0 Scheduler MVP Proof / Parallel World Console R0
+## 2026-06-24: v1.4.1 closeout
+
+- **task_id**: task-v1.4.1-entry-convergence
+- **status**: closed
+- **closeout_by**: Hermes + Owner-Control Gary
+- **iteration_doc**: `docs/archive/iteration-plans/v1.4.1_entry_convergence.md`
+- **deliverables**:
+  - `adarian/` 产品入口包（6 文件，1534 行）
+  - `adarian.sh` + `start.command` 统一入口
+  - `seed_text` 入 dataset，spec 同步
+  - batch 多世界实时面板（Rich Live，线程计时 + run.log Phase 抓取）
+  - `[llm_diag]` → stderr
+  - `scheduler/` 删除
+
+---
+
+## 2026-06-24: v1.4.0 closeout
 
 - **task_id**: task-v1.4.0-scheduler-mvp-proof
-- **executor**: Codex
-- **status**: delivered / Owner-Control closeout pending
+- **status**: closed
+- **closeout_by**: Owner-Control Gary
+- **note**: UI 尚未人工验收，后续随 v1.4.x 迭代完善。batch smoke 通过、dataset spec 完整、未触碰禁止路径。
 - **iteration_doc**: `docs/iterations/active/v1.4.0_scheduler_mvp_proof_iteration_contract.md`
 
 **实际新增文件**：

@@ -3,7 +3,8 @@
 import json
 from pathlib import Path
 
-import scheduler.run as scheduler_run
+import adarian.batch as batch_mod
+import adarian.inspect as inspect_mod
 
 
 def test_inspect_dataset_reads_primary_types(tmp_path):
@@ -22,7 +23,7 @@ def test_inspect_dataset_reads_primary_types(tmp_path):
         encoding="utf-8",
     )
 
-    evidence = scheduler_run.inspect_dataset(dataset)
+    evidence = batch_mod.inspect_dataset(dataset)
 
     assert evidence["dataset_exists"] is True
     assert evidence["primary_types_exists"] is True
@@ -30,14 +31,14 @@ def test_inspect_dataset_reads_primary_types(tmp_path):
 
 
 def test_start_batch_writes_config_and_seed_text(tmp_path, monkeypatch):
-    monkeypatch.setattr(scheduler_run.config, "OUTPUTS_DIR", tmp_path)
+    monkeypatch.setattr(batch_mod.config, "OUTPUTS_DIR", tmp_path)
     monkeypatch.setattr(
-        scheduler_run,
+        batch_mod,
         "available_models",
         lambda: {"model_a": "Model A", "model_b": "Model B"},
     )
 
-    session = scheduler_run.start_batch(
+    session = batch_mod.start_batch(
         models=["model_a", "model_b"],
         seed_text="测试事件",
         tag="unit test",
@@ -69,7 +70,7 @@ def test_inspect_batch_marks_success_from_disk_evidence(tmp_path):
         encoding="utf-8",
     )
 
-    status = scheduler_run.inspect_batch(batch_dir)
+    status = inspect_mod.inspect_batch(batch_dir)
 
     assert status["status"] == "success"
     assert status["summary"]["success"] == 1

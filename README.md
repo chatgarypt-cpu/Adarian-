@@ -52,13 +52,34 @@ LLM_BASE_URL=https://api.deepseek.com
 DEFAULT_MODEL=deepseek-chat
 ```
 
-### 3. 运行模拟
+### 3. 运行
+
+#### 方式一：双击启动（推荐新手）
+
+在项目目录下双击 **`start.command`**，Terminal 自动打开，Web 控制台在 `http://127.0.0.1:9788` 启动。
+浏览器打开即可操作推演。按 Ctrl+C 停止。
+
+#### 方式二：一行命令启动（推荐开发者）
 
 ```bash
-python main.py seeds/test1.txt
+./adarian.sh up
 ```
 
-输出产物（`outputs/runs/YYYY-MM-DD/` 目录下）：
+同时启动 Web 控制台（`http://127.0.0.1:9788`）和 CLI 后台。浏览器打开操作，终端继续用 CLI 命令：
+
+```bash
+./adarian.sh run seeds/test8.txt     # 单次 pipeline
+./adarian.sh serve                   # 仅 Web 控制台
+./adarian.sh batch --models ...      # 多模型并行
+./adarian.sh inspect <dir>           # 检查产物
+```
+
+等价于 `python -m adarian <子命令>`。
+
+### 4. 查看产物
+
+输出目录：`outputs/runs/YYYY-MM-DD/`，每次运行产出：
+
 - `simulation_dataset.json` — 完整推演数据集（规范输出）
 - `run.log` — 运行摘要（含 Token 消耗、阶段耗时）
 - `whitebox/` — 诊断数据（白盒追踪）
@@ -76,8 +97,17 @@ python main.py seeds/test1.txt
 
 ## 项目结构
 
-```
-├── main.py              # 入口
+```text
+├── start.command        # 双击启动（macOS）
+├── adarian.sh           # 命令行启动脚本
+├── adarian/             # 产品入口（python -m adarian）
+│   ├── __main__.py      # CLI 路由器（run/serve/batch/inspect/dev）
+│   ├── run.py           # 单次 pipeline 执行
+│   ├── serve.py         # Web 控制台
+│   ├── batch.py         # 多模型并行推演
+│   ├── inspect.py       # 检查 batch 产物
+│   └── config_ui.html   # 前端页面
+├── main.py              # 库入口（保留向后兼容）
 ├── config.py            # 全局配置
 ├── seeds/               # 种子材料
 ├── src/
@@ -103,7 +133,8 @@ python main.py seeds/test1.txt
 
 | 版本 | 日期 | 主要变更 |
 |------|------|---------|
-| v1.3.2 | 2026-06 | 26 类型 RiskClassifier Agent、6 域风险映射体系 |
+| v1.4.1 | 2026-06 | 入口收敛（adarian/ 包 + adarian.sh 统一启动）、seed_text 入 dataset |
+| v1.4.0 | 2026-06 | Scheduler MVP Proof、平行世界推演控制台 R0 |
 | v1.3.1.x | 2026-06 | 观测层 consolidation、Phase4 dataset-only 重构、平行世界调度器 |
 | v1.2.8 | 2026-06 | 三层 error recovery、OCP 输出路径 |
 | v1.2.5.1 | 2026-05 | Source Tree Governance closeout |

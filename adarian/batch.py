@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""Product entry for Adarian Parallel World Scheduler R0.
+"""
+Multi-model parallel world batch runner for Adarian.
 
-This module starts real Adarian pipeline subprocesses with the existing
-PARALLEL_MODE output strategy. UI success and dataset evidence are derived from
-files written under batch_dir/world_N, not from optimistic launch state.
+Adapted from scheduler/run.py (v1.4.0).
 """
 
 from __future__ import annotations
@@ -16,11 +14,19 @@ import os
 import re
 import subprocess
 import sys
+import threading
 import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+
+from rich.console import Console
+from rich.live import Live
+from rich.panel import Panel
+from rich.spinner import Spinner
+from rich.table import Table
+from rich.text import Text
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -29,7 +35,6 @@ if str(PROJECT_ROOT) not in sys.path:
 
 try:
     from dotenv import load_dotenv
-
     load_dotenv(PROJECT_ROOT / ".env")
 except Exception:
     pass
@@ -40,6 +45,9 @@ import config
 DEFAULT_BASE_URL = os.environ.get("LLM_BASE_URL", "http://100.89.3.59:8090/v1")
 DEFAULT_MAX_TOKENS = 16384
 RUN_TIMEOUT_SECONDS = int(os.environ.get("SCHEDULER_WORLD_TIMEOUT", "1800"))
+
+
+# ── Data structures ──────────────────────────────────────────────
 
 
 @dataclass
@@ -148,9 +156,10 @@ class BatchSession:
         self.logs.append(f"[{ts}] {message}")
 
 
-def available_models() -> dict[str, str]:
-    """Return product-facing model choices from the existing model catalog."""
+# ── Public API ───────────────────────────────────────────────────
 
+
+def available_models() -> dict[str, str]:
     from src.model_router import CATALOG
 
     exclude = {"bge-m3", "bge-m3-tke", "deepseek-v4-flash"}
@@ -247,88 +256,105 @@ def run_batch(
     return session
 
 
+def _phase_from_run_log(world_dir: Path) -> str:
+    """Read the latest PHASE START from run.log."""
+    log = world_dir / "run.log"
+    if not log.exists():
+        return "就绪"
+    try:
+        lines = log.read_text(encoding="utf-8", errors="replace").splitlines()
+        phase = ""
+        for line in reversed(lines):
+            if "PHASE START" in line:
+                m = re.search(r"name=(\S+)", line)
+                if m:
+                    phase = m.group(1).replace("_", " ").title()
+                    break
+            elif "PHASE END" in line:
+                break  # 最近的 phase 已结束，继续往前找
+        return phase or "就绪"
+    except OSError:
+        return "就绪"
+
+
+def _render_worlds_panel(session: BatchSession, elapsed: float) -> Panel:
+    """Render all worlds matching the StatusBar design language."""
+    t = Table.grid(padding=(0, 1))
+    spinner = Spinner("dots", style="cyan")
+    done = sum(1 for w in session.worlds if session.states[w.name].status == "success")
+    failed = sum(1 for w in session.worlds if session.states[w.name].status == "failed")
+    running = sum(1 for w in session.worlds if session.states[w.name].status == "running")
+    summary = f"  批量推演  ✓{done} ✗{failed} ▶{running}  ⏱ {elapsed:.0f}s"
+    t.add_row(spinner, Text(summary, style="bold"))
+
+    for world in session.worlds:
+        state = session.states.get(world.name)
+        if not state:
+            continue
+        wd = session.batch_dir / world.name
+        stat = state.status or "pending"
+
+        if stat == "running":
+            ws = _world_start.get(world.name)
+            elapsed_s = f"{time.perf_counter() - ws:.0f}s" if ws else ""
+            phase = _phase_from_run_log(wd)
+            t.add_row(Text(""), Text(f"  {world.name}  {world.model[:20]}  ⏱ {phase}  {elapsed_s}"))
+        elif stat == "success":
+            es = f"{state.elapsed_seconds or 0:.0f}s"
+            ds = "✅" if state.dataset_exists else ""
+            t.add_row(Text(""), Text(f"  ✓ {world.name}  {world.model[:20]}  {es}  {ds}"))
+        elif stat == "failed":
+            es = f"{state.elapsed_seconds or 0:.0f}s"
+            t.add_row(Text(""), Text(f"  ✗ {world.name}  {world.model[:20]}  {es}"))
+        else:
+            t.add_row(Text(""), Text(f"     {world.name}  {world.model[:20]}  ⏳等待"))
+
+    return Panel(t, border_style="dim")
+
+
 def execute_session(session: BatchSession, max_concurrent: int | None = None) -> BatchSession:
     """Run all worlds and update the session in place."""
 
     session.status = "running"
     session.log("Batch execution started")
+    start = time.perf_counter()
+
+    # Start subprocess pool
     workers = max(1, min(max_concurrent or len(session.worlds), len(session.worlds)))
-    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
-        futures = [pool.submit(_run_world, session, world) for world in session.worlds]
-        for future in concurrent.futures.as_completed(futures):
-            future.result()
+    pool = concurrent.futures.ThreadPoolExecutor(max_workers=workers)
+    futures = {pool.submit(_run_world, session, world): world.name for world in session.worlds}
+    done = set()
+
+    # Live monitoring display
+    console = Console(stderr=True)
+    with Live(console=console, refresh_per_second=1, transient=True) as live:
+        while len(done) < len(futures):
+            # Check which futures completed
+            for fut in list(futures):
+                if fut not in done and fut.done():
+                    done.add(fut)
+                    try:
+                        fut.result()
+                    except Exception:
+                        pass
+            elapsed = time.perf_counter() - start
+            live.update(_render_worlds_panel(session, elapsed))
+            time.sleep(1)
+
+        # Final render after all done
+        elapsed = time.perf_counter() - start
+        live.update(_render_worlds_panel(session, elapsed))
+        time.sleep(1)
+
+    pool.shutdown(wait=False)
 
     worlds = [state.as_dict() for state in session.states.values()]
-    failed = sum(1 for world in worlds if world["status"] == "failed")
+    failed = sum(1 for w in worlds if w["status"] == "failed")
     session.status = "failed" if failed else "success"
     session.completed_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     session.log(f"Batch execution finished: {session.status}")
     _write_batch_result(session)
     return session
-
-
-def inspect_dataset(dataset_path: str | Path) -> dict[str, Any]:
-    """Read dataset evidence required by the Scheduler MVP contract."""
-
-    path = Path(dataset_path)
-    evidence = {
-        "dataset_path": str(path),
-        "dataset_exists": path.exists(),
-        "primary_types": [],
-        "primary_types_exists": False,
-        "error": "",
-    }
-    if not path.exists():
-        evidence["error"] = "simulation_dataset.json not found"
-        return evidence
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-        primary_types = (
-            data.get("simulation_result", {})
-            .get("risk_type_classification", {})
-            .get("primary_types", [])
-        )
-        evidence["primary_types"] = primary_types if isinstance(primary_types, list) else []
-        evidence["primary_types_exists"] = bool(evidence["primary_types"])
-    except (json.JSONDecodeError, OSError) as exc:
-        evidence["error"] = str(exc)
-    return evidence
-
-
-def inspect_world(world_dir: str | Path, model_name: str = "", label: str = "") -> dict[str, Any]:
-    """Inspect one world directory from on-disk evidence."""
-
-    path = Path(world_dir)
-    state = WorldState(
-        world_id=path.name,
-        model_name=model_name,
-        label=label or model_name,
-        output_dir=str(path),
-        dataset_path=str(path / "simulation_dataset.json"),
-    )
-    _merge_filesystem_evidence(state)
-    if state.status == "pending" and path.exists():
-        state.status = "running"
-    return state.as_dict()
-
-
-def inspect_batch(batch_dir: str | Path) -> dict[str, Any]:
-    """Inspect an existing batch_dir without relying on in-memory UI state."""
-
-    batch_path = Path(batch_dir)
-    worlds = []
-    if batch_path.exists():
-        for child in sorted(batch_path.iterdir()):
-            if child.is_dir() and child.name.startswith("world_"):
-                worlds.append(inspect_world(child))
-    return {
-        "batch_dir": str(batch_path),
-        "batch_id": batch_path.name,
-        "status": _batch_status_from_worlds(worlds),
-        "worlds": worlds,
-        "summary": summarize_worlds(worlds),
-        "logs": _read_text_tail(batch_path / "scheduler_batch.log", 120),
-    }
 
 
 def summarize_worlds(worlds: list[dict[str, Any]]) -> dict[str, int]:
@@ -342,7 +368,13 @@ def summarize_worlds(worlds: list[dict[str, Any]]) -> dict[str, int]:
     }
 
 
+# ── Internal ─────────────────────────────────────────────────────
+
+_world_start: dict[str, float] = {}
+
+
 def _run_world(session: BatchSession, world: WorldSpec) -> None:
+
     state = session.states[world.name]
     world_dir = session.batch_dir / world.name
     world_dir.mkdir(parents=True, exist_ok=True)
@@ -351,6 +383,7 @@ def _run_world(session: BatchSession, world: WorldSpec) -> None:
     state.dataset_path = str(world_dir / "simulation_dataset.json")
     _write_world_status(world_dir, state)
     session.log(f"{world.name} started: {world.model}")
+    _world_start[world.name] = time.perf_counter()
 
     env = os.environ.copy()
     env.update(
@@ -377,7 +410,7 @@ def _run_world(session: BatchSession, world: WorldSpec) -> None:
     error = ""
     try:
         proc = subprocess.run(
-            [sys.executable, str(PROJECT_ROOT / "main.py"), str(session.seed_path)],
+            [sys.executable, "-m", "adarian", "run", str(session.seed_path)],
             cwd=str(PROJECT_ROOT),
             env=env,
             capture_output=True,
@@ -410,50 +443,6 @@ def _run_world(session: BatchSession, world: WorldSpec) -> None:
         state.error_summary = error or state.error_summary or "dataset evidence check failed"
         session.log(f"{world.name} failed: {state.error_summary}")
     _write_world_status(world_dir, state)
-
-
-def _merge_filesystem_evidence(state: WorldState) -> None:
-    world_dir = Path(state.output_dir)
-    dataset = inspect_dataset(world_dir / "simulation_dataset.json")
-    state.dataset_path = dataset["dataset_path"]
-    state.dataset_exists = bool(dataset["dataset_exists"])
-    state.primary_types = list(dataset["primary_types"])
-    state.primary_types_exists = bool(dataset["primary_types_exists"])
-    if dataset.get("error") and state.dataset_exists:
-        state.error_summary = str(dataset["error"])
-
-    run_meta = world_dir / "run_meta.json"
-    if run_meta.exists():
-        try:
-            meta = json.loads(run_meta.read_text(encoding="utf-8"))
-            if not state.model_name and meta.get("model"):
-                state.model_name = str(meta.get("model"))
-            if not state.label and state.model_name:
-                state.label = state.model_name
-            if not state.elapsed_seconds and meta.get("elapsed_seconds") is not None:
-                state.elapsed_seconds = meta.get("elapsed_seconds")
-            meta_status = meta.get("status")
-            if meta_status == "success" and state.dataset_exists and state.primary_types_exists:
-                state.status = "success"
-            elif meta_status == "failed":
-                state.status = "failed"
-            if meta_status == "failed" and not state.error_summary:
-                state.error_summary = str(meta.get("error", "run_meta status failed"))
-        except (json.JSONDecodeError, OSError):
-            pass
-
-    run_log = world_dir / "run.log"
-    if run_log.exists():
-        tail_lines = _read_text_tail(run_log, 80)
-        state.log_tail = "\n".join(tail_lines)
-        if not state.error_summary:
-            for line in reversed(tail_lines):
-                lowered = line.lower()
-                if "error" in lowered or "failed" in lowered or "错误" in line:
-                    state.error_summary = line.strip()[:500]
-                    break
-    if state.status == "pending" and state.dataset_exists and state.primary_types_exists:
-        state.status = "success"
 
 
 def _prepare_seed(batch_dir: Path, *, seed_text: str, seed_path: str) -> Path:
@@ -510,18 +499,6 @@ def _write_world_status(world_dir: Path, state: WorldState) -> None:
     )
 
 
-def _batch_status_from_worlds(worlds: list[dict[str, Any]]) -> str:
-    if not worlds:
-        return "pending"
-    if any(world["status"] == "failed" for world in worlds):
-        return "failed"
-    if all(world["status"] == "success" for world in worlds):
-        return "success"
-    if any(world["status"] == "running" for world in worlds):
-        return "running"
-    return "pending"
-
-
 def _safe_tag(tag: str) -> str:
     clean = re.sub(r"[^A-Za-z0-9_-]+", "_", tag.strip())
     return clean.strip("_") or "batch"
@@ -554,55 +531,100 @@ def _read_text_tail(path: Path, lines: int) -> list[str]:
         return []
 
 
+# ── CLI (direct) ─────────────────────────────────────────────────
+
+
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Adarian Parallel World Console scheduler entry",
-    )
-    sub = parser.add_subparsers(dest="command")
-
-    ui_p = sub.add_parser("ui", help="启动平行世界推演控制台")
-    ui_p.add_argument("--host", default="127.0.0.1")
-    ui_p.add_argument("--port", type=int, default=9788)
-    ui_p.add_argument("--open-browser", action="store_true", help="启动后用系统浏览器打开 URL")
-
-    run_p = sub.add_parser("run", help="直接运行一个 batch")
-    run_p.add_argument("--models", required=True, help="逗号分隔模型名，如 qwen36-35b,ds")
-    run_p.add_argument("--seed-text", default="", help="直接传入舆情事件文本")
-    run_p.add_argument("--seed-path", default="", help="种子文件路径")
-    run_p.add_argument("--tag", default="batch", help="batch 标签")
-    run_p.add_argument("--base-url", default=DEFAULT_BASE_URL)
-    run_p.add_argument("--max-concurrent", type=int, default=None)
-
-    inspect_p = sub.add_parser("inspect", help="检查已有 batch_dir 证据")
-    inspect_p.add_argument("batch_dir")
-
+    parser = argparse.ArgumentParser(description="Adarian batch runner")
+    parser.add_argument("--models", required=True, help="逗号分隔模型名")
+    parser.add_argument("--seed-text", default="")
+    parser.add_argument("--seed-path", default="")
+    parser.add_argument("--tag", default="batch")
+    parser.add_argument("--max-concurrent", type=int, default=None)
     args = parser.parse_args()
-    if args.command in (None, "ui"):
-        from .config_ui import run
 
-        run(
-            host=getattr(args, "host", "127.0.0.1"),
-            port=getattr(args, "port", 9788),
-            open_browser=getattr(args, "open_browser", False),
+    models = [m.strip() for m in args.models.split(",") if m.strip()]
+    session = run_batch(
+        models=models,
+        seed_text=args.seed_text,
+        seed_path=args.seed_path,
+        tag=args.tag,
+        max_concurrent=args.max_concurrent,
+    )
+    print(json.dumps(session.as_dict(), ensure_ascii=False, indent=2))
+
+
+# ── Dataset evidence helpers ─────────────────────────────────────
+
+
+def inspect_dataset(dataset_path: str | Path) -> dict[str, Any]:
+    """Read dataset evidence required by the Scheduler MVP contract."""
+    path = Path(dataset_path)
+    evidence = {
+        "dataset_path": str(path),
+        "dataset_exists": path.exists(),
+        "primary_types": [],
+        "primary_types_exists": False,
+        "error": "",
+    }
+    if not path.exists():
+        evidence["error"] = "simulation_dataset.json not found"
+        return evidence
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        primary_types = (
+            data.get("simulation_result", {})
+            .get("risk_type_classification", {})
+            .get("primary_types", [])
         )
-        return
-
-    if args.command == "run":
-        models = [item.strip() for item in args.models.split(",") if item.strip()]
-        session = run_batch(
-            models=models,
-            seed_text=args.seed_text,
-            seed_path=args.seed_path,
-            tag=args.tag,
-            base_url=args.base_url,
-            max_concurrent=args.max_concurrent,
-        )
-        print(json.dumps(session.as_dict(), ensure_ascii=False, indent=2))
-        return
-
-    if args.command == "inspect":
-        print(json.dumps(inspect_batch(args.batch_dir), ensure_ascii=False, indent=2))
+        evidence["primary_types"] = primary_types if isinstance(primary_types, list) else []
+        evidence["primary_types_exists"] = bool(evidence["primary_types"])
+    except (json.JSONDecodeError, OSError) as exc:
+        evidence["error"] = str(exc)
+    return evidence
 
 
-if __name__ == "__main__":
-    main()
+def _merge_filesystem_evidence(state: WorldState) -> None:
+    world_dir = Path(state.output_dir)
+    dataset = inspect_dataset(world_dir / "simulation_dataset.json")
+    state.dataset_path = dataset["dataset_path"]
+    state.dataset_exists = bool(dataset["dataset_exists"])
+    state.primary_types = list(dataset["primary_types"])
+    state.primary_types_exists = bool(dataset["primary_types_exists"])
+    if dataset.get("error") and state.dataset_exists:
+        state.error_summary = str(dataset["error"])
+
+    run_meta = world_dir / "run_meta.json"
+    if run_meta.exists():
+        try:
+            meta = json.loads(run_meta.read_text(encoding="utf-8"))
+            if not state.model_name and meta.get("model"):
+                state.model_name = str(meta.get("model"))
+            if not state.label and state.model_name:
+                state.label = state.model_name
+            if not state.elapsed_seconds and meta.get("elapsed_seconds") is not None:
+                state.elapsed_seconds = meta.get("elapsed_seconds")
+            meta_status = meta.get("status")
+            if meta_status == "success" and state.dataset_exists and state.primary_types_exists:
+                state.status = "success"
+            elif meta_status == "failed":
+                state.status = "failed"
+            if meta_status == "failed" and not state.error_summary:
+                state.error_summary = str(meta.get("error", "run_meta status failed"))
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    run_log = world_dir / "run.log"
+    if run_log.exists():
+        tail_lines = _read_text_tail(run_log, 80)
+        state.log_tail = "\n".join(tail_lines)
+        if not state.error_summary:
+            for line in reversed(tail_lines):
+                lowered = line.lower()
+                if "error" in lowered or "failed" in lowered or "错误" in line:
+                    state.error_summary = line.strip()[:500]
+                    break
+    if state.status == "pending" and state.dataset_exists and state.primary_types_exists:
+        state.status = "success"
+
+

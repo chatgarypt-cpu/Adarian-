@@ -54,8 +54,10 @@ def run_phase4(
     return phase4_output
 
 
-def main():
-    if len(sys.argv) > 1:
+def main(seed_path: str | Path | None = None):
+    if seed_path:
+        seed_file = Path(seed_path).resolve()
+    elif len(sys.argv) > 1:
         seed_file = Path(sys.argv[1])
     else:
         seed_file = config.SEEDS_DIR / "example_event.txt"
@@ -132,7 +134,7 @@ def main():
             t4 = time.time()
             from src.parser import SimulationDatasetParser
             parser = SimulationDatasetParser()
-            dataset = parser.parse(extraction_output, phase2_output, tick_logs, x_t_sequence)
+            dataset = parser.parse(extraction_output, phase2_output, tick_logs, x_t_sequence, seed_text=seed_text)
             with open(outputs["simulation_dataset"], "w", encoding="utf-8") as f:
                 json.dump(dataset, f, ensure_ascii=False, indent=2)
             # 白盒：分类摘要

@@ -1,26 +1,36 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""HTTP backend for Adarian Parallel World Console R0."""
-
+"""HTTP backend for Adarian Parallel World Console."""
 from __future__ import annotations
 
 import concurrent.futures
 import json
 import os
 import subprocess
+import sys
 import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from .run import (
+
+def _project_root() -> Path:
+    return Path(__file__).resolve().parent.parent
+def _ensure_imports():
+    root = _project_root()
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+_ensure_imports()
+
+
+from adarian.batch import (
     DEFAULT_BASE_URL,
     BatchSession,
     available_models,
     execute_session,
-    inspect_batch,
     start_batch,
 )
+from adarian.inspect import inspect_batch
 
 
 _SESSIONS: dict[str, BatchSession] = {}
@@ -37,7 +47,6 @@ def _json_body(handler: BaseHTTPRequestHandler) -> dict:
 
 def _hello_one(model: str, timeout: float = 20.0) -> dict:
     """Small OpenAI-compatible health check for one model."""
-
     try:
         import httpx
     except Exception as exc:
@@ -187,7 +196,7 @@ class ConfigUIHandler(BaseHTTPRequestHandler):
         )
 
     def _serve_html(self):
-        path = Path(__file__).with_name("config_ui.html")
+        path = Path(__file__).parent / "config_ui.html"
         if not path.exists():
             self._send_text(404, "config_ui.html not found")
             return
@@ -220,7 +229,12 @@ class ConfigUIHandler(BaseHTTPRequestHandler):
 def run(host: str = "127.0.0.1", port: int = 9788, open_browser: bool = False) -> None:
     server = HTTPServer((host, port), ConfigUIHandler)
     url = f"http://{host}:{port}"
-    print(f"Adarian Parallel World Console: {url}", flush=True)
+    from rich.console import Console
+    from rich.panel import Panel
+    Console(stderr=True).print(Panel(
+        f"Adarian 平行世界舆情推演系统\nWeb 控制台: {url}\n浏览器打开上面地址操作推演",
+        border_style="dim",
+    ))
     if open_browser:
         try:
             subprocess.Popen(["open", url])
@@ -232,7 +246,3 @@ def run(host: str = "127.0.0.1", port: int = 9788, open_browser: bool = False) -
         print("\nserver stopped")
     finally:
         server.server_close()
-
-
-if __name__ == "__main__":
-    run()

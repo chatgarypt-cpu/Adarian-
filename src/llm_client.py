@@ -9,6 +9,7 @@ import json
 import inspect
 import re
 import os
+import sys
 import time
 import httpx
 from typing import Type, TypeVar, Generic, Optional
@@ -113,7 +114,7 @@ class LLMClient:
             parts.append(f"caller={caller}")
         if extra:
             parts.append(extra)
-        print(" ".join(parts))
+        print(" ".join(parts), file=sys.stderr)
 
     def _estimate_message_chars(self, messages: list) -> int:
         total = 0
