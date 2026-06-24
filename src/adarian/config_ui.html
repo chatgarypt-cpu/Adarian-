@@ -159,7 +159,7 @@ button:disabled { cursor: not-allowed; opacity: .48; }
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   gap: 10px;
-  max-height: 318px;
+  max-height: 280px;
   overflow: auto;
   padding-right: 4px;
 }
@@ -170,12 +170,9 @@ button:disabled { cursor: not-allowed; opacity: .48; }
   padding: 12px;
 }
 .model-card.selected { border-color: var(--cyan); box-shadow: inset 0 0 28px rgba(81, 220, 255, .08); }
-.model-card input { width: auto; margin-right: 8px; }
+.model-card input[type="checkbox"] { width: auto; margin-right: 8px; }
 .model-name { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 13px; }
 .model-desc { color: var(--muted); font-size: 12px; margin-top: 5px; min-height: 34px; }
-.model-actions { margin-top: 9px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.test-btn { padding: 5px 9px; font-size: 12px; }
-.test-status { color: var(--muted); font-size: 12px; }
 .run-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
 .metric {
   border: 1px solid rgba(81, 220, 255, .20);
@@ -235,6 +232,109 @@ button:disabled { cursor: not-allowed; opacity: .48; }
 .ok { color: var(--green); }
 .bad { color: var(--red); }
 .warn { color: var(--amber); }
+
+/* ── Health check bar ── */
+.health-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  margin-bottom: 0;
+  border-bottom: 1px solid rgba(81, 220, 255, .12);
+  background: rgba(2, 12, 24, .44);
+  font-size: 12px;
+}
+.health-label {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 680;
+  color: var(--cyan);
+  white-space: nowrap;
+  height: 28px;
+  font-size: 12px;
+}
+.health-select-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  height: 28px;
+  font-size: 12px;
+}
+.health-select-all input {
+  width: auto;
+  margin: 0;
+  height: 14px;
+  width: 14px;
+  vertical-align: middle;
+}
+.health-btn {
+  padding: 0 14px;
+  font-size: 12px;
+  white-space: nowrap;
+  border-color: rgba(81, 220, 255, .44);
+  height: 28px;
+  line-height: 28px;
+  display: inline-flex;
+  align-items: center;
+}
+.health-results {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-height: 28px;
+  align-items: center;
+}
+.health-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  border: 1px solid rgba(81, 220, 255, .18);
+  border-radius: 999px;
+  padding: 2px 10px;
+  background: rgba(2, 10, 18, .6);
+  transition: all .25s;
+}
+.health-pill.pending { border-color: rgba(81, 220, 255, .18); color: var(--muted); }
+.health-pill.testing { border-color: var(--amber); color: var(--amber); }
+.health-pill.ok { border-color: rgba(53, 240, 160, .5); color: var(--green); }
+.health-pill.fail { border-color: rgba(255, 94, 115, .5); color: var(--red); }
+
+/* ── Toast notification ── */
+.toast-container {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+  pointer-events: none;
+}
+.toast {
+  border: 1px solid rgba(81, 220, 255, .32);
+  background: rgba(6, 21, 38, .94);
+  backdrop-filter: blur(12px);
+  border-radius: 10px;
+  padding: 12px 24px;
+  color: var(--text);
+  font-size: 14px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, .6), 0 0 60px rgba(81, 220, 255, .08);
+  animation: toastIn .35s ease-out, toastOut .4s ease-in 2.4s forwards;
+  pointer-events: auto;
+  white-space: nowrap;
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes toastOut {
+  from { opacity: 1; }
+  to { opacity: 0; transform: translateY(10px); }
+}
+
 .logbox {
   margin-top: 16px;
   background: rgba(1, 7, 13, .78);
@@ -265,6 +365,7 @@ button:disabled { cursor: not-allowed; opacity: .48; }
   .system-strip { min-width: 0; }
   .workflow, .run-grid { grid-template-columns: 1fr; }
   .step::after { display: none; }
+  .health-bar { flex-wrap: wrap; }
 }
 </style>
 </head>
@@ -320,6 +421,14 @@ button:disabled { cursor: not-allowed; opacity: .48; }
           <div class="panel-title">Model Dispatch</div>
           <div class="panel-note"><span id="selected-count">0</span> selected</div>
         </div>
+        <div class="health-bar">
+          <span class="health-label">可用性检测</span>
+          <label class="health-select-all">
+            <input type="checkbox" id="health-select-all"> 全选
+          </label>
+          <button class="health-btn" id="health-btn" type="button">检测</button>
+          <div class="health-results" id="health-results"></div>
+        </div>
         <div class="panel-body">
           <div id="model-grid" class="model-grid"></div>
         </div>
@@ -351,12 +460,12 @@ button:disabled { cursor: not-allowed; opacity: .48; }
     </section>
   </section>
 </main>
+<div class="toast-container" id="toast-container"></div>
 
 <script>
 const state = {
   models: [],
   selected: new Set(),
-  tests: {},
   batchDir: "",
   poller: null
 };
@@ -373,6 +482,15 @@ function msg(text, kind = "") {
   el.className = "message " + kind;
 }
 
+function toast(text, kind = "") {
+  const container = document.getElementById("toast-container");
+  const el = document.createElement("div");
+  el.className = "toast" + (kind ? " " + kind : "");
+  el.textContent = text;
+  container.appendChild(el);
+  setTimeout(() => { if (el.parentNode) el.remove(); }, 3000);
+}
+
 async function loadModels() {
   const resp = await fetch("/api/models");
   const data = await resp.json();
@@ -385,8 +503,6 @@ function renderModels() {
   const grid = document.getElementById("model-grid");
   grid.innerHTML = state.models.map(model => {
     const selected = state.selected.has(model.id);
-    const test = state.tests[model.id];
-    const testText = test ? (test.status === "ok" ? `ok ${test.elapsed}s` : `fail ${test.error || ""}`) : "not tested";
     return `
       <div class="model-card ${selected ? "selected" : ""}">
         <label style="margin:0;">
@@ -394,10 +510,6 @@ function renderModels() {
           <span class="model-name">${escapeHtml(model.id)}</span>
         </label>
         <div class="model-desc">${escapeHtml(model.desc)}</div>
-        <div class="model-actions">
-          <button class="test-btn" data-test="${model.id}" type="button">hello test</button>
-          <span class="test-status">${escapeHtml(testText)}</span>
-        </div>
       </div>
     `;
   }).join("");
@@ -406,10 +518,20 @@ function renderModels() {
 
 document.addEventListener("change", event => {
   const model = event.target.dataset ? event.target.dataset.model : "";
-  if (!model) return;
-  if (event.target.checked) state.selected.add(model);
-  else state.selected.delete(model);
-  renderModels();
+  if (model) {
+    if (event.target.checked) state.selected.add(model);
+    else state.selected.delete(model);
+    renderModels();
+    return;
+  }
+  if (event.target.id === "health-select-all") {
+    if (event.target.checked) {
+      state.models.forEach(m => state.selected.add(m.id));
+    } else {
+      state.selected.clear();
+    }
+    renderModels();
+  }
 });
 
 document.addEventListener("click", async event => {
@@ -418,23 +540,70 @@ document.addEventListener("click", async event => {
     document.getElementById("seed-text").value = preset;
     return;
   }
-  const testModel = event.target.dataset ? event.target.dataset.test : "";
-  if (testModel) {
-    state.tests[testModel] = {status: "testing", error: ""};
-    renderModels();
-    try {
+  if (event.target.id === "health-btn") {
+    await runHealthCheck();
+  }
+});
+
+async function runHealthCheck() {
+  const targets = [...state.selected];
+  if (targets.length === 0) { toast("请先选择模型", "bad"); return; }
+
+  const btn = document.getElementById("health-btn");
+  const resultsEl = document.getElementById("health-results");
+  resultsEl.innerHTML = "";
+  btn.disabled = true;
+  btn.textContent = "检测中...";
+
+  const pills = {};
+  targets.forEach(id => {
+    pills[id] = document.createElement("span");
+    pills[id].className = "health-pill testing";
+    pills[id].textContent = id.slice(0, 16) + " ⏳";
+    resultsEl.appendChild(pills[id]);
+  });
+
+  let succeeded = 0, failed = 0, timeout = 0;
+  const results = await Promise.allSettled(
+    targets.map(async (id) => {
+      pills[id].className = "health-pill testing";
+      pills[id].textContent = id.slice(0, 16) + " ⏳";
       const resp = await fetch("/api/hello-test", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({model: testModel})
+        body: JSON.stringify({model: id})
       });
-      state.tests[testModel] = await resp.json();
-    } catch (err) {
-      state.tests[testModel] = {status: "fail", error: err.message};
+      const data = await resp.json();
+      if (data.status === "ok") {
+        pills[id].className = "health-pill ok";
+        pills[id].textContent = id.slice(0, 16) + ` ✓ ${data.elapsed || ""}s`;
+        succeeded++;
+      } else {
+        throw new Error(data.error || "fail");
+      }
+    })
+  );
+
+  results.forEach((r, i) => {
+    if (r.status === "rejected") {
+      const id = targets[i];
+      const err = r.reason?.message || "timeout";
+      if (err.includes("timeout") || err.includes("connect")) {
+        pills[id].className = "health-pill fail";
+        pills[id].textContent = id.slice(0, 16) + " ⏰ 超时";
+        timeout++;
+      } else {
+        pills[id].className = "health-pill fail";
+        pills[id].textContent = id.slice(0, 16) + " ✗ 失败";
+        failed++;
+      }
     }
-    renderModels();
-  }
-});
+  });
+
+  toast(`共检测 ${targets.length} 个模型，${succeeded} 成功，${timeout} 超时`, succeeded === targets.length ? "" : "bad");
+  btn.disabled = false;
+  btn.textContent = "检测";
+}
 
 document.getElementById("launch").addEventListener("click", launchBatch);
 

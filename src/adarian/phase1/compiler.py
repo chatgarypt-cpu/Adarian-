@@ -86,7 +86,18 @@ def _post_process_entities(
                 if rep:
                     rep.record_compiler_normalization("estimated_percentage", raw_sum, new_sum)
 
-    # 4. 截断 typical_phrases 到 schema 上限（3 条）
+    # 4. 归一化 P 值（必须是 +1 或 -1）
+    p_normalized = 0
+    for s in spreaders:
+        p = s.get("P")
+        if p is not None:
+            if p != 1 and p != -1:
+                s["P"] = 1 if p >= 0 else -1
+                p_normalized += 1
+    if p_normalized:
+        console.print(f"  [cyan] 归一化: {p_normalized} 个 spreader 的 P 值修正为 ±1")
+
+    # 5. 截断 typical_phrases 到 schema 上限（3 条）
     truncated = 0
     for s in spreaders:
         phrases = s.get("typical_phrases", [])

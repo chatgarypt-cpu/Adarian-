@@ -112,6 +112,9 @@ def extract_entities_with_validation(
             "opinion_spreaders": entities_data.get("opinion_spreaders", []),
             "relations": entities_data.get("relations", []),
         }
+        # Step 3: Compiler 归一化（typical_phrases 截断、P 值修正等）
+        merged_output = _post_process_entities(merged_output, seed_text)
+
         try:
             if report_path:
                 report.record_total_time(time.perf_counter() - t0)

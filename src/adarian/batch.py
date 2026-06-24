@@ -410,7 +410,7 @@ def _run_world(session: BatchSession, world: WorldSpec) -> None:
     error = ""
     try:
         proc = subprocess.run(
-            [sys.executable, "-m", "adarian", "run", str(session.seed_path)],
+            [sys.executable, "-m", "src.adarian", "run", str(session.seed_path)],
             cwd=str(PROJECT_ROOT),
             env=env,
             capture_output=True,
@@ -513,8 +513,12 @@ def _summarize_error(stderr: str, stdout: str) -> str:
     lines = (stderr or stdout or "").splitlines()
     for line in reversed(lines):
         text = line.strip()
-        if text:
-            return text[:500]
+        if not text:
+            continue
+        # Skip Rich StatusBar border/decoration lines
+        if text.startswith("╰") or text.startswith("╭") or text.startswith("│") or text.startswith("╮") or text.startswith("╯"):
+            continue
+        return text[:500]
     return ""
 
 
