@@ -9,9 +9,11 @@ test_json_parser.py - JSON Parser 中文引号兼容层单元测试
 
 import sys
 import os
+from pathlib import Path
 
 # 添加项目路径
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+_root = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(_root / "src"))
 
 from adarian.phase1 import _normalize_inner_cjk_quotes, _parse_json_candidate
 

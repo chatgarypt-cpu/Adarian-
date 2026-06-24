@@ -11,6 +11,14 @@ Adarian: 多智能体异步舆情预判系统
 - phase4/: 宏观洞察生成 package
 """
 
+import sys
+from pathlib import Path
+
+# 保证 src/adarian/ 内部 from adarian import xxx 能找到自身
+_src = str(Path(__file__).resolve().parent.parent)
+if _src not in sys.path:
+    sys.path.insert(0, _src)
+
 __version__ = "1.2.6"
 
 # 导入主要模块方便使用

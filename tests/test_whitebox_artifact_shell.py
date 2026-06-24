@@ -6,9 +6,10 @@ import sys
 import tempfile
 from pathlib import Path
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+_root = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(_root / "src"))
 
-from adarian.whitebox.run_meta import write_whitebox_summary
+from adarian.whitebox.run_meta import write_run_meta
 from adarian.whitebox import (
     check_report_completeness,
     check_run_artifacts,
@@ -84,7 +85,7 @@ def test_whitebox_summary_index_shape() -> None:
             "raw_sources": RAW_SOURCES,
         }
 
-        summary = write_whitebox_summary(
+        summary = write_run_meta(
             run_context,
             report_completeness,
             artifact_check,
