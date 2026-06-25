@@ -67,6 +67,11 @@ const historyStore = useHistoryStore();
 const activePage = computed(() => pages.find((page) => page.path === route.path) ?? pages[0]);
 
 onMounted(async () => {
-  await Promise.all([runStore.hydrate(), historyStore.fetchHistory()]);
+  try {
+    await Promise.all([runStore.hydrate(), historyStore.fetchHistory()]);
+  } catch {
+    runStore.modelsState = 'error';
+    historyStore.pageState = 'error';
+  }
 });
 </script>

@@ -11,9 +11,14 @@ export const useHistoryStore = defineStore('history', () => {
   async function fetchHistory() {
     loading.value = true;
     pageState.value = 'loading';
-    batches.value = await api.getHistory();
-    pageState.value = batches.value.length ? 'populated' : 'empty';
-    loading.value = false;
+    try {
+      batches.value = await api.getHistory();
+      pageState.value = batches.value.length ? 'populated' : 'empty';
+    } catch {
+      pageState.value = 'error';
+    } finally {
+      loading.value = false;
+    }
   }
 
   return { batches, loading, pageState, fetchHistory };

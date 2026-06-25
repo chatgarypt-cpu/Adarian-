@@ -11,14 +11,18 @@ from flask_cors import CORS
 from rich.console import Console
 from rich.panel import Panel
 
+from adarian.serve import db
 from adarian.serve.api import register_api
+from adarian.serve.static import register_static
 
 
 def create_app() -> Flask:
     """Create the v1.5 web console app."""
     app = Flask(__name__)
     CORS(app)
+    db.init_db()
     register_api(app)
+    register_static(app)
     return app
 
 

@@ -11,4 +11,4 @@ ping_bp = Blueprint("ping", __name__)
 
 @ping_bp.get("/ping")
 def ping():
-    return jsonify({"status": "ok", "version": "1.5.0a"})
+    return jsonify({"status": "ok", "version": "1.5.0b"})

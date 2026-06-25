@@ -17,9 +17,9 @@
             <div class="form-row">
               <label>材料来源</label>
               <select v-model="seed.source">
-                <option>手动录入</option>
-                <option>本地材料文件</option>
-                <option>历史事件复用</option>
+                <option value="manual">手动录入</option>
+                <option value="file" disabled>本地材料文件（待接入）</option>
+                <option value="history" disabled>历史事件复用（待接入）</option>
               </select>
             </div>
           </div>
@@ -35,7 +35,7 @@
         </Panel>
 
         <Panel title="录入检查" note="自动判断">
-          <div class="mock-note">当前仅“事件背景已填写”可由前端真实判断；主体识别和时间线建议仍为 mock-only。</div>
+          <div class="mock-note">当前“事件背景已填写”由后端校验；主体识别和时间线建议仍为 pending/suggested。</div>
           <div class="steps">
             <StepLine
               v-for="check in checks"

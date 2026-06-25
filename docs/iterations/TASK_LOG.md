@@ -2186,3 +2186,29 @@ E2E: 5/5
   - whitebox pass
   - 修复 run_meta.py 重复调用 bug + legacy/main_legacy.py 双 docstring
   - 已归档到 tasks/archived/development/
+
+## 2026-06-26: task-v1.5.0b-backend-api-real-data
+
+- **task_id**: task-v1.5.0b-backend-api-real-data
+- **executor**: Codex
+- **status**: completed ✅
+- **summary**: 完成 v1.5.0b 后端 API + 前端 mock-to-real 接入；新增 API contract、SQLite 状态库、业务蓝图、serve 测试；前端 client/store/page 切到真实 API，未上线能力降级为 disabled/pending/mock-only。
+- **scope**:
+  - `docs/api_contract.md`
+  - `src/adarian/serve/db.py`, `paths.py`, `schemas.py`, `static.py`
+  - `src/adarian/serve/api/{seed,config,models,model_gateways,run,history,review,report,settings}.py`
+  - `frontend/src/api/client.ts`, `types.ts`
+  - `frontend/src/stores/*`, `frontend/src/pages/01-08*.vue`, `StateTools.vue`
+  - `tests/serve/`
+- **verification**:
+  - `PYTHONPATH=src .venv/bin/python -m pytest tests/serve/ -v --tb=short` → 14 passed
+  - `cd frontend && npm test -- --run && npm run build` → 6 passed + build passed
+  - serve API py_compile → passed
+  - light Flask API smoke → passed
+  - forbidden path check → passed
+  - `batch.py` AST no-body-change check → passed
+- **carryover**:
+  - batch/world cancel
+  - world retry / 换模型重跑
+  - `_run_world` Popen 改造
+  - v1.5.0c 入口整合与 E2E

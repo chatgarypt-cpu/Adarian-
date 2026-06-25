@@ -1,33 +1,89 @@
-import * as mock from './mock';
-import type { BatchSummary, ModelGateway, ModelSummary, ReportFile, RiskComparison, SeedRequest, SeedResponse, SettingsResponse, WorldStatus } from './types';
+import type {
+  BatchSummary,
+  ConfigResponse,
+  GatewayDiscoverResponse,
+  ModelGateway,
+  ModelGatewayDraft,
+  ModelSummary,
+  ReportResponse,
+  RiskReviewResponse,
+  RunRequest,
+  RunStatusResponse,
+  SeedRequest,
+  SeedResponse,
+  SettingsResponse,
+} from './types';
+
+export class ApiError extends Error {
+  code: string;
+  details: unknown;
+
+  constructor(message: string, code = 'API_ERROR', details: unknown = undefined) {
+    super(message);
+    this.name = 'ApiError';
+    this.code = code;
+    this.details = details;
+  }
+}
+
+async function jsonRequest<T>(url: string, options: RequestInit = {}): Promise<T> {
+  const response = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options.headers ?? {}),
+    },
+    ...options,
+  });
+  const text = await response.text();
+  const data = text ? JSON.parse(text) : {};
+  if (!response.ok) {
+    throw new ApiError(data.message ?? response.statusText, data.code, data.details);
+  }
+  return data as T;
+}
 
 export const api = {
-  saveSeed(_payload: SeedRequest): Promise<SeedResponse> {
-    return mock.delay(mock.seedResponse);
+  saveSeed(payload: SeedRequest): Promise<SeedResponse> {
+    return jsonRequest('/api/seed', { method: 'POST', body: JSON.stringify(payload) });
+  },
+  getConfig(): Promise<ConfigResponse> {
+    return jsonRequest('/api/config');
+  },
+  saveConfig(payload: ConfigResponse): Promise<ConfigResponse> {
+    return jsonRequest('/api/config', { method: 'POST', body: JSON.stringify(payload) });
   },
   getModels(): Promise<ModelSummary[]> {
-    return mock.delay(mock.models);
+    return jsonRequest('/api/models');
   },
   getModelGateways(): Promise<ModelGateway[]> {
-    return mock.delay(mock.modelGateways);
+    return jsonRequest('/api/model-gateways');
   },
-  getWorlds(): Promise<WorldStatus[]> {
-    return mock.delay(mock.worlds);
+  createModelGateway(payload: ModelGatewayDraft): Promise<ModelGateway> {
+    return jsonRequest('/api/model-gateways', { method: 'POST', body: JSON.stringify(payload) });
   },
-  getLogs(): Promise<string> {
-    return mock.delay(mock.logs);
+  discoverGatewayModels(gatewayId: string): Promise<GatewayDiscoverResponse> {
+    return jsonRequest(`/api/model-gateways/${encodeURIComponent(gatewayId)}/discover-models`, { method: 'POST' });
   },
-  getReview(): Promise<RiskComparison[]> {
-    return mock.delay(mock.riskComparison);
+  startRun(payload: RunRequest): Promise<RunStatusResponse> {
+    return jsonRequest('/api/run', { method: 'POST', body: JSON.stringify(payload) });
   },
-  getReports(): Promise<ReportFile[]> {
-    return mock.delay(mock.reportFiles);
+  getRunStatus(batchId: string): Promise<RunStatusResponse> {
+    return jsonRequest(`/api/run/${encodeURIComponent(batchId)}/status`);
+  },
+  getReview(batchId: string): Promise<RiskReviewResponse> {
+    return jsonRequest(`/api/review/${encodeURIComponent(batchId)}`);
+  },
+  generateReport(batchId: string, type: string, audience: string): Promise<ReportResponse> {
+    return jsonRequest('/api/report', { method: 'POST', body: JSON.stringify({ batch_id: batchId, type, audience }) });
   },
   getHistory(): Promise<BatchSummary[]> {
-    return mock.delay(mock.history);
+    return jsonRequest('/api/history');
   },
   getSettings(): Promise<SettingsResponse> {
-    return mock.delay(mock.settings);
+    return jsonRequest('/api/settings');
+  },
+  saveSettings(payload: SettingsResponse): Promise<SettingsResponse> {
+    return jsonRequest('/api/settings', { method: 'PUT', body: JSON.stringify(payload) });
   },
   ping(): Promise<Response> {
     return fetch('/api/ping');

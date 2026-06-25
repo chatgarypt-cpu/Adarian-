@@ -6,13 +6,13 @@ import type { PageState, StepCheck } from '../api/types';
 export const useSeedStore = defineStore('seed', () => {
   const seedText = ref('校园食堂食品安全争议在短视频平台发酵，学生、家长、商家和监管部门形成多方讨论。');
   const taskName = ref('校园食品安全争议推演');
-  const source = ref('手动录入');
+  const source = ref<'manual' | 'file' | 'history'>('manual');
   const pageState = ref<PageState>('populated');
   const error = ref('');
   const saved = ref(false);
   const checks = ref<StepCheck[]>([
     { label: '事件背景已填写', note: '可以进入下一步', status: 'passed' },
-    { label: '核心主体已识别', note: '学生、家长、商家、监管部门', status: 'passed' },
+    { label: '核心主体识别', note: 'v1.5.0b 暂未接入主体抽取，后续版本启用', status: 'pending' },
     { label: '时间线可补充', note: '建议补充首发时间和官方回应时间', status: 'suggested' },
   ]);
 

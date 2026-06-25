@@ -9,7 +9,11 @@
         <Card :title="String(run.failedCount)" label="失败" metric />
       </div>
       <Panel title="运行监控" note="每轮推演状态">
-        <div class="mock-note">当前运行状态、耗时和日志均为 mock 数据；v1.5.0b 接入真实 batch 状态和 run.log。</div>
+        <div class="mock-note">运行状态来自 /api/run；cancel/retry 属后续版本，当前不提供假操作。</div>
+        <div class="actions">
+          <button class="primary" type="button" :disabled="seed.isEmpty || run.selectedModels.length === 0" @click="run.startRun(seed.seedText)">启动真实推演</button>
+          <button class="ghost" type="button" :disabled="!run.activeBatch.batchId" @click="run.refreshStatus">刷新状态</button>
+        </div>
         <div class="grid-3">
           <WorldCard
             v-for="world in run.activeBatch.worlds"
@@ -37,8 +41,10 @@ import Panel from '../components/Panel.vue';
 import StateTools from '../components/StateTools.vue';
 import WorldCard from '../components/WorldCard.vue';
 import { useRunStore } from '../stores/run';
+import { useSeedStore } from '../stores/seed';
 
 const run = useRunStore();
+const seed = useSeedStore();
 const effectiveState = computed(() => (run.runState === 'populated' && run.activeBatch.worlds.length === 0 ? 'empty' : run.runState));
 const badgeFor = (status: string) => {
   if (status === 'completed') return { label: '已完成', variant: 'ok' as const };

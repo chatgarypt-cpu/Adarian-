@@ -1,6 +1,6 @@
 {
   "name": "adarian-frontend",
-  "version": "1.5.0-a",
+  "version": "1.5.0-b",
   "private": true,
   "type": "module",
   "scripts": {

@@ -4,10 +4,11 @@
     <PageState :state="state" message="配置校验失败">
       <div class="grid-3">
         <Panel title="推演规模" note="任务参数">
-          <div class="mock-note">当前配置只影响前端预览，不会传入真实推演。v1.5.0b 需接入 /api/config 与 /api/run。</div>
+          <div class="mock-note">配置会保存到后端；ticks/focuses 当前仅作为 pending 字段记录。</div>
           <div class="form-row"><label>平行推演轮数</label><input v-model.number="run.config.parallelWorlds" type="number" min="1" /></div>
-          <div class="form-row"><label>每轮模拟步数</label><input v-model.number="run.config.ticks" type="number" min="1" /></div>
+          <div class="form-row"><label>每轮模拟步数</label><input v-model.number="run.config.ticks" type="number" min="1" max="5" /></div>
           <div class="form-row"><label>输出批次名称</label><input v-model="run.config.batchName" /></div>
+          <div class="actions"><button class="primary" type="button" @click="run.saveConfig">保存配置</button></div>
         </Panel>
         <Panel title="推演重点" note="业务目标">
           <div class="mock-note">推演重点 chips 仍为产品占位，尚未影响 Phase 或报告逻辑。</div>
@@ -29,7 +30,7 @@
           <div class="steps">
             <StepLine title="推演结果数据" note="用于结果审查" status="done" :chip="{ label: '开启', variant: 'ok' }" />
             <StepLine title="运行日志" note="用于复盘排错" status="done" :chip="{ label: '开启', variant: 'ok' }" />
-            <StepLine title="报告草稿" note="运行完成后生成" status="pending" :chip="{ label: '后续' }" />
+            <StepLine title="报告草稿" note="运行完成后调用报告 API" status="pending" :chip="{ label: '需完成 batch' }" />
           </div>
         </Panel>
       </div>

@@ -2,8 +2,8 @@
   <section class="workspace">
     <StateTools v-model="run.modelsState" />
     <PageState :state="effectiveState" message="模型检测失败">
-      <Panel title="API 服务管理" note="v1.5.0a mock 入口">
-        <div class="mock-note">当前只做前端临时添加；真实保存、密钥保护、模型识别和健康检查在 v1.5.0b 后端实现。</div>
+      <Panel title="API 服务管理" note="后端持久化">
+        <div class="mock-note">用户新增服务保存到 SQLite；API key write-only，不会回显明文。</div>
         <div class="grid-4">
           <div class="form-row">
             <label>服务名称</label>
@@ -29,11 +29,11 @@
         </div>
         <div class="actions">
           <button class="primary" type="button" @click="run.addGateway">添加 API 服务</button>
-          <button class="ghost" type="button">识别模型（后端接入后启用）</button>
+          <button class="ghost" type="button" @click="run.hydrate">刷新网关</button>
         </div>
       </Panel>
       <Panel title="模型中转站" note="按 API 地址识别模型">
-        <div class="mock-note">当前模型网关和模型列表来自 mock 数据，不代表真实 API 服务已完成识别。</div>
+        <div class="mock-note">内置 catalog 与用户网关动态发现分开展示；失败会返回明确错误。</div>
         <div class="gateway-list">
           <section v-for="gateway in run.modelGateways" :key="gateway.id" class="gateway">
             <button class="gateway-head" type="button" @click="run.toggleGateway(gateway.id)">
@@ -46,6 +46,9 @@
             </button>
             <div v-if="run.expandedGatewayIds.includes(gateway.id)" class="gateway-body">
               <p>{{ gateway.note }}</p>
+              <div class="actions">
+                <button class="ghost" type="button" @click="run.discoverModels(gateway.id)">识别模型</button>
+              </div>
               <div class="model-column">
                 <button
                   v-for="model in gateway.models"
@@ -91,9 +94,9 @@
         </Panel>
         <Panel title="调度建议" note="自动推荐">
           <div class="steps">
-            <StepLine title="主模型已选择" note="通义 80B" status="done" :chip="{ label: '通过', variant: 'ok' }" />
-            <StepLine title="对照模型已选择" note="MiniMax" status="done" :chip="{ label: '通过', variant: 'ok' }" />
-            <StepLine title="异常模型已排除" note="避免任务启动失败" status="current" :chip="{ label: '注意', variant: 'warn' }" />
+            <StepLine title="模型来自后端" note="内置 catalog 或网关 discover" status="done" :chip="{ label: '真实', variant: 'ok' }" />
+            <StepLine title="密钥不回显" note="仅显示 hasApiKey" status="done" :chip="{ label: '通过', variant: 'ok' }" />
+            <StepLine title="运行前选择模型" note="可直接选可用模型启动 batch" status="current" :chip="{ label: '注意', variant: 'warn' }" />
           </div>
         </Panel>
       </div>

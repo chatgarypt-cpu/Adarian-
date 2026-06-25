@@ -1,16 +1,16 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { api } from '../api/client';
-import type { ModelGateway, ModelGatewayDraft, ModelSummary, PageState, WorldStatus } from '../api/types';
+import type { ModelGateway, ModelGatewayDraft, ModelSummary, PageState, RiskComparison, WorldStatus } from '../api/types';
 
 export const useRunStore = defineStore('run', () => {
   const config = ref({
     parallelWorlds: 3,
-    ticks: 40,
+    ticks: 5,
     batchName: '校园食品安全_batch',
     focuses: ['风险扩散'],
   });
-  const selectedModels = ref<string[]>(['qwen80b', 'minimax']);
+  const selectedModels = ref<string[]>([]);
   const models = ref<ModelSummary[]>([]);
   const modelGateways = ref<ModelGateway[]>([]);
   const expandedGatewayIds = ref<string[]>(['internal']);
@@ -25,9 +25,11 @@ export const useRunStore = defineStore('run', () => {
   const reviewState = ref<PageState>('populated');
   const reportState = ref<PageState>('populated');
   const logs = ref('');
+  const runError = ref('');
+  const reviewRows = ref<RiskComparison[]>([]);
   const activeBatch = ref<{ batchId: string | null; status: 'idle' | 'running' | 'completed' | 'failed'; worlds: WorldStatus[] }>({
-    batchId: 'campus-food',
-    status: 'running',
+    batchId: null,
+    status: 'idle',
     worlds: [],
   });
 
@@ -36,10 +38,21 @@ export const useRunStore = defineStore('run', () => {
   const failedCount = computed(() => activeBatch.value.worlds.filter((world) => world.status === 'failed').length);
 
   async function hydrate() {
-    modelGateways.value = await api.getModelGateways();
+    modelsState.value = 'loading';
+    const [gateways, catalog, savedConfig] = await Promise.all([api.getModelGateways(), api.getModels(), api.getConfig()]);
+    modelGateways.value = gateways.map((gateway) => ({
+      ...gateway,
+      models: gateway.models.length ? gateway.models : catalog.map((model) => ({ ...model, gatewayId: gateway.id })),
+    }));
     models.value = modelGateways.value.flatMap((gateway) => gateway.models);
-    activeBatch.value.worlds = await api.getWorlds();
-    logs.value = await api.getLogs();
+    selectedModels.value = models.value.filter((model) => model.selected).map((model) => model.id);
+    config.value = {
+      parallelWorlds: savedConfig.parallel_worlds,
+      ticks: savedConfig.ticks,
+      batchName: savedConfig.batch_name,
+      focuses: savedConfig.focuses,
+    };
+    modelsState.value = modelGateways.value.length ? 'populated' : 'empty';
   }
 
   function toggleModel(id: string) {
@@ -68,42 +81,88 @@ export const useRunStore = defineStore('run', () => {
       : [...expandedGatewayIds.value, id];
   }
 
-  function addGateway() {
+  async function addGateway() {
     if (!gatewayDraft.value.name.trim() || !gatewayDraft.value.baseUrl.trim()) return;
-    const id = `custom-${Date.now()}`;
-    const gateway: ModelGateway = {
-      id,
-      name: gatewayDraft.value.name.trim(),
-      baseUrl: gatewayDraft.value.baseUrl.trim(),
-      provider: gatewayDraft.value.provider,
-      status: 'partial',
-      note: 'v1.5.0a mock：已添加服务地址，真实保存和模型识别将在 v1.5.0b 接入后端。',
-      hasApiKey: Boolean(gatewayDraft.value.apiKey.trim()),
-      models: [],
-    };
+    modelsState.value = 'loading';
+    const gateway = await api.createModelGateway(gatewayDraft.value);
     modelGateways.value = [gateway, ...modelGateways.value];
-    expandedGatewayIds.value = [id, ...expandedGatewayIds.value];
+    expandedGatewayIds.value = [gateway.id, ...expandedGatewayIds.value];
     gatewayDraft.value = {
       name: '',
       baseUrl: '',
       provider: 'openai-compatible',
       apiKey: '',
     };
+    modelsState.value = 'populated';
   }
 
-  function cancelBatch() {
-    activeBatch.value.status = 'failed';
-    activeBatch.value.worlds = activeBatch.value.worlds.map((world) =>
-      world.status === 'running' ? { ...world, status: 'cancelled' as const } : world,
+  async function discoverModels(gatewayId: string) {
+    modelsState.value = 'loading';
+    const discovered = await api.discoverGatewayModels(gatewayId);
+    modelGateways.value = modelGateways.value.map((gateway) =>
+      gateway.id === gatewayId ? { ...gateway, models: discovered.models } : gateway,
     );
+    models.value = modelGateways.value.flatMap((gateway) => gateway.models);
+    modelsState.value = 'populated';
   }
 
-  function retryWorld(worldId: string, newModel?: string) {
-    activeBatch.value.worlds = activeBatch.value.worlds.map((world) =>
-      world.id === worldId
-        ? { ...world, model: newModel ?? world.model, status: 'running' as const, errorSummary: undefined }
-        : world,
-    );
+  async function saveConfig() {
+    await api.saveConfig({
+      parallel_worlds: config.value.parallelWorlds,
+      ticks: config.value.ticks,
+      batch_name: config.value.batchName,
+      focuses: config.value.focuses,
+    });
+  }
+
+  async function startRun(seedText: string) {
+    runState.value = 'loading';
+    runError.value = '';
+    await saveConfig();
+    const selected = selectedModels.value.length ? selectedModels.value : models.value.filter((model) => model.available).slice(0, config.value.parallelWorlds).map((model) => model.id);
+    const result = await api.startRun({
+      seed_text: seedText,
+      models: selected,
+      tag: config.value.batchName,
+      config: {
+        parallel_worlds: config.value.parallelWorlds,
+        ticks: config.value.ticks,
+        batch_name: config.value.batchName,
+        focuses: config.value.focuses,
+      },
+    });
+    activeBatch.value = {
+      batchId: result.batch_id,
+      status: result.status === 'completed' ? 'completed' : result.status === 'failed' ? 'failed' : 'running',
+      worlds: result.worlds,
+    };
+    logs.value = result.logs.join('\n');
+    runState.value = result.worlds.length ? 'populated' : 'empty';
+  }
+
+  async function refreshStatus() {
+    if (!activeBatch.value.batchId) return;
+    runState.value = 'loading';
+    const result = await api.getRunStatus(activeBatch.value.batchId);
+    activeBatch.value = {
+      batchId: result.batch_id,
+      status: result.status === 'completed' ? 'completed' : result.status === 'failed' ? 'failed' : 'running',
+      worlds: result.worlds,
+    };
+    logs.value = result.logs.join('\n');
+    runState.value = result.worlds.length ? 'populated' : 'empty';
+  }
+
+  async function loadReview() {
+    if (!activeBatch.value.batchId) {
+      reviewRows.value = [];
+      reviewState.value = 'empty';
+      return;
+    }
+    reviewState.value = 'loading';
+    const result = await api.getReview(activeBatch.value.batchId);
+    reviewRows.value = result.rows;
+    reviewState.value = result.rows.length ? 'populated' : 'empty';
   }
 
   return {
@@ -118,6 +177,8 @@ export const useRunStore = defineStore('run', () => {
     reviewState,
     reportState,
     logs,
+    runError,
+    reviewRows,
     activeBatch,
     completedCount,
     runningCount,
@@ -126,8 +187,11 @@ export const useRunStore = defineStore('run', () => {
     toggleModel,
     toggleGateway,
     addGateway,
+    discoverModels,
     selectAvailableModels,
-    cancelBatch,
-    retryWorld,
+    saveConfig,
+    startRun,
+    refreshStatus,
+    loadReview,
   };
 });

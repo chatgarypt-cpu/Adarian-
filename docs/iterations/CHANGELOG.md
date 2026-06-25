@@ -1912,3 +1912,25 @@ outputs/
   - 122b-sg 1800s 太慢 + 疑似 herd bias，淘汰
   - TKE 后缀模型比内部集群快（287s vs 410s）
 - **carryover**: probe_scheduler 前端对比展示 tab（v1.4）, Report Agent 下游 skill 编写
+
+## 2026-06-26: v1.5.0b 后端 API + 前端真实数据接入
+
+- **status**: completed
+- **summary**: 将 v1.5.0a mock-first Vue 前端接入真实 Flask API，完成最小真实链路：seed/config/models/model-gateways/run/status/history/review/report/settings。
+- **added**:
+  - `docs/api_contract.md`
+  - SQLite 状态库：batches/worlds/settings/model_gateways
+  - 业务 API 蓝图：seed/config/models/model_gateways/run/history/review/report/settings
+  - `tests/serve/` API 测试
+- **changed**:
+  - `frontend/src/api/client.ts` 从 mock 切到 fetch
+  - 前端 stores/pages 接入真实 API
+  - `StateTools` 限 dev 构建可见
+  - seed file/history 来源、cancel/retry 等未上线能力降级
+  - frontend package version → `1.5.0-b`
+- **verification**:
+  - 14 serve tests passed
+  - 6 frontend tests passed
+  - frontend production build passed
+  - light Flask API smoke passed
+- **carryover**: cancel/retry、`_run_world` Popen 改造、v1.5.0c 入口整合和 E2E。

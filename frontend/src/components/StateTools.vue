@@ -33,6 +33,7 @@ const labels: Record<PageState, string> = {
 };
 
 const showStateTools = computed(() => {
+  if (!import.meta.env.DEV) return false;
   if (typeof window === 'undefined') return false;
   const params = new URLSearchParams(window.location.search);
   return params.get('debugStates') === '1' || window.localStorage.getItem('adarian:debug-states') === '1';
