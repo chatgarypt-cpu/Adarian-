@@ -183,20 +183,40 @@ def test_determine_audience_mode_generic():
 
 
 # ---------------------------------------------------------------------------
-# Tests — classify_risk_types
+# Tests — _compute_sensitive_context_hit
 # ---------------------------------------------------------------------------
 
 
-def test_classify_risk_types_with_polarization():
-    """High polarization (>= 0.5) in final tick adds group_polarization_risk."""
+def test_sensitive_context_hit_non_generic_audience():
+    """Non-generic audience mode (law-enforcement) triggers sensitive context."""
     analyzer = RiskAnalyzer()
+    extraction = _extraction("公安处置程序争议", "公安")
+
+    hit = analyzer._compute_sensitive_context_hit(extraction, [])
+
+    assert hit is True
+
+
+def test_sensitive_context_hit_generic_no_hit():
+    """Generic audience + low polarization → no hit."""
+    analyzer = RiskAnalyzer()
+    extraction = _extraction()
+    ticks = [_tick(0, 0.1), _tick(1, 0.3)]
+
+    hit = analyzer._compute_sensitive_context_hit(extraction, ticks)
+
+    assert hit is False
+
+
+def test_sensitive_context_hit_high_polarization():
+    """Generic audience but pol >= 0.50 → hit."""
+    analyzer = RiskAnalyzer()
+    extraction = _extraction()
     ticks = [_tick(0, 0.1), _tick(1, 0.5)]
 
-    risk_types = analyzer.classify_risk_types(
-        "generic_government", "普通评估文本", ticks,
-    )
+    hit = analyzer._compute_sensitive_context_hit(extraction, ticks)
 
-    assert "group_polarization_risk" in risk_types
+    assert hit is True
 
 
 # ---------------------------------------------------------------------------
@@ -219,14 +239,13 @@ def test_compute_signals_returns_expected_keys():
         "final_polarization",
         "max_negative_shift",
         "event_prior_floor",
-        "sensitive_prior_hit",
+        "sensitive_context_hit",
         "start_x",
         "final_x",
         "negative_pressure",
         "event_scale",
         "event_controversy",
         "high_sensitive_prior",
-        "sensitive_risk_types",
     }
 
     assert expected_keys == set(signals.keys())

@@ -74,7 +74,7 @@ TYPE_TO_DOMAIN_MAP: Dict[str, str] = {
     "financial_fraud_illegal_fundraising_risk": "economic_financial",
 }
 
-# ── 二级风险类型中文标签（保留旧类型兼容，Agent 输出使用新 26 类）──
+# ── 二级风险类型中文标签（保留旧类型兼容，Agent 输出使用新 28 类）──
 
 RISK_TYPE_LABELS: Dict[str, str] = {
     # 旧类型（兼容已有 dataset）

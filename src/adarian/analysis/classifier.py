@@ -1,7 +1,7 @@
 """Phase 3 Parser: RiskClassifier — LLM-based risk type classification.
 
 Compresses Phase 3 simulation outputs into a stable query text, then asks the
-LLM to pick the Top-3 risk types from the 26-type taxonomy defined in
+LLM to pick the Top-3 risk types from the 28-type taxonomy defined in
 `spec/risk_mapping.yaml` and mirrored in `src.schemas.phase4`.
 
 Designed to be a single LLM call per dataset; the caller (SimulationDatasetParser)
@@ -246,7 +246,7 @@ class RiskClassifier:
     # ------------------------------------------------------------------
 
     def _build_type_catalog(self) -> str:
-        """Build the 26-type catalog — one line per type.
+        """Build the 28-type catalog — one line per type.
 
         Format: `<type_id>: <label> | <domain_label> | <typical_scenario>`
         """
@@ -274,12 +274,12 @@ class RiskClassifier:
         invalid = [t for t in primary_types if t not in RISK_TYPE_LABELS]
         if invalid:
             raise ValueError(f"primary_types contains unknown risk types: {invalid}")
-        # Also require them to be in the 26-type taxonomy (not the legacy 13).
+        # Also require them to be in the 28-type taxonomy (not the legacy 13).
         invalid_legacy = [t for t in primary_types if t not in TYPE_TO_DOMAIN_MAP]
         if invalid_legacy:
             raise ValueError(
-                f"primary_types contains legacy/non-26-type IDs: {invalid_legacy}. "
-                f"RiskClassifier only emits types from the 26-type taxonomy."
+                f"primary_types contains legacy/non-28-type IDs: {invalid_legacy}. "
+                f"RiskClassifier only emits types from the 28-type taxonomy."
             )
         # Warn if all 3 types map to the same domain (non-blocking)
         domains = set(TYPE_TO_DOMAIN_MAP[t] for t in primary_types if t in TYPE_TO_DOMAIN_MAP)
@@ -329,7 +329,7 @@ class RiskClassifier:
         )
 
         # Defensive validation — LLMClient already validates via Pydantic, but
-        # we also enforce the 26-type taxonomy constraint here.
+        # we also enforce the 28-type taxonomy constraint here.
         self._validate_primary_types(result.primary_types)
         return result
 

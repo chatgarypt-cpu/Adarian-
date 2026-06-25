@@ -108,7 +108,7 @@ class ClassificationOutput(BaseModel):
         ...,
         min_length=3,
         max_length=3,
-        description="Top 3 risk types from the 26-type taxonomy, ordered by relevance",
+        description="Top 3 risk types from the 28-type taxonomy, ordered by relevance",
     )
 
 

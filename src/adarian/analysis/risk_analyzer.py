@@ -4,15 +4,18 @@ Phase 3: Risk Analyzer
 Independently rebuilds risk analysis logic from Phase 4 report_agent.py,
 providing a decoupled risk assessment layer within Phase 3.
 
-v1.2.8 — initial implementation: determine_audience_mode, classify_risk_types,
-compute_signals, assess_risk (exact behavioral parity with report_agent.py).
+v1.4.2 — classify_risk_types (keyword legacy) removed.
+  sensitive_prior_hit → sensitive_context_hit:
+  deterministic audience_mode / polarization check, no longer relies on
+  old 13-type keyword classification. Final risk_type_classification
+  continues via RiskClassifier (LLM-based 28-type catalog).
 """
 
 from typing import Any, Dict, List, Optional, Tuple
 
 from adarian.schemas.phase1 import EntityExtractionOutput
 from adarian.schemas.phase3 import TickLog
-from adarian.schemas.phase4 import RiskLevel, AudienceMode, RISK_LEVEL_LABELS, RISK_TYPE_LABELS
+from adarian.schemas.phase4 import RiskLevel, AudienceMode, RISK_LEVEL_LABELS
 
 
 # ---------------------------------------------------------------------------
@@ -22,28 +25,6 @@ from adarian.schemas.phase4 import RiskLevel, AudienceMode, RISK_LEVEL_LABELS, R
 LAW_ENFORCEMENT_KEYWORDS = ("公安", "交警", "派出所", "执法", "警方")
 REGULATOR_KEYWORDS = ("市监局", "市场监督管理局", "监管部门", "食药监")
 PUBLIC_MANAGEMENT_KEYWORDS = ("教育局", "卫健委", "住建局", "属地政府", "街道办")
-
-SENSITIVE_PRIOR_RISK_TYPES = (
-    "law_enforcement_trust_risk",
-    "regulatory_accountability_risk",
-    "local_governance_pressure_risk",
-    "information_opacity_risk",
-    "response_delay_risk",
-    "rumor_spread_risk",
-    "overseas_amplification_risk",
-    "group_polarization_risk",
-)
-
-RISK_KEYWORD_MAP = [
-    (("事实", "争议", "真相"), "fact_dispute_risk"),
-    (("程序", "流程"), "procedure_dispute_risk"),
-    (("回应", "滞后", "延迟"), "response_delay_risk"),
-    (("信息", "透明", "公开"), "information_opacity_risk"),
-    (("负面", "批评", "质疑"), "negative_narrative_risk"),
-    (("谣言", "不实"), "rumor_spread_risk"),
-    (("境外", "海外"), "overseas_amplification_risk"),
-    (("形象", "公信力"), "institution_image_risk"),
-]
 
 
 class RiskAnalyzer:
@@ -102,47 +83,38 @@ class RiskAnalyzer:
         return AudienceMode.GENERIC_GOVERNMENT.value
 
     # ------------------------------------------------------------------
-    # Risk-type classification
+    # Sensitive context detection (replaces old classify_risk_types path)
     # ------------------------------------------------------------------
 
-    def classify_risk_types(
+    def _compute_sensitive_context_hit(
         self,
-        audience_mode: str,
-        risk_assessment: str,
-        tick_logs: List[TickLog],
-    ) -> List[str]:
-        """Select up to 3 primary risk types from keyword and context analysis.
+        extraction_output: Optional[EntityExtractionOutput],
+        tick_logs: Optional[List[TickLog]],
+    ) -> bool:
+        """Determine if the event context is sensitive from a governance perspective.
 
-        Independent rebuild of ``select_primary_risk_types`` from report_agent.py.
+        Returns True if either:
+        - The audience mode indicates a specific governance domain (law enforcement,
+          regulator, or public management), meaning the event involves entities
+          like police, market regulators, or local government.
+        - The final polarization index >= 0.50, indicating high public polarization.
+
+        This replaces the old ``sensitive_prior_hit`` that relied on legacy
+        keyword-based risk type classification (``classify_risk_types()``).
+        The new helper is purely deterministic and does not depend on the old
+        13-type taxonomy.
         """
-        selected: List[str] = []
+        if extraction_output is None:
+            return False
 
-        def _add(risk_type: str) -> None:
-            if risk_type in RISK_TYPE_LABELS and risk_type not in selected:
-                selected.append(risk_type)
+        audience_mode = self.determine_audience_mode(extraction_output)
+        if audience_mode != AudienceMode.GENERIC_GOVERNMENT.value:
+            return True
 
-        # 1) Audience-mode-specific risk type (added first)
-        if audience_mode == AudienceMode.LAW_ENFORCEMENT_FACING.value:
-            _add("law_enforcement_trust_risk")
-        elif audience_mode == AudienceMode.REGULATOR_FACING.value:
-            _add("regulatory_accountability_risk")
-        elif audience_mode == AudienceMode.PUBLIC_MANAGEMENT_FACING.value:
-            _add("local_governance_pressure_risk")
+        if tick_logs and tick_logs[-1].global_metrics.polarization_index >= 0.50:
+            return True
 
-        # 2) Keyword mapping from risk_assessment text
-        for keywords, risk_type in RISK_KEYWORD_MAP:
-            if any(kw in risk_assessment for kw in keywords):
-                _add(risk_type)
-
-        # 3) Polarization-driven risk type
-        if tick_logs and tick_logs[-1].global_metrics.polarization_index >= 0.5:
-            _add("group_polarization_risk")
-
-        # 4) Fallback
-        if not selected:
-            _add("negative_narrative_risk")
-
-        return selected[:3]
+        return False
 
     # ------------------------------------------------------------------
     # Stance matrix helper (mirrors _build_code_owned_agent_stance_matrix)
@@ -208,14 +180,11 @@ class RiskAnalyzer:
 
         high_sensitive_prior = event_scale >= 0.7 and event_controversy >= 0.7
 
-        # Sensitive prior hit: determine_audience_mode -> classify_risk_types -> filter
-        audience_mode = self.determine_audience_mode(extraction_output)
-        primary_risk_types = self.classify_risk_types(audience_mode, "", tick_logs or [])
-        sensitive_risk_types = [
-            rt for rt in primary_risk_types
-            if rt in SENSITIVE_PRIOR_RISK_TYPES and rt in RISK_TYPE_LABELS
-        ]
-        sensitive_prior_hit = bool(sensitive_risk_types)
+        # Sensitive context hit: deterministic audience / polarization check.
+        # Replaces old ``sensitive_prior_hit`` that used legacy keyword classification.
+        sensitive_context_hit = self._compute_sensitive_context_hit(
+            extraction_output, tick_logs
+        )
 
         return {
             "start_x": start_x,
@@ -227,8 +196,7 @@ class RiskAnalyzer:
             "event_scale": event_scale,
             "event_controversy": event_controversy,
             "high_sensitive_prior": high_sensitive_prior,
-            "sensitive_risk_types": sensitive_risk_types,
-            "sensitive_prior_hit": sensitive_prior_hit,
+            "sensitive_context_hit": sensitive_context_hit,
         }
 
     # ------------------------------------------------------------------
@@ -245,7 +213,7 @@ class RiskAnalyzer:
         """Compute risk signals from simulation data.
 
         Returns a dict with: negative_trend, final_polarization,
-        max_negative_shift, event_prior_floor, sensitive_prior_hit,
+        max_negative_shift, event_prior_floor, sensitive_context_hit,
         and all other intermediate signals used by assess_risk.
         """
         if not x_t_sequence:
@@ -254,7 +222,7 @@ class RiskAnalyzer:
                 "final_polarization": 0.0,
                 "max_negative_shift": None,
                 "event_prior_floor": "normal",
-                "sensitive_prior_hit": False,
+                "sensitive_context_hit": False,
             }
 
         signals = self._compute_signals_internal(x_t_sequence, tick_logs, extraction_output)
@@ -270,7 +238,7 @@ class RiskAnalyzer:
             "final_polarization": signals["final_pol"],
             "max_negative_shift": signals["max_negative_shift"],
             "event_prior_floor": event_prior_floor,
-            "sensitive_prior_hit": signals["sensitive_prior_hit"],
+            "sensitive_context_hit": signals["sensitive_context_hit"],
             # Extra signals for full visibility
             "start_x": signals["start_x"],
             "final_x": signals["final_x"],
@@ -278,7 +246,6 @@ class RiskAnalyzer:
             "event_scale": signals["event_scale"],
             "event_controversy": signals["event_controversy"],
             "high_sensitive_prior": signals["high_sensitive_prior"],
-            "sensitive_risk_types": signals["sensitive_risk_types"],
         }
 
     # ------------------------------------------------------------------
@@ -310,8 +277,7 @@ class RiskAnalyzer:
         event_scale = signals["event_scale"]
         event_controversy = signals["event_controversy"]
         high_sensitive_prior = signals["high_sensitive_prior"]
-        sensitive_risk_types = signals["sensitive_risk_types"]
-        sensitive_prior_hit = signals["sensitive_prior_hit"]
+        sensitive_context_hit = signals["sensitive_context_hit"]
 
         # ---- Shift thresholds ----
         material_negative_shift = max_negative_shift is not None and max_negative_shift >= 1.2
@@ -325,11 +291,11 @@ class RiskAnalyzer:
             final_pol >= 0.30,
             material_negative_shift,
             high_sensitive_prior,
-            sensitive_prior_hit,
+            sensitive_context_hit,
         ]
         high_signals = [
             final_pol >= 0.45 and (negative_trend >= 0.4 or material_negative_shift),
-            strong_negative_shift and sensitive_prior_hit,
+            strong_negative_shift and sensitive_context_hit,
             final_x <= 4.0 and negative_trend >= 0.5,
             high_sensitive_prior and final_pol >= 0.40,
         ]
@@ -340,7 +306,7 @@ class RiskAnalyzer:
             and (
                 event_scale >= 0.7
                 or event_controversy >= 0.8
-                or sensitive_prior_hit
+                or sensitive_context_hit
             )
         )
 
@@ -366,9 +332,8 @@ class RiskAnalyzer:
             signal_parts.append("关键群体负向迁移数据不足")
         if high_sensitive_prior:
             signal_parts.append("高敏事件先验达到中风险下限")
-        if sensitive_prior_hit:
-            labels = [RISK_TYPE_LABELS[rt] for rt in sensitive_risk_types]
-            signal_parts.append(f"敏感风险类型命中：{'、'.join(labels)}")
+        if sensitive_context_hit:
+            signal_parts.append("敏感治理语境命中")
 
         if risk_level == RiskLevel.CRITICAL:
             prefix = "重大风险，低模拟立场均值、高模拟极化、关键群体负向迁移和高敏先验同时出现"
@@ -379,4 +344,4 @@ class RiskAnalyzer:
         else:
             prefix = "低风险，未发现明显负向压力、分化压力、群体跃迁或高敏先验"
 
-        return risk_level, f"{prefix}（{'; '.join(signal_parts)}）"
+        return risk_level, f"{prefix}（{'、'.join(signal_parts)}）"

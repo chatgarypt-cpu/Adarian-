@@ -48,12 +48,6 @@ class SimulationDatasetParser:
             x_t_sequence, tick_logs, extraction_output=extraction_output
         )
 
-        # Risk type classification (keyword path, v1.2.x legacy)
-        risk_types = self._risk_analyzer.classify_risk_types(
-            audience_mode, risk_basis, tick_logs
-        )
-        risk_type_labels = [RISK_TYPE_LABELS.get(rt, rt) for rt in risk_types]
-
         # Inflection detection
         inflection_points = self._inflection_detector.detect(
             tick_logs, phase2_output
@@ -62,7 +56,7 @@ class SimulationDatasetParser:
         # Stance analysis
         agent_stance_matrix = self._stance_analyzer.build_agent_stance_matrix(tick_logs)
 
-        # RiskClassifier — LLM-based Top-3 from the 26-type taxonomy.
+        # RiskClassifier — LLM-based Top-3 from the 28-type taxonomy.
         # Must run after agent_stance_matrix is built (consumed in query text)
         # and before risk_type_classification dict is assembled.
         from adarian.utils.runtime_logger import get_runtime_logger
