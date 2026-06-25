@@ -8,6 +8,8 @@ version = "1.4.1"
 description = "Adarian — 平行世界舆情推演系统"
 requires-python = ">=3.10"
 dependencies = [
+    "flask",
+    "flask-cors",
     "httpx",
     "rich",
     "pydantic",
