@@ -136,6 +136,7 @@ export interface SeedResponse {
   seed_id?: string;
   source?: string;
   seed_path?: string;
+  content?: string;
   checks: StepCheck[];
 }
 

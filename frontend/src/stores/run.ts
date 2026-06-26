@@ -271,7 +271,7 @@ export const useRunStore = defineStore('run', () => {
       await saveConfig();
       const selected = selectedModels.value.length ? selectedModels.value : models.value.filter((model) => model.available).slice(0, config.value.parallelWorlds).map((model) => model.id);
       const result = await api.startRun({
-        seed_text: seedInput.source === 'file' ? '' : seedInput.seedText,
+        seed_text: seedInput.seedText,
         seed_path: seedInput.source === 'file' ? seedInput.seedPath ?? '' : '',
         models: selected,
         tag: config.value.batchName,

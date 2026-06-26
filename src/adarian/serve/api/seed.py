@@ -55,8 +55,13 @@ def save_seed():
         if not resolved.exists() or not resolved.is_file():
             body, status = error_response("SEED_FILE_NOT_FOUND", "seed_path does not exist", {"seed_path": str(resolved)})
             return jsonify(body), status
-        digest_source = f"{payload.task_name}\n{resolved}"
-        text = ""
+        digest_source = f"{payload.task_name}\\n{resolved}"
+        try:
+            file_text = resolved.read_text(encoding="utf-8")
+        except Exception:
+            body, status = error_response("SEED_FILE_READ_ERROR", "Could not read seed file", {"seed_path": str(resolved)})
+            return jsonify(body), status
+        text = file_text
         seed_path = str(resolved)
     else:
         body, status = error_response("SOURCE_NOT_SUPPORTED", "seed source is not supported", {"source": payload.source})
@@ -64,4 +69,4 @@ def save_seed():
 
     digest = hashlib.sha256(digest_source.encode("utf-8")).hexdigest()[:16]
     seed_id = f"seed_{digest}"
-    return jsonify({"id": seed_id, "seed_id": seed_id, "source": payload.source, "seed_path": seed_path, "checks": _checks(payload.source)})
+    return jsonify({"id": seed_id, "seed_id": seed_id, "source": payload.source, "seed_path": seed_path, "content": text.strip(), "checks": _checks(payload.source)})

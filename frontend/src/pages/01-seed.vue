@@ -25,7 +25,13 @@
           </div>
           <div v-if="seed.source === 'file'" class="form-row">
             <label>本地 seed 文件路径</label>
-            <input v-model="seed.seedPath" placeholder="seeds/test8.txt" />
+            <div class="form-row-inline">
+              <input v-model="seed.seedPath" placeholder="seeds/test8.txt" />
+              <button class="ghost" type="button" :disabled="!seed.seedPath.trim() || seed.pageState === 'loading'" @click="seed.loadFile">
+                <span v-if="seed.pageState === 'loading'" class="btn-icon"></span>
+                读取内容
+              </button>
+            </div>
           </div>
           <div class="chips">
             <button v-for="item in examples" :key="item.label" class="chip" type="button" @click="seed.useExample(item.text)">
@@ -34,7 +40,10 @@
             <button class="chip" type="button" @click="seed.useLocalTest8">本地 test8</button>
           </div>
           <div class="actions">
-            <button class="primary" type="button" :disabled="seed.isEmpty" @click="seed.saveSeed">保存事件材料</button>
+            <button class="primary" type="button" :disabled="seed.isEmpty || seed.pageState === 'loading'" @click="seed.saveSeed">
+              <span v-if="seed.pageState === 'loading'" class="btn-icon"></span>
+              保存事件材料
+            </button>
             <button class="ghost" type="button" @click="seed.useExample(examples[0].text)">使用预设事件</button>
           </div>
         </Panel>
@@ -83,7 +92,7 @@ const examples = [
   { label: '平台投诉扩散', text: '平台投诉事件跨社区扩散，用户维权、企业回应和监管关注形成多方互动。' },
 ];
 
-const effectiveState = computed(() => (seed.isEmpty && seed.pageState === 'populated' ? 'empty' : seed.pageState));
+const effectiveState = computed(() => seed.pageState);
 const checks = computed(() => (seed.isEmpty ? seed.checks.map((check) => ({ ...check, status: 'pending' as const })) : seed.checks));
 const chipFor = (status: 'passed' | 'suggested' | 'pending') => {
   if (status === 'passed') return { label: '通过', variant: 'ok' as const };

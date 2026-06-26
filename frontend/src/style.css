@@ -195,6 +195,17 @@ button:disabled { cursor: not-allowed; opacity: .54; }
 }
 
 .form-row { display: grid; gap: 8px; margin-bottom: 13px; }
+.form-row-inline { display: flex; gap: 8px; align-items: center; }
+.form-row-inline input { flex: 1; }
+.form-row-inline .btn-icon {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(81, 220, 255, .25);
+  border-top-color: var(--cyan);
+  border-radius: 999px;
+  animation: spin .7s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+}
 .form-row label { font-size: 12px; color: #a7c7db; }
 
 textarea, input, select {

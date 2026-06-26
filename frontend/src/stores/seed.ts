@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { api } from '../api/client';
 import type { PageState, StepCheck } from '../api/types';
 
 export const useSeedStore = defineStore('seed', () => {
-  const seedText = ref('校园食堂食品安全争议在短视频平台发酵，学生、家长、商家和监管部门形成多方讨论。');
+  const seedText = ref('');
   const seedPath = ref('seeds/test8.txt');
   const taskName = ref('校园食品安全争议推演');
   const source = ref<'manual' | 'file' | 'history'>('manual');
@@ -33,13 +33,35 @@ export const useSeedStore = defineStore('seed', () => {
       });
       checks.value = result.checks;
       if (result.seed_path) seedPath.value = result.seed_path;
+      if (result.content) seedText.value = result.content;  // 回填文件内容
       saved.value = true;
       pageState.value = 'populated';
       window.setTimeout(() => {
         saved.value = false;
-      }, 3000);
+      }, 4000);
     } catch (exc) {
       error.value = exc instanceof Error ? exc.message : '保存失败';
+      pageState.value = 'error';
+    }
+  }
+
+  async function loadFile() {
+    if (!seedPath.value.trim()) return;
+    pageState.value = 'loading';
+    error.value = '';
+    try {
+      const result = await api.saveSeed({
+        seed_text: '',
+        seed_path: seedPath.value,
+        task_name: taskName.value,
+        source: 'file',
+      });
+      checks.value = result.checks;
+      if (result.seed_path) seedPath.value = result.seed_path;
+      if (result.content) seedText.value = result.content;
+      pageState.value = 'populated';
+    } catch (exc) {
+      error.value = exc instanceof Error ? exc.message : '读取失败';
       pageState.value = 'error';
     }
   }
@@ -53,8 +75,16 @@ export const useSeedStore = defineStore('seed', () => {
   function useLocalTest8() {
     source.value = 'file';
     seedPath.value = 'seeds/test8.txt';
+    seedText.value = '';  // 清空文本域，避免 stale 显示
     pageState.value = 'populated';
   }
 
-  return { seedText, seedPath, taskName, source, checks, pageState, error, saved, isEmpty, canStart, saveSeed, useExample, useLocalTest8 };
+  // 切换 source 时清空 seedText，防止 file→manual 时显示旧文本
+  watch(source, (newVal, oldVal) => {
+    if (newVal === 'file' && oldVal !== 'file') {
+      seedText.value = '';
+    }
+  });
+
+  return { seedText, seedPath, taskName, source, checks, pageState, error, saved, isEmpty, canStart, saveSeed, loadFile, useExample, useLocalTest8 };
 });
