@@ -3,7 +3,7 @@
     <StateTools v-model="run.modelsState" />
     <PageState :state="effectiveState" :message="run.modelsError || '模型检测失败'">
       <Panel title="API 服务管理" note="后端持久化">
-        <div class="mock-note">用户新增服务保存到 SQLite；API key write-only，不会回显明文。</div>
+        <div class="status-note">用户新增服务保存到 SQLite；API key write-only，不会回显明文。</div>
         <div class="grid-4">
           <div class="form-row">
             <label>服务名称</label>
@@ -33,7 +33,7 @@
         </div>
       </Panel>
       <Panel title="模型中转站" note="按 API 地址识别模型">
-        <div class="mock-note">未请求前不预展示模型；点击加载或识别后，再显示模型列表与检测结果。</div>
+        <div class="status-note">未请求前不预展示模型；点击加载或识别后，再显示模型列表与检测结果。</div>
         <div class="model-summary">
           <span>已加载 {{ run.loadedModelCount }} 个模型</span>
           <span>{{ run.availableModelCount }} 个可用</span>

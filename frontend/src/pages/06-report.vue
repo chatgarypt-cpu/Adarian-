@@ -4,7 +4,7 @@
     <PageState :state="state" message="报告生成失败">
       <div class="hero-grid">
         <Panel title="报告生成" note="选择推演结果">
-          <div class="mock-note">报告生成调用 Phase 4 API；没有 completed world 的 simulation_dataset 会返回明确错误。</div>
+          <div class="status-note">报告生成调用 Phase 4 API；没有 completed world 的 simulation_dataset 会返回明确错误。</div>
           <div class="form-row"><label>报告类型</label><select v-model="reportType"><option>舆情风险研判报告</option><option>领导摘要</option><option>内部复盘材料</option></select></div>
           <div class="form-row"><label>面向对象</label><select v-model="audience"><option>属地管理部门</option><option>监管部门</option><option>公安/执法协同</option><option>学校管理方</option></select></div>
           <div class="form-row"><label>使用结果</label><select v-model="source"><option>使用全部已完成推演</option><option>仅使用第 1 轮</option><option>仅使用第 2 轮</option></select></div>

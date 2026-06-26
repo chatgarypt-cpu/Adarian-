@@ -131,8 +131,10 @@ def error_response(code: str, message: str, details: dict[str, Any] | None = Non
         "BAD_JSON": 400,
         "EMPTY_SEED": 400,
         "NO_MODELS": 400,
+        "SEED_PATH_NOT_ALLOWED": 400,
         "SOURCE_NOT_SUPPORTED": 400,
         "VALIDATION_ERROR": 400,
+        "SEED_FILE_NOT_FOUND": 404,
         "NOT_FOUND": 404,
         "BATCH_NOT_FOUND": 404,
         "GATEWAY_NOT_FOUND": 404,
@@ -146,6 +148,7 @@ def error_response(code: str, message: str, details: dict[str, Any] | None = Non
 
 class SeedRequest(BaseModel):
     seed_text: str = ""
+    seed_path: str = ""
     task_name: str = "adarian_batch"
     source: str = "manual"
 

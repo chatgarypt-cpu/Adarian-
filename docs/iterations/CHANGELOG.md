@@ -21,6 +21,56 @@
 
 ---
 
+## v1.5.0c (2026-06-26) — Entry Integration / E2E Closeout
+
+**主题**：新前端入口收口 + 本地 seed 路径恢复 + test8 live E2E
+
+### 新增
+
+- `Makefile`：`rebuild` / `serve` 入口。
+- `tests/e2e/test_entry_e2e.py`：覆盖 `seed_path=seeds/test8.txt` 的 API smoke、幂等、错误路径、review/history。
+
+### 修改
+
+- `adarian.sh` / `start.command` 改为 `PYTHONPATH=src .venv/bin/python -m adarian serve`。
+- `/api/seed` 支持 `source=file` + 项目内本地 `seed_path`。
+- `/api/run` 支持并校验项目内本地 `seed_path`，避免绕过 seed 保存接口。
+- 01-seed 前端恢复“本地 seed 路径”和“本地 test8”入口；运行页按来源传递 `seed_text` 或 `seed_path`。
+- 前端生产提示类从 `mock-note` 改为 `status-note`；StateTools 仍仅开发模式可见。
+- 前端版本更新为 `1.5.0-c`，`/api/ping` 返回 `1.5.0c`。
+- `docs/api_contract.md` 更新 seed/run 的 `seed_path` 契约。
+
+### 删除
+
+- `src/adarian/_legacy_serve.py`。
+
+### 验收
+
+```text
+PYTHONPATH=src .venv/bin/python -m pytest tests/serve/ tests/e2e/ -q
+  19 passed
+
+cd frontend && npm test -- --run
+  6 passed
+
+rm -rf frontend/dist && cd frontend && npm run build
+  pass
+
+Live E2E:
+  seed_path: seeds/test8.txt
+  model: minimax
+  batch_id: test8-live-e2e-final_164414
+  status: completed
+  review: 200 complete=true
+  report: 200 report.json
+  history: includes batch
+```
+
+### 边界
+
+- 未修改 Phase 1-4、analysis、parser、llm_client、schema 包。
+- 未创建 git commit/tag；tag 待提交后处理。
+
 ## v1.4.0 (2026-06-22) — Scheduler MVP Proof / Parallel World Console R0
 
 **主题**：平行世界推演控制台 R0

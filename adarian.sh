@@ -13,7 +13,7 @@ set -e
 cd "$(dirname "$0")"
 
 if [ $# -eq 0 ]; then
-    .venv/bin/python -m src.adarian --help
+    PYTHONPATH=src .venv/bin/python -m adarian --help
     exit 0
 fi
 
@@ -22,7 +22,7 @@ shift
 
 if [ "$CMD" = "up" ]; then
     echo "Adarian — Web 后台启动中..."
-    .venv/bin/python -m src.adarian serve &
+    PYTHONPATH=src .venv/bin/python -m adarian serve &
     sleep 2
     echo "Web 控制台: http://127.0.0.1:9788"
     echo "CLI 可用: ./adarian.sh run seeds/test8.txt"
@@ -31,4 +31,4 @@ if [ "$CMD" = "up" ]; then
     exit 0
 fi
 
-exec .venv/bin/python -m src.adarian "$CMD" "$@"
+exec env PYTHONPATH=src .venv/bin/python -m adarian "$CMD" "$@"

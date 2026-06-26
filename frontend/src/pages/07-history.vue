@@ -3,7 +3,7 @@
     <StateTools v-model="history.pageState" />
     <PageState :state="history.pageState" message="历史任务加载失败">
       <Panel title="历史任务" note="最近批次">
-        <div class="mock-note">历史任务来自 SQLite batches 表；复用能力仍为后续版本。</div>
+        <div class="status-note">历史任务来自 SQLite batches 表；复用能力仍为后续版本。</div>
         <table class="table">
           <thead><tr><th>任务名称</th><th>创建时间</th><th>状态</th><th>主要风险</th><th>操作</th></tr></thead>
           <tbody>

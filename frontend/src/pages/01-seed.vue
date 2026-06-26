@@ -4,10 +4,10 @@
     <PageState :state="effectiveState" :message="seed.error">
       <div class="hero-grid">
         <Panel title="事件材料" note="必填">
-          <div class="mock-note">当前真实可用：手动录入文本。 本地材料文件、历史事件复用为后续接入能力。</div>
+          <div class="status-note">当前真实可用：手动录入文本、本地 seed 路径。历史事件复用为后续接入能力。</div>
           <div class="form-row">
             <label>舆情事件描述</label>
-            <textarea v-model="seed.seedText" placeholder="请输入舆情事件描述" />
+            <textarea v-model="seed.seedText" :disabled="seed.source === 'file'" placeholder="请输入舆情事件描述" />
           </div>
           <div class="grid-2">
             <div class="form-row">
@@ -18,24 +18,29 @@
               <label>材料来源</label>
               <select v-model="seed.source">
                 <option value="manual">手动录入</option>
-                <option value="file" disabled>本地材料文件（待接入）</option>
+                <option value="file">本地 seed 路径</option>
                 <option value="history" disabled>历史事件复用（待接入）</option>
               </select>
             </div>
+          </div>
+          <div v-if="seed.source === 'file'" class="form-row">
+            <label>本地 seed 文件路径</label>
+            <input v-model="seed.seedPath" placeholder="seeds/test8.txt" />
           </div>
           <div class="chips">
             <button v-for="item in examples" :key="item.label" class="chip" type="button" @click="seed.useExample(item.text)">
               {{ item.label }}
             </button>
+            <button class="chip" type="button" @click="seed.useLocalTest8">本地 test8</button>
           </div>
           <div class="actions">
             <button class="primary" type="button" :disabled="seed.isEmpty" @click="seed.saveSeed">保存事件材料</button>
-            <button class="ghost" type="button" @click="seed.useExample(examples[0].text)">使用示例事件</button>
+            <button class="ghost" type="button" @click="seed.useExample(examples[0].text)">使用预设事件</button>
           </div>
         </Panel>
 
         <Panel title="录入检查" note="自动判断">
-          <div class="mock-note">当前“事件背景已填写”由后端校验；主体识别和时间线建议仍为 pending/suggested。</div>
+          <div class="status-note">当前“事件背景已填写”由后端校验；主体识别和时间线建议仍为 pending/suggested。</div>
           <div class="steps">
             <StepLine
               v-for="check in checks"

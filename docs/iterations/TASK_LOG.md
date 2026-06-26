@@ -30,6 +30,29 @@
 
 ---
 
+## 2026-06-26: v1.5.0c entry/e2e closeout + local seed_path restore
+
+- **task_id**: task-v1.5.0c-entry-e2e
+- **status**: implementation_verified / awaiting Owner git tag + archive closeout
+- **changes**:
+  - 恢复 01-seed 本地 `seed_path` 导入：`source=file` 支持 `seeds/test8.txt` 等项目内本地路径。
+  - `/api/seed` 与 `/api/run` 增加项目目录边界校验，缺失路径返回 `SEED_FILE_NOT_FOUND`，越界路径返回 `SEED_PATH_NOT_ALLOWED`。
+  - 运行页在本地路径模式下传递 `seed_path` 启动真实 batch。
+  - `adarian.sh` / `start.command` 切到 `PYTHONPATH=src .venv/bin/python -m adarian serve`。
+  - 删除 `src/adarian/_legacy_serve.py`。
+  - 新增 `Makefile rebuild` / `serve` 入口。
+  - 前端版本同步到 `1.5.0-c`，后端 `/api/ping` 同步返回 `1.5.0c`。
+  - 新增 `tests/e2e/test_entry_e2e.py` 覆盖 test8 seed_path API smoke。
+- **verification**:
+  - `PYTHONPATH=src .venv/bin/python -m pytest tests/serve/ tests/e2e/ -q` → 19 passed
+  - `cd frontend && npm test -- --run` → 6 passed
+  - `rm -rf frontend/dist && cd frontend && npm run build` → pass
+  - `./adarian.sh serve --port 9791` + `/api/ping` → `{"status":"ok","version":"1.5.0c"}`
+  - Live E2E with `seeds/test8.txt` → batch `test8-live-e2e-final_164414` completed, review 200, report 200, history includes batch
+- **notes**:
+  - 未创建 git commit/tag；当前改动尚未提交，tag 需在 Owner/提交者提交后处理。
+  - 未修改禁止路径：`src/adarian/phase*/`, `src/adarian/analysis/`, `src/adarian/parser.py`, `src/adarian/llm_client.py`, `src/adarian/schemas/`。
+
 ## 2026-06-24: v1.4.1.1 patch — src layout 重构
 
 - **task_id**: task-v1.4.1.1-src-layout

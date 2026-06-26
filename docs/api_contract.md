@@ -1,4 +1,4 @@
-# Adarian v1.5.0b API Contract
+# Adarian v1.5.0b/c API Contract
 
 > Scope: v1.5.0b replaces the v1.5.0a mock frontend data path with real Flask APIs where backend evidence exists. Features without backend support remain `pending`, `disabled`, or `mock-only`.
 
@@ -43,7 +43,7 @@ Responses may include `raw_status` for diagnostics.
 Returns:
 
 ```json
-{"status":"ok","version":"1.5.0b"}
+{"status":"ok","version":"1.5.0c"}
 ```
 
 ### `POST /api/seed`
@@ -51,14 +51,18 @@ Returns:
 Request:
 
 ```json
-{"seed_text":"事件文本","task_name":"任务名","source":"manual"}
+{"seed_text":"事件文本","seed_path":"seeds/test8.txt","task_name":"任务名","source":"manual"}
 ```
 
 Rules:
 
 - Empty `seed_text` returns `400` with `EMPTY_SEED`.
 - `source=manual` is supported.
-- `source=file` and `source=history` return `400` with `SOURCE_NOT_SUPPORTED`.
+- `source=file` is supported for local server-side seed paths under the Adarian project directory, for example `seeds/test8.txt`.
+- Empty `seed_path` with `source=file` returns `400 EMPTY_SEED`.
+- Missing local seed path returns `404 SEED_FILE_NOT_FOUND`.
+- Paths outside the project directory return `400 SEED_PATH_NOT_ALLOWED`.
+- `source=history` returns `400` with `SOURCE_NOT_SUPPORTED`.
 
 Returns:
 
@@ -153,6 +157,7 @@ Request:
 ```json
 {
   "seed_text": "事件文本",
+  "seed_path": "seeds/test8.txt",
   "models": ["qwen36-35b"],
   "tag": "任务名",
   "base_url": "optional",
@@ -163,8 +168,9 @@ Request:
 Rules:
 
 - Empty `models` returns `400` with `NO_MODELS`.
-- Empty seed returns `400` with `EMPTY_SEED`.
-- Repeated `(seed_text, models, tag, base_url)` returns the same `batch_id`.
+- Empty `seed_text` and `seed_path` returns `400` with `EMPTY_SEED`.
+- `seed_path` reuses the existing batch local-file path support.
+- Repeated `(seed_text, seed_path, models, tag, base_url)` returns the same `batch_id`.
 - v1.5.0b starts execution asynchronously and reports progress through status polling.
 
 Returns:

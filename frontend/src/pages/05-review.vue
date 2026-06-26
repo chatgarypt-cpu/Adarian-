@@ -4,7 +4,7 @@
     <PageState :state="effectiveState" :message="run.reviewError || '审查结果读取失败'">
       <div class="hero-grid">
         <Panel title="主要风险对比" note="多轮结果汇总">
-          <div class="mock-note">审查结果来自当前 batch 的真实 world 状态与产物路径；不会生成 mock 风险。</div>
+          <div class="status-note">审查结果来自当前 batch 的真实 world 状态与产物路径；不会生成 mock 风险。</div>
           <div class="actions">
             <button class="primary" type="button" :disabled="!run.activeBatch.batchId" @click="run.loadReview">读取审查结果</button>
           </div>

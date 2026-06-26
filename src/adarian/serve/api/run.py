@@ -14,6 +14,7 @@ from pydantic import ValidationError
 
 from adarian import config as adarian_config
 from adarian.serve import db
+from adarian.serve.paths import resolve_project_file
 from adarian.serve.schemas import RunPayload, error_response, normalize_status
 
 run_bp = Blueprint("run", __name__)
@@ -22,11 +23,11 @@ _EXECUTOR = ThreadPoolExecutor(max_workers=3)
 _ACTIVE: dict[str, Any] = {}
 
 
-def _idempotency_key(payload: RunPayload, base_url: str, tag: str) -> str:
+def _idempotency_key(payload: RunPayload, base_url: str, tag: str, seed_path: str) -> str:
     text = json.dumps(
         {
             "seed_text": payload.seed_text.strip(),
-            "seed_path": payload.seed_path.strip(),
+            "seed_path": seed_path.strip(),
             "models": sorted(payload.models),
             "tag": tag,
             "base_url": base_url,
@@ -161,10 +162,28 @@ def start_run():
     if not payload.seed_text.strip() and not payload.seed_path.strip():
         body, status = error_response("EMPTY_SEED", "seed_text or seed_path is required")
         return jsonify(body), status
+    seed_path = payload.seed_path.strip()
+    if seed_path:
+        try:
+            resolved_seed_path = resolve_project_file(seed_path)
+        except PermissionError:
+            body, status = error_response(
+                "SEED_PATH_NOT_ALLOWED",
+                "seed_path must stay inside the Adarian project directory",
+                {"seed_path": seed_path},
+            )
+            return jsonify(body), status
+        except ValueError:
+            body, status = error_response("EMPTY_SEED", "seed_text or seed_path is required")
+            return jsonify(body), status
+        if not resolved_seed_path.exists() or not resolved_seed_path.is_file():
+            body, status = error_response("SEED_FILE_NOT_FOUND", "seed_path does not exist", {"seed_path": str(resolved_seed_path)})
+            return jsonify(body), status
+        seed_path = str(resolved_seed_path)
 
     base_url = payload.base_url.strip() or adarian_config.LLM_BASE_URL or ""
     tag = (payload.tag or payload.config.get("batch_name") or "adarian_batch").strip() or "adarian_batch"
-    idem = _idempotency_key(payload, base_url, tag)
+    idem = _idempotency_key(payload, base_url, tag, seed_path)
     existing = db.get_batch_by_key(idem)
     if existing:
         return jsonify(_batch_response(existing, db.list_worlds(existing["id"])))
@@ -175,7 +194,7 @@ def start_run():
         session = start_batch(
             models=models,
             seed_text=payload.seed_text,
-            seed_path=payload.seed_path,
+            seed_path=seed_path,
             tag=tag,
             base_url=base_url,
         )

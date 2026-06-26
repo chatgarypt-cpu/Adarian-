@@ -12,6 +12,7 @@ def test_run_requires_models(client):
 
 def test_run_idempotency_and_status(client, monkeypatch):
     import adarian.serve.api.run as run_api
+    captured = {}
 
     class FakeState:
         status = "pending"
@@ -40,7 +41,11 @@ def test_run_idempotency_and_status(client, monkeypatch):
         def log(self, _message):
             pass
 
-    monkeypatch.setattr("adarian.batch.start_batch", lambda **_kwargs: FakeSession())
+    def fake_start_batch(**kwargs):
+        captured.update(kwargs)
+        return FakeSession()
+
+    monkeypatch.setattr("adarian.batch.start_batch", fake_start_batch)
     monkeypatch.setattr(run_api._EXECUTOR, "submit", lambda fn, session: None)
 
     payload = {"seed_text": "事件", "models": ["m1"], "tag": "case"}
@@ -53,6 +58,50 @@ def test_run_idempotency_and_status(client, monkeypatch):
     status = client.get("/api/run/fake_batch/status")
     assert status.status_code == 200
     assert status.get_json()["worlds"][0]["status"] == "running"
+
+
+def test_run_accepts_seed_path(client, monkeypatch):
+    import adarian.serve.api.run as run_api
+    captured = {}
+
+    class FakeState:
+        status = "pending"
+        model_name = "m1"
+        output_dir = "/tmp/world_0"
+        dataset_path = "/tmp/world_0/simulation_dataset.json"
+        error_summary = ""
+        log_tail = ""
+        elapsed_seconds = None
+
+    class FakeWorld:
+        name = "world_0"
+        model = "m1"
+        base_url = "http://example.test/v1"
+
+    class FakeSession:
+        batch_id = "fake_path_batch"
+        batch_dir = "/tmp/fake_path_batch"
+        seed_path = "/project/seeds/test8.txt"
+        worlds = [FakeWorld()]
+        states = {"world_0": FakeState()}
+        status = "pending"
+        started_at = "2026-06-26 12:00:00"
+        completed_at = ""
+
+        def log(self, _message):
+            pass
+
+    def fake_start_batch(**kwargs):
+        captured.update(kwargs)
+        return FakeSession()
+
+    monkeypatch.setattr("adarian.batch.start_batch", fake_start_batch)
+    monkeypatch.setattr(run_api._EXECUTOR, "submit", lambda fn, session: None)
+
+    response = client.post("/api/run", json={"seed_path": "seeds/test8.txt", "models": ["m1"], "tag": "case"})
+    assert response.status_code == 202
+    assert captured["seed_text"] == ""
+    assert captured["seed_path"].endswith("seeds/test8.txt")
 
 
 def test_unknown_status_404(client):

@@ -340,7 +340,7 @@ textarea { min-height: 150px; resize: vertical; }
   color: #ffc4cc;
 }
 
-.mock-note {
+.status-note {
   border: 1px solid rgba(242, 201, 76, .28);
   background: rgba(242, 201, 76, .07);
   color: #f6d978;

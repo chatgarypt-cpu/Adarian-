@@ -11,7 +11,7 @@
           </div>
         </Panel>
         <Panel title="输出位置" note="任务产物">
-          <div class="mock-note">设置通过 /api/settings 持久化；历史清理执行仍为后续能力。</div>
+          <div class="status-note">设置通过 /api/settings 持久化；历史清理执行仍为后续能力。</div>
           <div class="form-row"><label>默认保存目录</label><input v-model="settings.outputDir" /></div>
           <div class="form-row">
             <label>历史任务保留</label>

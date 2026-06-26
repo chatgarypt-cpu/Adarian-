@@ -126,6 +126,7 @@ export interface ConfigResponse {
 
 export interface SeedRequest {
   seed_text: string;
+  seed_path?: string;
   task_name: string;
   source: string;
 }
@@ -133,11 +134,14 @@ export interface SeedRequest {
 export interface SeedResponse {
   id: string;
   seed_id?: string;
+  source?: string;
+  seed_path?: string;
   checks: StepCheck[];
 }
 
 export interface RunRequest {
   seed_text: string;
+  seed_path?: string;
   models: string[];
   tag: string;
   base_url?: string;

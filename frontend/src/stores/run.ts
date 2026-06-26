@@ -264,14 +264,15 @@ export const useRunStore = defineStore('run', () => {
     });
   }
 
-  async function startRun(seedText: string) {
+  async function startRun(seedInput: { seedText: string; seedPath?: string; source?: string }) {
     runState.value = 'loading';
     runError.value = '';
     try {
       await saveConfig();
       const selected = selectedModels.value.length ? selectedModels.value : models.value.filter((model) => model.available).slice(0, config.value.parallelWorlds).map((model) => model.id);
       const result = await api.startRun({
-        seed_text: seedText,
+        seed_text: seedInput.source === 'file' ? '' : seedInput.seedText,
+        seed_path: seedInput.source === 'file' ? seedInput.seedPath ?? '' : '',
         models: selected,
         tag: config.value.batchName,
         config: {

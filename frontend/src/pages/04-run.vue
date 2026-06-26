@@ -9,9 +9,16 @@
         <Card :title="String(run.failedCount)" label="失败" metric />
       </div>
       <Panel title="运行监控" note="每轮推演状态">
-        <div class="mock-note">运行状态来自 /api/run；cancel/retry 属后续版本，当前不提供假操作。</div>
+        <div class="status-note">运行状态来自 /api/run；cancel/retry 属后续版本，当前不提供假操作。</div>
         <div class="actions">
-          <button class="primary" type="button" :disabled="seed.isEmpty || run.selectedModels.length === 0" @click="run.startRun(seed.seedText)">启动真实推演</button>
+          <button
+            class="primary"
+            type="button"
+            :disabled="!seed.canStart || run.selectedModels.length === 0"
+            @click="run.startRun({ seedText: seed.seedText, seedPath: seed.seedPath, source: seed.source })"
+          >
+            启动真实推演
+          </button>
           <button class="ghost" type="button" :disabled="!run.activeBatch.batchId" @click="run.refreshStatus">刷新状态</button>
         </div>
         <div v-if="run.activeBatch.worlds.length === 0" class="empty-inline">尚未启动推演。请先在模型调度页选择模型，再启动真实推演。</div>
