@@ -26,7 +26,30 @@ def create_app() -> Flask:
     return app
 
 
+def _ensure_frontend_built() -> None:
+    """Auto-build frontend dist before starting server."""
+    from adarian.serve.paths import PROJECT_ROOT
+
+    frontend_dir = PROJECT_ROOT / "frontend"
+    if not (frontend_dir / "package.json").exists():
+        return  # no frontend source — skip
+
+    import subprocess, sys
+    print("  Building frontend...", end=" ", flush=True)
+    result = subprocess.run(
+        ["npm", "run", "build"],
+        cwd=str(frontend_dir),
+        capture_output=True, text=True, timeout=120,
+    )
+    if result.returncode == 0:
+        print("✓")
+    else:
+        print("✗ — serve will still start, but UI may be stale")
+        print(result.stderr[-300:] if result.stderr else "", end="", file=sys.stderr)
+
+
 def run(host: str = "127.0.0.1", port: int = 9788, open_browser: bool = False) -> None:
+    _ensure_frontend_built()
     app = create_app()
     url = f"http://{host}:{port}"
     Console(stderr=True).print(

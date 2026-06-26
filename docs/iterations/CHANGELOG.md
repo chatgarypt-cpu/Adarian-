@@ -1984,3 +1984,28 @@ outputs/
   - frontend production build passed
   - light Flask API smoke passed
 - **carryover**: cancel/retry、`_run_world` Popen 改造、v1.5.0c 入口整合和 E2E。
+
+## 2026-06-26: v1.5.1 后端观测能力 + 运行台收口
+
+- **status**: verified_pending_owner
+- **summary**: 补齐 Review / World Detail / Observability / Report placeholder 链路；Run 页接入真实 batch/world 事件、metrics、error reason 和 raw log tail。
+- **added**:
+  - `src/adarian/serve/observability.py`
+  - `src/adarian/serve/api/world.py`
+  - `frontend/src/pages/09-world.vue`
+  - `frontend/src/stores/world.ts`
+  - `tests/serve/api/test_observability.py`
+- **changed**:
+  - `POST /api/report`：本轮不生成新报告；有已有报告文件则返回下载 URL，无文件返回 `REPORT_GENERATION_DEFERRED`，报告重构进入 v1.5.2。
+  - `GET /api/run/active`：支持 client session 恢复；带 session 时不再 fallback 到其他 running batch。
+  - `/run`：总览只显示批次级状态和日志；单 world 展示 phase/tick/agent/error 信息流；raw log 独立滚动。
+  - `/review`：真实风险标签与 world detail 跳转。
+- **verification**:
+  - 21 serve tests passed
+  - 8 frontend tests passed
+  - frontend production build passed
+  - API smoke passed
+  - in-app browser E2E passed
+- **carryover**:
+  - v1.5.2 报告生成/报告页重构
+  - SSE、cancel/retry、多 world 同框对比

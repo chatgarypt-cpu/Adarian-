@@ -2235,3 +2235,29 @@ E2E: 5/5
   - world retry / 换模型重跑
   - `_run_world` Popen 改造
   - v1.5.0c 入口整合与 E2E
+
+## 2026-06-26: task-v1.5.1-backend-observability-closeout
+
+- **task_id**: task-v1.5.1-backend-observability-closeout
+- **executor**: Codex
+- **status**: verified_pending_owner
+- **iteration_doc**: `docs/iterations/active/v1.5.1_backend_capability.md`
+- **summary**: 收口 v1.5.1 后端真实观测能力与前端运行台接入；报告生成明确降级为 v1.5.2 占位，本轮只支持已有报告文件下载。
+- **completed**:
+  - Review 风险对比改为读取真实 `simulation_dataset.json`。
+  - 新增 world detail API 与 `/world` 前端页面。
+  - 新增统一 `serve/observability.py`，集中读取 `scheduler_batch.log`、`run.log`、`run_meta.json`、`tick_logs.json`。
+  - Run 页接入 batch/world event stream、metrics、error reason、raw log tail。
+  - Report 页保留 v1.5.2 占位，并通过受控 endpoint 下载已有 `report.json` / `report.md`。
+  - 前端增加 client session id，重开页面可恢复自己的 running batch；带 session 时不再 fallback 到其他 batch。
+- **verification**:
+  - `.venv/bin/python -m pytest tests/serve/ -q` → 21 passed
+  - `cd frontend && npm test -- --run` → 8 passed
+  - `cd frontend && npm run build` → passed
+  - API smoke → `V1.5.1 API SMOKE OK`
+  - forbidden path / duplicate observability checks → passed
+  - in-app browser E2E：`/run` session 恢复、错误原因/token/report count、`/report` 占位和已有报告下载均验证通过。
+- **carryover**:
+  - v1.5.2：报告生成/报告页重构。
+  - 后续：SSE 替代轮询、cancel/retry、多 world 同框对比。
+  - UI polish：Report 页顶部 KPI 仍显示通用“当前任务 未启动”，不影响占位/下载链路，但应在报告重构时统一状态口径。

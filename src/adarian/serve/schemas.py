@@ -137,8 +137,11 @@ def error_response(code: str, message: str, details: dict[str, Any] | None = Non
         "SEED_FILE_NOT_FOUND": 404,
         "NOT_FOUND": 404,
         "BATCH_NOT_FOUND": 404,
+        "WORLD_NOT_FOUND": 404,
         "GATEWAY_NOT_FOUND": 404,
         "READ_ONLY_GATEWAY": 403,
+        "REPORT_FILE_FORBIDDEN": 400,
+        "REPORT_FILE_NOT_FOUND": 404,
         "REPORT_SOURCE_NOT_FOUND": 409,
         "MODEL_DISCOVERY_FAILED": 502,
         "RUN_START_FAILED": 500,
@@ -186,6 +189,7 @@ class RunPayload(BaseModel):
     models: list[str] = Field(default_factory=list)
     tag: str = "adarian_batch"
     base_url: str = ""
+    client_session_id: str = ""
     config: dict[str, Any] = Field(default_factory=dict)
 
 

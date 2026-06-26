@@ -19,7 +19,7 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from rich.console import Console
 from rich.live import Live
@@ -128,6 +128,7 @@ class BatchSession:
     started_at: str = ""
     completed_at: str = ""
     logs: list[str] = field(default_factory=list)
+    on_update: Callable[["BatchSession"], None] | None = field(default=None, repr=False, compare=False)
 
     def as_dict(self) -> dict[str, Any]:
         for world in self.worlds:
@@ -154,6 +155,9 @@ class BatchSession:
     def log(self, message: str) -> None:
         ts = datetime.now().strftime("%H:%M:%S")
         self.logs.append(f"[{ts}] {message}")
+        _flush_scheduler_log(self)
+        if self.on_update:
+            self.on_update(self)
 
 
 # ── Public API ───────────────────────────────────────────────────
@@ -443,6 +447,8 @@ def _run_world(session: BatchSession, world: WorldSpec) -> None:
         state.error_summary = error or state.error_summary or "dataset evidence check failed"
         session.log(f"{world.name} failed: {state.error_summary}")
     _write_world_status(world_dir, state)
+    if session.on_update:
+        session.on_update(session)
 
 
 def _prepare_seed(batch_dir: Path, *, seed_text: str, seed_path: str) -> Path:
@@ -486,10 +492,18 @@ def _write_batch_result(session: BatchSession) -> None:
         json.dumps(result, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
-    (session.batch_dir / "scheduler_batch.log").write_text(
-        "\n".join(session.logs) + "\n",
-        encoding="utf-8",
-    )
+    _flush_scheduler_log(session)
+
+
+def _flush_scheduler_log(session: BatchSession) -> None:
+    try:
+        session.batch_dir.mkdir(parents=True, exist_ok=True)
+        (session.batch_dir / "scheduler_batch.log").write_text(
+            "\n".join(session.logs) + "\n",
+            encoding="utf-8",
+        )
+    except OSError:
+        pass
 
 
 def _write_world_status(world_dir: Path, state: WorldState) -> None:
@@ -630,5 +644,3 @@ def _merge_filesystem_evidence(state: WorldState) -> None:
                     break
     if state.status == "pending" and state.dataset_exists and state.primary_types_exists:
         state.status = "success"
-
-

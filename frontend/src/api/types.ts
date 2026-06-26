@@ -1,5 +1,6 @@
 export type PageState = 'loading' | 'empty' | 'error' | 'populated';
 export type ChipVariant = 'ok' | 'warn' | 'bad';
+export type EventTone = 'ok' | 'warn' | 'bad' | 'run';
 
 export interface StepCheck {
   label: string;
@@ -60,6 +61,8 @@ export interface WorldStatus {
   model: string;
   status: 'completed' | 'running' | 'failed' | 'pending' | 'cancelled';
   raw_status?: string;
+  phase?: string;
+  elapsed_seconds?: number | null;
   rows: Array<{ label: string; value: string; tone?: 'ok' | 'warn' | 'bad' }>;
   errorSummary?: string;
   logTail?: string;
@@ -75,12 +78,17 @@ export interface BatchSummary {
 
 export interface RiskComparison {
   world: string;
+  batchId?: string;
+  worldIndex?: number;
   risks: string;
   level: string;
   levelVariant?: ChipVariant;
   status: string;
   statusVariant?: ChipVariant;
   evidence?: string;
+  evidenceTail?: string[];
+  entities?: number;
+  opinions?: number;
 }
 
 export interface RiskReviewResponse {
@@ -146,6 +154,7 @@ export interface RunRequest {
   models: string[];
   tag: string;
   base_url?: string;
+  client_session_id?: string;
   config: {
     parallel_worlds: number;
     ticks: number;
@@ -161,4 +170,124 @@ export interface RunStatusResponse {
   all_completed: boolean;
   worlds: WorldStatus[];
   logs: string[];
+}
+
+export interface ActiveRunResponse {
+  active: boolean;
+  batch: RunStatusResponse | null;
+}
+
+export interface RunEvent {
+  id: string;
+  scope: 'batch' | 'world';
+  kind: string;
+  tone: EventTone;
+  title: string;
+  message: string;
+  timestamp?: string;
+  world_index?: number | null;
+  model?: string;
+  phase?: string;
+  meta?: Record<string, unknown>;
+}
+
+export interface RunEventsResponse {
+  batch_id: string;
+  scope: 'batch';
+  events: RunEvent[];
+}
+
+export interface WorldEventsResponse {
+  batch_id: string;
+  world_index: number;
+  scope: 'world';
+  events: RunEvent[];
+}
+
+export interface RunMetricsResponse {
+  batch_id: string;
+  status: string;
+  elapsed_seconds?: number | null;
+  report_count?: number;
+  counts: { total: number; completed: number; running: number; failed: number; pending: number };
+  worlds: Array<{
+    world_index: number;
+    model: string;
+    status: string;
+    elapsed_seconds?: number | null;
+    phase_summary: Record<string, { elapsed_seconds: number }>;
+    token_summary: Record<string, unknown>;
+  }>;
+  tokens: {
+    total_tokens: number;
+    per_model: Record<string, { total_tokens: number }>;
+    per_phase: Record<string, { elapsed_seconds: number; total_tokens?: number; calls?: number; llm_elapsed_seconds?: number }>;
+  };
+}
+
+export interface RunErrorReason {
+  world_index: number;
+  model: string;
+  reason: string;
+  message: string;
+  suggestion: string;
+}
+
+export interface RunErrorsResponse {
+  batch_id: string;
+  errors: RunErrorReason[];
+}
+
+export interface WorldListResponse {
+  batch_id: string;
+  worlds: Array<{
+    id: string;
+    world_index: number;
+    model: string;
+    status: WorldStatus['status'];
+    run_dir: string;
+    dataset_path: string;
+    elapsed_seconds?: number | null;
+    error?: string;
+  }>;
+}
+
+export interface WorldSummaryResponse {
+  id: string;
+  batch_id: string;
+  world_index: number;
+  model: string;
+  status: WorldStatus['status'];
+  raw_status?: string;
+  run_dir: string;
+  dataset: {
+    available: boolean;
+    state: string;
+    dataset_path: string;
+    event_entities_count: number;
+    opinions_count: number;
+    risk_verdict: Record<string, unknown>;
+    risk_type_classification: Record<string, unknown>;
+    source_context: Record<string, unknown>;
+    agent_stance_matrix?: unknown[];
+  };
+  run_meta: Record<string, unknown>;
+  elapsed_seconds?: number | null;
+  error?: string;
+}
+
+export interface WorldTicksResponse {
+  world_index: number;
+  model: string;
+  state: string;
+  tick_logs_path: string;
+  ticks: Array<Record<string, unknown>>;
+}
+
+export interface WorldLogResponse {
+  batch_id: string;
+  world_index: number;
+  state: string;
+  path: string;
+  lines: string[];
 }

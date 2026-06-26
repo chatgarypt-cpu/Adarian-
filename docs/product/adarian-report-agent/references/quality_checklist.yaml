@@ -1,0 +1,271 @@
+
+version: 2.2
+
+categories:
+  ai_trace:
+    - id: A1
+      severity: high
+      rule: Avoid exaggerated symbolic phrasing.
+      patterns:
+        - "标志着"
+        - "具有里程碑意义"
+        - "深刻改变"
+      action: rewrite_to_plain_government_analysis
+    - id: A2
+      severity: high
+      rule: Avoid promotional language.
+    - id: A3
+      severity: medium
+      rule: Limit AI high-frequency filler by density and context.
+      patterns:
+        - "值得注意的是"
+        - "不难看出"
+        - "总体来看"
+        - "进一步来看"
+      threshold: more_than_3_total
+    - id: A4
+      severity: medium
+      rule: More than ten em-dash markers is suspicious.
+      threshold: max_10
+      exemption: appendix_json_values
+    - id: A5
+      severity: medium
+      rule: Avoid repeated three-part parallel structures.
+      threshold: more_than_2_same_sentence_pattern
+      exemption: "一是/二是/三是" 为中文公文标准格式，不计入三部分并列计数
+      action: vary_sentence_structure
+    - id: A6
+      severity: medium
+      rule: Avoid negative parallelism patterns.
+    - id: A7
+      severity: low
+      rule: Avoid cycling names for the same entity.
+    - id: A8
+      severity: medium
+      rule: Avoid filler phrases.
+    - id: A9
+      severity: low
+      rule: Avoid stacked hedging.
+    - id: A10
+      severity: high
+      rule: Avoid vague optimistic endings.
+    - id: A11
+      severity: fatal
+      rule: No conversational assistant residue.
+    - id: A12
+      severity: low
+      rule: Avoid monotonous sentence rhythm.
+  official_style:
+    - id: B1
+      severity: fatal
+      rule: Body claims must trace to appendix B; no internal simulation numbers in正文.
+      forbidden_public_metrics:
+        - stance_score
+        - polarization_index
+        - agent_count
+        - tick
+        - percentage
+      exemption: "\"立场分\"作为\"立场分化\"等正常汉语词汇的组成部分时不视为违规；仅当\"立场分\"作为独立术语出现时触发"
+      source_required:
+        - appendix_b.evolution_analysis
+        - appendix_b.risk_assessment
+        - appendix_b.countermeasures
+    - id: B2
+      severity: fatal
+      rule: First chapter has no simulation wording; no AI/model identity exposure.
+      scope: section_1_overview
+      forbidden_terms:
+        - 模拟
+        - 仿真
+        - 推演
+        - AI
+        - 模型
+    - id: B3
+      severity: high
+      rule: Simulation findings must not be asserted as real-world facts.
+    - id: B4
+      severity: medium
+      rule: Each risk includes label, causal chain, and target subject.
+    - id: B5
+      severity: high
+      rule: Each risk has at least one countermeasure.
+      closure_required:
+        - risk_type_id
+        - risk_label
+        - trigger_reason
+        - responsible_body
+        - action_direction
+      fatal_if: countermeasure_drifts_from_paired_risk
+    - id: B5b
+      severity: fatal
+      rule: In Chapter 4 body text, each confirmed risk must receive a substantive countermeasure paragraph. A substantive paragraph includes (a) explicit risk label reference, (b) responsible body, (c) action direction, and (d) at least one specific actionable measure. One-line perfunctory mentions (e.g., "XX风险等级为高风险，建议防范") that lack concrete measures are not acceptable.
+      scope: section_4_countermeasures_body_text
+      check: each_risk_has_substantive_countermeasure_paragraph_not_perfunctory_one_liner
+      minimum_elements_per_risk:
+        - risk_label_reference
+        - responsible_body
+        - action_direction
+        - at_least_one_concrete_measure
+    - id: B6
+      severity: fatal
+      rule: No short/mid/long-term countermeasure structure.
+      exemption: "\"长期\"/\"短期\"/\"中期\"仅在形成三段并列结构（如\"短期……中期……长期……\"）时视为违规；作为单一短语（如\"长期修复计划\"\"短期应对\"）且未与其他两段并列时不触发"
+    - id: B7
+      severity: fatal
+      rule: Overview has no simulation metrics.
+    - id: B8
+      severity: medium
+      rule: No vague unattributed sourcing.
+    - id: B9
+      severity: medium
+      rule: Title is [事件名称]舆情风险研判.
+    - id: B10
+      severity: low
+      rule: Include author or 待填写 and date.
+    - id: B11
+      severity: fatal
+      rule: Section 3 (风险研判) has no simulation trajectory language.
+      scope: section_3_risk_assessment
+      forbidden_terms:
+        - "推演"
+        - "组推演"
+        - "跨组"
+        - "一致显示"
+        - "识别该风险"
+        - "仿真"
+        - "world"
+        - "模拟"
+        - "六组"
+        - "三组"
+        - "半数"
+        - "推演显示"
+    - id: B12
+      severity: fatal
+      rule: Section 1 (舆情概要) does not copy seed_input verbatim; must be LLM-summarized in own words.
+      scope: section_1_overview
+      check: significant_substring_match_vs_seed_input
+      threshold: no_consecutive_30_chars_match
+  data_compliance:
+    - id: C1
+      severity: fatal
+      rule: Risk labels must come from risk_mapping.yaml.
+    - id: C2a
+      severity: fatal
+      rule: Source fields must exist in dataset_fields.yaml unless explicitly exempt.
+    - id: C2b
+      severity: high
+      rule: Derived fields must be declared in appendix_b_schema.yaml.
+      required_metadata:
+        - kind
+        - source_fields
+        - derived_from
+        - allowed_in_body
+    - id: C3a
+      severity: high
+      rule: Appendix B internal calculations must be consistent.
+    - id: C3b
+      severity: high
+      rule: Body labels must match appendix B.
+    - id: C3c
+      severity: high
+      rule: Body numbers, if any, must match appendix B.
+    - id: C4
+      severity: medium
+      rule: Risk level_id and level_label follow upstream risk_verdict.
+  structure:
+    - id: D1
+      severity: fatal
+      rule: Four body sections plus appendix A and B exist (or appendix optional for 无附录 version).
+    - id: D2
+      severity: fatal
+      rule: Appendix A matches references/appendix_a.md exactly.
+    - id: D3
+      severity: fatal
+      rule: Appendix B JSON is valid and has five top-level keys.
+      required_top_level_keys:
+        - meta
+        - evolution_analysis
+        - source_evidence
+        - risk_assessment
+        - countermeasures
+      schema_contract: appendix_b_schema.yaml
+    - id: D4
+      severity: low
+      rule: File name follows safe_event_slug_舆情风险研判_YYYYMMDD_vN.md.
+    - id: D5
+      severity: fatal
+      rule: Appendix B in 含附录 version is the complete appendix_b.json content with no truncation.
+      scope: appendix_b_in_final_report
+      forbidden_patterns:
+        - "完整数据见"
+        - "完整轨迹见"
+        - "详细数据见"
+        - "完整.*见.*源文件"
+        - "…"
+      check: appendix_b_json_content_must_be_complete_no_placeholder_or_truncation
+    - id: D6
+      severity: fatal
+      rule: All chapter titles use Markdown heading syntax (##  for chapter titles, ### for sub-sections). Sub-headings within chapters with multiple parallel items (risks, countermeasures) must use Chinese numeric hierarchy （一）（二）（三）.
+      scope: body_text_headings
+      required_patterns:
+        - "^## 一、舆情概要$"
+        - "^## 二、演化分析$"
+        - "^## 三、风险研判$"
+        - "^## 四、对策意见$"
+      sub_heading_rules:
+        numbering_hierarchy:
+          - level_1: "## 一、二、三、四"
+          - level_2: "### （一）（二）（三）"
+          - level_3: "1. 2. 3."
+          - level_4: "（1）（2）（3）"
+        must_use_numeric_numbering: true
+        forbidden_letter_labels: ["A.", "B.", "C.", "A）", "B）", "C）"]
+        applicable: C版 must use ### （一）（二）（三） for multiple parallel items; B版 if has sub-headings must follow same rule
+      forbidden: plain_text_pseudo_headings_without_hash_prefix
+    - id: D7
+      severity: high
+      rule: Appendix B in 含附录 version is the appendix_b.json data as-is (via Python json.dumps), not manually reformatted or restructured.
+      scope: appendix_b_in_final_report
+      forbidden: manually_reformatted_tables_or_section_headings_not_matching_appendix_b_json_structure
+      required: content_matches_appendix_b_json_via_json_dumps
+  length:
+    - id: E1b
+      severity: medium
+      rule: B版 舆情概要 200-300 Chinese characters.
+      version: B
+    - id: E1c
+      severity: medium
+      rule: C版 舆情概要 400-600 Chinese characters.
+      version: C
+    - id: E2b
+      severity: medium
+      rule: B版 演化分析 450-650 Chinese characters.
+      version: B
+    - id: E2c
+      severity: medium
+      rule: C版 演化分析 900-1300 Chinese characters.
+      version: C
+    - id: E3b
+      severity: medium
+      rule: B版 风险研判 400-600 Chinese characters.
+      version: B
+    - id: E3c
+      severity: medium
+      rule: C版 风险研判 1000-1400 Chinese characters.
+      version: C
+    - id: E4b
+      severity: medium
+      rule: B版 对策意见 180-280 Chinese characters; expand only 2-3 most critical measures when >3 confirmed risks, otherwise expand all.
+      version: B
+    - id: E4c
+      severity: medium
+      rule: C版 对策意见 1000-1400 Chinese characters; all confirmed risks fully expanded.
+      version: C
+    - id: E5b
+      severity: medium
+      rule: B版 正文合计 1400-1500 Chinese characters.
+      version: B
+    - id: E5c
+      severity: medium
+      rule: C版 正文合计 3800-4000 Chinese characters.
+      version: C

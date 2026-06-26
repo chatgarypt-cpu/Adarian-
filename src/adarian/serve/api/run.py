@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import threading
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
@@ -14,6 +15,7 @@ from pydantic import ValidationError
 
 from adarian import config as adarian_config
 from adarian.serve import db
+from adarian.serve.observability import batch_events, batch_log_lines, run_errors, run_metrics, world_progress
 from adarian.serve.paths import resolve_project_file
 from adarian.serve.schemas import RunPayload, error_response, normalize_status
 
@@ -21,6 +23,7 @@ run_bp = Blueprint("run", __name__)
 
 _EXECUTOR = ThreadPoolExecutor(max_workers=3)
 _ACTIVE: dict[str, Any] = {}
+_SYNC_LOCK = threading.Lock()
 
 
 def _idempotency_key(payload: RunPayload, base_url: str, tag: str, seed_path: str) -> str:
@@ -31,6 +34,7 @@ def _idempotency_key(payload: RunPayload, base_url: str, tag: str, seed_path: st
             "models": sorted(payload.models),
             "tag": tag,
             "base_url": base_url,
+            "client_session_id": payload.client_session_id.strip(),
         },
         ensure_ascii=False,
         sort_keys=True,
@@ -64,37 +68,65 @@ def _world_rows_from_session(session) -> list[dict[str, Any]]:
 
 def _write_session(session, *, status: str | None = None) -> None:
     raw_status = status or session.status
+    existing = db.get_batch(session.batch_id) or {}
     db.upsert_batch(
         {
             "id": session.batch_id,
-            "task_name": session.batch_id,
-            "seed_text": "",
-            "seed_path": str(session.seed_path),
-            "models": json.dumps([w.model for w in session.worlds], ensure_ascii=False),
-            "tag": session.batch_id,
-            "base_url": session.worlds[0].base_url if session.worlds else "",
+            "task_name": existing.get("task_name") or session.batch_id,
+            "seed_text": existing.get("seed_text") or "",
+            "seed_path": existing.get("seed_path") or str(session.seed_path),
+            "models": existing.get("models") or json.dumps([w.model for w in session.worlds], ensure_ascii=False),
+            "tag": existing.get("tag") or session.batch_id,
+            "base_url": existing.get("base_url") or (session.worlds[0].base_url if session.worlds else ""),
             "batch_dir": str(session.batch_dir),
-            "created_at": session.started_at or db.now(),
+            "created_at": existing.get("created_at") or session.started_at or db.now(),
             "completed_at": session.completed_at or "",
             "status": normalize_status(raw_status),
-            "idempotency_key": "",
-            "config_json": "{}",
+            "idempotency_key": existing.get("idempotency_key") or "",
+            "config_json": existing.get("config_json") or "{}",
         }
     )
     for row in _world_rows_from_session(session):
         db.upsert_world(row)
 
 
+def _sync_session(session) -> None:
+    with _SYNC_LOCK:
+        _write_session(session)
+
+
+def _config_json_with_session(config: dict[str, Any], client_session_id: str) -> str:
+    merged = dict(config or {})
+    if client_session_id:
+        merged["client_session_id"] = client_session_id
+    return json.dumps(merged, ensure_ascii=False)
+
+
+def _batch_session_id(batch: dict[str, Any]) -> str:
+    try:
+        config = json.loads(batch.get("config_json") or "{}")
+    except json.JSONDecodeError:
+        return ""
+    return str(config.get("client_session_id") or "")
+
+
+def _request_session_id() -> str:
+    return (request.args.get("client_session_id") or request.headers.get("X-Adarian-Client-Session") or "").strip()
+
+
 def _finish_session(session) -> None:
     try:
         from adarian.batch import execute_session
 
+        session.on_update = _sync_session
+        _sync_session(session)
         execute_session(session)
     except Exception as exc:
         session.status = "failed"
         session.completed_at = db.now()
         session.log(f"Batch execution failed: {exc}")
     finally:
+        session.on_update = None
         _write_session(session)
         _ACTIVE.pop(session.batch_id, None)
 
@@ -115,20 +147,38 @@ def _batch_response(batch: dict[str, Any], worlds: list[dict[str, Any]] | None =
 
 def _world_response(row: dict[str, Any], index: int) -> dict[str, Any]:
     status = normalize_status(row.get("raw_status") or row.get("status"))
+
+    # For running worlds, read live phase/elapsed from run.log
+    run_dir = row.get("run_dir", "")
+    phase: str | None = None
+    live_elapsed: float | None = row.get("elapsed_seconds")
+
+    if status == "running" and run_dir:
+        progress = world_progress(row)
+        phase = progress.get("phase")
+        if progress.get("elapsed_seconds") is not None:
+            live_elapsed = progress["elapsed_seconds"]
+    elif status in ("completed", "failed") and run_dir:
+        # Try to get phase from log for completed worlds too
+        progress = world_progress(row)
+        phase = progress.get("phase")
+
     rows = [
         {"label": "模型", "value": row.get("model_name", "")},
         {"label": "状态", "value": status},
     ]
     if row.get("dataset_path"):
         rows.append({"label": "数据集", "value": row.get("dataset_path", "")})
-    if row.get("elapsed_seconds") is not None:
-        rows.append({"label": "耗时", "value": f"{row.get('elapsed_seconds')}s"})
+    if live_elapsed is not None:
+        rows.append({"label": "耗时", "value": f"{live_elapsed}s"})
     return {
         "id": str(row.get("id", "")),
         "round": f"第 {index + 1} 轮",
         "model": row.get("model_name", ""),
         "status": status,
         "raw_status": row.get("raw_status") or row.get("status"),
+        "phase": phase or "",
+        "elapsed_seconds": live_elapsed,
         "rows": rows,
         "errorSummary": row.get("error_message") or "",
         "logTail": row.get("log_tail") or "",
@@ -136,15 +186,7 @@ def _world_response(row: dict[str, Any], index: int) -> dict[str, Any]:
 
 
 def _read_scheduler_logs(batch: dict[str, Any]) -> list[str]:
-    from pathlib import Path
-
-    path = Path(batch.get("batch_dir") or "") / "scheduler_batch.log"
-    if path.exists():
-        try:
-            return path.read_text(encoding="utf-8", errors="replace").splitlines()[-120:]
-        except OSError:
-            return []
-    return []
+    return batch_log_lines(batch, 120)
 
 
 @run_bp.post("/run")
@@ -205,6 +247,8 @@ def start_run():
         body, status = error_response("RUN_START_FAILED", "Could not start batch", {"error": str(exc)})
         return jsonify(body), status
 
+    session.on_update = _sync_session
+
     db.upsert_batch(
         {
             "id": session.batch_id,
@@ -219,7 +263,7 @@ def start_run():
             "completed_at": "",
             "status": "running",
             "idempotency_key": idem,
-            "config_json": json.dumps(payload.config, ensure_ascii=False),
+            "config_json": _config_json_with_session(payload.config, payload.client_session_id),
         }
     )
     for row in _world_rows_from_session(session):
@@ -238,3 +282,52 @@ def run_status(batch_id: str):
         body, status = error_response("BATCH_NOT_FOUND", "Batch not found", {"batch_id": batch_id})
         return jsonify(body), status
     return jsonify(_batch_response(batch, db.list_worlds(batch_id)))
+
+
+@run_bp.get("/run/active")
+def active_run():
+    client_session_id = _request_session_id()
+    batches = db.list_batches()
+    if client_session_id:
+        for batch in batches:
+            status = normalize_status(batch.get("status"))
+            if status in {"running", "pending"} and _batch_session_id(batch) == client_session_id:
+                return jsonify({"active": True, "batch": _batch_response(batch, db.list_worlds(batch["id"]))})
+        return jsonify({"active": False, "batch": None})
+    for batch in batches:
+        status = normalize_status(batch.get("status"))
+        if status in {"running", "pending"}:
+            return jsonify({"active": True, "batch": _batch_response(batch, db.list_worlds(batch["id"]))})
+    return jsonify({"active": False, "batch": None})
+
+
+@run_bp.get("/run/<batch_id>/events")
+def run_events(batch_id: str):
+    batch = db.get_batch(batch_id)
+    if not batch:
+        body, status = error_response("BATCH_NOT_FOUND", "Batch not found", {"batch_id": batch_id})
+        return jsonify(body), status
+    scope = request.args.get("scope", "batch")
+    if scope != "batch":
+        body, status = error_response("VALIDATION_ERROR", "Only scope=batch is supported on this endpoint")
+        return jsonify(body), status
+    worlds = db.list_worlds(batch_id)
+    return jsonify({"batch_id": batch_id, "scope": "batch", "events": batch_events(batch, worlds)})
+
+
+@run_bp.get("/run/<batch_id>/metrics")
+def metrics(batch_id: str):
+    batch = db.get_batch(batch_id)
+    if not batch:
+        body, status = error_response("BATCH_NOT_FOUND", "Batch not found", {"batch_id": batch_id})
+        return jsonify(body), status
+    return jsonify(run_metrics(batch, db.list_worlds(batch_id)))
+
+
+@run_bp.get("/run/<batch_id>/errors")
+def errors(batch_id: str):
+    batch = db.get_batch(batch_id)
+    if not batch:
+        body, status = error_response("BATCH_NOT_FOUND", "Batch not found", {"batch_id": batch_id})
+        return jsonify(body), status
+    return jsonify(run_errors(batch, db.list_worlds(batch_id)))

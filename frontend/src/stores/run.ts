@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { api } from '../api/client';
-import type { ModelGateway, ModelGatewayDraft, ModelSummary, PageState, RiskComparison, WorldStatus } from '../api/types';
+import type { ModelGateway, ModelGatewayDraft, ModelSummary, PageState, RiskComparison, RunErrorReason, RunEvent, RunMetricsResponse, WorldStatus } from '../api/types';
 
 export const useRunStore = defineStore('run', () => {
   const config = ref({
@@ -29,15 +29,71 @@ export const useRunStore = defineStore('run', () => {
   const modelsError = ref('');
   const modelToast = ref('');
   const reviewError = ref('');
+  const observabilityError = ref('');
   const healthChecking = ref(false);
   const healthSummary = ref({ total: 0, ok: 0, failed: 0, timeout: 0 });
   const reviewRows = ref<RiskComparison[]>([]);
+  const batchEvents = ref<RunEvent[]>([]);
+  const worldEvents = ref<Record<number, RunEvent[]>>({});
+  const runMetrics = ref<RunMetricsResponse | null>(null);
+  const runErrors = ref<RunErrorReason[]>([]);
   const activeBatch = ref<{ batchId: string | null; status: 'idle' | 'running' | 'completed' | 'failed'; worlds: WorldStatus[] }>({
     batchId: null,
     status: 'idle',
     worlds: [],
   });
   let toastTimer: number | undefined;
+  let pollTimer: ReturnType<typeof setInterval> | undefined;
+  let pollInFlight = false;
+
+  const BATCH_STORAGE_KEY = 'adarian:active-batch';
+
+  function saveActiveBatch() {
+    if (activeBatch.value.batchId) {
+      localStorage.setItem(BATCH_STORAGE_KEY, JSON.stringify({
+        batchId: activeBatch.value.batchId,
+        savedAt: Date.now(),
+      }));
+    } else {
+      localStorage.removeItem(BATCH_STORAGE_KEY);
+    }
+  }
+
+  function applyRunStatus(result: { batch_id: string; status: string; worlds: WorldStatus[]; logs: string[] }) {
+    activeBatch.value = {
+      batchId: result.batch_id,
+      status: result.status === 'completed' ? 'completed' : result.status === 'failed' ? 'failed' : 'running',
+      worlds: result.worlds,
+    };
+    logs.value = result.logs.join('\n');
+    runState.value = result.worlds.length ? 'populated' : 'empty';
+  }
+
+  async function restoreActiveBatch() {
+    try {
+      const raw = localStorage.getItem(BATCH_STORAGE_KEY);
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (data.batchId && Date.now() - data.savedAt <= 3600000) {
+          activeBatch.value.batchId = data.batchId;
+          activeBatch.value.status = 'running';
+          await refreshStatus({ silent: true });
+          return;
+        }
+        localStorage.removeItem(BATCH_STORAGE_KEY);
+      }
+
+      const active = await api.getActiveRun();
+      if (active.active && active.batch) {
+        applyRunStatus(active.batch);
+        await loadObservability();
+        saveActiveBatch();
+        if (activeBatch.value.status === 'running') startPolling();
+      }
+    } catch {
+      localStorage.removeItem(BATCH_STORAGE_KEY);
+    }
+  }
 
   const completedCount = computed(() => activeBatch.value.worlds.filter((world) => world.status === 'completed').length);
   const runningCount = computed(() => activeBatch.value.worlds.filter((world) => world.status === 'running').length);
@@ -96,6 +152,8 @@ export const useRunStore = defineStore('run', () => {
         focuses: savedConfig.focuses,
       };
       modelsState.value = modelGateways.value.length ? 'populated' : 'empty';
+      // Restore batch session from localStorage
+      await restoreActiveBatch();
     } catch (error) {
       modelsError.value = error instanceof Error ? error.message : '模型配置加载失败';
       modelsState.value = 'error';
@@ -282,43 +340,75 @@ export const useRunStore = defineStore('run', () => {
           focuses: config.value.focuses,
         },
       });
-      activeBatch.value = {
-        batchId: result.batch_id,
-        status: result.status === 'completed' ? 'completed' : result.status === 'failed' ? 'failed' : 'running',
-        worlds: result.worlds,
-      };
-      logs.value = result.logs.join('\n');
-      runState.value = result.worlds.length ? 'populated' : 'empty';
+      applyRunStatus(result);
+      await loadObservability();
+      saveActiveBatch();
+      startPolling();
     } catch (error) {
       runError.value = error instanceof Error ? error.message : '启动推演失败';
       runState.value = 'error';
     }
   }
 
-  async function refreshStatus() {
+  async function refreshStatus(options: { silent?: boolean } = {}) {
     if (!activeBatch.value.batchId) return;
-    runState.value = 'loading';
+    if (!options.silent) runState.value = 'loading';
     runError.value = '';
     try {
       const result = await api.getRunStatus(activeBatch.value.batchId);
-      activeBatch.value = {
-        batchId: result.batch_id,
-        status: result.status === 'completed' ? 'completed' : result.status === 'failed' ? 'failed' : 'running',
-        worlds: result.worlds,
-      };
-      logs.value = result.logs.join('\n');
-      runState.value = result.worlds.length ? 'populated' : 'empty';
+      applyRunStatus(result);
+      await loadObservability();
+      saveActiveBatch();
+      // Start auto-poll when batch is running
+      if (activeBatch.value.status === 'running') startPolling();
     } catch (error) {
       runError.value = error instanceof Error ? error.message : '运行状态读取失败';
       runState.value = 'error';
     }
   }
 
+  async function _doPoll() {
+    if (!activeBatch.value.batchId || activeBatch.value.status !== 'running') return;
+    if (pollInFlight) return;
+    pollInFlight = true;
+    try {
+      const result = await api.getRunStatus(activeBatch.value.batchId);
+      applyRunStatus(result);
+      await loadObservability();
+      saveActiveBatch();
+      // Stop polling when batch finishes
+      if (result.status !== 'running') stopPolling();
+    } catch (error) {
+      // Poll errors are silent — network hiccups shouldn't stop polling
+      runError.value = error instanceof Error ? error.message : '运行状态轮询失败';
+    } finally {
+      pollInFlight = false;
+    }
+  }
+
+  function startPolling() {
+    stopPolling();
+    if (activeBatch.value.status === 'running') {
+      pollTimer = setInterval(_doPoll, 5000);
+      void _doPoll();
+    }
+  }
+
+  function stopPolling() {
+    if (pollTimer) {
+      clearInterval(pollTimer);
+      pollTimer = undefined;
+    }
+  }
+
   async function loadReview() {
     if (!activeBatch.value.batchId) {
-      reviewRows.value = [];
-      reviewState.value = 'empty';
-      return;
+      await restoreActiveBatch();
+      if (!activeBatch.value.batchId) {
+        reviewRows.value = [];
+        reviewState.value = 'empty';
+        return;
+      }
     }
     reviewState.value = 'loading';
     reviewError.value = '';
@@ -329,6 +419,39 @@ export const useRunStore = defineStore('run', () => {
     } catch (error) {
       reviewError.value = error instanceof Error ? error.message : '审查结果读取失败';
       reviewState.value = 'error';
+    }
+  }
+
+  async function loadObservability() {
+    if (!activeBatch.value.batchId) {
+      batchEvents.value = [];
+      worldEvents.value = {};
+      runMetrics.value = null;
+      runErrors.value = [];
+      return;
+    }
+    observabilityError.value = '';
+    try {
+      const batchId = activeBatch.value.batchId;
+      const [events, metrics, errors] = await Promise.all([
+        api.getBatchEvents(batchId),
+        api.getRunMetrics(batchId),
+        api.getRunErrors(batchId),
+      ]);
+      batchEvents.value = events.events;
+      runMetrics.value = metrics;
+      runErrors.value = errors.errors;
+      const pairs = await Promise.all(activeBatch.value.worlds.map(async (_world, index) => {
+        try {
+          const response = await api.getWorldEvents(batchId, index);
+          return [index, response.events] as const;
+        } catch {
+          return [index, []] as const;
+        }
+      }));
+      worldEvents.value = Object.fromEntries(pairs);
+    } catch (error) {
+      observabilityError.value = error instanceof Error ? error.message : '运行事件读取失败';
     }
   }
 
@@ -348,9 +471,14 @@ export const useRunStore = defineStore('run', () => {
     modelsError,
     modelToast,
     reviewError,
+    observabilityError,
     healthChecking,
     healthSummary,
     reviewRows,
+    batchEvents,
+    worldEvents,
+    runMetrics,
+    runErrors,
     activeBatch,
     completedCount,
     runningCount,
@@ -369,8 +497,12 @@ export const useRunStore = defineStore('run', () => {
     selectAvailableModels,
     toggleAllModels,
     saveConfig,
+    restoreActiveBatch,
     startRun,
     refreshStatus,
+    startPolling,
+    stopPolling,
     loadReview,
+    loadObservability,
   };
 });

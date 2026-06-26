@@ -10,13 +10,14 @@
           </div>
           <div v-if="rows.length === 0" class="empty-inline">暂无可审查结果。完成一次真实推演后，可在这里读取多轮结果对比。</div>
           <table class="table">
-            <thead><tr><th>推演轮次</th><th>主要风险</th><th>风险等级</th><th>结果状态</th></tr></thead>
+            <thead><tr><th>推演轮次</th><th>主要风险</th><th>风险等级</th><th>结果状态</th><th>详情</th></tr></thead>
             <tbody>
               <tr v-for="item in rows" :key="item.world">
                 <td>{{ item.world }}</td>
                 <td>{{ item.risks }}</td>
                 <td><Chip :label="item.level" :variant="item.levelVariant" /></td>
                 <td><Chip :label="item.status" :variant="item.statusVariant" /></td>
+                <td><button class="ghost compact" type="button" @click="openWorld(item)">查看</button></td>
               </tr>
             </tbody>
           </table>
@@ -42,6 +43,8 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
+import { useRouter } from 'vue-router';
+import type { RiskComparison } from '../api/types';
 import Card from '../components/Card.vue';
 import Chip from '../components/Chip.vue';
 import PageState from '../components/PageState.vue';
@@ -51,6 +54,7 @@ import StepLine from '../components/StepLine.vue';
 import { useRunStore } from '../stores/run';
 
 const run = useRunStore();
+const router = useRouter();
 const { reviewState: state, reviewRows } = storeToRefs(run);
 const rows = computed(() => reviewRows.value);
 const effectiveState = computed(() => (state.value === 'empty' ? 'populated' : state.value));
@@ -58,4 +62,10 @@ const effectiveState = computed(() => (state.value === 'empty' ? 'populated' : s
 onMounted(async () => {
   await run.loadReview();
 });
+
+function openWorld(item: RiskComparison) {
+  const batchId = item.batchId || run.activeBatch.batchId;
+  if (!batchId) return;
+  router.push({ path: '/world', query: { batch_id: batchId, world_index: String(item.worldIndex ?? 0) } });
+}
 </script>

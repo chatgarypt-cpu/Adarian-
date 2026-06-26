@@ -7,6 +7,7 @@ import ReviewPage from './pages/05-review.vue';
 import ReportPage from './pages/06-report.vue';
 import HistoryPage from './pages/07-history.vue';
 import SettingsPage from './pages/08-settings.vue';
+import WorldPage from './pages/09-world.vue';
 
 export const routes = [
   { path: '/', redirect: '/seed' },
@@ -18,6 +19,7 @@ export const routes = [
   { path: '/report', component: ReportPage },
   { path: '/history', component: HistoryPage },
   { path: '/settings', component: SettingsPage },
+  { path: '/world', component: WorldPage },
   { path: '/:pathMatch(.*)*', redirect: '/seed' },
 ];
 
@@ -27,7 +29,7 @@ export const router = createRouter({
 });
 
 router.afterEach((to) => {
-  const workflowPaths = new Set(['/seed', '/config', '/models', '/run', '/review', '/report', '/history', '/settings']);
+  const workflowPaths = new Set(['/seed', '/config', '/models', '/run', '/review', '/report', '/history', '/settings', '/world']);
   if (typeof window !== 'undefined' && workflowPaths.has(to.path)) {
     window.localStorage.setItem('adarian:last-route', to.path);
   }

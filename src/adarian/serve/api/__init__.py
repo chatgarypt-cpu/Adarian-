@@ -16,6 +16,7 @@ from adarian.serve.api.review import review_bp
 from adarian.serve.api.run import run_bp
 from adarian.serve.api.seed import seed_bp
 from adarian.serve.api.settings import settings_bp
+from adarian.serve.api.world import world_bp
 
 
 def register_api(app: Flask) -> None:
@@ -25,6 +26,7 @@ def register_api(app: Flask) -> None:
     app.register_blueprint(models_bp, url_prefix="/api")
     app.register_blueprint(model_gateways_bp, url_prefix="/api")
     app.register_blueprint(run_bp, url_prefix="/api")
+    app.register_blueprint(world_bp, url_prefix="/api")
     app.register_blueprint(history_bp, url_prefix="/api")
     app.register_blueprint(review_bp, url_prefix="/api")
     app.register_blueprint(report_bp, url_prefix="/api")

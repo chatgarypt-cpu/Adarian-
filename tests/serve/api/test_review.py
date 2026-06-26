@@ -16,7 +16,7 @@ def test_report_unknown_batch_404(client):
     assert response.get_json()["code"] == "BATCH_NOT_FOUND"
 
 
-def test_report_without_dataset_returns_409(client):
+def test_report_generation_is_deferred_without_existing_file(client):
     from adarian.serve import db
 
     db.upsert_batch(
@@ -38,4 +38,6 @@ def test_report_without_dataset_returns_409(client):
     )
     response = client.post("/api/report", json={"batch_id": "batch_without_dataset"})
     assert response.status_code == 409
-    assert response.get_json()["code"] == "REPORT_SOURCE_NOT_FOUND"
+    body = response.get_json()
+    assert body["code"] == "REPORT_GENERATION_DEFERRED"
+    assert body["details"]["next_version"] == "v1.5.2"

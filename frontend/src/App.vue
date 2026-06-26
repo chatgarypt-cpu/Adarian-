@@ -60,11 +60,15 @@ const pages = [
   { path: '/settings', n: '08', title: '系统设置', sub: '管理能力', desc: '管理模型、输出位置、显示方式和系统检查项。' },
 ];
 
+const detailPages = [
+  { path: '/world', n: '详情', title: 'World 详情', sub: '单轮证据', desc: '查看单个平行世界的摘要、事件流、智能体发言和运行日志。' },
+];
+
 const route = useRoute();
 const router = useRouter();
 const runStore = useRunStore();
 const historyStore = useHistoryStore();
-const activePage = computed(() => pages.find((page) => page.path === route.path) ?? pages[0]);
+const activePage = computed(() => pages.find((page) => page.path === route.path) ?? detailPages.find((page) => page.path === route.path) ?? pages[0]);
 
 onMounted(async () => {
   try {

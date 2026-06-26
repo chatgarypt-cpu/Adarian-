@@ -5,7 +5,7 @@ import { router } from './router';
 import './style.css';
 
 const savedRoute = window.localStorage.getItem('adarian:last-route');
-const workflowPaths = new Set(['/seed', '/config', '/models', '/run', '/review', '/report', '/history', '/settings']);
+const workflowPaths = new Set(['/seed', '/config', '/models', '/run', '/review', '/report', '/history', '/settings', '/world']);
 const currentPath = window.location.pathname;
 if (savedRoute && workflowPaths.has(savedRoute) && savedRoute !== currentPath && currentPath === '/') {
   window.history.replaceState(null, '', savedRoute);

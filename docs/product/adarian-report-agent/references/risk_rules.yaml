@@ -1,0 +1,63 @@
+version: 1
+
+candidate_layer:
+  source: source_evidence.worlds[].risk_type_classification.primary_types
+  max_confirmed_risks: 3
+  min_confirmed_risks: 1
+  allow_no_confirmed_risks_with_reason: true
+  allow_downgrade_when_evidence_weak: true
+
+evidence_layer:
+  high_pressure:
+    any:
+      - source: source_evidence.worlds[].risk_verdict.level
+        contains: high
+      - source: source_evidence.worlds[].risk_verdict.signals.high_sensitive_prior
+        equals: true
+      - source: evolution_analysis.risk_level_distribution.high
+        gte: 1
+      - source: evolution_analysis.event_scale_avg
+        gte: 0.75
+      - source: evolution_analysis.event_scale_distribution
+        contains_gte: 0.85
+  spread_pressure:
+    any:
+      - source: source_evidence.worlds[].risk_verdict.signals.negative_trend
+        gte: 0.3
+      - source: source_evidence.worlds[].risk_verdict.signals.negative_pressure
+        gte: 0.6
+      - source: evolution_analysis.event_controversy_avg
+        gte: 0.6
+      - source: evolution_analysis.event_controversy_distribution
+        contains_gte: 0.7
+  polarization_pressure:
+    any:
+      - source: source_evidence.worlds[].risk_verdict.signals.final_polarization
+        gte: 0.5
+      - source: source_evidence.worlds[].risk_verdict.signals.max_negative_shift
+        gte: 0.8
+
+level_selection:
+  # Machine-enforced: validated by build_appendix_b.py --mode risk
+  prefer_upstream_level: true
+  # LLM guidance only — the script does not enforce these three fields
+  display_label_source: source_evidence.worlds[].risk_verdict.label
+  fallback_level_id: medium
+  fallback_level_label: 中风险
+
+domain_bias:
+  communication_evolution:
+    - spread_pressure
+    - polarization_pressure
+  governance_pressure:
+    - high_pressure
+    - spread_pressure
+  governance_trust:
+    - high_pressure
+  public_safety_livelihood:
+    - high_pressure
+  information_security_ideology:
+    - high_pressure
+    - polarization_pressure
+  economic_financial:
+    - high_pressure

@@ -48,7 +48,7 @@ def test_run_idempotency_and_status(client, monkeypatch):
     monkeypatch.setattr("adarian.batch.start_batch", fake_start_batch)
     monkeypatch.setattr(run_api._EXECUTOR, "submit", lambda fn, session: None)
 
-    payload = {"seed_text": "事件", "models": ["m1"], "tag": "case"}
+    payload = {"seed_text": "事件", "models": ["m1"], "tag": "case", "client_session_id": "session-a"}
     first = client.post("/api/run", json=payload)
     second = client.post("/api/run", json=payload)
     assert first.status_code == 202
@@ -58,6 +58,42 @@ def test_run_idempotency_and_status(client, monkeypatch):
     status = client.get("/api/run/fake_batch/status")
     assert status.status_code == 200
     assert status.get_json()["worlds"][0]["status"] == "running"
+
+    active = client.get("/api/run/active")
+    assert active.status_code == 200
+    active_json = active.get_json()
+    assert active_json["active"] is True
+    assert active_json["batch"]["batch_id"] == "fake_batch"
+
+    from adarian.serve import db
+    db.upsert_batch(
+        {
+            "id": "other_batch",
+            "task_name": "other",
+            "seed_text": "事件",
+            "seed_path": "",
+            "models": '["m2"]',
+            "tag": "other",
+            "base_url": "",
+            "batch_dir": "/tmp/other_batch",
+            "created_at": "2026-06-26 12:01:00",
+            "completed_at": "",
+            "status": "running",
+            "idempotency_key": "other-session-key",
+            "config_json": '{"client_session_id":"session-b"}',
+        }
+    )
+    session_active = client.get("/api/run/active?client_session_id=session-a")
+    assert session_active.status_code == 200
+    assert session_active.get_json()["batch"]["batch_id"] == "fake_batch"
+
+    missed_session_active = client.get("/api/run/active?client_session_id=session-missing")
+    assert missed_session_active.status_code == 200
+    assert missed_session_active.get_json() == {"active": False, "batch": None}
+
+    legacy_active = client.get("/api/run/active")
+    assert legacy_active.status_code == 200
+    assert legacy_active.get_json()["active"] is True
 
 
 def test_run_accepts_seed_path(client, monkeypatch):

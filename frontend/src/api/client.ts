@@ -1,5 +1,6 @@
 import type {
   BatchSummary,
+  ActiveRunResponse,
   ConfigResponse,
   GatewayDiscoverResponse,
   ModelHealthResult,
@@ -8,11 +9,19 @@ import type {
   ModelSummary,
   ReportResponse,
   RiskReviewResponse,
+  RunErrorsResponse,
+  RunEventsResponse,
+  RunMetricsResponse,
   RunRequest,
   RunStatusResponse,
   SeedRequest,
   SeedResponse,
   SettingsResponse,
+  WorldEventsResponse,
+  WorldListResponse,
+  WorldLogResponse,
+  WorldSummaryResponse,
+  WorldTicksResponse,
 } from './types';
 
 export class ApiError extends Error {
@@ -27,6 +36,17 @@ export class ApiError extends Error {
   }
 }
 
+const CLIENT_SESSION_KEY = 'adarian:client-session-id';
+
+function clientSessionId() {
+  let id = window.localStorage.getItem(CLIENT_SESSION_KEY);
+  if (!id) {
+    id = `web_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+    window.localStorage.setItem(CLIENT_SESSION_KEY, id);
+  }
+  return id;
+}
+
 async function jsonRequest<T>(url: string, options: RequestInit = {}, timeoutMs = 15000): Promise<T> {
   const controller = new AbortController();
   const timer = window.setTimeout(() => controller.abort(), timeoutMs);
@@ -34,6 +54,7 @@ async function jsonRequest<T>(url: string, options: RequestInit = {}, timeoutMs 
     const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
+        'X-Adarian-Client-Session': clientSessionId(),
         ...(options.headers ?? {}),
       },
       ...options,
@@ -85,10 +106,37 @@ export const api = {
     }, 15000);
   },
   startRun(payload: RunRequest): Promise<RunStatusResponse> {
-    return jsonRequest('/api/run', { method: 'POST', body: JSON.stringify(payload) });
+    return jsonRequest('/api/run', { method: 'POST', body: JSON.stringify({ ...payload, client_session_id: clientSessionId() }) });
   },
   getRunStatus(batchId: string): Promise<RunStatusResponse> {
     return jsonRequest(`/api/run/${encodeURIComponent(batchId)}/status`);
+  },
+  getActiveRun(): Promise<ActiveRunResponse> {
+    return jsonRequest(`/api/run/active?client_session_id=${encodeURIComponent(clientSessionId())}`);
+  },
+  getBatchEvents(batchId: string): Promise<RunEventsResponse> {
+    return jsonRequest(`/api/run/${encodeURIComponent(batchId)}/events?scope=batch`);
+  },
+  getRunMetrics(batchId: string): Promise<RunMetricsResponse> {
+    return jsonRequest(`/api/run/${encodeURIComponent(batchId)}/metrics`);
+  },
+  getRunErrors(batchId: string): Promise<RunErrorsResponse> {
+    return jsonRequest(`/api/run/${encodeURIComponent(batchId)}/errors`);
+  },
+  getWorlds(batchId: string): Promise<WorldListResponse> {
+    return jsonRequest(`/api/run/${encodeURIComponent(batchId)}/worlds`);
+  },
+  getWorldSummary(batchId: string, worldIndex: number): Promise<WorldSummaryResponse> {
+    return jsonRequest(`/api/run/${encodeURIComponent(batchId)}/worlds/${worldIndex}/summary`);
+  },
+  getWorldTicks(batchId: string, worldIndex: number): Promise<WorldTicksResponse> {
+    return jsonRequest(`/api/run/${encodeURIComponent(batchId)}/worlds/${worldIndex}/ticks`);
+  },
+  getWorldLog(batchId: string, worldIndex: number): Promise<WorldLogResponse> {
+    return jsonRequest(`/api/run/${encodeURIComponent(batchId)}/worlds/${worldIndex}/log`);
+  },
+  getWorldEvents(batchId: string, worldIndex: number): Promise<WorldEventsResponse> {
+    return jsonRequest(`/api/run/${encodeURIComponent(batchId)}/worlds/${worldIndex}/events`);
   },
   getReview(batchId: string): Promise<RiskReviewResponse> {
     return jsonRequest(`/api/review/${encodeURIComponent(batchId)}`);
