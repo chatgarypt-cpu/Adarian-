@@ -396,6 +396,89 @@ textarea { min-height: 150px; resize: vertical; }
   box-shadow: var(--shadow);
 }
 
+.model-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 14px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.model-summary span {
+  border: 1px solid rgba(81, 220, 255, .18);
+  background: rgba(2, 10, 18, .34);
+  border-radius: 999px;
+  padding: 6px 10px;
+}
+
+.model-summary.compact {
+  margin-bottom: 0;
+}
+
+.empty-inline {
+  color: var(--muted);
+  border: 1px dashed rgba(81, 220, 255, .2);
+  border-radius: 10px;
+  padding: 12px;
+  background: rgba(2, 10, 18, .25);
+}
+
+.check-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 43px;
+  border: 1px solid rgba(81, 220, 255, .24);
+  background: rgba(2, 10, 18, .36);
+  border-radius: 10px;
+  padding: 0 12px;
+  color: var(--text);
+  cursor: pointer;
+  user-select: none;
+}
+
+.check-action:hover {
+  border-color: rgba(81, 220, 255, .44);
+  background: rgba(81, 220, 255, .06);
+}
+
+.check-action.disabled {
+  cursor: not-allowed;
+  opacity: .54;
+}
+
+.check-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.check-box {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(81, 220, 255, .36);
+  border-radius: 5px;
+  color: transparent;
+  background: rgba(2, 10, 18, .7);
+  font-size: 12px;
+  line-height: 1;
+}
+
+.check-action.selected {
+  border-color: rgba(53, 240, 160, .46);
+  background: rgba(53, 240, 160, .07);
+}
+
+.check-action.selected .check-box {
+  color: #03140c;
+  border-color: var(--green);
+  background: var(--green);
+}
+
 .gateway-list {
   display: grid;
   gap: 12px;
@@ -482,7 +565,7 @@ textarea { min-height: 150px; resize: vertical; }
 
 @media (max-width: 760px) {
   .app { grid-template-columns: 1fr; }
-  .sidebar { position: sticky; top: 0; z-index: 4; }
+  .sidebar { position: relative; top: auto; z-index: auto; }
   .nav { grid-template-columns: repeat(2, 1fr); }
   .main { height: auto; overflow: visible; }
   .hero-grid, .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }

@@ -1,7 +1,7 @@
 <template>
   <section class="workspace">
     <StateTools v-model="run.modelsState" />
-    <PageState :state="effectiveState" message="模型检测失败">
+    <PageState :state="effectiveState" :message="run.modelsError || '模型检测失败'">
       <Panel title="API 服务管理" note="后端持久化">
         <div class="mock-note">用户新增服务保存到 SQLite；API key write-only，不会回显明文。</div>
         <div class="grid-4">
@@ -33,7 +33,12 @@
         </div>
       </Panel>
       <Panel title="模型中转站" note="按 API 地址识别模型">
-        <div class="mock-note">内置 catalog 与用户网关动态发现分开展示；失败会返回明确错误。</div>
+        <div class="mock-note">未请求前不预展示模型；点击加载或识别后，再显示模型列表与检测结果。</div>
+        <div class="model-summary">
+          <span>已加载 {{ run.loadedModelCount }} 个模型</span>
+          <span>{{ run.availableModelCount }} 个可用</span>
+          <span>已选择 {{ run.selectedModelCount }} 个</span>
+        </div>
         <div class="gateway-list">
           <section v-for="gateway in run.modelGateways" :key="gateway.id" class="gateway">
             <button class="gateway-head" type="button" @click="run.toggleGateway(gateway.id)">
@@ -47,8 +52,10 @@
             <div v-if="run.expandedGatewayIds.includes(gateway.id)" class="gateway-body">
               <p>{{ gateway.note }}</p>
               <div class="actions">
-                <button class="ghost" type="button" @click="run.discoverModels(gateway.id)">识别模型</button>
+                <button v-if="gateway.source === 'env'" class="ghost" type="button" @click="run.loadCatalogModels(gateway.id)">加载内置模型</button>
+                <button class="ghost" type="button" @click="run.discoverModels(gateway.id)">识别服务模型</button>
               </div>
+              <p v-if="gateway.models.length === 0" class="empty-inline">尚未请求模型列表。</p>
               <div class="model-column">
                 <button
                   v-for="model in gateway.models"
@@ -56,7 +63,6 @@
                   class="model-row"
                   :class="{ selected: model.selected }"
                   type="button"
-                  :disabled="!model.available"
                   @click="run.toggleModel(model.id)"
                 >
                   <span class="model-main">
@@ -65,7 +71,7 @@
                   </span>
                   <span class="model-meta">
                     <Chip :label="model.selected ? '已选择' : '未选择'" :variant="model.selected ? 'ok' : undefined" />
-                    <Chip :label="model.available ? '可用' : '不可用'" :variant="model.available ? 'ok' : 'bad'" />
+                    <Chip :label="healthLabel(model.healthStatus)" :variant="healthVariant(model.healthStatus)" />
                     <span>{{ model.latency ?? '--' }}</span>
                   </span>
                 </button>
@@ -76,20 +82,34 @@
       </Panel>
       <div class="hero-grid">
         <Panel title="可用性检测" note="运行前检查">
-          <table class="table">
+          <div v-if="run.models.length === 0" class="empty-inline">尚未加载模型。请先在上方点击加载内置模型，或对新增 API 服务执行识别模型。</div>
+          <table v-else class="table">
             <thead><tr><th>模型</th><th>状态</th><th>响应时间</th><th>建议</th></tr></thead>
             <tbody>
               <tr v-for="model in run.models" :key="model.id">
                 <td>{{ model.name }}</td>
-                <td><Chip :label="model.available ? '可用' : '失败'" :variant="model.available ? 'ok' : 'bad'" /></td>
+                <td><Chip :label="healthLabel(model.healthStatus)" :variant="healthVariant(model.healthStatus)" /></td>
                 <td>{{ model.latency ?? '--' }}</td>
                 <td>{{ model.advice }}</td>
               </tr>
             </tbody>
           </table>
           <div class="actions">
-            <button class="primary" type="button" @click="run.hydrate">重新检测</button>
+            <label class="check-action" :class="{ selected: run.allModelsSelected, disabled: run.models.length === 0 }">
+              <input class="check-input" type="checkbox" :checked="run.allModelsSelected" :disabled="run.models.length === 0" @change="toggleAllFromEvent" />
+              <span class="check-box" aria-hidden="true">✓</span>
+              <span>全选</span>
+            </label>
+            <button class="primary" type="button" :disabled="run.selectedModelCount === 0 || run.healthChecking" @click="run.checkSelectedModels">
+              {{ run.healthChecking ? '检测中' : '检测所选模型' }}
+            </button>
             <button class="ghost" type="button" @click="run.selectAvailableModels">只选择可用模型</button>
+          </div>
+          <div class="model-summary compact">
+            <span>本次检测 {{ run.healthSummary.total }} 个</span>
+            <span>{{ run.healthSummary.ok }} 可用</span>
+            <span>{{ run.healthSummary.failed }} 失败</span>
+            <span>{{ run.healthSummary.timeout }} 超时</span>
           </div>
         </Panel>
         <Panel title="调度建议" note="自动推荐">
@@ -101,6 +121,7 @@
         </Panel>
       </div>
     </PageState>
+    <div v-if="run.modelToast" class="toast">{{ run.modelToast }}</div>
   </section>
 </template>
 
@@ -126,5 +147,20 @@ const providerLabel = (provider: ModelGateway['provider']) => {
   if (provider === 'minimax') return 'MiniMax';
   if (provider === 'deepseek') return 'DeepSeek';
   return '自定义';
+};
+const healthLabel = (status?: string) => {
+  if (status === 'ok') return '可用';
+  if (status === 'testing') return '检测中';
+  if (status === 'timeout') return '超时';
+  if (status === 'fail') return '失败';
+  return '未检测';
+};
+const healthVariant = (status?: string): ChipVariant | undefined => {
+  if (status === 'ok') return 'ok';
+  if (status === 'testing' || status === 'untested' || !status) return 'warn';
+  return 'bad';
+};
+const toggleAllFromEvent = (event: Event) => {
+  run.toggleAllModels((event.target as HTMLInputElement).checked);
 };
 </script>

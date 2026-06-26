@@ -1,13 +1,14 @@
 <template>
   <section class="workspace">
     <StateTools v-model="state" />
-    <PageState :state="effectiveState" message="审查结果读取失败">
+    <PageState :state="effectiveState" :message="run.reviewError || '审查结果读取失败'">
       <div class="hero-grid">
         <Panel title="主要风险对比" note="多轮结果汇总">
           <div class="mock-note">审查结果来自当前 batch 的真实 world 状态与产物路径；不会生成 mock 风险。</div>
           <div class="actions">
             <button class="primary" type="button" :disabled="!run.activeBatch.batchId" @click="run.loadReview">读取审查结果</button>
           </div>
+          <div v-if="rows.length === 0" class="empty-inline">暂无可审查结果。完成一次真实推演后，可在这里读取多轮结果对比。</div>
           <table class="table">
             <thead><tr><th>推演轮次</th><th>主要风险</th><th>风险等级</th><th>结果状态</th></tr></thead>
             <tbody>
@@ -29,7 +30,8 @@
         </Panel>
       </div>
       <Panel title="结果证据" note="默认展示业务结论">
-        <div class="grid-3">
+        <div v-if="rows.length === 0" class="empty-inline">暂无结果证据。</div>
+        <div v-else class="grid-3">
           <Card v-for="item in rows" :key="item.world" :title="item.world" :description="item.evidence || item.risks" />
         </div>
       </Panel>
@@ -51,7 +53,7 @@ import { useRunStore } from '../stores/run';
 const run = useRunStore();
 const { reviewState: state, reviewRows } = storeToRefs(run);
 const rows = computed(() => reviewRows.value);
-const effectiveState = computed(() => (state.value === 'populated' && rows.value.length === 0 ? 'empty' : state.value));
+const effectiveState = computed(() => (state.value === 'empty' ? 'populated' : state.value));
 
 onMounted(async () => {
   await run.loadReview();

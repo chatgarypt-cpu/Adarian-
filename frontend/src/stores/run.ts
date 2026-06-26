@@ -13,7 +13,7 @@ export const useRunStore = defineStore('run', () => {
   const selectedModels = ref<string[]>([]);
   const models = ref<ModelSummary[]>([]);
   const modelGateways = ref<ModelGateway[]>([]);
-  const expandedGatewayIds = ref<string[]>(['internal']);
+  const expandedGatewayIds = ref<string[]>(['env-default']);
   const modelsState = ref<PageState>('populated');
   const gatewayDraft = ref<ModelGatewayDraft>({
     name: '',
@@ -26,53 +26,96 @@ export const useRunStore = defineStore('run', () => {
   const reportState = ref<PageState>('populated');
   const logs = ref('');
   const runError = ref('');
+  const modelsError = ref('');
+  const modelToast = ref('');
+  const reviewError = ref('');
+  const healthChecking = ref(false);
+  const healthSummary = ref({ total: 0, ok: 0, failed: 0, timeout: 0 });
   const reviewRows = ref<RiskComparison[]>([]);
   const activeBatch = ref<{ batchId: string | null; status: 'idle' | 'running' | 'completed' | 'failed'; worlds: WorldStatus[] }>({
     batchId: null,
     status: 'idle',
     worlds: [],
   });
+  let toastTimer: number | undefined;
 
   const completedCount = computed(() => activeBatch.value.worlds.filter((world) => world.status === 'completed').length);
   const runningCount = computed(() => activeBatch.value.worlds.filter((world) => world.status === 'running').length);
   const failedCount = computed(() => activeBatch.value.worlds.filter((world) => world.status === 'failed').length);
+  const loadedModelCount = computed(() => models.value.length);
+  const availableModelCount = computed(() => models.value.filter((model) => model.available).length);
+  const selectedModelCount = computed(() => selectedModels.value.length);
+  const allModelsSelected = computed(() => models.value.length > 0 && selectedModels.value.length === models.value.length);
+
+  function showModelToast(message: string) {
+    modelToast.value = message;
+    if (toastTimer) window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(() => {
+      if (modelToast.value === message) modelToast.value = '';
+    }, 3600);
+  }
+
+  function normalizeModels(gatewayId: string, incoming: ModelSummary[]) {
+    return incoming.map((model) => ({
+      ...model,
+      gatewayId,
+      selected: selectedModels.value.includes(model.id) || model.selected,
+      available: false,
+      latency: model.latency || '',
+      advice: '等待可用性检测',
+      healthStatus: model.healthStatus ?? 'untested',
+      healthMessage: model.healthMessage ?? '',
+    }));
+  }
+
+  function flattenGatewayModels() {
+    models.value = modelGateways.value.flatMap((gateway) => gateway.models);
+  }
+
+  function syncSelectedModels(nextSelected = selectedModels.value) {
+    selectedModels.value = nextSelected;
+    models.value = models.value.map((model) => ({ ...model, selected: selectedModels.value.includes(model.id) }));
+    modelGateways.value = modelGateways.value.map((gateway) => ({
+      ...gateway,
+      models: gateway.models.map((model) => ({ ...model, selected: selectedModels.value.includes(model.id) })),
+    }));
+  }
 
   async function hydrate() {
     modelsState.value = 'loading';
-    const [gateways, catalog, savedConfig] = await Promise.all([api.getModelGateways(), api.getModels(), api.getConfig()]);
-    modelGateways.value = gateways.map((gateway) => ({
-      ...gateway,
-      models: gateway.models.length ? gateway.models : catalog.map((model) => ({ ...model, gatewayId: gateway.id })),
-    }));
-    models.value = modelGateways.value.flatMap((gateway) => gateway.models);
-    selectedModels.value = models.value.filter((model) => model.selected).map((model) => model.id);
-    config.value = {
-      parallelWorlds: savedConfig.parallel_worlds,
-      ticks: savedConfig.ticks,
-      batchName: savedConfig.batch_name,
-      focuses: savedConfig.focuses,
-    };
-    modelsState.value = modelGateways.value.length ? 'populated' : 'empty';
+    modelsError.value = '';
+    try {
+      const [gateways, savedConfig] = await Promise.all([api.getModelGateways(), api.getConfig()]);
+      modelGateways.value = gateways.map((gateway) => ({ ...gateway, models: gateway.models ?? [] }));
+      flattenGatewayModels();
+      syncSelectedModels(selectedModels.value.filter((id) => models.value.some((model) => model.id === id)));
+      config.value = {
+        parallelWorlds: savedConfig.parallel_worlds,
+        ticks: savedConfig.ticks,
+        batchName: savedConfig.batch_name,
+        focuses: savedConfig.focuses,
+      };
+      modelsState.value = modelGateways.value.length ? 'populated' : 'empty';
+    } catch (error) {
+      modelsError.value = error instanceof Error ? error.message : '模型配置加载失败';
+      modelsState.value = 'error';
+    }
   }
 
   function toggleModel(id: string) {
-    selectedModels.value = selectedModels.value.includes(id)
+    const nextSelected = selectedModels.value.includes(id)
       ? selectedModels.value.filter((modelId) => modelId !== id)
       : [...selectedModels.value, id];
-    models.value = models.value.map((model) => ({ ...model, selected: selectedModels.value.includes(model.id) }));
-    modelGateways.value = modelGateways.value.map((gateway) => ({
-      ...gateway,
-      models: gateway.models.map((model) => ({ ...model, selected: selectedModels.value.includes(model.id) })),
-    }));
+    syncSelectedModels(nextSelected);
   }
 
   function selectAvailableModels() {
-    selectedModels.value = models.value.filter((model) => model.available).map((model) => model.id);
-    models.value = models.value.map((model) => ({ ...model, selected: selectedModels.value.includes(model.id) }));
-    modelGateways.value = modelGateways.value.map((gateway) => ({
-      ...gateway,
-      models: gateway.models.map((model) => ({ ...model, selected: selectedModels.value.includes(model.id) })),
-    }));
+    syncSelectedModels(models.value.filter((model) => model.available).map((model) => model.id));
+    showModelToast(`已选择 ${selectedModels.value.length} 个可用模型`);
+  }
+
+  function toggleAllModels(checked: boolean) {
+    syncSelectedModels(checked ? models.value.map((model) => model.id) : []);
   }
 
   function toggleGateway(id: string) {
@@ -84,26 +127,132 @@ export const useRunStore = defineStore('run', () => {
   async function addGateway() {
     if (!gatewayDraft.value.name.trim() || !gatewayDraft.value.baseUrl.trim()) return;
     modelsState.value = 'loading';
-    const gateway = await api.createModelGateway(gatewayDraft.value);
-    modelGateways.value = [gateway, ...modelGateways.value];
-    expandedGatewayIds.value = [gateway.id, ...expandedGatewayIds.value];
-    gatewayDraft.value = {
-      name: '',
-      baseUrl: '',
-      provider: 'openai-compatible',
-      apiKey: '',
-    };
-    modelsState.value = 'populated';
+    modelsError.value = '';
+    try {
+      const gateway = await api.createModelGateway(gatewayDraft.value);
+      modelGateways.value = [{ ...gateway, models: [] }, ...modelGateways.value];
+      expandedGatewayIds.value = [gateway.id, ...expandedGatewayIds.value];
+      gatewayDraft.value = {
+        name: '',
+        baseUrl: '',
+        provider: 'openai-compatible',
+        apiKey: '',
+      };
+      flattenGatewayModels();
+      modelsState.value = 'populated';
+      showModelToast('API 服务已保存，点击识别模型后加载列表');
+    } catch (error) {
+      modelsError.value = error instanceof Error ? error.message : 'API 服务保存失败';
+      modelsState.value = 'error';
+    }
+  }
+
+  async function loadCatalogModels(gatewayId = 'env-default') {
+    modelsState.value = 'loading';
+    modelsError.value = '';
+    try {
+      const catalog = normalizeModels(gatewayId, await api.getModels());
+      modelGateways.value = modelGateways.value.map((gateway) =>
+        gateway.id === gatewayId ? { ...gateway, models: catalog } : gateway,
+      );
+      flattenGatewayModels();
+      if (selectedModels.value.length === 0) {
+        syncSelectedModels(catalog.slice(0, Math.min(2, catalog.length)).map((model) => model.id));
+      } else {
+        syncSelectedModels();
+      }
+      modelsState.value = 'populated';
+      healthSummary.value = { total: 0, ok: 0, failed: 0, timeout: 0 };
+      showModelToast(`已加载 ${catalog.length} 个模型，0 个已检测可用`);
+    } catch (error) {
+      modelsError.value = error instanceof Error ? error.message : '内置模型加载失败';
+      modelsState.value = 'error';
+    }
   }
 
   async function discoverModels(gatewayId: string) {
     modelsState.value = 'loading';
-    const discovered = await api.discoverGatewayModels(gatewayId);
-    modelGateways.value = modelGateways.value.map((gateway) =>
-      gateway.id === gatewayId ? { ...gateway, models: discovered.models } : gateway,
+    modelsError.value = '';
+    try {
+      const discovered = await api.discoverGatewayModels(gatewayId);
+      const gatewayModels = normalizeModels(gatewayId, discovered.models);
+      modelGateways.value = modelGateways.value.map((gateway) =>
+        gateway.id === gatewayId ? { ...gateway, models: gatewayModels, status: 'connected' } : gateway,
+      );
+      flattenGatewayModels();
+      if (selectedModels.value.length === 0) {
+        syncSelectedModels(gatewayModels.slice(0, Math.min(2, gatewayModels.length)).map((model) => model.id));
+      } else {
+        syncSelectedModels();
+      }
+      modelsState.value = 'populated';
+      healthSummary.value = { total: 0, ok: 0, failed: 0, timeout: 0 };
+      showModelToast(`已识别 ${gatewayModels.length} 个模型，0 个已检测可用`);
+    } catch (error) {
+      modelsError.value = error instanceof Error ? error.message : '模型识别失败，可检查 Base URL 是否支持 /models';
+      modelsState.value = 'error';
+    }
+  }
+
+  function updateModels(updater: (model: ModelSummary) => ModelSummary) {
+    models.value = models.value.map(updater);
+    modelGateways.value = modelGateways.value.map((gateway) => ({
+      ...gateway,
+      models: gateway.models.map(updater),
+    }));
+  }
+
+  async function checkSelectedModels() {
+    const selected = models.value.filter((model) => selectedModels.value.includes(model.id));
+    if (!selected.length) {
+      showModelToast('请先勾选需要检测的模型');
+      return;
+    }
+    healthChecking.value = true;
+    modelsError.value = '';
+    updateModels((model) =>
+      selectedModels.value.includes(model.id)
+        ? { ...model, healthStatus: 'testing', healthMessage: '', latency: '', advice: '正在请求模型' }
+        : model,
     );
-    models.value = modelGateways.value.flatMap((gateway) => gateway.models);
-    modelsState.value = 'populated';
+
+    const results: Array<{ id: string; gateway_id?: string; status: 'ok' | 'fail' | 'timeout'; latency_ms?: number | null; message?: string }> = [];
+
+    try {
+      await Promise.all(selected.map(async (model) => {
+        const gatewayId = model.gatewayId || 'env-default';
+        try {
+          results.push(...await api.checkModelsHealth([model.id], gatewayId));
+        } catch (error) {
+          const message = error instanceof Error ? error.message : '模型检测失败';
+          const status = message.includes('超时') ? 'timeout' : 'fail';
+          results.push({ id: model.id, gateway_id: gatewayId, status, latency_ms: null, message });
+        }
+      }));
+      const resultMap = new Map(results.map((result) => [`${result.gateway_id || 'env-default'}:${result.id}`, result]));
+      updateModels((model) => {
+        const gatewayId = model.gatewayId || 'env-default';
+        const result = resultMap.get(`${gatewayId}:${model.id}`);
+        if (!result) return model;
+        const ok = result.status === 'ok';
+        const timeout = result.status === 'timeout';
+        return {
+          ...model,
+          available: ok,
+          healthStatus: ok ? 'ok' : timeout ? 'timeout' : 'fail',
+          healthMessage: result.message || (ok ? '请求成功' : '请求失败'),
+          latency: result.latency_ms != null ? `${result.latency_ms}ms` : '--',
+          advice: ok ? '可用于本次推演' : timeout ? '请求超时，请检查服务地址或模型名' : (result.message || '检测失败'),
+        };
+      });
+      const ok = results.filter((result) => result.status === 'ok').length;
+      const timeout = results.filter((result) => result.status === 'timeout').length;
+      const failed = results.length - ok - timeout;
+      healthSummary.value = { total: results.length, ok, failed, timeout };
+      showModelToast(`共检测 ${results.length} 个模型，${ok} 可用，${failed} 失败，${timeout} 超时`);
+    } finally {
+      healthChecking.value = false;
+    }
   }
 
   async function saveConfig() {
@@ -118,39 +267,50 @@ export const useRunStore = defineStore('run', () => {
   async function startRun(seedText: string) {
     runState.value = 'loading';
     runError.value = '';
-    await saveConfig();
-    const selected = selectedModels.value.length ? selectedModels.value : models.value.filter((model) => model.available).slice(0, config.value.parallelWorlds).map((model) => model.id);
-    const result = await api.startRun({
-      seed_text: seedText,
-      models: selected,
-      tag: config.value.batchName,
-      config: {
-        parallel_worlds: config.value.parallelWorlds,
-        ticks: config.value.ticks,
-        batch_name: config.value.batchName,
-        focuses: config.value.focuses,
-      },
-    });
-    activeBatch.value = {
-      batchId: result.batch_id,
-      status: result.status === 'completed' ? 'completed' : result.status === 'failed' ? 'failed' : 'running',
-      worlds: result.worlds,
-    };
-    logs.value = result.logs.join('\n');
-    runState.value = result.worlds.length ? 'populated' : 'empty';
+    try {
+      await saveConfig();
+      const selected = selectedModels.value.length ? selectedModels.value : models.value.filter((model) => model.available).slice(0, config.value.parallelWorlds).map((model) => model.id);
+      const result = await api.startRun({
+        seed_text: seedText,
+        models: selected,
+        tag: config.value.batchName,
+        config: {
+          parallel_worlds: config.value.parallelWorlds,
+          ticks: config.value.ticks,
+          batch_name: config.value.batchName,
+          focuses: config.value.focuses,
+        },
+      });
+      activeBatch.value = {
+        batchId: result.batch_id,
+        status: result.status === 'completed' ? 'completed' : result.status === 'failed' ? 'failed' : 'running',
+        worlds: result.worlds,
+      };
+      logs.value = result.logs.join('\n');
+      runState.value = result.worlds.length ? 'populated' : 'empty';
+    } catch (error) {
+      runError.value = error instanceof Error ? error.message : '启动推演失败';
+      runState.value = 'error';
+    }
   }
 
   async function refreshStatus() {
     if (!activeBatch.value.batchId) return;
     runState.value = 'loading';
-    const result = await api.getRunStatus(activeBatch.value.batchId);
-    activeBatch.value = {
-      batchId: result.batch_id,
-      status: result.status === 'completed' ? 'completed' : result.status === 'failed' ? 'failed' : 'running',
-      worlds: result.worlds,
-    };
-    logs.value = result.logs.join('\n');
-    runState.value = result.worlds.length ? 'populated' : 'empty';
+    runError.value = '';
+    try {
+      const result = await api.getRunStatus(activeBatch.value.batchId);
+      activeBatch.value = {
+        batchId: result.batch_id,
+        status: result.status === 'completed' ? 'completed' : result.status === 'failed' ? 'failed' : 'running',
+        worlds: result.worlds,
+      };
+      logs.value = result.logs.join('\n');
+      runState.value = result.worlds.length ? 'populated' : 'empty';
+    } catch (error) {
+      runError.value = error instanceof Error ? error.message : '运行状态读取失败';
+      runState.value = 'error';
+    }
   }
 
   async function loadReview() {
@@ -160,9 +320,15 @@ export const useRunStore = defineStore('run', () => {
       return;
     }
     reviewState.value = 'loading';
-    const result = await api.getReview(activeBatch.value.batchId);
-    reviewRows.value = result.rows;
-    reviewState.value = result.rows.length ? 'populated' : 'empty';
+    reviewError.value = '';
+    try {
+      const result = await api.getReview(activeBatch.value.batchId);
+      reviewRows.value = result.rows;
+      reviewState.value = result.rows.length ? 'populated' : 'empty';
+    } catch (error) {
+      reviewError.value = error instanceof Error ? error.message : '审查结果读取失败';
+      reviewState.value = 'error';
+    }
   }
 
   return {
@@ -178,17 +344,29 @@ export const useRunStore = defineStore('run', () => {
     reportState,
     logs,
     runError,
+    modelsError,
+    modelToast,
+    reviewError,
+    healthChecking,
+    healthSummary,
     reviewRows,
     activeBatch,
     completedCount,
     runningCount,
     failedCount,
+    loadedModelCount,
+    availableModelCount,
+    selectedModelCount,
+    allModelsSelected,
     hydrate,
     toggleModel,
     toggleGateway,
     addGateway,
+    loadCatalogModels,
     discoverModels,
+    checkSelectedModels,
     selectAvailableModels,
+    toggleAllModels,
     saveConfig,
     startRun,
     refreshStatus,

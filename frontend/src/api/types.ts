@@ -16,6 +16,8 @@ export interface ModelSummary {
   available: boolean;
   latency?: string;
   advice: string;
+  healthStatus?: 'untested' | 'testing' | 'ok' | 'fail' | 'timeout';
+  healthMessage?: string;
 }
 
 export interface ModelGateway {
@@ -42,6 +44,14 @@ export interface GatewayDiscoverResponse {
   gateway_id: string;
   models: ModelSummary[];
   latency_ms: number;
+}
+
+export interface ModelHealthResult {
+  id: string;
+  gateway_id?: string;
+  status: 'ok' | 'fail' | 'timeout';
+  latency_ms?: number | null;
+  message?: string;
 }
 
 export interface WorldStatus {

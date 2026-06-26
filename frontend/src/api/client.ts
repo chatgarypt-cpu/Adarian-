@@ -2,6 +2,7 @@ import type {
   BatchSummary,
   ConfigResponse,
   GatewayDiscoverResponse,
+  ModelHealthResult,
   ModelGateway,
   ModelGatewayDraft,
   ModelSummary,
@@ -26,20 +27,33 @@ export class ApiError extends Error {
   }
 }
 
-async function jsonRequest<T>(url: string, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(url, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers ?? {}),
-    },
-    ...options,
-  });
-  const text = await response.text();
-  const data = text ? JSON.parse(text) : {};
-  if (!response.ok) {
-    throw new ApiError(data.message ?? response.statusText, data.code, data.details);
+async function jsonRequest<T>(url: string, options: RequestInit = {}, timeoutMs = 15000): Promise<T> {
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options.headers ?? {}),
+      },
+      ...options,
+      signal: controller.signal,
+    });
+    const text = await response.text();
+    const data = text ? JSON.parse(text) : {};
+    if (!response.ok) {
+      throw new ApiError(data.message ?? response.statusText, data.code, data.details);
+    }
+    return data as T;
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new ApiError('请求超时，请检查服务地址或网络连通性', 'REQUEST_TIMEOUT', { url, timeoutMs });
+    }
+    throw new ApiError(error instanceof Error ? error.message : '请求失败', 'NETWORK_ERROR', { url });
+  } finally {
+    window.clearTimeout(timer);
   }
-  return data as T;
 }
 
 export const api = {
@@ -62,7 +76,13 @@ export const api = {
     return jsonRequest('/api/model-gateways', { method: 'POST', body: JSON.stringify(payload) });
   },
   discoverGatewayModels(gatewayId: string): Promise<GatewayDiscoverResponse> {
-    return jsonRequest(`/api/model-gateways/${encodeURIComponent(gatewayId)}/discover-models`, { method: 'POST' });
+    return jsonRequest(`/api/model-gateways/${encodeURIComponent(gatewayId)}/discover-models`, { method: 'POST' }, 15000);
+  },
+  checkModelsHealth(models: string[], gatewayId = 'env-default'): Promise<ModelHealthResult[]> {
+    return jsonRequest('/api/models/health', {
+      method: 'POST',
+      body: JSON.stringify({ models, gateway_id: gatewayId }),
+    }, 15000);
   },
   startRun(payload: RunRequest): Promise<RunStatusResponse> {
     return jsonRequest('/api/run', { method: 'POST', body: JSON.stringify(payload) });

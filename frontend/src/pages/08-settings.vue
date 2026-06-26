@@ -1,7 +1,7 @@
 <template>
   <section class="workspace">
     <StateTools v-model="settings.pageState" />
-    <PageState :state="settings.pageState" message="系统设置保存失败">
+    <PageState :state="settings.pageState" :message="settings.error || '系统设置保存失败'">
       <div class="grid-3">
         <Panel title="模型管理" note="可用模型">
           <div class="steps">

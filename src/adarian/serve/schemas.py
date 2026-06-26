@@ -7,6 +7,7 @@ from __future__ import annotations
 import os
 import time
 from typing import Any
+from urllib.parse import urlsplit, urlunsplit
 
 from pydantic import BaseModel, Field
 
@@ -34,6 +35,48 @@ HEALTH_PATHS = {
     "anthropic": "/v1/messages",
     "custom": "/v1/chat/completions",
 }
+
+
+def build_api_url(base_url: str, path: str) -> str:
+    base = base_url.rstrip("/")
+    if base.endswith("/v1") and path.startswith("/v1/"):
+        path = path[3:]
+    return f"{base}{path}"
+
+
+def _is_portless_discovery_host(hostname: str | None) -> bool:
+    host = hostname or ""
+    return host.startswith("100.89.") or host.startswith("10.")
+
+
+def portless_internal_base_url(base_url: str) -> str:
+    """Return an internal discovery URL without explicit port when needed."""
+    parts = urlsplit(base_url.rstrip("/"))
+    if not parts.hostname or not _is_portless_discovery_host(parts.hostname) or parts.port is None:
+        return base_url.rstrip("/")
+    host = parts.hostname
+    if ":" in host and not host.startswith("["):
+        host = f"[{host}]"
+    netloc = host
+    if parts.username:
+        auth = parts.username
+        if parts.password:
+            auth = f"{auth}:{parts.password}"
+        netloc = f"{auth}@{netloc}"
+    return urlunsplit((parts.scheme, netloc, parts.path.rstrip("/"), "", ""))
+
+
+def build_discovery_urls(base_url: str, paths: list[str]) -> list[str]:
+    """Build discovery URLs, trying portless internal URLs before configured URLs."""
+    configured = base_url.rstrip("/")
+    bases = [portless_internal_base_url(configured), configured]
+    urls: list[str] = []
+    for base in bases:
+        for path in paths:
+            url = build_api_url(base, path)
+            if url not in urls:
+                urls.append(url)
+    return urls
 
 
 def hello_model(model: str, base_url: str, api_key: str, timeout: float = 20.0,
@@ -69,7 +112,7 @@ def hello_model(model: str, base_url: str, api_key: str, timeout: float = 20.0,
     try:
         import httpx
         resp = httpx.post(
-            f"{base_url}{path}",
+            build_api_url(base_url, path),
             json=payload,
             headers=headers,
             timeout=timeout,

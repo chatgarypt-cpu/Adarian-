@@ -1,7 +1,7 @@
 <template>
   <section class="workspace">
     <StateTools v-model="run.runState" />
-    <PageState :state="effectiveState" message="运行状态读取失败">
+    <PageState :state="run.runState" :message="run.runError || '运行状态读取失败'">
       <div class="grid-4">
         <Card :title="String(run.activeBatch.worlds.length)" label="推演轮数" metric />
         <Card :title="String(run.completedCount)" label="已完成" metric />
@@ -14,6 +14,7 @@
           <button class="primary" type="button" :disabled="seed.isEmpty || run.selectedModels.length === 0" @click="run.startRun(seed.seedText)">启动真实推演</button>
           <button class="ghost" type="button" :disabled="!run.activeBatch.batchId" @click="run.refreshStatus">刷新状态</button>
         </div>
+        <div v-if="run.activeBatch.worlds.length === 0" class="empty-inline">尚未启动推演。请先在模型调度页选择模型，再启动真实推演。</div>
         <div class="grid-3">
           <WorldCard
             v-for="world in run.activeBatch.worlds"
@@ -33,7 +34,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import Card from '../components/Card.vue';
 import LogBox from '../components/LogBox.vue';
 import PageState from '../components/PageState.vue';
@@ -45,7 +45,6 @@ import { useSeedStore } from '../stores/seed';
 
 const run = useRunStore();
 const seed = useSeedStore();
-const effectiveState = computed(() => (run.runState === 'populated' && run.activeBatch.worlds.length === 0 ? 'empty' : run.runState));
 const badgeFor = (status: string) => {
   if (status === 'completed') return { label: '已完成', variant: 'ok' as const };
   if (status === 'running') return { label: '运行中', variant: 'run' as const };

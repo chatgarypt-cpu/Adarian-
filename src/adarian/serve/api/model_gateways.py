@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import base64
+import concurrent.futures
 import os
 import time
 import uuid
@@ -16,7 +17,7 @@ from pydantic import ValidationError
 
 from adarian import config as adarian_config
 from adarian.serve import db
-from adarian.serve.schemas import DISCOVERY_PATHS, GatewayPayload, error_response, hello_model
+from adarian.serve.schemas import DISCOVERY_PATHS, GatewayPayload, build_discovery_urls, error_response, hello_model
 
 model_gateways_bp = Blueprint("model_gateways", __name__)
 
@@ -43,6 +44,21 @@ def _protect_secret(secret: str) -> str:
     raw = secret.encode("utf-8")
     protected = bytes(ch ^ key[i % len(key)] for i, ch in enumerate(raw))
     return base64.urlsafe_b64encode(protected).decode("ascii")
+
+
+def _unprotect_secret(secret: str, mode: str) -> str:
+    if not secret:
+        return ""
+    key = os.getenv("ADARIAN_ENCRYPTION_KEY", "adarian-dev-key").encode("utf-8")
+    try:
+        if mode == "fernet":
+            from cryptography.fernet import Fernet  # type: ignore
+
+            return Fernet(key).decrypt(secret.encode("utf-8")).decode("utf-8")
+        raw = base64.urlsafe_b64decode(secret.encode("ascii"))
+        return bytes(ch ^ key[i % len(key)] for i, ch in enumerate(raw)).decode("utf-8")
+    except Exception:
+        return ""
 
 
 def _gateway_response(row: dict[str, Any]) -> dict[str, Any]:
@@ -159,17 +175,13 @@ def _resolve_auth_headers(gateway: dict[str, Any]) -> dict[str, str]:
     headers: dict[str, str] = {}
     enc_key = gateway.get("api_key_encrypted") or ""
     protocol = str(gateway.get("protocol", "openai"))
-    if enc_key and gateway.get("key_storage_mode") == "fernet":
-        from cryptography.fernet import Fernet
-        key = os.getenv("ADARIAN_ENCRYPTION_KEY", "adarian-dev-key").encode("utf-8")
-        try:
-            decrypted = Fernet(key).decrypt(enc_key.encode()).decode()
+    if enc_key:
+        decrypted = _unprotect_secret(enc_key, str(gateway.get("key_storage_mode") or "dev-obfuscated"))
+        if decrypted:
             if protocol == "anthropic":
                 headers["x-api-key"] = decrypted
             else:
                 headers["Authorization"] = f"Bearer {decrypted}"
-        except Exception:
-            pass
     elif not enc_key and gateway.get("source") == "env":
         ak = adarian_config.LLM_API_KEY or os.getenv("LLM_API_KEY", "")
         if ak:
@@ -201,22 +213,37 @@ def discover_models(gateway_id: str):
     # Try protocol-appropriate discovery paths
     protocol = str(gateway.get("protocol", "openai"))
     headers = _resolve_auth_headers(gateway)
-    urls = [f"{base_url}{p}" for p in DISCOVERY_PATHS.get(protocol, DISCOVERY_PATHS["custom"])]
-    payload = None
-    latency = 0
-    for url in urls:
+    urls = build_discovery_urls(base_url, DISCOVERY_PATHS.get(protocol, DISCOVERY_PATHS["custom"]))
+    def fetch_url(url: str) -> tuple[str, dict[str, Any] | None, int, str]:
         try:
             start = time.perf_counter()
             response = httpx.get(url, headers=headers, timeout=5)
-            latency = round((time.perf_counter() - start) * 1000)
+            elapsed_ms = round((time.perf_counter() - start) * 1000)
             response.raise_for_status()
-            payload = response.json()
-            break
-        except Exception:
-            continue
+            return url, response.json(), elapsed_ms, ""
+        except Exception as exc:
+            return url, None, 0, f"{type(exc).__name__}: {str(exc)[:160]}"
+
+    payload = None
+    latency = 0
+    errors: dict[str, str] = {}
+    executor = concurrent.futures.ThreadPoolExecutor(max_workers=min(4, max(1, len(urls))))
+    try:
+        futures = [executor.submit(fetch_url, url) for url in urls]
+        for future in concurrent.futures.as_completed(futures):
+            url, candidate_payload, candidate_latency, error = future.result()
+            if candidate_payload is not None:
+                payload = candidate_payload
+                latency = candidate_latency
+                for pending in futures:
+                    pending.cancel()
+                break
+            errors[url] = error
+    finally:
+        executor.shutdown(wait=False, cancel_futures=True)
 
     if not payload:
-        body, status = error_response("MODEL_DISCOVERY_FAILED", "Could not discover models", {"urls_tried": urls})
+        body, status = error_response("MODEL_DISCOVERY_FAILED", "Could not discover models", {"urls_tried": urls, "errors": errors})
         return jsonify(body), status
 
     data = payload.get("data", payload if isinstance(payload, list) else [])
