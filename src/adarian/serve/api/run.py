@@ -6,11 +6,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import threading
+import time
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 from typing import Any
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, Response, stream_with_context
 from pydantic import ValidationError
 
 from adarian import config as adarian_config
@@ -334,3 +337,50 @@ def errors(batch_id: str):
         body, status = error_response("BATCH_NOT_FOUND", "Batch not found", {"batch_id": batch_id})
         return jsonify(body), status
     return jsonify(run_errors(batch, db.list_worlds(batch_id)))
+
+
+@run_bp.get("/run/<batch_id>/stream")
+def run_stream(batch_id: str):
+    """SSE endpoint — tails scheduler_batch.log in real-time.
+
+    Sends new log lines as ``data:`` events, plus a ``data:`` heartbeat
+    with live elapsed-seconds once per second while the batch is running.
+    Client disconnect is clean (GeneratorExit).
+    """
+    batch = db.get_batch(batch_id)
+    if not batch:
+        body, status = error_response("BATCH_NOT_FOUND", "Batch not found", {"batch_id": batch_id})
+        return jsonify(body), status
+
+    batch_dir = (batch.get("batch_dir") or "").strip()
+    log_path = Path(batch_dir) / "scheduler_batch.log" if batch_dir else None
+
+    def generate():
+        last_size = 0
+        try:
+            while True:
+                # 1) Send new log lines if the file exists and has grown
+                if log_path and log_path.exists():
+                    current_size = log_path.stat().st_size
+                    if current_size > last_size:
+                        try:
+                            with open(log_path, "r", encoding="utf-8", errors="replace") as f:
+                                f.seek(last_size)
+                                for line in f:
+                                    yield f"data: {line.rstrip()}\n\n"
+                            last_size = f.tell()
+                        except OSError:
+                            pass
+
+                # 2) Send a status heartbeat once per second
+                yield "data: __HEARTBEAT__\n\n"
+                time.sleep(1)
+
+        except GeneratorExit:
+            pass
+
+    return Response(
+        stream_with_context(generate()),
+        mimetype="text/event-stream",
+        headers={"Cache-Control": "no-store", "Connection": "keep-alive"},
+    )

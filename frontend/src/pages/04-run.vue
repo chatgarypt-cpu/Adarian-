@@ -123,8 +123,11 @@
           </div>
         </div>
       </Panel>
-      <Panel title="运行日志" :note="run.logs ? '真实执行流' : hasRealBatch ? '等待 raw log' : ''">
-        <LogBox :text="displayRunLogs" />
+      <Panel title="运行日志" :note="hasRealBatch ? (streamConnected ? '实时流 &#10003;' : '实时流连接中...') : ''">
+        <div ref="logTailEl" class="log-tail">
+          <div v-for="(line, i) in streamLogLines" :key="i" class="log-line">{{ line }}</div>
+          <div v-if="!hasRealBatch" class="empty-inline">尚未启动推演，运行日志将在推演开始后实时滚动。</div>
+        </div>
       </Panel>
     </PageState>
   </section>
@@ -144,6 +147,11 @@ import type { RunEvent } from '../api/types';
 
 const run = useRunStore();
 const seed = useSeedStore();
+
+const streamLogLines = ref<string[]>([]);
+const streamConnected = ref(false);
+const logTailEl = ref<HTMLElement | null>(null);
+let logEventSource: EventSource | null = null;
 type StageId = 'all' | 'phase1' | 'phase2' | 'phase3' | 'analysis' | 'phase4' | 'log';
 type ChatKind = 'monitor' | 'agent' | 'system';
 type ChatTone = 'ok' | 'warn' | 'bad' | 'run';
@@ -283,6 +291,51 @@ const overviewStageTabs: Array<{ id: StageId; label: string }> = [
   { id: 'all', label: '全流程' },
   { id: 'log', label: '调度' },
 ];
+function connectLogStream() {
+  if (!run.activeBatch.batchId) return;
+  disconnectLogStream();
+  streamLogLines.value = [];
+  logEventSource = new EventSource(`/api/run/${encodeURIComponent(run.activeBatch.batchId)}/stream`);
+  logEventSource.onopen = () => { streamConnected.value = true; };
+  logEventSource.onerror = () => { streamConnected.value = false; };
+  logEventSource.onmessage = (e) => {
+    if (e.data === '__HEARTBEAT__') return;
+    streamLogLines.value.push(e.data);
+    nextTick(() => {
+      if (logTailEl.value) {
+        logTailEl.value.scrollTop = logTailEl.value.scrollHeight;
+      }
+    });
+  };
+}
+
+function disconnectLogStream() {
+  if (logEventSource) {
+    logEventSource.close();
+    logEventSource = null;
+  }
+  streamConnected.value = false;
+}
+
+
+// Connect/disconnect SSE log stream when batch starts/stops
+watch(() => run.activeBatch.batchId, (newId, oldId) => {
+  if (newId && run.activeBatch.status === 'running') {
+    connectLogStream();
+  } else if (!newId || run.activeBatch.status !== 'running') {
+    disconnectLogStream();
+  }
+});
+watch(() => run.activeBatch.status, (newStatus) => {
+  if (newStatus === 'running' && run.activeBatch.batchId) {
+    connectLogStream();
+  } else if (newStatus !== 'running') {
+    disconnectLogStream();
+  }
+});
+
+
+
 const stageTabs = computed(() => (isOverview.value ? overviewStageTabs : allStageTabs));
 
 const stageForPhase = (label: string): StageId => {

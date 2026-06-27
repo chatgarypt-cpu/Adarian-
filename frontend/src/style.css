@@ -1058,3 +1058,24 @@ textarea { min-height: 150px; resize: vertical; }
   .model-row { grid-template-columns: 1fr; }
   .model-meta { justify-content: flex-start; flex-wrap: wrap; }
 }
+
+/* ── log-tail (real-time SSE streaming) ──────────────────────── */
+.log-tail {
+  max-height: 400px;
+  overflow-y: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.log-line {
+  white-space: pre-wrap;
+  word-break: break-all;
+  opacity: 0.85;
+}
+.log-line:hover {
+  opacity: 1;
+}
