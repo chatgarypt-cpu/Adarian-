@@ -22,6 +22,7 @@ import type {
   WorldLogResponse,
   WorldSummaryResponse,
   WorldTicksResponse,
+  StatsResponse,
 } from './types';
 
 export class ApiError extends Error {
@@ -155,5 +156,8 @@ export const api = {
   },
   ping(): Promise<Response> {
     return fetch('/api/ping');
+  },
+  getStats(): Promise<StatsResponse> {
+    return jsonRequest('/api/stats');
   },
 };

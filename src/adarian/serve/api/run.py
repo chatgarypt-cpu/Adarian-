@@ -15,6 +15,7 @@ from pydantic import ValidationError
 
 from adarian import config as adarian_config
 from adarian.serve import db
+from adarian.serve.db import track_batch, untrack_batch
 from adarian.serve.observability import batch_events, batch_log_lines, run_errors, run_metrics, world_progress
 from adarian.serve.paths import resolve_project_file
 from adarian.serve.schemas import RunPayload, error_response, normalize_status
@@ -128,6 +129,7 @@ def _finish_session(session) -> None:
     finally:
         session.on_update = None
         _write_session(session)
+        untrack_batch(session.batch_id)
         _ACTIVE.pop(session.batch_id, None)
 
 
@@ -272,6 +274,7 @@ def start_run():
         db.upsert_world(row)
 
     _ACTIVE[session.batch_id] = _EXECUTOR.submit(_finish_session, session)
+    track_batch(session.batch_id)
     return jsonify(_batch_response(db.get_batch(session.batch_id) or {"id": session.batch_id, "status": "running"}, db.list_worlds(session.batch_id))), 202
 
 

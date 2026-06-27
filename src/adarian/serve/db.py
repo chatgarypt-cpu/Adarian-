@@ -16,6 +16,24 @@ from adarian.serve.paths import SERVE_DB_PATH, ensure_runtime_dirs
 
 DB_PATH = Path(os.getenv("ADARIAN_SERVE_DB", str(SERVE_DB_PATH)))
 
+# In-flight batch tracking — allows signal handlers to mark them "failed" on death.
+_RUNNING_BATCH_IDS: set[str] = set()
+
+
+def track_batch(batch_id: str) -> None:
+    """Register a batch that is actively running."""
+    _RUNNING_BATCH_IDS.add(batch_id)
+
+
+def untrack_batch(batch_id: str) -> None:
+    """Remove a finished batch from the live set."""
+    _RUNNING_BATCH_IDS.discard(batch_id)
+
+
+def running_batch_ids() -> set[str]:
+    """Return a snapshot of currently-running batch IDs."""
+    return set(_RUNNING_BATCH_IDS)
+
 
 @contextmanager
 def connect() -> Iterator[sqlite3.Connection]:

@@ -291,3 +291,7 @@ export interface WorldLogResponse {
   path: string;
   lines: string[];
 }
+
+export interface StatsResponse {
+  todayBatches: number;
+}

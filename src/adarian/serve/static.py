@@ -4,26 +4,36 @@
 
 from __future__ import annotations
 
-from flask import Flask, redirect, send_from_directory
+from pathlib import Path
+
+from flask import Flask, redirect, request, send_from_directory
 
 from adarian.serve.paths import FRONTEND_DIST
 
 
+def _spa_index() -> str | None:
+    """Return the dist index path if it exists, else None."""
+    index = FRONTEND_DIST / "index.html"
+    return str(index) if index.exists() else None
+
+
 def register_static(app: Flask) -> None:
+    # Direct static file serving (not catch-all)
     @app.get("/")
-    @app.get("/<path:path>")
-    def spa(path: str = "index.html"):
-        if path.startswith("api/"):
-            return {"code": "NOT_FOUND", "message": "API endpoint not found", "details": {}}, 404
-        target = FRONTEND_DIST / path
-        if target.exists() and target.is_file():
-            resp = send_from_directory(FRONTEND_DIST, path)
-            resp.headers["Cache-Control"] = "no-store, must-revalidate"
-            return resp
-        index = FRONTEND_DIST / "index.html"
-        if index.exists():
+    def index():
+        if target := _spa_index():
             resp = send_from_directory(FRONTEND_DIST, "index.html")
             resp.headers["Cache-Control"] = "no-store, must-revalidate"
             return resp
-        # Dev mode — redirect to Vite dev server
+        return redirect("http://localhost:5173/", 302)
+
+    # SPA fallback — only reached when no app or blueprint route matched
+    @app.errorhandler(404)
+    def spa_fallback(e):
+        if request.path.startswith("/api/"):
+            return {"code": "NOT_FOUND", "message": "API endpoint not found", "details": {}}, 404
+        if target := _spa_index():
+            resp = send_from_directory(FRONTEND_DIST, "index.html")
+            resp.headers["Cache-Control"] = "no-store, must-revalidate"
+            return resp
         return redirect("http://localhost:5173/", 302)

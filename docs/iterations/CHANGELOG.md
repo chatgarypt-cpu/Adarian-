@@ -21,7 +21,43 @@
 
 ---
 
-## v1.5.0c (2026-06-26) — Entry Integration / E2E Closeout
+## v1.5.1 (2026-06-27) — 后端可观测性补全 + 自持收口
+
+**主题**：world 耗时 bugfix、batch 异常恢复、SSE 心跳、通用验收测试 skill、资产注册表全面补全
+
+### 修复
+- `world_progress()` 已完成世界取 PHASE END 耗时改为取 RUN END 总耗时
+- 新增 `_recover_stale_batches()` 启动恢复，进程重启后自动纠正 stuck 的 running batch
+- 新增信号处理器（SIGTERM/SIGINT + atexit），进程退出时标记运行中 batch 为 failed
+- `register_static` 从万能 `/<path:path>` 路由改为 `@app.errorhandler(404)`，防止劫持 API 路由
+- SPA 路由重构 — 允许 `/api/events` SSE 端点通过
+
+### 新增
+- **SSE 心跳** — `/api/events` 端点每 5s 发 `data: alive`，前端 `EventSource` 订阅，后端断线瞬时感知
+- **`/api/stats`** — 今日批次计数（基于服务端本地时间）
+- **`acceptance-test` skill** — 通用 YAML 驱动浏览器验收测试框架，不绑定项目
+- 前端 `App.vue` 系统状态组件 — SSE 保活连接，三态显示（检测中/就绪/离线）
+- 4 个 hook 脚本注册：closeout-gate-hook、debug-hook-payload、dispatch-skill-gate、mark-dispatch-ready
+- 39 个缺失 Hermes skill 注册到 skill_registry.yaml
+
+### 修改
+- `src/adarian/serve/db.py` — 新增 `track_batch()` / `untrack_batch()` 进程级 batch 跟踪
+- `frontend/src/App.vue` — `todayBatchCount` 从硬编码 `3` 改为 `/api/stats` 真实查询
+- `frontend/src/api/client.ts` — 新增 `getStats()` API 方法
+- `frontend/src/api/types.ts` — 新增 `StatsResponse` 类型
+- `WorkflowBase/registry/` — 全部注册表更新：skill 194 / hook 25 / mcp 7 / executor 7
+- `workflow_map.yaml` — 时间戳更新 + hook 注册表清单补充
+- `docs/iterations/CHANGELOG.md` — 本版本记录
+
+### 自持结果
+```text
+PM Runtime Self-Maint: ✅
+Drift Check:           ✅ critical=0, 6 warnings（已标记过时注释）
+Skills registered:     194
+Hooks registered:      25
+MCPs registered:       7
+Executors registered:  7
+```
 
 **主题**：新前端入口收口 + 本地 seed 路径恢复 + test8 live E2E
 

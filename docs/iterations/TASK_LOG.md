@@ -30,6 +30,30 @@
 
 ---
 
+## 2026-06-27: v1.5.1 patch — Observability fix + SSE + 自持收口
+
+- **task_id**: v1.5.1-observability-patch-self-maint
+- **executor**: hermes
+- **status**: completed
+- **changes**:
+  - `world_progress()` bugfix: 已完成世界耗时改为 RUN END
+  - `_recover_stale_batches()` + 信号处理器: 进程退出/重启时 batch 状态自动纠正
+  - `register_static` 路由重构: 从万能 catch-all 改为 errorhandler 404，让 API 路由正常匹配
+  - SSE 心跳: `/api/events` + EventSource，替代轮询
+  - `/api/stats`: 今日批次真实查询
+  - `acceptance-test` Hermes skill 创建 + 注册
+  - 自持收口: drift_check 2 critical 修复、4 hook 脚本注册、39 skill 补登
+  - 文件: 15 files changed, 205 insertions(+), 20 deletions(-)（基础改动）
+  - Registry: skill 155→194, hook 21→25, README 更新
+- **verification**:
+  - `pytest tests/serve/api/ -v` → 16 passed
+  - `npm run build` → 69 modules, built in ~500ms
+  - `drift_check.py --deep` → critical=0, 6 warnings（已加过时注释）
+  - `pm_runtime_self_maint.py` → ✅ 全部通过
+- **notes**:
+  - 本批次属于 Effect-Driven 修复，未创建正式迭代文档
+  - `v1.5.1` tag 已在上一轮 Codex commit (76dcf29) 完成，本轮为 follow-up 补丁
+
 ## 2026-06-26: v1.5.0c entry/e2e closeout + local seed_path restore
 
 - **task_id**: task-v1.5.0c-entry-e2e

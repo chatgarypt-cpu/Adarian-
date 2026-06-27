@@ -32,9 +32,9 @@
           <p>{{ activePage.desc }}</p>
         </div>
         <div class="status-strip">
-          <Mini label="系统状态" value="就绪" />
+          <Mini label="系统状态" :value="systemStatus.value" :tone="systemStatus.tone" />
           <Mini label="当前任务" value="未启动" />
-          <Mini label="今日批次" value="3" />
+          <Mini label="今日批次" :value="todayBatchCount" />
         </div>
       </section>
       <RouterView />
@@ -43,11 +43,34 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Mini from './components/Mini.vue';
+import { api } from './api/client';
 import { useRunStore } from './stores/run';
 import { useHistoryStore } from './stores/history';
+
+let eventSource: EventSource | null = null;
+
+const backendOnline = ref<boolean | null>(null); // null = 未检测
+
+const systemStatus = computed(() => {
+  if (backendOnline.value === null) return { value: '检测中...', tone: 'warn' as const };
+  if (backendOnline.value) return { value: '就绪', tone: 'ok' as const };
+  return { value: '离线', tone: 'bad' as const };
+});
+
+onMounted(() => {
+  eventSource = new EventSource('/api/events');
+  eventSource.onopen = () => { backendOnline.value = true; };
+  eventSource.onerror = () => { backendOnline.value = false; };
+});
+onUnmounted(() => { eventSource?.close(); eventSource = null; });
+
+const todayBatchCount = ref('...');
+api.getStats()
+  .then((s) => { todayBatchCount.value = String(s.todayBatches); })
+  .catch(() => { todayBatchCount.value = '--'; });
 
 const pages = [
   { path: '/seed', n: '01', title: '事件录入', sub: '输入材料', desc: '录入本次需要推演的舆情事件，明确事件背景、核心争议和材料来源。' },

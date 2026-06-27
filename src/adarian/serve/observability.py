@@ -168,13 +168,11 @@ def world_progress(world: dict[str, Any]) -> dict[str, Any]:
         try:
             start_dt = datetime.strptime(run_start_ts, "%Y-%m-%d %H:%M:%S")
             if phase_raw == "done":
-                last_elapsed: float | None = None
                 for line in lines:
-                    match = re.search(r"PHASE END name=\S+ elapsed=([\d.]+)s", line)
+                    match = re.search(r"RUN END elapsed=([\d.]+)s", line)
                     if match:
-                        last_elapsed = float(match.group(1))
-                if last_elapsed is not None:
-                    elapsed = last_elapsed
+                        elapsed = float(match.group(1))
+                        break
             if elapsed is None:
                 elapsed = round((datetime.now() - start_dt).total_seconds(), 1)
         except Exception:
