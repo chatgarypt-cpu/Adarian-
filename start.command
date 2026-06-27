@@ -3,8 +3,5 @@
 
 cd "$(dirname "$0")"
 echo "Adarian 平行世界舆情推演系统 — 启动中..."
-PYTHONPATH=src .venv/bin/python -m adarian serve
-
-echo ""
-echo "服务已停止。按 Enter 关闭窗口"
-read -r
+export PYTHONPATH=src
+exec .venv/bin/python -m adarian serve --open-browser

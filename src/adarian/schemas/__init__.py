@@ -12,6 +12,8 @@ from .phase2 import EdgeType, GraphEdge, GraphNode, NodeRole, Phase2Output
 from .phase3 import (
     AgentEntry,
     GlobalMetrics,
+    MAX_AGENT_COMMENT_CHARS,
+    MAX_AGENT_REASONING_CHARS,
     SilentAgentUpdate,
     SpeakerSelectionResult,
     TickLog,
@@ -42,6 +44,8 @@ __all__ = [
     "Phase2Output",
     "AgentEntry",
     "GlobalMetrics",
+    "MAX_AGENT_COMMENT_CHARS",
+    "MAX_AGENT_REASONING_CHARS",
     "TickLog",
     "SpeakerSelectionResult",
     "SilentAgentUpdate",

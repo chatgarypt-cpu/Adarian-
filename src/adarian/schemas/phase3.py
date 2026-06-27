@@ -5,6 +5,10 @@ from typing import Dict, List, Literal, Optional
 from pydantic import BaseModel, Field
 
 
+MAX_AGENT_COMMENT_CHARS = 1000
+MAX_AGENT_REASONING_CHARS = 600
+
+
 class AgentEntry(BaseModel):
     """单个 Agent 的发言条目"""
     agent_id: int = Field(..., description="Agent 唯一ID")
@@ -15,8 +19,8 @@ class AgentEntry(BaseModel):
     stance_delta: float = Field(..., description="立场变化量，绝对值表示变化程度")
     susceptibility: float = Field(..., ge=0.0, le=1.0, description="该 agent 的易感性（新增 v1.1.9）")
     change_reason: str = Field(..., description="立场变化原因：within_effective_delta | bounded_by_susceptibility（新增 v1.1.9）")
-    comment: str = Field(..., max_length=200, description="发表的评论内容")
-    reasoning: str = Field(..., max_length=100, description="立场理由")
+    comment: str = Field(..., max_length=MAX_AGENT_COMMENT_CHARS, description="发表的评论内容")
+    reasoning: str = Field(..., max_length=MAX_AGENT_REASONING_CHARS, description="立场理由")
     speaker_status: Optional[Literal["active", "silent", "blocked", "failed"]] = Field(
         default=None, description="白盒观测：本轮发言状态"
     )
@@ -115,6 +119,8 @@ class ClassificationOutput(BaseModel):
 __all__ = [
     "AgentEntry",
     "GlobalMetrics",
+    "MAX_AGENT_COMMENT_CHARS",
+    "MAX_AGENT_REASONING_CHARS",
     "TickLog",
     "SpeakerSelectionResult",
     "SilentAgentUpdate",

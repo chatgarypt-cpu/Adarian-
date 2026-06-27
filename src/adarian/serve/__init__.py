@@ -10,6 +10,7 @@ import os
 import signal
 import subprocess
 import sys
+import threading
 from pathlib import Path
 from typing import Any
 
@@ -142,6 +143,7 @@ def create_app() -> Flask:
     # Register signal handlers so that SIGTERM/SIGINT write "failed" before exit
     signal.signal(signal.SIGTERM, _handle_signal)
     signal.signal(signal.SIGINT, _handle_signal)
+    signal.signal(signal.SIGHUP, _handle_signal)
     atexit.register(_shutdown_running_batches)
 
     return app
@@ -182,8 +184,11 @@ def run(host: str = "127.0.0.1", port: int = 9788, open_browser: bool = False) -
         )
     )
     if open_browser:
-        try:
-            subprocess.Popen(["open", url])
-        except OSError:
-            pass
+        def _open_browser() -> None:
+            try:
+                subprocess.Popen(["open", url])
+            except OSError:
+                pass
+
+        threading.Timer(1.5, _open_browser).start()
     app.run(host=host, port=port, threaded=True)

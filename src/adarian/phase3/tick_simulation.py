@@ -31,7 +31,8 @@ from adarian import config
 from adarian.schemas import (
     Phase2Output, GraphNode, GraphEdge, EntityExtractionOutput,
     Entity, OpinionSpreader,
-    TickLog, AgentEntry, GlobalMetrics
+    TickLog, AgentEntry, GlobalMetrics,
+    MAX_AGENT_COMMENT_CHARS, MAX_AGENT_REASONING_CHARS
 )
 from adarian.llm_client import get_llm_client, LLMClient
 from adarian.display import get_bar
@@ -108,8 +109,8 @@ EVENT_ENTITY_POST_SYSTEM_PROMPT = """你是一个真实的社会事件参与者�
 
 输出格式（严格 JSON）：
 {{
-  "comment": "你的声明内容（100字以内，符合你的身份和角色）",
-  "reasoning": "你为什么这样说（30字以内）"
+  "comment": "1-3句话，完整表达你的初始立场，符合你的身份和角色",
+  "reasoning": "简短说明你为什么这样说"
 }}
 
 注意：
@@ -154,9 +155,9 @@ AGENT_POST_SYSTEM_PROMPT = """你是一个真实的社交媒体用户，你有�
 
 你必须严格按照以下 JSON 格式输出：
 {{
-  "comment": "你的评论（50字以内，符合你的人设和说话风格）",
+  "comment": "1-3句话，像真实社交媒体评论，符合你的人设和说话风格",
   "new_stance": 1.0到10.0之间的浮点数,
-  "reasoning": "你为什么持这个立场（30字以内）"
+  "reasoning": "简短说明你为什么持这个立场或发生变化"
 }}
 """
 
@@ -251,7 +252,7 @@ class SimulationEngine:
             self.spreader_map[spreader.group_name] = spreader
 
     def _normalize_text(self, value: str, max_length: int, fallback: str = "") -> str:
-        """清洗 LLM 文本并裁剪到 schema 允许长度。"""
+        """清洗 LLM 文本，并用 schema 上限作为异常安全阀。"""
         text = (value or "").strip()
         if not text:
             return fallback
@@ -698,33 +699,33 @@ class SimulationEngine:
         """解析事件实体发言响应"""
         parsed = self._try_parse_json_fields(response, ["comment", "reasoning"])
         if parsed:
-            comment = self._normalize_text(parsed.get("comment", ""), 200, "（解析失败）")
-            reasoning = self._normalize_text(parsed.get("reasoning", ""), 100)
+            comment = self._normalize_text(parsed.get("comment", ""), MAX_AGENT_COMMENT_CHARS, "（解析失败）")
+            reasoning = self._normalize_text(parsed.get("reasoning", ""), MAX_AGENT_REASONING_CHARS)
             return comment, reasoning
 
         # 备用解析
         comment_match = re.search(r'"comment":\s*"([^"]*)"', response)
         reasoning_match = re.search(r'"reasoning":\s*"([^"]*)"', response)
-        comment = self._normalize_text(comment_match.group(1) if comment_match else "", 200, "（解析失败）")
-        reasoning = self._normalize_text(reasoning_match.group(1) if reasoning_match else "", 100)
+        comment = self._normalize_text(comment_match.group(1) if comment_match else "", MAX_AGENT_COMMENT_CHARS, "（解析失败）")
+        reasoning = self._normalize_text(reasoning_match.group(1) if reasoning_match else "", MAX_AGENT_REASONING_CHARS)
         return comment, reasoning
 
     def _parse_agent_response(self, response: str) -> Tuple[str, float, str]:
         """解析 LLM 返回的 JSON"""
         parsed = self._try_parse_json_fields(response, ["comment", "new_stance", "reasoning"])
         if parsed:
-            comment = self._normalize_text(parsed.get("comment", ""), 200, "（解析失败）")
+            comment = self._normalize_text(parsed.get("comment", ""), MAX_AGENT_COMMENT_CHARS, "（解析失败）")
             new_stance = max(1.0, min(10.0, float(parsed.get("new_stance", 5.0) or 5.0)))
-            reasoning = self._normalize_text(parsed.get("reasoning", ""), 100)
+            reasoning = self._normalize_text(parsed.get("reasoning", ""), MAX_AGENT_REASONING_CHARS)
             return comment, new_stance, reasoning
 
         # 备用解析
         comment_match = re.search(r'"comment":\s*"([^"]*)"', response)
         stance_match = re.search(r'"new_stance":\s*([\d.]+)', response)
         reasoning_match = re.search(r'"reasoning":\s*"([^"]*)"', response)
-        comment = self._normalize_text(comment_match.group(1) if comment_match else "", 200, "（解析失败）")
+        comment = self._normalize_text(comment_match.group(1) if comment_match else "", MAX_AGENT_COMMENT_CHARS, "（解析失败）")
         new_stance = float(stance_match.group(1)) if stance_match else 5.0
-        reasoning = self._normalize_text(reasoning_match.group(1) if reasoning_match else "", 100)
+        reasoning = self._normalize_text(reasoning_match.group(1) if reasoning_match else "", MAX_AGENT_REASONING_CHARS)
         new_stance = max(1.0, min(10.0, new_stance))
         return comment, new_stance, reasoning
 

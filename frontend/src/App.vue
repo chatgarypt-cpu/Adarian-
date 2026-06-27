@@ -52,7 +52,7 @@ import { useHistoryStore } from './stores/history';
 
 let eventSource: EventSource | null = null;
 
-const backendOnline = ref<boolean | null>(null); // null = 未检测
+const backendOnline = ref<boolean | null>(null);
 
 const systemStatus = computed(() => {
   if (backendOnline.value === null) return { value: '检测中...', tone: 'warn' as const };
@@ -60,17 +60,22 @@ const systemStatus = computed(() => {
   return { value: '离线', tone: 'bad' as const };
 });
 
+const todayBatchCount = ref('...');
+
 onMounted(() => {
-  eventSource = new EventSource('/api/events');
-  eventSource.onopen = () => { backendOnline.value = true; };
-  eventSource.onerror = () => { backendOnline.value = false; };
+  try {
+    eventSource = new EventSource('/api/events');
+    eventSource.onopen = () => { backendOnline.value = true; };
+    eventSource.onerror = () => { backendOnline.value = false; };
+  } catch {
+    backendOnline.value = false;
+  }
+
+  api.getStats()
+    .then((s) => { todayBatchCount.value = String(s.todayBatches); })
+    .catch(() => { todayBatchCount.value = '--'; });
 });
 onUnmounted(() => { eventSource?.close(); eventSource = null; });
-
-const todayBatchCount = ref('...');
-api.getStats()
-  .then((s) => { todayBatchCount.value = String(s.todayBatches); })
-  .catch(() => { todayBatchCount.value = '--'; });
 
 const pages = [
   { path: '/seed', n: '01', title: '事件录入', sub: '输入材料', desc: '录入本次需要推演的舆情事件，明确事件背景、核心争议和材料来源。' },
