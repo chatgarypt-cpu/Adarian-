@@ -1,13 +1,17 @@
 import type {
   BatchSummary,
   ActiveRunResponse,
+  ActiveReportJobResponse,
+  AppendixMode,
   ConfigResponse,
   GatewayDiscoverResponse,
   ModelHealthResult,
   ModelGateway,
   ModelGatewayDraft,
   ModelSummary,
+  ReportJobResponse,
   ReportResponse,
+  ReportVersion,
   RiskReviewResponse,
   RunErrorsResponse,
   RunEventsResponse,
@@ -143,7 +147,29 @@ export const api = {
     return jsonRequest(`/api/review/${encodeURIComponent(batchId)}`);
   },
   generateReport(batchId: string, type: string, audience: string): Promise<ReportResponse> {
-    return jsonRequest('/api/report', { method: 'POST', body: JSON.stringify({ batch_id: batchId, type, audience }) });
+    return jsonRequest('/api/report', { method: 'POST', body: JSON.stringify({ batch_id: batchId, type, audience, client_session_id: clientSessionId(), allow_partial: true }) }, 120000);
+  },
+  createReportJob(payload: {
+    batch_id: string;
+    versions: ReportVersion[];
+    appendix_mode: AppendixMode;
+    allow_partial: boolean;
+    skill_id?: string;
+    gateway_id?: string;
+    model_id?: string;
+    temperature?: number;
+    max_tokens?: number;
+  }): Promise<ReportJobResponse> {
+    return jsonRequest('/api/report/jobs', {
+      method: 'POST',
+      body: JSON.stringify({ ...payload, client_session_id: clientSessionId() }),
+    }, 15000);
+  },
+  getReportJobStatus(jobId: string): Promise<ReportJobResponse> {
+    return jsonRequest(`/api/report/jobs/${encodeURIComponent(jobId)}/status`);
+  },
+  getActiveReportJob(): Promise<ActiveReportJobResponse> {
+    return jsonRequest(`/api/report/jobs/active?client_session_id=${encodeURIComponent(clientSessionId())}`);
   },
   getHistory(): Promise<BatchSummary[]> {
     return jsonRequest('/api/history');

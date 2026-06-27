@@ -2285,3 +2285,28 @@ E2E: 5/5
   - v1.5.2：报告生成/报告页重构。
   - 后续：SSE 替代轮询、cancel/retry、多 world 同框对比。
   - UI polish：Report 页顶部 KPI 仍显示通用“当前任务 未启动”，不影响占位/下载链路，但应在报告重构时统一状态口径。
+
+## 2026-06-27: task-v1.5.2-report-thin-real-chain
+
+- **task_id**: task-v1.5.2-report-thin-real-chain
+- **executor**: Codex
+- **status**: verified_pending_owner
+- **timestamp**: 2026-06-27T20:42:11+0800
+- **iteration_docs**:
+  - `docs/iterations/active/v1.5.2a_report_frontend_contract.md`
+  - `docs/iterations/active/v1.5.2b_report_agent_backend.md`
+- **summary**: 报告页从占位升级为真实 dataset-only 报告生成链路；支持 job 创建/轮询/会话恢复、A/B/C 选择、附录模式、skill 切换、质量门、模型错误分类和文件下载。
+- **dogfood**:
+  - in-app browser `/report` 点击“生成报告”真实创建 `report_a24102c105aa`。
+  - 基于 `adarian_batch_151414` 的 4 个 completed worlds 生成 B 版无附录 Markdown。
+  - 输出 `appendix_b.json`、正式 `.md`、`audit_report.json`；质量审核 `fatal=0/high=0/passed=1`。
+  - 曾捕获内网路由 502，已归类为 `REPORT_MODEL_UNAVAILABLE` 并保留 appendix。
+- **verification**:
+  - `.venv/bin/python -m py_compile src/adarian/report/*.py src/adarian/serve/api/report.py src/adarian/serve/db.py src/adarian/serve/schemas.py src/adarian/serve/observability.py` → passed
+  - `.venv/bin/python -m pytest tests/serve/ -q` → 23 passed
+  - `cd frontend && npm test -- --run` → 8 passed
+  - `cd frontend && npm run build` → passed
+  - Browser console errors → none
+- **carryover**:
+  - Owner 需要阅读本轮产出的报告文本并确认质量。
+  - 后续可做在线编辑、版本管理、SSE 替代轮询、成本面板。

@@ -142,6 +142,14 @@ def error_response(code: str, message: str, details: dict[str, Any] | None = Non
         "READ_ONLY_GATEWAY": 403,
         "REPORT_FILE_FORBIDDEN": 400,
         "REPORT_FILE_NOT_FOUND": 404,
+        "NO_COMPLETED_WORLDS": 409,
+        "PARTIAL_COMPLETED_WORLDS": 409,
+        "DATASET_MISSING": 409,
+        "REPORT_MODEL_NOT_CONFIGURED": 409,
+        "REPORT_MODEL_UNAVAILABLE": 502,
+        "APPENDIX_BUILD_FAILED": 500,
+        "REPORT_WRITE_FAILED": 500,
+        "REPORT_QUALITY_BLOCKED": 409,
         "REPORT_SOURCE_NOT_FOUND": 409,
         "MODEL_DISCOVERY_FAILED": 502,
         "RUN_START_FAILED": 500,
@@ -195,6 +203,15 @@ class RunPayload(BaseModel):
 
 class ReportPayload(BaseModel):
     batch_id: str
+    client_session_id: str = ""
+    versions: list[str] = Field(default_factory=lambda: ["B"])
+    appendix_mode: str = "none"
+    allow_partial: bool = False
+    skill_id: str = ""
+    gateway_id: str = ""
+    model_id: str = ""
+    temperature: float | None = None
+    max_tokens: int | None = None
     type: str = "risk_assessment"
     audience: str = "generic_government"
 

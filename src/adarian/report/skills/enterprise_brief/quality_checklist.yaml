@@ -1,0 +1,7 @@
+version: 1
+blocking:
+  - missing_required_headings
+  - internal_simulation_fields_in_body
+  - system_mechanism_terms_in_overview
+warning:
+  - weak_countermeasure

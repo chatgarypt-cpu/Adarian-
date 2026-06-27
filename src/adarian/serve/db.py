@@ -102,6 +102,34 @@ def init_db() -> None:
                 key TEXT PRIMARY KEY,
                 value TEXT NOT NULL
             );
+
+            CREATE TABLE IF NOT EXISTS report_jobs (
+                id TEXT PRIMARY KEY,
+                client_session_id TEXT NOT NULL DEFAULT '',
+                batch_id TEXT NOT NULL,
+                skill_id TEXT NOT NULL DEFAULT 'default_government',
+                versions TEXT NOT NULL DEFAULT '["B"]',
+                appendix_mode TEXT NOT NULL DEFAULT 'none',
+                allow_partial INTEGER NOT NULL DEFAULT 0,
+                partial INTEGER NOT NULL DEFAULT 0,
+                status TEXT NOT NULL DEFAULT 'idle',
+                progress INTEGER NOT NULL DEFAULT 0,
+                current_step TEXT NOT NULL DEFAULT '',
+                completed_worlds_count INTEGER NOT NULL DEFAULT 0,
+                failed_worlds_count INTEGER NOT NULL DEFAULT 0,
+                model_config_resolved_from TEXT NOT NULL DEFAULT 'missing',
+                output_dir TEXT NOT NULL DEFAULT '',
+                files_json TEXT NOT NULL DEFAULT '[]',
+                appendix_json TEXT NOT NULL DEFAULT '{}',
+                audit_json TEXT NOT NULL DEFAULT '{}',
+                request_json TEXT NOT NULL DEFAULT '{}',
+                error_code TEXT NOT NULL DEFAULT '',
+                error_message TEXT NOT NULL DEFAULT '',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                completed_at TEXT NOT NULL DEFAULT '',
+                FOREIGN KEY(batch_id) REFERENCES batches(id)
+            );
             """
         )
 
@@ -265,3 +293,66 @@ def list_user_gateways() -> list[dict[str, Any]]:
             "SELECT * FROM model_gateways ORDER BY created_at DESC",
         ).fetchall()
     return [dict(row) for row in rows]
+
+
+def upsert_report_job(job: dict[str, Any]) -> None:
+    init_db()
+    with connect() as conn:
+        conn.execute(
+            """
+            INSERT INTO report_jobs(id, client_session_id, batch_id, skill_id, versions, appendix_mode,
+                                    allow_partial, partial, status, progress, current_step,
+                                    completed_worlds_count, failed_worlds_count, model_config_resolved_from,
+                                    output_dir, files_json, appendix_json, audit_json, request_json,
+                                    error_code, error_message, created_at, updated_at, completed_at)
+            VALUES(:id, :client_session_id, :batch_id, :skill_id, :versions, :appendix_mode,
+                   :allow_partial, :partial, :status, :progress, :current_step,
+                   :completed_worlds_count, :failed_worlds_count, :model_config_resolved_from,
+                   :output_dir, :files_json, :appendix_json, :audit_json, :request_json,
+                   :error_code, :error_message, :created_at, :updated_at, :completed_at)
+            ON CONFLICT(id) DO UPDATE SET
+                skill_id=excluded.skill_id,
+                versions=excluded.versions,
+                appendix_mode=excluded.appendix_mode,
+                allow_partial=excluded.allow_partial,
+                partial=excluded.partial,
+                status=excluded.status,
+                progress=excluded.progress,
+                current_step=excluded.current_step,
+                completed_worlds_count=excluded.completed_worlds_count,
+                failed_worlds_count=excluded.failed_worlds_count,
+                model_config_resolved_from=excluded.model_config_resolved_from,
+                output_dir=excluded.output_dir,
+                files_json=excluded.files_json,
+                appendix_json=excluded.appendix_json,
+                audit_json=excluded.audit_json,
+                request_json=excluded.request_json,
+                error_code=excluded.error_code,
+                error_message=excluded.error_message,
+                updated_at=excluded.updated_at,
+                completed_at=excluded.completed_at
+            """,
+            job,
+        )
+
+
+def get_report_job(job_id: str) -> dict[str, Any] | None:
+    init_db()
+    with connect() as conn:
+        row = conn.execute("SELECT * FROM report_jobs WHERE id = ?", (job_id,)).fetchone()
+    return row_to_dict(row)
+
+
+def latest_report_job_for_session(client_session_id: str) -> dict[str, Any] | None:
+    init_db()
+    with connect() as conn:
+        row = conn.execute(
+            """
+            SELECT * FROM report_jobs
+            WHERE client_session_id = ?
+            ORDER BY created_at DESC
+            LIMIT 1
+            """,
+            (client_session_id,),
+        ).fetchone()
+    return row_to_dict(row)

@@ -600,7 +600,10 @@ def _batch_elapsed_seconds(world_items: list[dict[str, Any]]) -> float | None:
 
 def _report_count(batch: dict[str, Any]) -> int:
     batch_dir = Path(batch.get("batch_dir") or "")
-    return sum(1 for filename in ("report.json", "report.md", "final_report.json", "final_report.md") if (batch_dir / filename).is_file())
+    legacy_count = sum(1 for filename in ("report.json", "report.md", "final_report.json", "final_report.md") if (batch_dir / filename).is_file())
+    reports_dir = batch_dir / "reports"
+    generated_count = sum(1 for path in reports_dir.glob("**/*.md") if path.is_file()) if reports_dir.is_dir() else 0
+    return legacy_count + generated_count
 
 
 def _last_error_line(world: dict[str, Any]) -> str:

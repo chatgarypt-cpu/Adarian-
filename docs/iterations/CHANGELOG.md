@@ -2045,3 +2045,22 @@ outputs/
 - **carryover**:
   - v1.5.2 报告生成/报告页重构
   - SSE、cancel/retry、多 world 同框对比
+
+## 2026-06-27: v1.5.2 报告生成真实链路
+
+- **status**: verified_pending_owner
+- **summary**: 报告生成由 v1.5.1 占位升级为真实 job 链路，前端可基于 completed worlds 的 `simulation_dataset.json` 生成报告。
+- **added**:
+  - `src/adarian/report/` 轻量报告包：appendix builder、writer、quality、runner、skill。
+  - `report_jobs` SQLite 表与报告 job API：创建、轮询、恢复、下载。
+  - `tests/serve/api/test_report_jobs.py`。
+- **changed**:
+  - `/report` 页面接入真实 API，支持 A/B/C、附录模式、skill 切换和会话恢复。
+  - `POST /api/report` 不再返回占位，改为兼容执行真实 job。
+  - run metrics 的 `report_count` 计入新 `reports/**/*.md`。
+  - LLM 502/超时/路由问题归类为 `REPORT_MODEL_UNAVAILABLE`。
+- **verification**:
+  - 23 serve tests passed
+  - 8 frontend tests passed
+  - frontend production build passed
+  - in-app browser dogfood passed：`report_a24102c105aa` completed，正式 Markdown + appendix + audit 均可下载。

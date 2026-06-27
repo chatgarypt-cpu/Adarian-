@@ -99,14 +99,62 @@ export interface RiskReviewResponse {
 
 export interface ReportFile {
   id: string;
+  version?: 'A' | 'B' | 'C';
+  appendix?: 'none' | 'included' | 'data';
   name: string;
   url: string;
   path?: string;
 }
 
+export type ReportJobStatus = 'idle' | 'running' | 'completed' | 'blocked' | 'failed';
+export type ReportVersion = 'A' | 'B' | 'C';
+export type AppendixMode = 'none' | 'included' | 'both';
+
+export interface ReportAuditSummary {
+  fatal: number;
+  high: number;
+  medium: number;
+  passed: number;
+  blocked_reasons: string[];
+}
+
+export interface ReportJobResponse {
+  job_id: string;
+  report_id?: string;
+  batch_id: string;
+  status: ReportJobStatus;
+  progress: number;
+  current_step: string;
+  selected_versions: ReportVersion[];
+  version?: ReportVersion;
+  appendix_mode: AppendixMode;
+  partial: boolean;
+  completed_worlds_count: number;
+  failed_worlds_count: number;
+  skill_id: string;
+  model: { resolved_from: 'payload' | 'settings' | 'env' | 'missing'; gateway_id?: string; model_id?: string };
+  files: ReportFile[];
+  appendix_b: {
+    available: boolean;
+    path?: string;
+    worlds_count: number;
+    confirmed_risks: number;
+    preview: Record<string, unknown>;
+  };
+  audit_summary: ReportAuditSummary;
+  error_code?: string;
+  error_message?: string;
+}
+
+export interface ActiveReportJobResponse {
+  active: boolean;
+  job: ReportJobResponse | null;
+}
+
 export interface ReportResponse {
   report_id: string;
   batch_id: string;
+  status?: ReportJobStatus;
   files: ReportFile[];
 }
 

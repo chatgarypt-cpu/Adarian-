@@ -16,7 +16,7 @@ def test_report_unknown_batch_404(client):
     assert response.get_json()["code"] == "BATCH_NOT_FOUND"
 
 
-def test_report_generation_is_deferred_without_existing_file(client):
+def test_report_blocks_without_completed_worlds(client):
     from adarian.serve import db
 
     db.upsert_batch(
@@ -39,5 +39,4 @@ def test_report_generation_is_deferred_without_existing_file(client):
     response = client.post("/api/report", json={"batch_id": "batch_without_dataset"})
     assert response.status_code == 409
     body = response.get_json()
-    assert body["code"] == "REPORT_GENERATION_DEFERRED"
-    assert body["details"]["next_version"] == "v1.5.2"
+    assert body["code"] == "NO_COMPLETED_WORLDS"

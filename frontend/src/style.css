@@ -221,6 +221,11 @@ textarea, input, select {
 textarea { min-height: 150px; resize: vertical; }
 
 .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+.primary:disabled,
+.ghost:disabled {
+  opacity: .46;
+  cursor: not-allowed;
+}
 .chips { display: flex; gap: 8px; flex-wrap: wrap; }
 
 .chip {
@@ -376,11 +381,15 @@ textarea { min-height: 150px; resize: vertical; }
 }
 
 .json-preview {
+  border: 1px solid rgba(81, 220, 255, .16);
+  background: rgba(1, 7, 13, .7);
+  border-radius: 10px;
+  padding: 12px;
   margin: 10px 0 0;
   max-height: 260px;
   overflow: auto;
-  color: #b9d6e7;
-  font-size: 12px;
+  color: #bfe8f6;
+  font: 12px/1.55 "SF Mono", Menlo, Consolas, monospace;
   white-space: pre-wrap;
 }
 
@@ -751,6 +760,78 @@ textarea { min-height: 150px; resize: vertical; }
   padding: 9px 11px;
   margin-bottom: 12px;
   font-size: 12px;
+}
+
+.status-note.warn { color: var(--amber); }
+
+.report-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.report-metrics div {
+  border: 1px solid rgba(81, 220, 255, .18);
+  border-radius: 10px;
+  background: rgba(2, 10, 18, .34);
+  padding: 12px;
+}
+
+.report-metrics span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.report-metrics strong { font-size: 24px; }
+
+.check-row,
+.choice-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+}
+
+.check-row input,
+.choice-pill input {
+  width: auto;
+}
+
+.choice-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.choice-pill {
+  border: 1px solid rgba(81, 220, 255, .22);
+  background: rgba(2, 10, 18, .32);
+  border-radius: 10px;
+  padding: 9px 11px;
+}
+
+.report-progress {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.progress-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(81, 220, 255, .12);
+  overflow: hidden;
+}
+
+.progress-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--cyan), var(--green));
+  transition: width .25s ease;
 }
 
 .spinner {
