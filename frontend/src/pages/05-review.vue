@@ -6,7 +6,7 @@
         <Panel title="主要风险对比" note="多轮结果汇总">
           <div class="status-note">审查结果来自当前 batch 的真实 world 状态与产物路径；不会生成 mock 风险。</div>
           <div class="actions">
-            <button class="primary" type="button" :disabled="!run.activeBatch.batchId" @click="run.loadReview">读取审查结果</button>
+            <button class="primary" type="button" :disabled="!run.activeBatch.batchId" @click="run.loadReview()">读取审查结果</button>
           </div>
           <div v-if="rows.length === 0" class="empty-inline">暂无可审查结果。完成一次真实推演后，可在这里读取多轮结果对比。</div>
           <table class="table">
@@ -43,7 +43,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import type { RiskComparison } from '../api/types';
 import Card from '../components/Card.vue';
 import Chip from '../components/Chip.vue';
@@ -55,12 +55,14 @@ import { useRunStore } from '../stores/run';
 
 const run = useRunStore();
 const router = useRouter();
+const route = useRoute();
 const { reviewState: state, reviewRows } = storeToRefs(run);
 const rows = computed(() => reviewRows.value);
 const effectiveState = computed(() => (state.value === 'empty' ? 'populated' : state.value));
 
 onMounted(async () => {
-  await run.loadReview();
+  const batchId = typeof route.query.batch_id === 'string' ? route.query.batch_id : '';
+  await run.loadReview(batchId);
 });
 
 function openWorld(item: RiskComparison) {

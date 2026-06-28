@@ -1,3 +1,9 @@
+---
+id: enterprise_brief
+label: 企业简报
+description: 面向企业管理层的舆情处置简报。简明直接、强调处置优先级。
+---
+
 # Enterprise Brief Report Skill
 
 将 `appendix_b.json` 转化为面向企业管理层的舆情处置简报。

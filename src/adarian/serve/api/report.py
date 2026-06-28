@@ -8,11 +8,13 @@ import json
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
+from urllib.parse import unquote
 
 from flask import Blueprint, jsonify, request, send_from_directory
 from pydantic import ValidationError
 
 from adarian.report import create_job, run_job, status_response
+from adarian.report.view_model import artifact_metadata, build_report_view
 from adarian.serve import db
 from adarian.serve.api.model_gateways import _env_gateway
 from adarian.serve.observability import safe_report_file
@@ -85,9 +87,9 @@ def report_job_status(job_id: str):
 @report_bp.get("/report/jobs/active")
 def active_report_job():
     session_id = _request_session_id()
-    if not session_id:
-        return jsonify({"active": False, "job": None})
-    job = db.latest_report_job_for_session(session_id)
+    job = db.latest_report_job_for_session(session_id) if session_id else None
+    if not job:
+        job = db.latest_report_job()
     return jsonify({"active": bool(job), "job": status_response(job) if job else None})
 
 
@@ -105,6 +107,31 @@ def download_report_job_file(job_id: str, filename: str):
         body, status = error_response("REPORT_FILE_NOT_FOUND", "Report file not found", {"filename": filename})
         return jsonify(body), status
     return send_from_directory(file_path.parent, file_path.name, as_attachment=True)
+
+
+@report_bp.get("/report/jobs/<job_id>/view/<file_id>")
+def report_job_file_view(job_id: str, file_id: str):
+    job = db.get_report_job(job_id)
+    if not job:
+        body, status = error_response("NOT_FOUND", "Report job not found", {"job_id": job_id})
+        return jsonify(body), status
+    file = _job_file_by_id(job, file_id)
+    if not file:
+        body, status = error_response("REPORT_FILE_NOT_FOUND", "Report file not found", {"file_id": file_id})
+        return jsonify(body), status
+    file = artifact_metadata(file)
+    if file.get("appendix") == "data":
+        body, status = error_response("REPORT_FILE_FORBIDDEN", "Report data artifacts cannot be previewed", {"file_id": file_id})
+        return jsonify(body), status
+    filename = _filename_from_file(file)
+    if not filename:
+        body, status = error_response("REPORT_FILE_FORBIDDEN", "Report file path is not available", {"file_id": file_id})
+        return jsonify(body), status
+    file_path = _safe_job_file(job, filename)
+    if not file_path:
+        body, status = error_response("REPORT_FILE_FORBIDDEN", "Report filename is not allowed", {"filename": filename})
+        return jsonify(body), status
+    return jsonify(build_report_view(file, file_path))
 
 
 @report_bp.get("/report/<batch_id>/files/<path:filename>")
@@ -150,6 +177,25 @@ def _safe_job_file(job: dict[str, Any], filename: str) -> Path | None:
     except ValueError:
         return None
     return candidate
+
+
+def _job_file_by_id(job: dict[str, Any], file_id: str) -> dict[str, Any] | None:
+    try:
+        files = json.loads(job.get("files_json") or "[]")
+    except json.JSONDecodeError:
+        return None
+    for item in files:
+        if str(item.get("id") or "") == file_id:
+            return item
+    return None
+
+
+def _filename_from_file(file: dict[str, Any]) -> str:
+    url = str(file.get("url") or "")
+    marker = "/files/"
+    if marker in url:
+        return unquote(url.split(marker, 1)[1])
+    return str(file.get("path") or file.get("name") or "")
 
 
 def _latest_job_for_batch(batch_id: str) -> dict[str, Any] | None:

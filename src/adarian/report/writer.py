@@ -9,6 +9,7 @@ from typing import Any
 from adarian.llm_client import LLMClient
 
 from .config import ReportModelConfig, skill_path
+from .skills_registry import read_skill
 
 
 VERSION_GOALS = {
@@ -21,8 +22,10 @@ VERSION_GOALS = {
 def load_skill(skill_id: str) -> str:
     path = skill_path(skill_id)
     if path.exists():
-        return path.read_text(encoding="utf-8")
-    return skill_path("default_government").read_text(encoding="utf-8")
+        _meta, body = read_skill(skill_id)
+        return body
+    _meta, body = read_skill("default_government")
+    return body
 
 
 def write_body(*, appendix_b: dict[str, Any], version: str, skill_id: str, model_config: ReportModelConfig) -> str:
@@ -61,7 +64,7 @@ appendix_b JSON：
         model=model_config.model,
         temperature=model_config.temperature,
         max_tokens=model_config.max_tokens,
-        task_type="phase4_report",
+        task_type="report_generation",
     )
     result = client.generate(system=system, user=user, response_model=None)
     return str(result).strip()

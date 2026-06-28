@@ -8,7 +8,11 @@
           <div class="form-row"><label>平行推演轮数</label><input v-model.number="run.config.parallelWorlds" type="number" min="1" /></div>
           <div class="form-row"><label>每轮模拟步数</label><input v-model.number="run.config.ticks" type="number" min="1" max="5" /></div>
           <div class="form-row"><label>输出批次名称</label><input v-model="run.config.batchName" /></div>
-          <div class="actions"><button class="primary" type="button" @click="run.saveConfig">保存配置</button></div>
+          <div class="actions">
+            <button class="primary" type="button" :disabled="run.configSaving" @click="run.saveConfig">
+              {{ run.configSaving ? '保存中...' : '保存配置' }}
+            </button>
+          </div>
         </Panel>
         <Panel title="推演重点" note="业务目标">
           <div class="status-note">推演重点 chips 仍为产品占位，尚未影响 Phase 或报告逻辑。</div>

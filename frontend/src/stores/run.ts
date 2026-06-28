@@ -15,6 +15,7 @@ export const useRunStore = defineStore('run', () => {
   const modelGateways = ref<ModelGateway[]>([]);
   const expandedGatewayIds = ref<string[]>(['env-default']);
   const modelsState = ref<PageState>('populated');
+  const configSaving = ref(false);
   const gatewayDraft = ref<ModelGatewayDraft>({
     name: '',
     baseUrl: '',
@@ -23,7 +24,6 @@ export const useRunStore = defineStore('run', () => {
   });
   const runState = ref<PageState>('populated');
   const reviewState = ref<PageState>('populated');
-  const reportState = ref<PageState>('populated');
   const logs = ref('');
   const runError = ref('');
   const modelsError = ref('');
@@ -314,12 +314,17 @@ export const useRunStore = defineStore('run', () => {
   }
 
   async function saveConfig() {
-    await api.saveConfig({
-      parallel_worlds: config.value.parallelWorlds,
-      ticks: config.value.ticks,
-      batch_name: config.value.batchName,
-      focuses: config.value.focuses,
-    });
+    configSaving.value = true;
+    try {
+      await api.saveConfig({
+        parallel_worlds: config.value.parallelWorlds,
+        ticks: config.value.ticks,
+        batch_name: config.value.batchName,
+        focuses: config.value.focuses,
+      });
+    } finally {
+      configSaving.value = false;
+    }
   }
 
   async function startRun(seedInput: { seedText: string; seedPath?: string; source?: string }) {
@@ -401,8 +406,9 @@ export const useRunStore = defineStore('run', () => {
     }
   }
 
-  async function loadReview() {
-    if (!activeBatch.value.batchId) {
+  async function loadReview(batchIdOverride = '') {
+    const targetBatchId = batchIdOverride || activeBatch.value.batchId || '';
+    if (!targetBatchId) {
       await restoreActiveBatch();
       if (!activeBatch.value.batchId) {
         reviewRows.value = [];
@@ -413,7 +419,8 @@ export const useRunStore = defineStore('run', () => {
     reviewState.value = 'loading';
     reviewError.value = '';
     try {
-      const result = await api.getReview(activeBatch.value.batchId);
+      const batchId = batchIdOverride || activeBatch.value.batchId || '';
+      const result = await api.getReview(batchId);
       reviewRows.value = result.rows;
       reviewState.value = result.rows.length ? 'populated' : 'empty';
     } catch (error) {
@@ -463,9 +470,9 @@ export const useRunStore = defineStore('run', () => {
     expandedGatewayIds,
     gatewayDraft,
     modelsState,
+    configSaving,
     runState,
     reviewState,
-    reportState,
     logs,
     runError,
     modelsError,

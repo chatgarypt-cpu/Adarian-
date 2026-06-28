@@ -12,6 +12,7 @@ from adarian.serve.api.model_gateways import model_gateways_bp
 from adarian.serve.api.models import models_bp
 from adarian.serve.api.ping import ping_bp
 from adarian.serve.api.report import report_bp
+from adarian.serve.api.report_skills import report_skills_bp
 from adarian.serve.api.review import review_bp
 from adarian.serve.api.run import run_bp
 from adarian.serve.api.seed import seed_bp
@@ -31,5 +32,6 @@ def register_api(app: Flask) -> None:
     app.register_blueprint(history_bp, url_prefix="/api")
     app.register_blueprint(review_bp, url_prefix="/api")
     app.register_blueprint(report_bp, url_prefix="/api")
+    app.register_blueprint(report_skills_bp, url_prefix="/api")
     app.register_blueprint(settings_bp, url_prefix="/api")
     app.register_blueprint(stats_bp, url_prefix="/api")

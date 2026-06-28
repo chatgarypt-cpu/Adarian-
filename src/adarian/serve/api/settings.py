@@ -21,11 +21,17 @@ DEFAULT_SETTINGS = {
     "outputDir": "outputs/runs/",
     "retentionDays": 30,
     "technicalMode": False,
+    "report_gateway_id": "",
+    "report_model_id": "",
+    "report_temperature": 0.3,
+    "report_max_tokens": 8192,
+    "report_skill_id": "default_government",
 }
 
 
 def _settings() -> dict:
-    return db.get_setting("settings", DEFAULT_SETTINGS)
+    saved = db.get_setting("settings", {}) or {}
+    return {**DEFAULT_SETTINGS, **saved}
 
 
 def _system_checks(settings: dict) -> list[dict]:

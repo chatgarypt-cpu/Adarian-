@@ -99,6 +99,30 @@ def test_report_job_generates_only_selected_versions(client, tmp_path, monkeypat
     assert any(item["version"] == "C" and item["appendix"] == "none" for item in body["files"])
     assert not any(item.get("version") == "B" for item in body["files"])
     assert "appendix_b.json" in names
+    report_file = next(item for item in body["files"] if item.get("version") == "A" and item.get("appendix") == "none")
+    assert report_file["format"] == "md"
+    assert report_file["previewable"] is True
+
+    view = client.get(f"/api/report/jobs/{body['job_id']}/view/{report_file['id']}")
+    assert view.status_code == 200
+    view_body = view.get_json()
+    assert view_body["preview_supported"] is True
+    assert view_body["title"] == "测试事件舆情风险研判"
+    assert [section["heading"] for section in view_body["sections"]] == ["一、舆情概要", "二、演化分析", "三、风险研判", "四、对策意见"]
+
+    appendix_view = client.get(f"/api/report/jobs/{body['job_id']}/view/appendix_b")
+    assert appendix_view.status_code == 400
+    assert appendix_view.get_json()["code"] == "REPORT_FILE_FORBIDDEN"
+
+    active = client.get("/api/report/jobs/active")
+    assert active.status_code == 200
+    active_body = active.get_json()
+    assert active_body["active"] is True
+    assert active_body["job"]["job_id"] == body["job_id"]
+
+    session_fallback = client.get("/api/report/jobs/active?client_session_id=fresh-browser-session")
+    assert session_fallback.status_code == 200
+    assert session_fallback.get_json()["job"]["job_id"] == body["job_id"]
 
 
 def test_report_job_blocks_partial_without_consent(client, tmp_path):
@@ -123,3 +147,27 @@ def test_report_job_blocks_partial_without_consent(client, tmp_path):
     response = client.post("/api/report", json={"batch_id": "report_batch", "allow_partial": False})
     assert response.status_code == 409
     assert response.get_json()["code"] == "PARTIAL_COMPLETED_WORLDS"
+
+
+def test_report_skills_and_settings_slots(client):
+    skills = client.get("/api/report/skills")
+    assert skills.status_code == 200
+    body = skills.get_json()
+    assert {item["id"] for item in body} >= {"default_government", "enterprise_brief"}
+
+    response = client.put("/api/settings", json={
+        "maxConcurrent": 3,
+        "outputDir": "outputs/runs/",
+        "retentionDays": 30,
+        "technicalMode": False,
+        "report_gateway_id": "env-default",
+        "report_model_id": "qwen36-35b",
+        "report_temperature": 0.2,
+        "report_max_tokens": 8192,
+        "report_skill_id": "enterprise_brief",
+    })
+    assert response.status_code == 200
+    settings = response.get_json()
+    assert settings["report_gateway_id"] == "env-default"
+    assert settings["report_model_id"] == "qwen36-35b"
+    assert settings["report_skill_id"] == "enterprise_brief"

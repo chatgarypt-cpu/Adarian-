@@ -393,6 +393,112 @@ textarea { min-height: 150px; resize: vertical; }
   white-space: pre-wrap;
 }
 
+.artifact-list {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.artifact-item {
+  min-width: 170px;
+  border: 1px solid rgba(81, 220, 255, .16);
+  background: rgba(2, 10, 18, .36);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 10px 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.artifact-item:hover,
+.artifact-item.active {
+  border-color: rgba(81, 220, 255, .56);
+  background: rgba(81, 220, 255, .08);
+}
+
+.artifact-item strong,
+.artifact-item span {
+  display: block;
+}
+
+.artifact-item span {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 3px;
+}
+
+.report-reader {
+  border: 1px solid rgba(81, 220, 255, .18);
+  background: rgba(2, 10, 18, .34);
+  border-radius: 12px;
+  padding: 18px;
+}
+
+.report-reader-head {
+  border-bottom: 1px solid rgba(81, 220, 255, .14);
+  padding-bottom: 12px;
+  margin-bottom: 14px;
+}
+
+.report-reader-head span {
+  color: var(--cyan);
+  font-size: 12px;
+}
+
+.report-reader-head h3 {
+  margin: 4px 0 0;
+  font-size: 22px;
+  line-height: 1.3;
+}
+
+.report-section {
+  padding: 8px 0 12px;
+  border-bottom: 1px solid rgba(81, 220, 255, .08);
+}
+
+.report-section:last-child { border-bottom: 0; }
+.report-section h4 { margin: 0 0 8px; font-size: 18px; }
+.report-subsection { margin: 12px 0 0; padding-left: 12px; border-left: 2px solid rgba(81, 220, 255, .22); }
+.report-subsection h5 { margin: 0 0 6px; font-size: 15px; color: #d9f4ff; }
+.report-section p,
+.report-subsection p { margin: 7px 0; color: #d6edf7; }
+.report-section ul { margin: 7px 0 7px 20px; padding: 0; color: #d6edf7; }
+.report-section pre {
+  white-space: pre-wrap;
+  border: 1px solid rgba(81, 220, 255, .12);
+  background: rgba(1, 7, 13, .58);
+  border-radius: 8px;
+  padding: 10px;
+  color: #bfe8f6;
+}
+
+.appendix-summary {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1.6fr repeat(3, minmax(0, .8fr));
+}
+
+.appendix-summary > div {
+  border: 1px solid rgba(81, 220, 255, .16);
+  background: rgba(2, 10, 18, .34);
+  border-radius: 10px;
+  padding: 11px;
+}
+
+.appendix-summary span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.appendix-summary strong {
+  display: block;
+  margin-top: 3px;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
 .run-console {
   display: grid;
   gap: 12px;

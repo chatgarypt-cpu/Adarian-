@@ -30,6 +30,44 @@
 
 ---
 
+## 2026-06-28: v1.5.2.2 legacy inline report runtime retirement
+
+- **task_id**: task-v1.5.2.2-legacy-phase4-retirement
+- **executor**: codex
+- **status**: implementation_verified
+- **changes**:
+  - `src/adarian/phase4/` 旧 inline report 包已移入 `docs/archive/legacy/phase4_runtime_package/`。
+  - `main.py` 默认 pipeline 只跑到 `simulation_dataset.json`，不再执行旧 LLM 报告生成。
+  - 新报告链路 task type 从 `phase4_report` 改为 `report_generation`。
+  - 04-run 前端移除 Phase 4 stage tab；serve observability 不再映射或统计旧 inline report 阶段。
+  - `schemas/phase4.py` 未移动：仍是 parser/analysis 使用的 active 风险 schema/常量。
+- **verification**:
+  - `.venv/bin/python -m pytest tests/test_legacy_phase4_archived.py tests/test_phase4_retirement.py tests/test_run_dir_concurrency.py tests/serve/ -q` → 27 passed
+  - `cd frontend && npm test -- --run && npm run build` → 8 passed + build pass
+  - grep runtime/frontend source：无 `Phase 4` / `phase4_report` / `phase4_report_agent`
+  - Browser dogfood `/run`：无 Phase 4 / phase4 文本，console warn/error empty
+
+## 2026-06-28: v1.5.2.1 frontend misc + report view-model closeout
+
+- **task_id**: task-v1.5.2.1-frontend-misc-report-view
+- **executor**: codex
+- **status**: implementation_verified
+- **changes**:
+  - 06-report 改为消费结构化 `ReportViewResponse`，不在前端解析或注入 Markdown HTML；`.md` 仅作为下载 artifact。
+  - 新增 `/api/report/jobs/<job_id>/view/<file_id>`，正式报告 artifact 可预览，appendix/audit 数据 artifact 禁止预览。
+  - 新增 `/api/report/skills` 和 skill frontmatter 发现；08-settings 补齐 report model / skill 配置槽位。
+  - report artifact 元数据补 `format` / `previewable`，为后续 PDF/DOCX/HTML 多格式下载保留稳定出口。
+  - 06-report 隐藏 `appendix_b.json` / `audit_report.json` 下载与原始 JSON，只展示结构化摘要。
+  - 07-history “打开”接入 `/review?batch_id=...`；05-review 支持 query batch；02-config 保存按钮接入 saving 状态。
+  - `/api/report/jobs/active` 增加 full restart fallback：session 查不到时回退最近 report job，避免前端重开后空白。
+- **verification**:
+  - `.venv/bin/python -m pytest tests/serve/ -q` → 24 passed
+  - `cd frontend && npm test -- --run && npm run build` → 8 passed + build pass
+  - Browser dogfood on `http://127.0.0.1:9795`: settings save/reload、report cold-start restore、A/C artifact 切换、appendix 隐藏、history→review、console warn/error empty
+- **notes**:
+  - settings dogfood 写入过临时 report model，已恢复默认：空 gateway/model、temperature 0.3、max_tokens 8192、default_government。
+  - 下一步应推进后端报告 artifact 生命周期与多格式产物生成；前端阅读器继续消费 view-model，不绑定 `.md`。
+
 ## 2026-06-27: v1.5.1 patch — Observability fix + SSE + 自持收口
 
 - **task_id**: v1.5.1-observability-patch-self-maint

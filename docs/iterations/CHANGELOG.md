@@ -21,6 +21,78 @@
 
 ---
 
+## v1.5.2.2 (2026-06-28) — Legacy inline report runtime retirement
+
+**主题**：旧 inline report 包归档，world 默认生成链路不再跑旧报告。
+
+### 归档
+
+- `src/adarian/phase4/` → `docs/archive/legacy/phase4_runtime_package/`
+- 保留 `src/adarian/schemas/phase4.py`：它仍是风险等级/类型 active schema，不属于旧报告包。
+
+### 修改
+
+- `main.py` 只运行 Phase 1-3 + analysis/parser，输出 `simulation_dataset.json` 后结束。
+- report model task type 从 `phase4_report` 改为 `report_generation`。
+- 04-run 前端移除 Phase 4 tab。
+- serve observability 不再把旧 report 阶段映射成 Phase 4，也不再把 legacy `final_report` 计入报告数量。
+- API 文档改为 dataset-only report job 语义。
+
+### 验收
+
+```text
+.venv/bin/python -m pytest tests/test_legacy_phase4_archived.py tests/test_phase4_retirement.py tests/test_run_dir_concurrency.py tests/serve/ -q
+  27 passed
+
+cd frontend && npm test -- --run && npm run build
+  8 passed; build pass
+
+Browser dogfood:
+  /run no Phase 4 / phase4 text
+  browser console warn/error empty
+```
+
+## v1.5.2.1 (2026-06-28) — Report view-model + 前端杂项收口
+
+**主题**：报告页从 `.md` 直读占位升级为结构化阅读器，同时补齐 settings/report/history/config 的小链路。
+
+### 新增
+
+- `/api/report/skills`：扫描 report skills frontmatter，供 06-report / 08-settings 动态下拉使用。
+- `/api/report/jobs/<job_id>/view/<file_id>`：将正式报告 artifact 转成安全的结构化 view-model。
+- `ReportFile.format` / `previewable` 元数据，为后续 PDF/DOCX/HTML/JSON 多格式下载做出口准备。
+- 08-settings：report gateway/model/temperature/max_tokens/default skill 配置槽位。
+
+### 修改
+
+- 06-report：展示结构化报告阅读器，artifact tabs 支持 A/C 等正式报告切换；不使用 `v-html` 或 Markdown parser。
+- 06-report：`appendix_b.json` / `audit_report.json` 不再作为下载链接或原始 JSON 暴露，仅显示摘要指标。
+- 07-history：打开按钮跳转 `/review?batch_id=...`；05-review 按 query batch 加载真实审查结果。
+- 02-config：保存配置按钮接入 saving 状态；run store 清理未使用 report state。
+- `/api/report/jobs/active`：session 查不到时 fallback 到最近 report job，解决完全重启后报告页空白。
+
+### 验收
+
+```text
+.venv/bin/python -m pytest tests/serve/ -q
+  24 passed
+
+cd frontend && npm test -- --run && npm run build
+  8 passed; build pass
+
+Browser dogfood:
+  /settings save/reload pass
+  /report cold-start restore + structured reader pass
+  /report appendix/audit hidden pass
+  /history -> /review?batch_id pass
+  browser console warn/error empty
+```
+
+### 后续
+
+- 后端报告 pipeline 需要生成真实多格式 artifacts，并输出长期稳定的 `report_view` 数据，而不是长期依赖 `.md` 轻解析。
+- 报告 artifact 生命周期、下载保留、模型选择与 token/cost 统计应进入下一轮后端对齐。
+
 ## v1.5.1 (2026-06-27) — 后端可观测性补全 + 自持收口
 
 **主题**：world 耗时 bugfix、batch 异常恢复、SSE 心跳、通用验收测试 skill、资产注册表全面补全

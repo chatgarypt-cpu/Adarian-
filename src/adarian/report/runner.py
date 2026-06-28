@@ -14,6 +14,7 @@ from adarian.serve.schemas import normalize_status
 from .appendix_builder import build_appendix_b, load_dataset, write_appendix_b
 from .config import parse_appendix_mode, parse_versions, resolve_model_config, resolve_skill_id, safe_slug
 from .quality import assemble_report, audit_body, is_blocked, write_audit
+from .view_model import artifact_metadata
 from .writer import write_body, write_debug_body
 
 
@@ -89,7 +90,7 @@ def run_job(job_id: str) -> dict[str, Any]:
         _update(job, output_dir=str(output_dir), progress=30, current_step="生成 appendix_b.json")
         appendix_b = build_appendix_b(datasets, event_name)
         appendix_path = write_appendix_b(appendix_b, output_dir / "appendix_b.json")
-        appendix_file = {"id": "appendix_b", "version": "data", "appendix": "data", "name": "appendix_b.json", "url": f"/api/report/jobs/{job['id']}/files/appendix_b.json"}
+        appendix_file = artifact_metadata({"id": "appendix_b", "version": "data", "appendix": "data", "name": "appendix_b.json", "url": f"/api/report/jobs/{job['id']}/files/appendix_b.json", "previewable": False})
         _update(
             job,
             appendix_json=json.dumps(_appendix_summary(appendix_b, appendix_path), ensure_ascii=False),
@@ -132,16 +133,16 @@ def run_job(job_id: str) -> dict[str, Any]:
                 path = version_dir / name
                 path.write_text(content, encoding="utf-8")
                 rel = f"{version}版/{name}"
-                files.append({
+                files.append(artifact_metadata({
                     "id": f"{version}_{mode}",
                     "version": version,
                     "appendix": mode,
                     "name": name,
                     "url": f"/api/report/jobs/{job['id']}/files/{rel}",
-                })
+                }))
 
         audit_path = write_audit(combined_audit, output_dir)
-        files.append({"id": "audit", "version": versions[0], "appendix": "data", "name": audit_path.name, "url": f"/api/report/jobs/{job['id']}/files/{audit_path.name}"})
+        files.append(artifact_metadata({"id": "audit", "version": versions[0], "appendix": "data", "name": audit_path.name, "url": f"/api/report/jobs/{job['id']}/files/{audit_path.name}", "previewable": False}))
         return _complete(job, files, appendix_b, appendix_path, combined_audit)
     except Exception as exc:
         return _fail(job, *_classify_report_error(exc))
@@ -152,6 +153,7 @@ def status_response(job: dict[str, Any]) -> dict[str, Any]:
         files = json.loads(job.get("files_json") or "[]")
     except json.JSONDecodeError:
         files = []
+    files = [artifact_metadata(file) for file in files]
     try:
         appendix = json.loads(job.get("appendix_json") or "{}")
     except json.JSONDecodeError:

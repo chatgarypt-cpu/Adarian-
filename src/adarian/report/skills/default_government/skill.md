@@ -1,3 +1,9 @@
+---
+id: default_government
+label: 政府研判
+description: 面向管理部门的舆情风险研判报告。结构严谨、语言正式。
+---
+
 # Default Government Report Skill
 
 将 `appendix_b.json` 转化为面向管理部门的舆情风险研判报告。

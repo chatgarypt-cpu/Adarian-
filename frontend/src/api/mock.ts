@@ -122,4 +122,9 @@ export const settings: SettingsResponse = {
   outputDir: 'outputs/runs/',
   retentionDays: 30,
   technicalMode: false,
+  report_gateway_id: '',
+  report_model_id: '',
+  report_temperature: 0.3,
+  report_max_tokens: 8192,
+  report_skill_id: 'default_government',
 };

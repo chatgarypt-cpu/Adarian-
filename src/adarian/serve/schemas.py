@@ -221,3 +221,8 @@ class SettingsPayload(BaseModel):
     outputDir: str = "outputs/runs/"
     retentionDays: int = Field(default=30, ge=1)
     technicalMode: bool = False
+    report_gateway_id: str = ""
+    report_model_id: str = ""
+    report_temperature: float = Field(default=0.3, ge=0, le=2)
+    report_max_tokens: int = Field(default=8192, ge=512, le=65536)
+    report_skill_id: str = "default_government"

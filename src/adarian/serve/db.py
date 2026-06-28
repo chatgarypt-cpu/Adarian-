@@ -356,3 +356,16 @@ def latest_report_job_for_session(client_session_id: str) -> dict[str, Any] | No
             (client_session_id,),
         ).fetchone()
     return row_to_dict(row)
+
+
+def latest_report_job() -> dict[str, Any] | None:
+    init_db()
+    with connect() as conn:
+        row = conn.execute(
+            """
+            SELECT * FROM report_jobs
+            ORDER BY created_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+    return row_to_dict(row)

@@ -11,7 +11,9 @@ import type {
   ModelSummary,
   ReportJobResponse,
   ReportResponse,
+  ReportSkill,
   ReportVersion,
+  ReportViewResponse,
   RiskReviewResponse,
   RunErrorsResponse,
   RunEventsResponse,
@@ -170,6 +172,12 @@ export const api = {
   },
   getActiveReportJob(): Promise<ActiveReportJobResponse> {
     return jsonRequest(`/api/report/jobs/active?client_session_id=${encodeURIComponent(clientSessionId())}`);
+  },
+  getReportSkills(): Promise<ReportSkill[]> {
+    return jsonRequest('/api/report/skills');
+  },
+  getReportView(jobId: string, fileId: string): Promise<ReportViewResponse> {
+    return jsonRequest(`/api/report/jobs/${encodeURIComponent(jobId)}/view/${encodeURIComponent(fileId)}`);
   },
   getHistory(): Promise<BatchSummary[]> {
     return jsonRequest('/api/history');

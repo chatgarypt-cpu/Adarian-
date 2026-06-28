@@ -104,6 +104,8 @@ export interface ReportFile {
   name: string;
   url: string;
   path?: string;
+  format?: 'md' | 'pdf' | 'docx' | 'html' | 'json' | 'unknown';
+  previewable?: boolean;
 }
 
 export type ReportJobStatus = 'idle' | 'running' | 'completed' | 'blocked' | 'failed';
@@ -158,6 +160,38 @@ export interface ReportResponse {
   files: ReportFile[];
 }
 
+export interface ReportSkill {
+  id: string;
+  label: string;
+  description: string;
+  dir: string;
+}
+
+export interface ReportViewBlock {
+  type: 'paragraph' | 'list' | 'preformatted';
+  text?: string;
+  items?: string[];
+}
+
+export interface ReportViewSection {
+  heading: string;
+  blocks: ReportViewBlock[];
+  children?: ReportViewSection[];
+}
+
+export interface ReportViewResponse {
+  file_id: string;
+  name: string;
+  format: ReportFile['format'];
+  version: string;
+  appendix: string;
+  preview_supported: boolean;
+  message?: string;
+  title: string;
+  sections: ReportViewSection[];
+  raw_available: boolean;
+}
+
 export interface SystemCheck {
   label: string;
   status: 'ok' | 'failed' | 'pending';
@@ -169,6 +203,11 @@ export interface SettingsResponse {
   outputDir: string;
   retentionDays: number;
   technicalMode: boolean;
+  report_gateway_id: string;
+  report_model_id: string;
+  report_temperature: number;
+  report_max_tokens: number;
+  report_skill_id: string;
   systemChecks?: SystemCheck[];
 }
 

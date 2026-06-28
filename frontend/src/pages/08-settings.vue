@@ -2,16 +2,56 @@
   <section class="workspace">
     <StateTools v-model="settings.pageState" />
     <PageState :state="settings.pageState" :message="settings.error || '系统设置保存失败'">
-      <div class="grid-3">
-        <Panel title="模型管理" note="可用模型">
-          <div class="steps">
-            <StepLine title="模型接口" note="请在模型调度页执行网关健康检测" status="pending" :chip="{ label: '待检测' }" />
-            <StepLine title="内置 catalog" note="由 /api/models 返回" status="done" :chip="{ label: '真实', variant: 'ok' }" />
-            <StepLine title="用户网关" note="保存于 SQLite，密钥不回显" status="done" :chip="{ label: '持久化', variant: 'ok' }" />
+      <div class="hero-grid">
+        <Panel title="报告模型" note="report slot">
+          <div class="status-note">报告生成优先使用这里的默认配置；单次生成时仍可由报告页覆盖。</div>
+          <div class="form-row">
+            <label>模型网关</label>
+            <select v-model="settings.reportGatewayId">
+              <option value="">使用环境默认</option>
+              <option v-for="gateway in settings.modelGateways" :key="gateway.id" :value="gateway.id">
+                {{ gateway.name }} · {{ gateway.id }}
+              </option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>报告模型</label>
+            <input v-model="settings.reportModelId" placeholder="例如 qwen36-35b" />
+          </div>
+          <div class="grid-2">
+            <div class="form-row">
+              <label>温度</label>
+              <input v-model.number="settings.reportTemperature" type="number" min="0" max="2" step="0.1" />
+            </div>
+            <div class="form-row">
+              <label>最大 Token</label>
+              <input v-model.number="settings.reportMaxTokens" type="number" min="512" max="65536" step="512" />
+            </div>
           </div>
         </Panel>
+
+        <Panel title="报告风格" note="skill">
+          <div class="form-row">
+            <label>默认写作风格</label>
+            <select v-model="settings.reportSkillId">
+              <option v-for="skill in settings.reportSkills" :key="skill.id" :value="skill.id">{{ skill.label }}</option>
+            </select>
+          </div>
+          <div class="steps">
+            <StepLine
+              v-for="skill in settings.reportSkills"
+              :key="skill.id"
+              :title="skill.label"
+              :note="skill.description || skill.id"
+              :status="settings.reportSkillId === skill.id ? 'current' : 'pending'"
+              :chip="{ label: settings.reportSkillId === skill.id ? '默认' : '可选', variant: settings.reportSkillId === skill.id ? 'ok' : undefined }"
+            />
+          </div>
+        </Panel>
+      </div>
+
+      <div class="grid-3">
         <Panel title="输出位置" note="任务产物">
-          <div class="status-note">设置通过 /api/settings 持久化；历史清理执行仍为后续能力。</div>
           <div class="form-row"><label>默认保存目录</label><input v-model="settings.outputDir" /></div>
           <div class="form-row">
             <label>历史任务保留</label>
@@ -28,12 +68,20 @@
             <StepLine title="技术详情" note="需要时展开查看" status="pending" :chip="{ label: settings.technicalMode ? '展开' : '折叠' }" />
           </div>
         </Panel>
+        <Panel title="保存" note="SQLite">
+          <div class="status-note">设置通过 /api/settings 持久化，API key 不会从后端回显。</div>
+          <div class="actions">
+            <button class="primary" type="button" :disabled="settings.saving" @click="settings.saveSettings">
+              {{ settings.saving ? '保存中...' : '保存设置' }}
+            </button>
+          </div>
+        </Panel>
       </div>
+
       <Panel title="系统检查" note="运行前自检">
         <div class="grid-4">
           <Card v-for="check in settings.systemChecks" :key="check.label" :title="check.status" :label="check.label" metric />
         </div>
-        <div class="actions"><button class="primary" type="button" @click="settings.saveSettings">保存设置</button></div>
       </Panel>
     </PageState>
   </section>
