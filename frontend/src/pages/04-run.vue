@@ -152,7 +152,7 @@ const streamLogLines = ref<string[]>([]);
 const streamConnected = ref(false);
 const logTailEl = ref<HTMLElement | null>(null);
 let logEventSource: EventSource | null = null;
-type StageId = 'all' | 'phase1' | 'phase2' | 'phase3' | 'analysis' | 'phase4' | 'log';
+type StageId = 'all' | 'phase1' | 'phase2' | 'phase3' | 'analysis' | 'log';
 type ChatKind = 'monitor' | 'agent' | 'system';
 type ChatTone = 'ok' | 'warn' | 'bad' | 'run';
 type ConsoleStatus = 'completed' | 'running' | 'failed' | 'pending';
@@ -284,7 +284,6 @@ const allStageTabs: Array<{ id: StageId; label: string }> = [
   { id: 'phase2', label: 'Phase 2' },
   { id: 'phase3', label: 'Phase 3' },
   { id: 'analysis', label: '分析层' },
-  { id: 'phase4', label: 'Phase 4' },
   { id: 'log', label: '调度' },
 ];
 const overviewStageTabs: Array<{ id: StageId; label: string }> = [
@@ -342,7 +341,6 @@ const stageForPhase = (label: string): StageId => {
   if (label.includes('Phase 1')) return 'phase1';
   if (label.includes('Phase 2')) return 'phase2';
   if (label.includes('Phase 3')) return 'phase3';
-  if (label.includes('Phase 4')) return 'phase4';
   if (label.includes('调度')) return 'log';
   return 'analysis';
 };

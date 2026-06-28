@@ -4,7 +4,7 @@ Phase 1→3 Pipeline Smoke — 跑 Phase1-3 完整管线到 parser 输出 simula
 
 用途：
   - 单独验证 Phase 3 parser 产出是否完整
-  - 不调 Phase 4，不生成 final_report
+  - 不调内联报告生成，不生成 final_report
   - 产出的 simulation_dataset.json 可直接给产品端验证
 
 用法：
@@ -12,7 +12,7 @@ Phase 1→3 Pipeline Smoke — 跑 Phase1-3 完整管线到 parser 输出 simula
 
 与 main.py 的区别：
   - Phase 1-2-3 tick simulation 逻辑相同
-  - 不调 Phase 4 report_agent
+  - 不调旧内联报告 agent
   - 输出: parser.py → simulation_dataset.json（含风险判定/拐点/立场矩阵/实体/传播者信息）
 """
 
@@ -47,7 +47,7 @@ def _ensure_visible_window():
 
 from adarian import config
 from adarian.llm_client import init_llm_client, register_observer
-from adarian.phase4.paths import build_run_paths
+from adarian.output_paths import DefaultRunPaths
 from adarian.whitebox.run_meta import write_run_meta
 from adarian.whitebox.token_tracker import TokenTracker
 from adarian.display.run_log_writer import append_run_summary
@@ -120,7 +120,7 @@ def main():
     register_observer(_token_tracker.on_llm_response)
 
     with StatusBar() as bar:
-        run_context = build_run_paths(seed_file)
+        run_context = DefaultRunPaths(seed_file).build()
         run_dir = run_context["run_dir"]
         outputs = run_context["outputs"]
         logger.configure(run_dir=run_dir)

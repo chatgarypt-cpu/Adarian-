@@ -21,7 +21,6 @@ PHASE_LABEL_MAP: dict[str, str] = {
     "phase3_tick_simulation": "Phase 3",
     "analysis_aggregation": "分析层",
     "analysis_risk_classifier": "风险分类",
-    "phase4_report_agent": "Phase 4",
     "done": "已完成",
 }
 
@@ -71,8 +70,8 @@ def world_artifacts(world: dict[str, Any]) -> dict[str, Path]:
         "run_log": run_dir / "run.log",
         "run_meta": run_dir / "run_meta.json",
         "report_json": run_dir / "report.json",
-        "final_report_json": run_dir / "final_report.json",
-        "final_report_md": run_dir / "final_report.md",
+        "legacy_final_report_json": run_dir / "final_report.json",
+        "legacy_final_report_md": run_dir / "final_report.md",
     }
 
 
@@ -397,7 +396,7 @@ def suggestion_for_error(reason: str) -> str:
         "model_not_found": "检查模型名称和网关可用模型列表。",
         "dataset_missing": "检查该 world 是否完整产出 simulation_dataset.json。",
         "parser_failed": "检查结构化输出是否可解析。",
-        "report_failed": "检查报告生成输入产物和 Phase 4 报错。",
+        "report_failed": "检查报告 job 输入 dataset、模型配置和 report 输出目录。",
         "unknown": "查看 run.log 尾部定位具体失败点。",
     }.get(reason, "查看 run.log 尾部定位具体失败点。")
 
@@ -600,10 +599,9 @@ def _batch_elapsed_seconds(world_items: list[dict[str, Any]]) -> float | None:
 
 def _report_count(batch: dict[str, Any]) -> int:
     batch_dir = Path(batch.get("batch_dir") or "")
-    legacy_count = sum(1 for filename in ("report.json", "report.md", "final_report.json", "final_report.md") if (batch_dir / filename).is_file())
     reports_dir = batch_dir / "reports"
     generated_count = sum(1 for path in reports_dir.glob("**/*.md") if path.is_file()) if reports_dir.is_dir() else 0
-    return legacy_count + generated_count
+    return generated_count
 
 
 def _last_error_line(world: dict[str, Any]) -> str:

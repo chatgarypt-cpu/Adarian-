@@ -5,9 +5,9 @@ Route task types to specific models on the lab's internal gateway
 
 Usage:
     from adarian.model_router import select
-    model = select("phase4_report")     # → "qwen3-80b-tke"
+    model = select("report_generation") # → "qwen36-35b"
     model = select("quick_test")        # → "qwen3-30b-tke"
-    model = select("phase4_report", override="fast")  # → "qwen3-30b-tke"
+    model = select("report_generation", override="fast")  # → "qwen36-35b"
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ ROUTES: dict[str, str] = {
     "phase2_topology":    "qwen36-35b",         # fast enough
     "phase3_tick":        "qwen36-35b",         # simulation reasoning
     "phase3_parser":      "qwen36-35b",         # fast aggregation
-    "phase4_report":      "qwen36-35b",         # narrative generation
+    "report_generation":  "qwen36-35b",         # report narrative generation
 
     # ── Code & review ──
     "code_generation":    "qwen36-35b",
@@ -99,7 +99,7 @@ def select(task_type: str = "default", override: Optional[str] = None) -> str:
     Parameters
     ----------
     task_type : str
-        Description of what you're doing, e.g. 'phase4_report', 'code_review'.
+        Description of what you're doing, e.g. 'report_generation', 'code_review'.
         Falls back to DEFAULT if not found in ROUTES.
     override : str or None
         If given, bypass the route table and use this directly.

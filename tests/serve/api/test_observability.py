@@ -138,7 +138,7 @@ def test_metrics_errors_and_report_download(client, tmp_path):
     assert payload["tokens"]["total_tokens"] == 15
     assert payload["tokens"]["per_phase"]["phase3_tick_simulation"]["total_tokens"] == 15
     assert payload["tokens"]["per_phase"]["phase3_tick_simulation"]["calls"] == 2
-    assert payload["report_count"] == 1
+    assert payload["report_count"] == 0
 
     errors = client.get("/api/run/observable_batch/errors")
     assert errors.status_code == 200

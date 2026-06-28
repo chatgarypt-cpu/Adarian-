@@ -13,7 +13,7 @@ from adarian.serve import db
 from adarian.serve.api.model_gateways import _get_gateway_or_env, _unprotect_secret
 
 
-REPORT_TASK_TYPE = "phase4_report"
+REPORT_TASK_TYPE = "report_generation"
 
 
 @dataclass

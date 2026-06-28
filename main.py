@@ -1,9 +1,8 @@
 """
-Adarian v1.3.1 — Phase4 Pure Consumer Pipeline
+Adarian pipeline runner.
 ---
-主入口：串联 Phase 1-4 + Phase 3 Parser Aggregation。
-Phase 4 消费 Phase3 parser 输出的 risk_verdict / inflection_points /
-agent_stance_matrix，不调 report_agent 内联函数。
+主入口：串联 Phase 1-3 + analysis/parser 聚合，输出 simulation_dataset.json。
+旧内联报告链路已退役；报告由 Web `/report` 按需消费 dataset 生成。
 
 用法：
     python main.py [seed_file]
@@ -20,13 +19,9 @@ from pathlib import Path
 
 from adarian import config
 from adarian.config import ensure_dirs
-from adarian.llm_client import init_llm_client, get_llm_client, register_observer
-from adarian.schemas import Phase4Output
+from adarian.llm_client import init_llm_client, register_observer
 from adarian.utils.runtime_logger import get_runtime_logger
-from adarian.phase4.paths import build_run_paths
 from adarian.output_paths import create_run_paths
-from adarian.phase4.report_narrative import generate_report_with_llm_narrative
-from adarian.phase4.report_agent import save_report, save_markdown_report
 from adarian.whitebox.run_meta import write_run_meta
 from adarian.whitebox.token_tracker import TokenTracker
 from adarian.whitebox.dataset_spec_writer import generate_spec_yaml_from_files
@@ -35,23 +30,9 @@ from adarian.display.run_log_writer import append_run_summary, log_token_summary
 from adarian.display import StatusBar
 
 
-def run_phase4(
-    dataset: dict,
-    json_output_path: Path = None,
-    markdown_output_path: Path = None,
-) -> Phase4Output:
-    """Phase 4：宏观洞察生成（纯消费 simulation_dataset）"""
-    phase4_output, markdown = generate_report_with_llm_narrative(
-        dataset,
-        get_llm_client_func=get_llm_client,
-    )
-    save_report(phase4_output, output_path=json_output_path)
-    save_markdown_report(
-        phase4_output,
-        output_path=markdown_output_path,
-        markdown=markdown,
-    )
-    return phase4_output
+def _risk_level_from_dataset(dataset: dict) -> str:
+    verdict = dataset.get("simulation_result", {}).get("risk_verdict", {})
+    return str(verdict.get("level") or verdict.get("risk_level") or "unknown")
 
 
 def main(seed_path: str | Path | None = None):
@@ -118,7 +99,7 @@ def main(seed_path: str | Path | None = None):
             logger.log_phase_start("phase3_tick_simulation")
             bar.set_phase("Phase 3 推演")
             t3 = time.time()
-            from adarian.phase3 import SimulationEngine, save_tick_logs, print_simulation_summary
+            from adarian.phase3 import SimulationEngine, save_tick_logs
             engine = SimulationEngine(extraction_output, phase2_output, seed_text)
             tick_logs = engine.run_simulation(max_ticks=config.MAX_TICKS)
             save_tick_logs(tick_logs, output_path=outputs["tick_logs"])
@@ -164,18 +145,8 @@ def main(seed_path: str | Path | None = None):
             types_str = "、".join(labels) if labels else "（无）"
             logger.info("  √ %.2fs | 风险类型: %s | 一级域: %s", t4, types_str, domain if domain else "（无）")
 
-            # Phase 4
-            logger.log_phase_start("phase4_report_agent")
-            bar.set_phase("Phase 4 报告生成")
-            t5 = time.time()
-            phase4_output = run_phase4(
-                dataset,
-                json_output_path=outputs["final_report_json"],
-                markdown_output_path=outputs["final_report_md"],
-            )
-            t5 = time.time() - t5
-            logger.log_phase_end("phase4_report_agent", t5)
-            logger.info("  √ %.1fs", t5)
+            risk_level = _risk_level_from_dataset(dataset)
+            logger.info("  ○ 报告生成已转为按需；Web /report 消费 dataset 生成报告")
 
         # StatusBar 已退出，logger 仍在 → 汇总输出（同时进终端和 run.log）
         total_time = time.time() - start_time
@@ -186,7 +157,7 @@ def main(seed_path: str | Path | None = None):
             elapsed_seconds=round(total_time, 2),
             x_t_sequence=list(x_t_sequence),
             final_polarization_index=tick_logs[-1].global_metrics.polarization_index,
-            risk_level=phase4_output.risk_level.value,
+            risk_level=risk_level,
         )
         logger.info("")
         logger.info("===== 执行完成 =====")
@@ -194,13 +165,13 @@ def main(seed_path: str | Path | None = None):
         logger.info("Phase 2 (拓扑构建):  %.1fs", t2)
         logger.info("Phase 3 (模拟推演):  %.1fs", t3)
         logger.info("分析层:              %.1fs", t4)
-        logger.info("Phase 4 (报告生成):  %.1fs", t5)
+        logger.info("报告生成:            按需生成")
         logger.info("总计:                %.1fs", total_time)
         logger.info("")
         logger.info("模拟指标:")
         logger.info("  x(t) 最终: %.2f", x_t_sequence[-1])
         logger.info("  极化指数: %.4f", tick_logs[-1].global_metrics.polarization_index)
-        logger.info("  风险等级: %s", phase4_output.risk_level.value.upper())
+        logger.info("  风险等级: %s", risk_level.upper())
         logger.info("")
         logger.info("输出文件: %s", run_dir)
         log_token_summary(logger, _token_tracker.get_summary())

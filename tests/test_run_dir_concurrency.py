@@ -11,8 +11,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 
 from adarian import config
-import main
-from adarian.phase4.paths import build_run_paths
+from adarian.output_paths import DefaultRunPaths
 
 
 class FixedSecondDatetime:
@@ -29,9 +28,10 @@ def test_build_run_paths_uses_unique_run_dirs_for_rapid_calls(tmp_path, monkeypa
     seed_file.write_text("test seed", encoding="utf-8")
     monkeypatch.setattr(config, "OUTPUTS_DIR", tmp_path / "outputs")
     FixedSecondDatetime.counter = 0
-    monkeypatch.setattr(main, "datetime", FixedSecondDatetime)
+    import adarian.output_paths as output_paths
+    monkeypatch.setattr(output_paths, "datetime", FixedSecondDatetime)
 
-    contexts = [build_run_paths(seed_file) for _ in range(5)]
+    contexts = [DefaultRunPaths(seed_file).build() for _ in range(5)]
 
     run_ids = [context["run_id"] for context in contexts]
     run_dirs = [context["run_dir"] for context in contexts]

@@ -29,7 +29,7 @@ PUBLIC_MANAGEMENT_KEYWORDS = ("教育局", "卫健委", "住建局", "属地政�
 
 class RiskAnalyzer:
     """Decoupled risk analyzer that replicates Phase 4 assess_risk logic
-    without importing anything from adarian.phase4.report_agent."""
+    without importing anything from the archived inline report agent."""
 
     # ------------------------------------------------------------------
     # Audience mode detection
