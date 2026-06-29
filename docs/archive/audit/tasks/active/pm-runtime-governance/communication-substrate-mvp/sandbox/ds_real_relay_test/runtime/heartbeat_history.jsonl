@@ -1,7 +1,0 @@
-{"task_id": "ds-relay-verify-v0.1.1-20260523", "runtime_state": "running", "timestamp": "2026-05-23T00:58:39+08:00", "runtime_pid": 7734, "executor_pid": 7735, "heartbeat_seq": 1}
-{"task_id": "ds-relay-verify-v0.1.1-20260523", "runtime_state": "healthy_running", "timestamp": "2026-05-23T00:58:39+08:00", "runtime_pid": 7734, "executor_pid": 7735, "heartbeat_seq": 2}
-{"task_id": "ds-relay-verify-v0.1.1-20260523", "runtime_state": "healthy_running", "timestamp": "2026-05-23T00:58:40+08:00", "runtime_pid": 7734, "executor_pid": 7735, "heartbeat_seq": 3}
-{"task_id": "ds-relay-verify-v0.1.1-20260523", "runtime_state": "healthy_running", "timestamp": "2026-05-23T00:58:41+08:00", "runtime_pid": 7734, "executor_pid": 7735, "heartbeat_seq": 4}
-{"task_id": "ds-relay-verify-v0.1.1-20260523", "runtime_state": "slow_but_progressing", "timestamp": "2026-05-23T00:58:42+08:00", "runtime_pid": 7734, "executor_pid": 7735, "heartbeat_seq": 5}
-{"task_id": "ds-relay-verify-v0.1.1-20260523", "runtime_state": "slow_but_progressing", "timestamp": "2026-05-23T00:58:43+08:00", "runtime_pid": 7734, "executor_pid": 7735, "heartbeat_seq": 6}
-{"task_id": "ds-relay-verify-v0.1.1-20260523", "runtime_state": "executor_completed", "timestamp": "2026-05-23T00:58:44+08:00", "runtime_pid": 7734, "executor_pid": 7735, "heartbeat_seq": 7}

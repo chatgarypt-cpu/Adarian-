@@ -45,6 +45,9 @@ CLAUDE.md
 workflow_map.yaml
 modelslist.txt
 
+# 过程文档（设计文档、归档快照）
+docs/
+
 # OS
 .DS_Store
 Thumbs.db

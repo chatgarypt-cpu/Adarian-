@@ -1,8 +1,0 @@
-legacy_compat: true
-compat_for: hermes_old_relay
-task_id: ds-relay-verify-v0.1.1-20260523
-runtime_state: executor_completed
-timestamp: 2026-05-23T00:58:44+08:00
-runtime_pid: 7734
-executor_pid: 7735
-heartbeat_seq: 7

@@ -1,8 +1,0 @@
-{
-  "exit_code": 0,
-  "subtype": "success",
-  "num_turns": 9,
-  "stop_reason": "end_turn",
-  "permission_denials_count": 0,
-  "elapsed_seconds": 578
-}

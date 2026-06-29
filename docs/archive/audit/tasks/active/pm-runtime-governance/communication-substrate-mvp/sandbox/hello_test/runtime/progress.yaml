@@ -1,4 +1,0 @@
-task_id: test-hello-substrate-01
-runtime_state: executor_completed
-message: executor completed and output was captured
-updated_at: "2026-05-22T23:30:17+08:00"
