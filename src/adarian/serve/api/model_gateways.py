@@ -204,9 +204,12 @@ def discover_models(gateway_id: str):
         return jsonify(body), status
 
     # Handle NO_PROXY for internal IPs
-    if "100.89.3" in base_url or "10." in base_url:
+    from adarian.utils.net import is_internal_url
+    if is_internal_url(base_url):
         no_proxy = os.environ.get("NO_PROXY", "")
-        merged = ",".join(["100.89.3.59", "localhost", "127.0.0.1", no_proxy]).strip(",")
+        from urllib.parse import urlparse
+        host = urlparse(base_url).hostname or ""
+        merged = ",".join([host, "localhost", "127.0.0.1", no_proxy]).strip(",")
         os.environ["NO_PROXY"] = merged
         os.environ["no_proxy"] = merged
 

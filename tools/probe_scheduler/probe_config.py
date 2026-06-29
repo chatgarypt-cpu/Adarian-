@@ -14,7 +14,7 @@ class WorldConfig:
     name: str                     # "world_0"
     label: str                    # "Qwen 36B 基线" — 显示用
     model: str                    # "qwen36-35b"
-    base_url: str                 # "http://100.89.3.59:8090/v1"
+    base_url: str                 # "http://<your-llm-gateway>:port/v1"
     api_key_from_env: str = "LLM_API_KEY"
     max_tokens: int = 8192
     fallback_model: Optional[str] = None       # 兜底模型名

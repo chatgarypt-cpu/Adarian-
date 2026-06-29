@@ -42,7 +42,7 @@ except Exception:
 from adarian import config
 
 
-DEFAULT_BASE_URL = os.environ.get("LLM_BASE_URL", "http://100.89.3.59:8090/v1")
+DEFAULT_BASE_URL = os.environ.get("LLM_BASE_URL", "")
 DEFAULT_MAX_TOKENS = 16384
 RUN_TIMEOUT_SECONDS = int(os.environ.get("SCHEDULER_WORLD_TIMEOUT", "1800"))
 
@@ -402,9 +402,15 @@ def _run_world(session: BatchSession, world: WorldSpec) -> None:
         }
     )
     env["MAX_TOKENS"] = str(world.max_tokens)
-    if "100.89.3.59" in world.base_url:
+    from adarian.utils.net import is_internal_url
+    if is_internal_url(world.base_url):
         no_proxy = env.get("NO_PROXY", "")
-        hosts = ["100.89.3.59", "localhost", "127.0.0.1"]
+        hosts = ["localhost", "127.0.0.1"]
+        # Any private/CGNAT IP in the URL is internal; add its hostname too
+        from urllib.parse import urlparse
+        parsed_host = urlparse(world.base_url).hostname
+        if parsed_host:
+            hosts.insert(0, parsed_host)
         merged = ",".join(hosts + ([no_proxy] if no_proxy else []))
         env["NO_PROXY"] = merged
         env["no_proxy"] = merged

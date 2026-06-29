@@ -32,8 +32,8 @@ if not sys.stdout.isatty():
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 os.chdir(PROJECT_ROOT)
 sys.path.insert(0, str(PROJECT_ROOT))
-os.environ["NO_PROXY"] = "100.89.3.59"
-os.environ["no_proxy"] = "100.89.3.59"
+os.environ["NO_PROXY"] = "localhost"
+os.environ["no_proxy"] = "localhost"
 
 from adarian.config import LLM_API_KEY, LLM_BASE_URL
 from adarian.phase1.prompts import GENERATOR_SYSTEM_PROMPT, GENERATOR_USER_PROMPT

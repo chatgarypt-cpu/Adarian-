@@ -33,14 +33,18 @@ if str(_PROJECT_ROOT) not in sys.path:
 from dotenv import load_dotenv
 load_dotenv()
 
-# ── 内网 endpoint 绕过代理（同 LLMClient 行为） ──────────────────
-_BASE_URL = os.environ.get("LLM_BASE_URL", "http://100.89.3.59:8090/v1")
-if "100.89.3.59" in _BASE_URL:
-    existing = os.environ.get("NO_PROXY", "")
-    if "100.89.3.59" not in existing:
-        combined = f"100.89.3.59,localhost,127.0.0.1,{existing}".strip(",")
-        os.environ["NO_PROXY"] = combined
-        os.environ["no_proxy"] = combined
+# ── 内网 endpoint 绕过代理 — 检测私有 IP ──────────────────
+_BASE_URL = os.environ.get("LLM_BASE_URL", "")
+if _BASE_URL:
+    from urllib.parse import urlparse
+    _host = urlparse(_BASE_URL).hostname or ""
+    # 如果是 IP 地址（不是域名），自动加入 NO_PROXY
+    if _host and _host.replace(".", "").isdigit():
+        _existing = os.environ.get("NO_PROXY", "")
+        if _host not in _existing:
+            _combined = f"{_host},localhost,127.0.0.1,{_existing}".strip(",")
+            os.environ["NO_PROXY"] = _combined
+            os.environ["no_proxy"] = _combined
 
 _API_KEY = os.environ.get("LLM_API_KEY", "")
 

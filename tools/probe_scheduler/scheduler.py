@@ -43,7 +43,8 @@ def run_probe(cfg: ProbeConfig) -> None:
 
     for i, wc in enumerate(cfg.worlds):
         world_name = f"world_{i}"
-        no_proxy = "100.89.3.59,localhost,127.0.0.1" if "100.89.3.59" in wc.base_url else ""
+        from adarian.utils.net import is_internal_url
+        no_proxy = f"localhost,127.0.0.1" if is_internal_url(wc.base_url) else ""
 
         # 单行 shell：cd + env（含 PARALLEL 输出路径）→ main.py
         # main.py 读取 PARALLEL_BATCH_DIR / PARALLEL_WORLD_NAME 后直接写到指定位置

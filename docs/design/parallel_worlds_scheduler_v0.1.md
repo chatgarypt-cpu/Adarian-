@@ -38,7 +38,7 @@ class WorldConfig:
     name: str                    # "world_1"
     label: str                   # "qwen36-35b" — 显示用
     model: str                   # "qwen36-35b"
-    base_url: str                # "http://100.89.3.59:8090/v1"
+    base_url: str                # "http://<llm-gateway>:port/v1"
     api_key: str                 # 该池的 key
     max_tokens: int              # 该世界的 token 预算
     fallback_model: str          # 兜底模型名
@@ -183,47 +183,47 @@ worlds:
   - name: baseline
     label: "Qwen 36B 基线"
     model: qwen36-35b
-    base_url: http://100.89.3.59:8090/v1
+    base_url: http://127.0.0.1:8090/v1
     api_key_from_env: LLM_API_KEY     # 从环境变量读
     max_tokens: 16384
     fallback_model: qwen3-30b-tke
-    fallback_base_url: http://100.89.3.59:8090/v1
+    fallback_base_url: http://127.0.0.1:8090/v1
 
   - name: fast_30b
     label: "Qwen 3 30B 快速"
     model: qwen3-30b-tke
-    base_url: http://100.89.3.59:8090/v1
+    base_url: http://127.0.0.1:8090/v1
     api_key_from_env: LLM_API_KEY
     max_tokens: 8192
     fallback_model: qwen36-35b
-    fallback_base_url: http://100.89.3.59:8090/v1
+    fallback_base_url: http://127.0.0.1:8090/v1
 
   - name: minimax
     label: "MiniMax 多视角"
     model: minimax
-    base_url: http://100.89.3.59:8090/v1
+    base_url: http://127.0.0.1:8090/v1
     api_key_from_env: LLM_API_KEY
     max_tokens: 8192
     fallback_model: qwen36-35b
-    fallback_base_url: http://100.89.3.59:8090/v1
+    fallback_base_url: http://127.0.0.1:8090/v1
 
   - name: large_80b
     label: "80B 强推理"
     model: qwen3-80b-tke
-    base_url: http://100.89.3.59:8090/v1
+    base_url: http://127.0.0.1:8090/v1
     api_key_from_env: LLM_API_KEY
     max_tokens: 16384
     fallback_model: qwen35-122b-sg
-    fallback_base_url: http://100.89.3.59:8090/v1
+    fallback_base_url: http://127.0.0.1:8090/v1
 
   - name: largest
     label: "122B 大模型"
     model: qwen35-122b-sg
-    base_url: http://100.89.3.59:8090/v1
+    base_url: http://127.0.0.1:8090/v1
     api_key_from_env: LLM_API_KEY
     max_tokens: 32768
     fallback_model: qwen36-35b
-    fallback_base_url: http://100.89.3.59:8090/v1
+    fallback_base_url: http://127.0.0.1:8090/v1
 
 seed_path: seeds/test8.txt         # 所有世界共用同一份 seed
 max_concurrent: 5                   # 并行数

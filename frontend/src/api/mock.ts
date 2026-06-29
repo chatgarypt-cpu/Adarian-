@@ -16,7 +16,7 @@ export const modelGateways: ModelGateway[] = [
   {
     id: 'internal',
     name: '默认内网中转站',
-    baseUrl: 'http://100.89.3.59:8000/v1',
+    baseUrl: 'http://127.0.0.1:8000/v1',
     provider: 'openai-compatible',
     status: 'connected',
     note: '自动识别 OpenAI-compatible 模型列表',

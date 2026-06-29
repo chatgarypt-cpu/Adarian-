@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Quick hello test — 5 个候选模型各发一条 hi，确认存活。"""
+"""Quick hello test — send a single message to verify model availability."""
 
 import json
 import os
@@ -7,19 +7,24 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import urlparse
 
 # 跟 config.py 一致的方式加载 .env
 from dotenv import load_dotenv
 load_dotenv()
 
-# 内网 endpoint 绕过代理（同 LLMClient 行为）
-if "100.89.3.59" in (os.environ.get("LLM_BASE_URL", "http://100.89.3.59:8090/v1")):
-    existing = os.environ.get("NO_PROXY", "")
-    if "100.89.3.59" not in existing:
-        os.environ["NO_PROXY"] = f"100.89.3.59,localhost,127.0.0.1,{existing}"
-        os.environ["no_proxy"] = os.environ["NO_PROXY"]
+# 内网 endpoint 绕过代理 — 检测私有 IP
+_BASE_URL = os.environ.get("LLM_BASE_URL", "")
+if _BASE_URL:
+    _host = urlparse(_BASE_URL).hostname or ""
+    # 如果是 IP 地址（不是域名），自动加入 NO_PROXY
+    if _host and _host.replace(".", "").isdigit():
+        _existing = os.environ.get("NO_PROXY", "")
+        if _host not in _existing:
+            os.environ["NO_PROXY"] = f"{_host},localhost,127.0.0.1,{_existing}"
+            os.environ["no_proxy"] = os.environ["NO_PROXY"]
 
-BASE_URL = os.environ.get("LLM_BASE_URL", "http://100.89.3.59:8090/v1")
+BASE_URL = os.environ.get("LLM_BASE_URL", "")
 API_KEY = os.environ.get("LLM_API_KEY", "")
 
 CANDIDATES = [
@@ -62,7 +67,7 @@ def hello(model: str) -> dict:
         return {"status": "✗", "elapsed": elapsed, "error": str(e)[:60]}
 
 def main():
-    print(f"内网端点: {BASE_URL}")
+    print(f"LLM 端点: {BASE_URL}")
     print(f"测试时间: {datetime.now().strftime('%H:%M:%S')}")
     print()
     print(f"{'模型':25s} {'状态':4s} {'耗时':8s} {'响应/错误'}")

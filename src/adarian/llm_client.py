@@ -385,11 +385,13 @@ def init_llm_client(
     global _llm_client
 
     # ── Proxy 绕过：内网地址不走系统代理 ──────────────────────
-    _gateway = (base_url or config.LLM_BASE_URL)
-    if _gateway and ("100.89.3.59" in _gateway.lower() or "localhost" in _gateway.lower()):
+    from adarian.utils.net import is_internal_url
+    if is_internal_url(base_url or config.LLM_BASE_URL):
         existing = os.environ.get("NO_PROXY", "")
-        if "100.89.3.59" not in existing:
-            os.environ["NO_PROXY"] = f"100.89.3.59,localhost,127.0.0.1,{existing}"
+        from urllib.parse import urlparse
+        host = urlparse(base_url or config.LLM_BASE_URL).hostname or ""
+        if host and host not in existing:
+            os.environ["NO_PROXY"] = f"{host},localhost,127.0.0.1,{existing}"
             os.environ["no_proxy"] = os.environ["NO_PROXY"]
 
     # ── Fallback 检查：内网不通时切外网 ──────────────────────

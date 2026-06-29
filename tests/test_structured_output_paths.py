@@ -14,8 +14,8 @@ from typing import Optional
 
 # ── 加载配置 ──
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-os.environ["NO_PROXY"] = "100.89.3.59"
-os.environ["no_proxy"] = "100.89.3.59"
+os.environ["NO_PROXY"] = "localhost"
+os.environ["no_proxy"] = "localhost"
 
 from adarian.config import LLM_API_KEY, LLM_BASE_URL
 

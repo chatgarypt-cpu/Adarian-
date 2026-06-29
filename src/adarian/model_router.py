@@ -1,7 +1,7 @@
 """Lightweight model router for the internal LLM gateway.
 
-Route task types to specific models on the lab's internal gateway
-(http://100.89.3.59:8090/v1, OpenAI-compatible, --noproxy '*' to bypass proxy).
+Route task types to specific models on a configurable LLM endpoint
+(OpenAI-compatible, use --noproxy for internal gateways).
 
 Usage:
     from adarian.model_router import select
