@@ -15,7 +15,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from adarian.schemas.phase1 import EntityExtractionOutput
 from adarian.schemas.phase3 import TickLog
-from adarian.schemas.phase4 import RiskLevel, AudienceMode, RISK_LEVEL_LABELS
+from adarian.schemas.risk import RiskLevel, AudienceMode, RISK_LEVEL_LABELS
 
 
 # ---------------------------------------------------------------------------

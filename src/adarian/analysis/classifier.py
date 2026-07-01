@@ -2,7 +2,7 @@
 
 Compresses Phase 3 simulation outputs into a stable query text, then asks the
 LLM to pick the Top-3 risk types from the 28-type taxonomy defined in
-`spec/risk_mapping.yaml` and mirrored in `src.schemas.phase4`.
+`spec/risk_mapping.yaml` and mirrored in `src.schemas.risk`.
 
 Designed to be a single LLM call per dataset; the caller (SimulationDatasetParser)
 is responsible for invoking this only once per parse.
@@ -13,7 +13,7 @@ from typing import Any, Dict, List
 from adarian.llm_client import get_llm_client
 from adarian.schemas.phase1 import EntityExtractionOutput
 from adarian.schemas.phase3 import ClassificationOutput, TickLog
-from adarian.schemas.phase4 import DOMAIN_LABELS, RISK_TYPE_LABELS, TYPE_TO_DOMAIN_MAP
+from adarian.schemas.risk import DOMAIN_LABELS, RISK_TYPE_LABELS, TYPE_TO_DOMAIN_MAP
 
 
 # Per-type "typical scenario" hints — used in the LLM catalog so the model can

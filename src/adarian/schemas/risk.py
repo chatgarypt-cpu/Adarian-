@@ -1,21 +1,38 @@
-"""Phase 4 schema contracts."""
+"""Active risk schema contracts — migrated from schemas/phase4.py (v1.5.2.3)."""
 
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Dict
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+# ── Risk level labels ──────────────────────────────
 
-
-REPORT_TYPE = "模拟推演型舆情风险研判报告"
-
-RISK_LEVEL_LABELS = {
+RISK_LEVEL_LABELS: Dict[str, str] = {
     "low": "低风险",
     "medium": "中风险",
     "high": "高风险",
     "critical": "重大风险",
 }
 
-# ── 一级风险域 ──────────────────────────────────
+# ── Risk level enum ────────────────────────────────
+
+class RiskLevel(str, Enum):
+    """风险等级"""
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    CRITICAL = "critical"
+
+
+# ── Audience mode enum ─────────────────────────────
+
+class AudienceMode(str, Enum):
+    """报告阅读主体模式。"""
+    GENERIC_GOVERNMENT = "generic_government"
+    LAW_ENFORCEMENT_FACING = "law_enforcement_facing"
+    REGULATOR_FACING = "regulator_facing"
+    PUBLIC_MANAGEMENT_FACING = "public_management_facing"
+
+
+# ── 一级风险域 ─────────────────────────────────────
 
 class RiskDomain(str, Enum):
     """一级风险域（稳定索引层，code-owned 映射，不由 Agent 输出）。"""
@@ -25,6 +42,7 @@ class RiskDomain(str, Enum):
     INFORMATION_SECURITY_IDEOLOGY = "information_security_ideology"
     GOVERNANCE_PRESSURE = "governance_pressure"
     ECONOMIC_FINANCIAL = "economic_financial"
+
 
 DOMAIN_LABELS: Dict[str, str] = {
     "governance_trust": "治理信任类",
@@ -74,7 +92,7 @@ TYPE_TO_DOMAIN_MAP: Dict[str, str] = {
     "financial_fraud_illegal_fundraising_risk": "economic_financial",
 }
 
-# ── 二级风险类型中文标签（保留旧类型兼容，Agent 输出使用新 28 类）──
+# ── 二级风险类型中文标签 ────────────────────────────
 
 RISK_TYPE_LABELS: Dict[str, str] = {
     # 旧类型（兼容已有 dataset）
@@ -127,132 +145,14 @@ RISK_TYPE_LABELS: Dict[str, str] = {
     "financial_fraud_illegal_fundraising_risk": "金融诈骗与非法集资风险",
 }
 
-
-class EmotionTrajectory(BaseModel):
-    """情绪演化轨迹条目"""
-    tick: int
-    mean_stance: float
-    std_stance: float
-    polarization_index: float
-    key_event: str
-
-
-class InflectionPoint(BaseModel):
-    """拐点分析条目"""
-    tick: int
-    agent_id: int
-    group_name: str
-    pivotal_comment: str
-    impact_description: str
-
-
-class RiskLevel(str, Enum):
-    """风险等级"""
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-    CRITICAL = "critical"
-
-
-class AudienceMode(str, Enum):
-    """报告阅读主体模式。"""
-    GENERIC_GOVERNMENT = "generic_government"
-    LAW_ENFORCEMENT_FACING = "law_enforcement_facing"
-    REGULATOR_FACING = "regulator_facing"
-    PUBLIC_MANAGEMENT_FACING = "public_management_facing"
-
-
-class ReportMeta(BaseModel):
-    """报告元信息。"""
-    generated_at: str
-    timezone: str
-    report_type: str = REPORT_TYPE
-    event_name: str
-    total_ticks: int = Field(..., ge=0)
-    simulation_run_id: str
-
-
-class Phase4Output(BaseModel):
-    """Phase 4 输出结构。"""
-    report_meta: ReportMeta
-    event_summary: str
-    stakeholder_map: str
-    emotion_trajectory: List[EmotionTrajectory]
-    inflection_points: List[InflectionPoint]
-    risk_level: RiskLevel
-    risk_level_label: str
-    audience_mode: AudienceMode = AudienceMode.GENERIC_GOVERNMENT
-    primary_risk_types: List[str] = Field(default_factory=list)
-    risk_type_labels: List[str] = Field(default_factory=list)
-    risk_assessment: str
-    x_t_sequence: List[float] = Field(..., description="x(t) 序列，用于后续 AD/SEIR 模块")
-    agent_stance_matrix: Optional[List[Dict[str, Any]]] = Field(
-        default=None,
-        description="Agent 立场矩阵（从 simulation_dataset 透传）",
-    )
-    primary_domain: Optional[str] = Field(
-        default=None,
-        description="一级风险域 id（code 从 #1 primary_risk_types 映射）",
-    )
-    primary_domain_label: Optional[str] = Field(
-        default=None,
-        description="一级风险域中文标签",
-    )
-
-    @field_validator("risk_level_label")
-    @classmethod
-    def validate_risk_level_label(cls, v):
-        if v not in RISK_LEVEL_LABELS.values():
-            raise ValueError("risk_level_label must be one of the canonical Chinese risk labels")
-        return v
-
-    @field_validator("primary_risk_types")
-    @classmethod
-    def validate_primary_risk_types(cls, v):
-        invalid = [risk_type for risk_type in v if risk_type not in RISK_TYPE_LABELS]
-        if invalid:
-            raise ValueError(f"primary_risk_types contains unknown risk types: {invalid}")
-        return v
-
-    @field_validator("primary_domain")
-    @classmethod
-    def validate_primary_domain(cls, v):
-        if v is not None and v not in DOMAIN_LABELS:
-            raise ValueError(f"primary_domain must be one of {list(DOMAIN_LABELS.keys())}")
-        return v
-
-    @model_validator(mode="after")
-    def validate_risk_contract(self):
-        expected_risk_label = RISK_LEVEL_LABELS[self.risk_level.value]
-        if self.risk_level_label != expected_risk_label:
-            raise ValueError("risk_level_label must match risk_level")
-
-        expected_type_labels = [RISK_TYPE_LABELS[risk_type] for risk_type in self.primary_risk_types]
-        if self.risk_type_labels != expected_type_labels:
-            raise ValueError("risk_type_labels must match primary_risk_types")
-
-        if self.primary_domain is not None and self.primary_risk_types:
-            expected_domain = TYPE_TO_DOMAIN_MAP.get(self.primary_risk_types[0])
-            if expected_domain and self.primary_domain != expected_domain:
-                raise ValueError(
-                    f"primary_domain ({self.primary_domain}) does not match "
-                    f"TYPE_TO_DOMAIN_MAP for {self.primary_risk_types[0]} ({expected_domain})"
-                )
-
-        return self
-
+# ── Public exports ──────────────────────────────────
 
 __all__ = [
+    "RiskLevel",
+    "AudienceMode",
     "RiskDomain",
     "DOMAIN_LABELS",
     "TYPE_TO_DOMAIN_MAP",
-    "EmotionTrajectory",
-    "InflectionPoint",
-    "RiskLevel",
-    "AudienceMode",
-    "ReportMeta",
-    "REPORT_TYPE",
-    "RISK_LEVEL_LABELS",
     "RISK_TYPE_LABELS",
-    "Phase4Output",
+    "RISK_LEVEL_LABELS",
 ]

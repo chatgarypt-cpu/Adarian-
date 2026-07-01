@@ -22,7 +22,7 @@ from adarian.schemas import (
     Relation,
     TickLog,
 )
-from adarian.schemas.phase4 import RiskLevel
+from adarian.schemas.risk import RiskLevel
 
 
 # ---------------------------------------------------------------------------

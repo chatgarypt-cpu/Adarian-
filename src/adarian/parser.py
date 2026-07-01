@@ -10,7 +10,7 @@ from adarian.analysis.risk_analyzer import RiskAnalyzer
 from adarian.analysis.inflection_detector import InflectionDetector
 from adarian.analysis.stance_analyzer import StanceAnalyzer
 from adarian.analysis.classifier import RiskClassifier
-from adarian.schemas.phase4 import (
+from adarian.schemas.risk import (
     DOMAIN_LABELS,
     RISK_LEVEL_LABELS,
     RISK_TYPE_LABELS,

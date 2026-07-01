@@ -18,15 +18,10 @@ from .phase3 import (
     SpeakerSelectionResult,
     TickLog,
 )
-from .phase4 import (
+from .risk import (
     AudienceMode,
-    EmotionTrajectory,
-    InflectionPoint,
-    Phase4Output,
-    REPORT_TYPE,
     RISK_LEVEL_LABELS,
     RISK_TYPE_LABELS,
-    ReportMeta,
     RiskLevel,
 )
 
@@ -49,13 +44,8 @@ __all__ = [
     "TickLog",
     "SpeakerSelectionResult",
     "SilentAgentUpdate",
-    "EmotionTrajectory",
-    "InflectionPoint",
     "RiskLevel",
     "AudienceMode",
-    "ReportMeta",
-    "REPORT_TYPE",
     "RISK_LEVEL_LABELS",
     "RISK_TYPE_LABELS",
-    "Phase4Output",
 ]
