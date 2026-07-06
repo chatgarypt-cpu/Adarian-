@@ -100,15 +100,23 @@ export interface RiskReviewResponse {
 export interface ReportFile {
   id: string;
   version?: 'A' | 'B' | 'C';
-  appendix?: 'none' | 'included' | 'data';
+  appendix?: 'none' | 'included' | 'data' | 'export';
   name: string;
   url: string;
   path?: string;
   format?: 'md' | 'pdf' | 'docx' | 'html' | 'json' | 'unknown';
   previewable?: boolean;
+  downloadable?: boolean;
+  internal?: boolean;
+  state?: 'ready' | 'planned' | 'failed';
+  label?: string;
+  note?: string;
+  source_view_id?: string;
+  size_bytes?: number | null;
 }
 
 export type ReportJobStatus = 'idle' | 'running' | 'completed' | 'blocked' | 'failed';
+export type ReportUiState = 'setup' | 'generating' | 'report' | 'failed' | 'blocked';
 export type ReportVersion = 'A' | 'B' | 'C';
 export type AppendixMode = 'none' | 'included' | 'both';
 
@@ -125,8 +133,10 @@ export interface ReportJobResponse {
   report_id?: string;
   batch_id: string;
   status: ReportJobStatus;
+  ui_state?: ReportUiState;
   progress: number;
   current_step: string;
+  events?: ReportEvent[];
   selected_versions: ReportVersion[];
   version?: ReportVersion;
   appendix_mode: AppendixMode;
@@ -136,6 +146,8 @@ export interface ReportJobResponse {
   skill_id: string;
   model: { resolved_from: 'payload' | 'settings' | 'env' | 'missing'; gateway_id?: string; model_id?: string };
   files: ReportFile[];
+  artifacts?: ReportArtifact[];
+  report_view?: NativeReportView | null;
   appendix_b: {
     available: boolean;
     path?: string;
@@ -168,15 +180,84 @@ export interface ReportSkill {
 }
 
 export interface ReportViewBlock {
-  type: 'paragraph' | 'list' | 'preformatted';
+  type: 'paragraph' | 'list' | 'preformatted' | 'callout';
   text?: string;
   items?: string[];
+  title?: string;
+  tone?: 'info' | 'warn' | 'good' | 'bad';
 }
 
 export interface ReportViewSection {
+  id?: string;
   heading: string;
+  eyebrow?: string;
+  kind?: 'summary' | 'judgement' | 'risk' | 'countermeasure' | 'appendix';
   blocks: ReportViewBlock[];
   children?: ReportViewSection[];
+}
+
+export interface ReportKpi {
+  label: string;
+  value: string;
+  note?: string;
+  tone?: 'good' | 'warn' | 'bad' | 'info';
+}
+
+export interface ReportAppendixView {
+  mode: 'hidden' | 'summary' | 'references';
+  event_name: string;
+  worlds_count: number;
+  confirmed_risks: number;
+  risk_distribution?: string;
+  references: string[];
+}
+
+export interface ReportQualityItem {
+  label: string;
+  status: 'passed' | 'warning' | 'blocked';
+  detail: string;
+}
+
+export interface NativeReportView {
+  id: string;
+  job_id: string;
+  batch_id: string;
+  version: ReportVersion;
+  title: string;
+  subtitle: string;
+  generated_at?: string;
+  source: {
+    batch_id: string;
+    completed_worlds: number;
+    failed_worlds: number;
+    dataset_ready: boolean;
+    model: string;
+    skill_id: string;
+  };
+  kpis: ReportKpi[];
+  sections: ReportViewSection[];
+  appendix: ReportAppendixView;
+  quality: ReportQualityItem[];
+}
+
+export interface ReportArtifact {
+  id: string;
+  label: string;
+  format: 'md' | 'html' | 'docx' | 'pdf' | 'json' | 'unknown';
+  state: 'ready' | 'planned' | 'failed';
+  previewable: boolean;
+  downloadable: boolean;
+  url?: string;
+  size_bytes?: number | null;
+  source_view_id?: string;
+  note?: string;
+}
+
+export interface ReportEvent {
+  label: string;
+  detail: string;
+  status: 'done' | 'current' | 'pending';
+  at?: string;
 }
 
 export interface ReportViewResponse {

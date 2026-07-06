@@ -13,8 +13,7 @@ from urllib.parse import unquote
 from flask import Blueprint, jsonify, request, send_from_directory
 from pydantic import ValidationError
 
-from adarian.report import create_job, run_job, status_response
-from adarian.report.view_model import artifact_metadata, build_report_view
+from adarian.report.view_model import artifact_metadata, build_report_view, load_native_report_view
 from adarian.serve import db
 from adarian.serve.api.model_gateways import _env_gateway
 from adarian.serve.observability import safe_report_file
@@ -40,9 +39,16 @@ def _payload_dict(payload: ReportPayload) -> dict[str, Any]:
     return data
 
 
+def _report_runner():
+    from adarian.report.runner import create_job, run_job, status_response
+
+    return create_job, run_job, status_response
+
+
 @report_bp.post("/report")
 def generate_report():
     """Compatibility endpoint: create and run a report job synchronously."""
+    create_job, run_job, status_response = _report_runner()
     try:
         payload = ReportPayload.model_validate(request.get_json(silent=True) or {})
     except ValidationError as exc:
@@ -62,6 +68,7 @@ def generate_report():
 
 @report_bp.post("/report/jobs")
 def create_report_job():
+    create_job, run_job, status_response = _report_runner()
     try:
         payload = ReportPayload.model_validate(request.get_json(silent=True) or {})
     except ValidationError as exc:
@@ -77,6 +84,7 @@ def create_report_job():
 
 @report_bp.get("/report/jobs/<job_id>/status")
 def report_job_status(job_id: str):
+    _create_job, _run_job, status_response = _report_runner()
     job = db.get_report_job(job_id)
     if not job:
         body, status = error_response("NOT_FOUND", "Report job not found", {"job_id": job_id})
@@ -86,6 +94,7 @@ def report_job_status(job_id: str):
 
 @report_bp.get("/report/jobs/active")
 def active_report_job():
+    _create_job, _run_job, status_response = _report_runner()
     session_id = _request_session_id()
     job = db.latest_report_job_for_session(session_id) if session_id else None
     if not job:
@@ -107,6 +116,20 @@ def download_report_job_file(job_id: str, filename: str):
         body, status = error_response("REPORT_FILE_NOT_FOUND", "Report file not found", {"filename": filename})
         return jsonify(body), status
     return send_from_directory(file_path.parent, file_path.name, as_attachment=True)
+
+
+@report_bp.get("/report/jobs/<job_id>/view")
+def report_job_default_view(job_id: str):
+    job = db.get_report_job(job_id)
+    if not job:
+        body, status = error_response("NOT_FOUND", "Report job not found", {"job_id": job_id})
+        return jsonify(body), status
+    version = request.args.get("version") or ""
+    view = load_native_report_view(job, version)
+    if not view:
+        body, status = error_response("REPORT_VIEW_NOT_FOUND", "Native report view not found", {"job_id": job_id, "version": version})
+        return jsonify(body), status
+    return jsonify(view)
 
 
 @report_bp.get("/report/jobs/<job_id>/view/<file_id>")

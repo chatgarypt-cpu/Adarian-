@@ -14,7 +14,8 @@ from adarian.serve.schemas import normalize_status
 from .appendix_builder import build_appendix_b, load_dataset, write_appendix_b
 from .config import parse_appendix_mode, parse_versions, resolve_model_config, resolve_skill_id, safe_slug
 from .quality import assemble_report, audit_body, is_blocked, write_audit
-from .view_model import artifact_metadata
+from .view_builder import build_native_report_view, write_report_html, write_report_view
+from .view_model import artifact_metadata, build_artifact_manifest, load_native_report_view
 from .writer import write_body, write_debug_body
 
 
@@ -101,6 +102,7 @@ def run_job(job_id: str) -> dict[str, Any]:
         if not model_config:
             _update(job, appendix_json=json.dumps(_appendix_summary(appendix_b, appendix_path), ensure_ascii=False))
             return _block(job, "REPORT_MODEL_NOT_CONFIGURED", "未配置报告模型，请在 03-models 或 .env 中配置")
+        model_label = f"{model_config.resolved_from}:{model_config.model}"
         _update(job, model_config_resolved_from=model_config.resolved_from, progress=42, current_step="调用报告模型")
 
         versions = json.loads(job.get("versions") or '["B"]')
@@ -125,6 +127,47 @@ def run_job(job_id: str) -> dict[str, Any]:
 
             version_dir = output_dir / f"{version}版"
             version_dir.mkdir(parents=True, exist_ok=True)
+            display_mode = "included" if appendix_mode in {"included", "both"} else "none"
+            report_view = build_native_report_view(
+                body=body,
+                appendix_b=appendix_b,
+                audit=audit,
+                job=job,
+                version=version,
+                appendix_mode=display_mode,
+                model_label=model_label,
+            )
+            view_name = f"report_view_{version}.json"
+            view_path = write_report_view(report_view, version_dir / view_name)
+            view_rel = f"{version}版/{view_name}"
+            view_id = f"report_view_{version}"
+            files.append(artifact_metadata({
+                "id": view_id,
+                "kind": "report_view",
+                "version": version,
+                "appendix": "data",
+                "internal": True,
+                "name": view_name,
+                "url": f"/api/report/jobs/{job['id']}/files/{view_rel}",
+                "previewable": True,
+                "downloadable": False,
+                "source_view_id": view_id,
+            }))
+            html_name = f"{safe_slug(event_name)}_舆情风险研判_{datetime.now().strftime('%Y%m%d')}_v1.html"
+            html_path = write_report_html(report_view, version_dir / html_name)
+            html_rel = f"{version}版/{html_name}"
+            files.append(artifact_metadata({
+                "id": f"{version}_html",
+                "version": version,
+                "appendix": "export",
+                "name": html_name,
+                "url": f"/api/report/jobs/{job['id']}/files/{html_rel}",
+                "format": "html",
+                "label": "HTML",
+                "source_view_id": view_id,
+                "note": "交互报告轻量导出",
+                "size_bytes": html_path.stat().st_size,
+            }))
             modes = ["none", "included"] if appendix_mode == "both" else [appendix_mode]
             for mode in modes:
                 content = assemble_report(body, mode, appendix_b)
@@ -139,6 +182,10 @@ def run_job(job_id: str) -> dict[str, Any]:
                     "appendix": mode,
                     "name": name,
                     "url": f"/api/report/jobs/{job['id']}/files/{rel}",
+                    "format": "md",
+                    "label": "Markdown",
+                    "source_view_id": view_id,
+                    "note": "MVP 兼容导出",
                 }))
 
         audit_path = write_audit(combined_audit, output_dir)
@@ -162,15 +209,22 @@ def status_response(job: dict[str, Any]) -> dict[str, Any]:
         audit = json.loads(job.get("audit_json") or "{}")
     except json.JSONDecodeError:
         audit = {}
+    versions = json.loads(job.get("versions") or '["B"]')
+    version = (versions or ["B"])[0]
+    report_view = load_native_report_view(job, version) if job.get("status") == "completed" else None
+    artifacts = build_artifact_manifest(files, job.get("output_dir") or "")
+    legacy_view_missing = job.get("status") == "completed" and not report_view
     return {
         "job_id": job["id"],
         "report_id": f"{job['batch_id']}:{job['id']}",
         "batch_id": job["batch_id"],
         "status": job.get("status") or "idle",
+        "ui_state": _ui_state(job, report_view),
         "progress": int(job.get("progress") or 0),
         "current_step": job.get("current_step") or "",
-        "selected_versions": json.loads(job.get("versions") or "[]"),
-        "version": (json.loads(job.get("versions") or '["B"]') or ["B"])[0],
+        "events": _status_events(job),
+        "selected_versions": versions,
+        "version": version,
         "appendix_mode": job.get("appendix_mode") or "none",
         "partial": bool(job.get("partial")),
         "completed_worlds_count": int(job.get("completed_worlds_count") or 0),
@@ -178,11 +232,53 @@ def status_response(job: dict[str, Any]) -> dict[str, Any]:
         "skill_id": job.get("skill_id") or "default_government",
         "model": {"resolved_from": job.get("model_config_resolved_from") or "missing"},
         "files": files,
+        "artifacts": artifacts,
+        "report_view": report_view,
         "appendix_b": appendix or {"available": False, "worlds_count": 0, "confirmed_risks": 0, "preview": {}},
         "audit_summary": audit or {"fatal": 0, "high": 0, "medium": 0, "passed": 0, "blocked_reasons": []},
-        "error_code": job.get("error_code") or "",
-        "error_message": job.get("error_message") or "",
+        "error_code": job.get("error_code") or ("REPORT_VIEW_NOT_FOUND" if legacy_view_missing else ""),
+        "error_message": job.get("error_message") or ("历史报告缺少 report_view.json，请重新生成报告。" if legacy_view_missing else ""),
     }
+
+
+def _ui_state(job: dict[str, Any], report_view: dict[str, Any] | None) -> str:
+    status = job.get("status") or "idle"
+    if status in {"idle", "running"}:
+        return "generating"
+    if status == "completed" and report_view:
+        return "report"
+    if status == "completed" and not report_view:
+        return "blocked"
+    if status == "blocked":
+        return "blocked"
+    if status == "failed":
+        return "failed"
+    return "generating"
+
+
+def _status_events(job: dict[str, Any]) -> list[dict[str, str]]:
+    progress = int(job.get("progress") or 0)
+    current = job.get("current_step") or ""
+    stages = [
+        (5, "读取 batch", "定位报告来源 batch。"),
+        (18, "读取 simulation_dataset", "读取 completed worlds 的结构化数据。"),
+        (30, "生成 appendix_b", "聚合风险、主体、对策和演化摘要。"),
+        (42, "调用报告模型", "生成报告正文。"),
+        (70, "构建 report_view", "写入原生 report_view.json 和导出 manifest。"),
+        (100, "报告生成完成", "报告正文和导出入口已就绪。"),
+    ]
+    events = []
+    for threshold, label, detail in stages:
+        if progress >= threshold:
+            status = "done"
+        elif current and label in current:
+            status = "current"
+        else:
+            status = "pending"
+        events.append({"label": label, "detail": detail, "status": status})
+    if job.get("status") in {"blocked", "failed"}:
+        events.append({"label": job.get("current_step") or "报告生成失败", "detail": job.get("error_message") or "", "status": "current"})
+    return events
 
 
 def _dataset_path(world: dict[str, Any]) -> Path:

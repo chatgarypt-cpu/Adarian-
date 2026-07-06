@@ -103,19 +103,15 @@ def test_run_info_seed_text_if_present():
 
 
 def test_risk_verdict_level_label_consistency():
-    """risk_verdict.level 和 label 必须 1:1 对应。"""
+    """risk_verdict.level 和 label 必须 1:1 对应。（契约来源：spec/dataset_fields.yaml → RISK_LEVEL_LABELS）"""
+    from adarian.schemas.risk import RISK_LEVEL_LABELS
+
     verdict = dataset()["simulation_result"]["risk_verdict"]
     level = verdict["level"]
     label = verdict["label"]
-    LABEL_MAP = {
-        "low": "低风险",
-        "medium": "中风险",
-        "high": "高风险",
-        "critical": "重大风险",
-    }
-    assert level in LABEL_MAP, f"未知风险等级: {level}"
-    assert label == LABEL_MAP[level], (
-        f"{level} 的标签应为 {LABEL_MAP[level]}，实际为 {label}"
+    assert level in RISK_LEVEL_LABELS, f"未知风险等级: {level}"
+    assert label == RISK_LEVEL_LABELS[level], (
+        f"{level} 的标签应为 {RISK_LEVEL_LABELS[level]}，实际为 {label}"
     )
 
 

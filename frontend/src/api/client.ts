@@ -14,6 +14,7 @@ import type {
   ReportSkill,
   ReportVersion,
   ReportViewResponse,
+  NativeReportView,
   RiskReviewResponse,
   RunErrorsResponse,
   RunEventsResponse,
@@ -178,6 +179,10 @@ export const api = {
   },
   getReportView(jobId: string, fileId: string): Promise<ReportViewResponse> {
     return jsonRequest(`/api/report/jobs/${encodeURIComponent(jobId)}/view/${encodeURIComponent(fileId)}`);
+  },
+  getNativeReportView(jobId: string, version = ''): Promise<NativeReportView> {
+    const query = version ? `?version=${encodeURIComponent(version)}` : '';
+    return jsonRequest(`/api/report/jobs/${encodeURIComponent(jobId)}/view${query}`);
   },
   getHistory(): Promise<BatchSummary[]> {
     return jsonRequest('/api/history');
