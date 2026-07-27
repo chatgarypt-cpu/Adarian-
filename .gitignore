@@ -54,3 +54,6 @@ docs/
 Thumbs.db
 .codex/
 AGENTS.md
+
+# Generated reports
+bettafish_report.html
