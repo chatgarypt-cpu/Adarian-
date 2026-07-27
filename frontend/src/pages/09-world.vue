@@ -1,6 +1,5 @@
 <template>
   <section class="workspace">
-    <StateTools v-model="world.state" />
     <PageState :state="world.state" :message="world.error || 'World 详情读取失败'">
       <div class="grid-4">
         <Card :title="world.summary?.model || '--'" label="模型" metric />
@@ -54,7 +53,6 @@ import Card from '../components/Card.vue';
 import LogBox from '../components/LogBox.vue';
 import PageState from '../components/PageState.vue';
 import Panel from '../components/Panel.vue';
-import StateTools from '../components/StateTools.vue';
 import { useRunStore } from '../stores/run';
 import { useWorldStore } from '../stores/world';
 

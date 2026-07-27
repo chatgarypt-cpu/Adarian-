@@ -19,8 +19,6 @@ def _checks(source: str) -> list[dict[str, str]]:
     source_note = "可以进入下一步" if source == "manual" else "本地 seed 文件可用于启动推演"
     return [
         {"label": "事件背景已填写", "note": source_note, "status": "passed"},
-        {"label": "核心主体识别", "note": "v1.5.0b 暂未接入主体抽取，后续版本启用", "status": "pending"},
-        {"label": "时间线可补充", "note": "建议补充首发时间和官方回应时间", "status": "suggested"},
     ]
 
 

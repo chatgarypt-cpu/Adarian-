@@ -1,6 +1,5 @@
 <template>
   <section class="workspace">
-    <StateTools v-model="run.modelsState" />
     <PageState :state="effectiveState" :message="run.modelsError || '模型检测失败'">
       <Panel title="API 服务管理" note="后端持久化">
         <div class="status-note">用户新增服务保存到 SQLite；API key write-only，不会回显明文。</div>
@@ -24,7 +23,7 @@
           </div>
           <div class="form-row">
             <label>API Key</label>
-            <input v-model="run.gatewayDraft.apiKey" type="password" placeholder="v1.5.0b 后端 write-only 保存" />
+            <input v-model="run.gatewayDraft.apiKey" type="password" placeholder="保存后仅显示已配置" />
           </div>
         </div>
         <div class="actions">
@@ -80,17 +79,15 @@
           </section>
         </div>
       </Panel>
-      <div class="hero-grid">
-        <Panel title="可用性检测" note="运行前检查">
+      <Panel title="可用性检测" note="运行前检查">
           <div v-if="run.models.length === 0" class="empty-inline">尚未加载模型。请先在上方点击加载内置模型，或对新增 API 服务执行识别模型。</div>
           <table v-else class="table">
-            <thead><tr><th>模型</th><th>状态</th><th>响应时间</th><th>建议</th></tr></thead>
+            <thead><tr><th>模型</th><th>状态</th><th>响应时间</th></tr></thead>
             <tbody>
               <tr v-for="model in run.models" :key="model.id">
                 <td>{{ model.name }}</td>
                 <td><Chip :label="healthLabel(model.healthStatus)" :variant="healthVariant(model.healthStatus)" /></td>
                 <td>{{ model.latency ?? '--' }}</td>
-                <td>{{ model.advice }}</td>
               </tr>
             </tbody>
           </table>
@@ -103,7 +100,7 @@
             <button class="primary" type="button" :disabled="run.selectedModelCount === 0 || run.healthChecking" @click="run.checkSelectedModels">
               {{ run.healthChecking ? '检测中' : '检测所选模型' }}
             </button>
-            <button class="ghost" type="button" @click="run.selectAvailableModels">只选择可用模型</button>
+            <button class="ghost" type="button" :disabled="run.availableModelCount === 0" @click="run.selectAvailableModels">只选择可用模型</button>
           </div>
           <div class="model-summary compact">
             <span>本次检测 {{ run.healthSummary.total }} 个</span>
@@ -111,15 +108,7 @@
             <span>{{ run.healthSummary.failed }} 失败</span>
             <span>{{ run.healthSummary.timeout }} 超时</span>
           </div>
-        </Panel>
-        <Panel title="调度建议" note="自动推荐">
-          <div class="steps">
-            <StepLine title="模型来自后端" note="内置 catalog 或网关 discover" status="done" :chip="{ label: '真实', variant: 'ok' }" />
-            <StepLine title="密钥不回显" note="仅显示 hasApiKey" status="done" :chip="{ label: '通过', variant: 'ok' }" />
-            <StepLine title="运行前选择模型" note="可直接选可用模型启动 batch" status="current" :chip="{ label: '注意', variant: 'warn' }" />
-          </div>
-        </Panel>
-      </div>
+      </Panel>
     </PageState>
     <div v-if="run.modelToast" class="toast">{{ run.modelToast }}</div>
   </section>
@@ -131,15 +120,13 @@ import type { ChipVariant, ModelGateway } from '../api/types';
 import Chip from '../components/Chip.vue';
 import PageState from '../components/PageState.vue';
 import Panel from '../components/Panel.vue';
-import StateTools from '../components/StateTools.vue';
-import StepLine from '../components/StepLine.vue';
 import { useRunStore } from '../stores/run';
 
 const run = useRunStore();
 const effectiveState = computed(() => (run.modelsState === 'populated' && run.modelGateways.length === 0 ? 'empty' : run.modelsState));
 const gatewayStatus = (status: string): { label: string; variant?: ChipVariant } => {
   if (status === 'connected') return { label: '已连接', variant: 'ok' };
-  if (status === 'partial') return { label: '部分可用', variant: 'warn' };
+  if (status === 'partial') return { label: '待检测', variant: 'warn' };
   return { label: '离线', variant: 'bad' };
 };
 const providerLabel = (provider: ModelGateway['provider']) => {

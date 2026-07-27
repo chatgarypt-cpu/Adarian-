@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Report job runner."""
 
 from __future__ import annotations
@@ -13,6 +14,7 @@ from adarian.serve.schemas import normalize_status
 
 from .appendix_builder import build_appendix_b, load_dataset, write_appendix_b
 from .config import parse_appendix_mode, parse_versions, resolve_model_config, resolve_skill_id, safe_slug
+from .document_export import write_report_docx, write_report_pdf
 from .quality import assemble_report, audit_body, is_blocked, write_audit
 from .view_builder import build_native_report_view, write_report_html, write_report_view
 from .view_model import artifact_metadata, build_artifact_manifest, load_native_report_view
@@ -153,7 +155,8 @@ def run_job(job_id: str) -> dict[str, Any]:
                 "downloadable": False,
                 "source_view_id": view_id,
             }))
-            html_name = f"{safe_slug(event_name)}_舆情风险研判_{datetime.now().strftime('%Y%m%d')}_v1.html"
+            export_stem = f"{safe_slug(event_name)}_舆情风险研判_{datetime.now().strftime('%Y%m%d')}_v1"
+            html_name = f"{export_stem}.html"
             html_path = write_report_html(report_view, version_dir / html_name)
             html_rel = f"{version}版/{html_name}"
             files.append(artifact_metadata({
@@ -167,6 +170,37 @@ def run_job(job_id: str) -> dict[str, Any]:
                 "source_view_id": view_id,
                 "note": "交互报告轻量导出",
                 "size_bytes": html_path.stat().st_size,
+            }))
+            _update(job, current_step=f"生成 {version} 版可下载文件")
+            docx_name = f"{export_stem}.docx"
+            docx_path = write_report_docx(report_view, version_dir / docx_name)
+            docx_rel = f"{version}版/{docx_name}"
+            files.append(artifact_metadata({
+                "id": f"{version}_docx",
+                "version": version,
+                "appendix": "export",
+                "name": docx_name,
+                "url": f"/api/report/jobs/{job['id']}/files/{docx_rel}",
+                "format": "docx",
+                "label": "DOCX",
+                "source_view_id": view_id,
+                "note": "可编辑正式文档",
+                "size_bytes": docx_path.stat().st_size,
+            }))
+            pdf_name = f"{export_stem}.pdf"
+            pdf_path = write_report_pdf(report_view, version_dir / pdf_name)
+            pdf_rel = f"{version}版/{pdf_name}"
+            files.append(artifact_metadata({
+                "id": f"{version}_pdf",
+                "version": version,
+                "appendix": "export",
+                "name": pdf_name,
+                "url": f"/api/report/jobs/{job['id']}/files/{pdf_rel}",
+                "format": "pdf",
+                "label": "PDF",
+                "source_view_id": view_id,
+                "note": "固定版式正式文档",
+                "size_bytes": pdf_path.stat().st_size,
             }))
             modes = ["none", "included"] if appendix_mode == "both" else [appendix_mode]
             for mode in modes:
@@ -264,7 +298,8 @@ def _status_events(job: dict[str, Any]) -> list[dict[str, str]]:
         (18, "读取 simulation_dataset", "读取 completed worlds 的结构化数据。"),
         (30, "生成 appendix_b", "聚合风险、主体、对策和演化摘要。"),
         (42, "调用报告模型", "生成报告正文。"),
-        (70, "构建 report_view", "写入原生 report_view.json 和导出 manifest。"),
+        (70, "构建 report_view", "写入原生 report_view.json。"),
+        (82, "生成可下载文件", "生成 HTML、Markdown、DOCX 和 PDF。"),
         (100, "报告生成完成", "报告正文和导出入口已就绪。"),
     ]
     events = []
@@ -355,6 +390,11 @@ def _fail(job: dict[str, Any], code: str, message: str) -> dict[str, Any]:
 def _classify_report_error(exc: Exception) -> tuple[str, str]:
     message = str(exc)
     lowered = message.lower()
+    if "report_pdf_font_not_found" in lowered:
+        return (
+            "REPORT_EXPORT_UNAVAILABLE",
+            f"{message}；请通过 ADARIAN_REPORT_FONT_PATH 配置可用的中文 TrueType 字体",
+        )
     if any(marker in lowered for marker in ("502", "503", "504", "timeout", "timed out", "connection", "network")):
         return "REPORT_MODEL_UNAVAILABLE", f"{message}；请检查内网路由、模型网关或稍后重试"
     if any(marker in lowered for marker in ("401", "403", "api key", "api-key", "auth", "unauthorized", "forbidden")):

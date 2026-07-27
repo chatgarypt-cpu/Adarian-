@@ -4,7 +4,7 @@
       <div>
         <span class="mini-label">REPORT WORKBENCH · REPORT_VIEW</span>
         <h3>报告生成与阅读</h3>
-        <p>按现有报告顺序展示，正文读取后端原生 report_view.json；Markdown / HTML 只作为导出格式。</p>
+        <p>正文读取后端原生 report_view.json；同一份数据可导出 DOCX、PDF、HTML 或 Markdown。</p>
       </div>
       <div class="topbar-actions">
         <div class="job-pill">
@@ -75,8 +75,7 @@
           <span>报告选项</span>
           <div class="setup-options compact-options">
             <button type="button" :class="{ active: appendixMode === 'hidden' }" @click="appendixMode = 'hidden'">不含附录</button>
-            <button type="button" :class="{ active: appendixMode === 'summary' }" @click="appendixMode = 'summary'">附录摘要</button>
-            <button type="button" :class="{ active: appendixMode === 'references' }" @click="appendixMode = 'references'">引用明细</button>
+            <button type="button" :class="{ active: appendixMode === 'references' }" @click="appendixMode = 'references'">包含附录</button>
           </div>
           <p>模型：{{ modelLabel }} · 风格：{{ skillLabel }}</p>
         </section>
@@ -114,7 +113,7 @@
     <section v-else-if="viewState === 'failed' || viewState === 'blocked'" class="failure-shell" aria-label="报告生成失败">
       <span class="mini-label">{{ viewState === 'blocked' ? 'BLOCKED' : 'FAILED' }}</span>
       <h4>{{ viewState === 'blocked' ? '报告生成被阻断' : '报告生成失败' }}</h4>
-      <p>{{ reportJob?.error_message || '后端未返回错误原因。' }}</p>
+      <p>{{ reportJob?.error_message || errorMessage || '后端未返回错误原因。' }}</p>
       <button class="generate-button" type="button" @click="resetToSetup">返回生成前设置</button>
     </section>
 
@@ -134,15 +133,14 @@
       <div class="toolbar-group">
         <span>附录</span>
         <button type="button" :class="{ active: appendixMode === 'hidden' }" @click="appendixMode = 'hidden'">隐藏</button>
-        <button type="button" :class="{ active: appendixMode === 'summary' }" @click="appendixMode = 'summary'">摘要</button>
-        <button type="button" :class="{ active: appendixMode === 'references' }" @click="appendixMode = 'references'">引用</button>
+        <button type="button" :class="{ active: appendixMode === 'references' }" @click="appendixMode = 'references'">显示</button>
       </div>
       <details class="export-menu">
         <summary>导出</summary>
         <div class="export-list">
-          <a v-for="artifact in exportArtifacts" :key="artifact.id" :class="{ disabled: !artifact.downloadable }" :href="artifact.downloadable ? artifact.url : undefined" download>
+          <a v-for="artifact in exportArtifacts" :key="artifact.id" :href="artifact.url" download>
             <strong>{{ artifact.label }}</strong>
-            <span>{{ artifact.state === 'ready' ? '可下载' : '计划中' }}</span>
+            <span>可下载</span>
             <small>{{ artifact.note }}</small>
           </a>
         </div>
@@ -158,7 +156,7 @@
               <h1>{{ reportView?.title }}</h1>
               <p>{{ reportView?.subtitle }}</p>
             </div>
-            <div class="fake-stamp">REPORT_VIEW</div>
+            <div class="report-stamp">REPORT_VIEW</div>
           </header>
 
           <section class="kpi-strip" aria-label="关键指标">
@@ -177,13 +175,16 @@
             <div class="section-kicker">{{ section.eyebrow }}</div>
             <h2>{{ section.heading }}</h2>
             <template v-for="(block, index) in section.blocks" :key="`${section.id}-${index}`">
-              <p v-if="block.type === 'paragraph'" class="report-paragraph">{{ block.text }}</p>
+              <h3 v-if="block.type === 'subheading' || isLegacySubheading(block.text)" class="report-subheading">
+                {{ cleanReportText(block.text) }}
+              </h3>
+              <p v-else-if="block.type === 'paragraph'" class="report-paragraph">{{ cleanReportText(block.text) }}</p>
               <ul v-else-if="block.type === 'list'" class="report-list">
-                <li v-for="item in block.items" :key="item">{{ item }}</li>
+                <li v-for="item in block.items" :key="item">{{ cleanReportText(item) }}</li>
               </ul>
               <div v-else :class="['report-callout', block.tone || 'info']">
-                <strong>{{ block.title }}</strong>
-                <p>{{ block.text }}</p>
+                <strong>{{ cleanReportText(block.title) }}</strong>
+                <p>{{ cleanReportText(block.text) }}</p>
               </div>
             </template>
           </section>
@@ -227,12 +228,12 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import { api } from '../api/client';
 import type { AppendixMode, BatchSummary, NativeReportView, ReportArtifact, ReportEvent, ReportJobResponse, ReportUiState, ReportVersion, WorldStatus } from '../api/types';
 
-type AppendixDisplayMode = 'hidden' | 'summary' | 'references';
+type AppendixDisplayMode = 'hidden' | 'references';
 
 const theme = ref<'dark' | 'light'>('dark');
 const viewState = ref<ReportUiState>('setup');
 const selectedVersion = ref<ReportVersion>('B');
-const appendixMode = ref<AppendixDisplayMode>('summary');
+const appendixMode = ref<AppendixDisplayMode>('hidden');
 const selectedBatchId = ref('');
 const activeBatchId = ref('');
 const history = ref<BatchSummary[]>([]);
@@ -256,7 +257,14 @@ const datasetReady = computed(() => worlds.value.some((world) => world.rows.some
 const modelLabel = computed(() => reportView.value?.source.model || reportJob.value?.model.resolved_from || 'report slot');
 const skillLabel = computed(() => reportView.value?.source.skill_id || reportJob.value?.skill_id || 'default');
 const generatedVersions = computed(() => reportJob.value?.selected_versions?.length ? reportJob.value.selected_versions : [selectedVersion.value]);
-const exportArtifacts = computed<ReportArtifact[]>(() => reportJob.value?.artifacts || []);
+const exportArtifacts = computed<ReportArtifact[]>(() => {
+  const sourceViewId = `report_view_${selectedVersion.value}`;
+  return (reportJob.value?.artifacts || []).filter(
+    (artifact) => artifact.state === 'ready'
+      && artifact.downloadable
+      && (!artifact.source_view_id || artifact.source_view_id === sourceViewId),
+  );
+});
 const generationEvents = computed<ReportEvent[]>(() => reportJob.value?.events?.length ? reportJob.value.events : [{ label: reportJob.value?.current_step || '等待后端状态', detail: '', status: 'current' }]);
 const versionIntent = computed(() => versionOptions.find((item) => item.id === (reportView.value?.version || selectedVersion.value))?.intent || '研判报告');
 const canGenerate = computed(() => !disableReason.value && viewState.value !== 'generating');
@@ -338,14 +346,19 @@ async function startReport() {
   errorMessage.value = '';
   reportView.value = null;
   viewState.value = 'generating';
-  const job = await api.createReportJob({
-    batch_id: selectedBatchId.value,
-    versions: [selectedVersion.value],
-    appendix_mode: appendixMode.value === 'references' ? 'included' : 'none',
-    allow_partial: allowPartial.value,
-  });
-  await applyJob(job);
-  startPolling();
+  try {
+    const job = await api.createReportJob({
+      batch_id: selectedBatchId.value,
+      versions: [selectedVersion.value],
+      appendix_mode: appendixMode.value === 'references' ? 'included' : 'none',
+      allow_partial: allowPartial.value,
+    });
+    await applyJob(job);
+    startPolling();
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : '报告任务创建失败';
+    viewState.value = 'failed';
+  }
 }
 
 async function pollJob() {
@@ -371,7 +384,10 @@ function stopPolling() {
 async function applyJob(job: ReportJobResponse) {
   reportJob.value = job;
   selectedVersion.value = job.version || job.selected_versions?.[0] || selectedVersion.value;
-  if (job.report_view) reportView.value = job.report_view;
+  if (job.report_view) {
+    reportView.value = job.report_view;
+    appendixMode.value = job.report_view.appendix.mode === 'hidden' ? 'hidden' : 'references';
+  }
   if (job.ui_state === 'blocked') {
     viewState.value = 'blocked';
     stopPolling();
@@ -418,6 +434,7 @@ async function selectGeneratedVersion(version: ReportVersion) {
   if (!reportJob.value?.job_id) return;
   try {
     reportView.value = await api.getNativeReportView(reportJob.value.job_id, version);
+    appendixMode.value = reportView.value.appendix.mode === 'hidden' ? 'hidden' : 'references';
   } catch {
     // The backend may only have generated one selected version in R1.
   }
@@ -429,6 +446,19 @@ function resetToSetup() {
   reportView.value = null;
   errorMessage.value = '';
   viewState.value = 'setup';
+}
+
+function isLegacySubheading(value?: string) {
+  return /^\s*#{2,6}\s+/.test(value || '');
+}
+
+function cleanReportText(value?: string) {
+  return (value || '')
+    .trim()
+    .replace(/^#{1,6}\s+/, '')
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/__(.+?)__/g, '$1')
+    .replace(/`([^`]+)`/g, '$1');
 }
 </script>
 
@@ -1022,7 +1052,7 @@ function resetToSetup() {
   font-size: 16px;
 }
 
-.fake-stamp {
+.report-stamp {
   align-self: flex-start;
   flex: 0 0 auto;
   border: 1px solid rgba(31, 140, 255, .32);
@@ -1116,6 +1146,13 @@ function resetToSetup() {
   margin: 0 0 12px;
   color: var(--rw-paper-text);
   font-size: 16px;
+}
+
+.report-subheading {
+  margin: 24px 0 10px;
+  color: var(--rw-paper-text);
+  font-size: 18px;
+  line-height: 1.4;
 }
 
 .report-list {

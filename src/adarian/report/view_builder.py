@@ -1,9 +1,11 @@
+# -*- coding: utf-8 -*-
 """Build native report view data and lightweight exports."""
 
 from __future__ import annotations
 
 import html
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -111,6 +113,7 @@ def write_report_html(view: dict[str, Any], path: Path) -> Path:
 
 def render_report_html(view: dict[str, Any]) -> str:
     sections = "\n".join(_render_section(section) for section in view.get("sections") or [])
+    appendix = _render_appendix_html(view.get("appendix") or {})
     kpis = "\n".join(
         f"<li><span>{html.escape(str(kpi.get('label') or ''))}</span><strong>{html.escape(str(kpi.get('value') or ''))}</strong><small>{html.escape(str(kpi.get('note') or ''))}</small></li>"
         for kpi in view.get("kpis") or []
@@ -128,6 +131,7 @@ def render_report_html(view: dict[str, Any]) -> str:
     main {{ max-width: 920px; margin: 0 auto; background: #fff; border: 1px solid #dce8ef; border-radius: 12px; padding: 44px; }}
     h1 {{ font-size: 42px; line-height: 1.15; margin: 0 0 12px; }}
     h2 {{ margin-top: 34px; border-top: 1px solid #dce8ef; padding-top: 24px; }}
+    h3 {{ margin: 24px 0 10px; color: #1f4d78; }}
     p {{ margin: 0 0 12px; }}
     ul.kpis {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; list-style: none; padding: 0; margin: 24px 0; }}
     ul.kpis li {{ border: 1px solid #dce8ef; border-radius: 10px; padding: 12px; }}
@@ -142,6 +146,7 @@ def render_report_html(view: dict[str, Any]) -> str:
     <p>{subtitle}</p>
     <ul class="kpis">{kpis}</ul>
     {sections}
+    {appendix}
   </main>
 </body>
 </html>
@@ -195,17 +200,21 @@ def _parse_body_sections(body: str) -> dict[str, Any]:
         if current is None:
             current = {"id": "body", "heading": "正文", "eyebrow": "Body", "kind": "summary", "blocks": []}
             sections.append(current)
+        if line.startswith("### "):
+            flush_all()
+            current["blocks"].append({"type": "subheading", "text": _clean_inline_markdown(line[4:].strip())})
+            continue
         if line.startswith(("- ", "* ")):
             flush_paragraph()
-            list_items.append(line[2:].strip())
+            list_items.append(_clean_inline_markdown(line[2:].strip()))
             continue
         number_prefix = line.split(" ", 1)[0]
         if number_prefix.endswith(".") and number_prefix[:-1].isdigit() and " " in line:
             flush_paragraph()
-            list_items.append(line.split(" ", 1)[1].strip())
+            list_items.append(_clean_inline_markdown(line.split(" ", 1)[1].strip()))
             continue
         flush_list()
-        paragraph.append(line)
+        paragraph.append(_clean_inline_markdown(line))
 
     flush_all()
     return {"title": title, "sections": sections}
@@ -219,11 +228,37 @@ def _render_section(section: dict[str, Any]) -> str:
         if kind == "list":
             items = "".join(f"<li>{html.escape(str(item))}</li>" for item in block.get("items") or [])
             blocks.append(f"<ul>{items}</ul>")
+        elif kind == "subheading":
+            blocks.append(f"<h3>{html.escape(str(block.get('text') or ''))}</h3>")
         elif kind == "callout":
             blocks.append(f"<div class=\"callout\"><strong>{html.escape(str(block.get('title') or ''))}</strong><p>{html.escape(str(block.get('text') or ''))}</p></div>")
         else:
             blocks.append(f"<p>{html.escape(str(block.get('text') or ''))}</p>")
     return f"<section><h2>{heading}</h2>{''.join(blocks)}</section>"
+
+
+def _render_appendix_html(appendix: dict[str, Any]) -> str:
+    if appendix.get("mode") == "hidden":
+        return ""
+    references = ""
+    if appendix.get("mode") == "references":
+        references = "<ul>{}</ul>".format(
+            "".join(f"<li>{html.escape(str(item))}</li>" for item in appendix.get("references") or [])
+        )
+    summary = "事件：{}；completed worlds：{}；确认风险：{}；等级分布：{}".format(
+        appendix.get("event_name") or "",
+        appendix.get("worlds_count") or 0,
+        appendix.get("confirmed_risks") or 0,
+        appendix.get("risk_distribution") or "暂无",
+    )
+    return f"<section><h2>五、附录引用</h2><p>{html.escape(summary)}</p>{references}</section>"
+
+
+def _clean_inline_markdown(value: str) -> str:
+    text = re.sub(r"\*\*(.+?)\*\*", r"\1", value)
+    text = re.sub(r"__(.+?)__", r"\1", text)
+    text = re.sub(r"`([^`]+)`", r"\1", text)
+    return text.strip()
 
 
 def _section_id(heading: str) -> str:
@@ -261,7 +296,7 @@ def _risk_tone(level: str) -> str:
 def _appendix_display_mode(mode: str) -> str:
     if mode == "included":
         return "references"
-    return "summary"
+    return "hidden"
 
 
 def _format_distribution(value: Any) -> str:

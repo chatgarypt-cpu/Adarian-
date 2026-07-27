@@ -33,7 +33,7 @@
         </div>
         <div class="status-strip">
           <Mini label="系统状态" :value="systemStatus.value" :tone="systemStatus.tone" />
-          <Mini label="当前任务" value="未启动" />
+          <Mini label="当前任务" :value="currentTaskLabel" :tone="currentTaskTone" />
           <Mini label="今日批次" :value="todayBatchCount" />
         </div>
       </section>
@@ -79,13 +79,13 @@ onUnmounted(() => { eventSource?.close(); eventSource = null; });
 
 const pages = [
   { path: '/seed', n: '01', title: '事件录入', sub: '输入材料', desc: '录入本次需要推演的舆情事件，明确事件背景、核心争议和材料来源。' },
-  { path: '/config', n: '02', title: '推演配置', sub: '设置任务', desc: '设置推演规模、推演重点和输出内容，确认任务准备情况。' },
-  { path: '/models', n: '03', title: '模型调度', sub: '选择模型', desc: '选择参与推演的模型，检测可用性，并给出调度建议。' },
+  { path: '/config', n: '02', title: '推演配置', sub: '设置任务', desc: '命名本次批次并确认已选择模型；每个模型将创建一个平行 world。' },
+  { path: '/models', n: '03', title: '模型调度', sub: '选择模型', desc: '按 API 服务识别模型列表，检测可用性并选择参与推演的模型。' },
   { path: '/run', n: '04', title: '运行监控', sub: '查看进度', desc: '查看每一轮平行推演的运行状态、结果产物和最新日志。' },
   { path: '/review', n: '05', title: '结果审查', sub: '比较结论', desc: '对比多轮推演结果，识别稳定风险、差异风险和可用证据。' },
-  { path: '/report', n: '06', title: '报告生成', sub: '形成材料', desc: '选择推演结果和面向对象，生成舆情风险研判报告草稿。' },
-  { path: '/history', n: '07', title: '历史任务', sub: '复用结果', desc: '查看历史推演任务，复用事件材料、推演配置和报告草稿。' },
-  { path: '/settings', n: '08', title: '系统设置', sub: '管理能力', desc: '管理模型、输出位置、显示方式和系统检查项。' },
+  { path: '/report', n: '06', title: '报告生成', sub: '形成材料', desc: '选择推演结果，生成并导出舆情风险研判报告。' },
+  { path: '/history', n: '07', title: '历史任务', sub: '查看结果', desc: '查看历史推演任务，并打开已完成批次的结果证据。' },
+  { path: '/settings', n: '08', title: '系统设置', sub: '报告配置', desc: '管理报告模型、生成参数和默认写作风格。' },
 ];
 
 const detailPages = [
@@ -96,6 +96,19 @@ const route = useRoute();
 const router = useRouter();
 const runStore = useRunStore();
 const historyStore = useHistoryStore();
+const currentTaskLabel = computed(() => {
+  if (!runStore.activeBatch.batchId) return '无进行中任务';
+  if (runStore.activeBatch.status === 'running') return '运行中';
+  if (runStore.activeBatch.status === 'completed') return '已完成';
+  if (runStore.activeBatch.status === 'failed') return '失败';
+  return '等待中';
+});
+const currentTaskTone = computed(() => {
+  if (runStore.activeBatch.status === 'running') return 'warn' as const;
+  if (runStore.activeBatch.status === 'completed') return 'ok' as const;
+  if (runStore.activeBatch.status === 'failed') return 'bad' as const;
+  return undefined;
+});
 const activePage = computed(() => pages.find((page) => page.path === route.path) ?? detailPages.find((page) => page.path === route.path) ?? pages[0]);
 
 onMounted(async () => {

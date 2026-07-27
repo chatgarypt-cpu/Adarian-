@@ -1,49 +1,34 @@
 <template>
   <section class="workspace">
-    <StateTools v-model="state" />
-    <PageState :state="state" message="配置校验失败">
-      <div class="grid-3">
-        <Panel title="推演规模" note="任务参数">
-          <div class="status-note">配置会保存到后端；ticks/focuses 当前仅作为 pending 字段记录。</div>
-          <div class="form-row"><label>平行推演轮数</label><input v-model.number="run.config.parallelWorlds" type="number" min="1" /></div>
-          <div class="form-row"><label>每轮模拟步数</label><input v-model.number="run.config.ticks" type="number" min="1" max="5" /></div>
+    <PageState state="populated" message="配置校验失败">
+      <div class="hero-grid">
+        <Panel title="任务配置" note="真实生效">
           <div class="form-row"><label>输出批次名称</label><input v-model="run.config.batchName" /></div>
+          <div class="status-note">每个已选择模型会创建一个独立 world；模拟参数由当前 WorkflowBase 运行配置管理。</div>
           <div class="actions">
             <button class="primary" type="button" :disabled="run.configSaving" @click="run.saveConfig">
               {{ run.configSaving ? '保存中...' : '保存配置' }}
             </button>
           </div>
         </Panel>
-        <Panel title="推演重点" note="业务目标">
-          <div class="status-note">推演重点 chips 仍为产品占位，尚未影响 Phase 或报告逻辑。</div>
-          <div class="chips">
-            <button
-              v-for="focus in focuses"
-              :key="focus"
-              class="chip"
-              :class="{ ok: run.config.focuses.includes(focus) }"
-              type="button"
-              @click="toggleFocus(focus)"
-            >
-              {{ focus }}
-            </button>
-          </div>
-          <div class="actions"><button class="ghost" type="button">添加重点</button></div>
-        </Panel>
-        <Panel title="输出内容" note="生成范围">
+
+        <Panel title="启动条件" note="运行前确认">
           <div class="steps">
-            <StepLine title="推演结果数据" note="用于结果审查" status="done" :chip="{ label: '开启', variant: 'ok' }" />
-            <StepLine title="运行日志" note="用于复盘排错" status="done" :chip="{ label: '开启', variant: 'ok' }" />
-            <StepLine title="报告草稿" note="运行完成后调用报告 API" status="pending" :chip="{ label: '需完成 batch' }" />
+            <StepLine
+              title="参与模型"
+              :note="run.selectedModelCount ? `${run.selectedModelCount} 个模型已选择` : '请先在模型调度页选择模型'"
+              :status="run.selectedModelCount ? 'done' : 'current'"
+              :chip="{ label: run.selectedModelCount ? '已就绪' : '待选择', variant: run.selectedModelCount ? 'ok' : 'warn' }"
+            />
+            <StepLine title="运行方式" note="一个模型对应一个平行 world" status="done" :chip="{ label: '固定', variant: 'ok' }" />
           </div>
         </Panel>
       </div>
-      <Panel title="配置预览" note="启动前确认">
-        <div class="grid-4">
-          <Card :title="String(run.config.parallelWorlds)" label="平行轮数" metric />
-          <Card :title="String(run.config.ticks)" label="模拟步数" metric />
-          <Card :title="String(run.config.focuses.length)" label="推演重点" metric />
-          <Card title="3 类" label="预计产物" metric />
+
+      <Panel title="真实产物" note="运行完成后">
+        <div class="steps">
+          <StepLine title="simulation_dataset" note="供结果审查和报告生成消费" status="done" :chip="{ label: '结构化数据', variant: 'ok' }" />
+          <StepLine title="运行日志与事件流" note="供运行台实时监控和错误定位" status="done" :chip="{ label: '可观测', variant: 'ok' }" />
         </div>
       </Panel>
     </PageState>
@@ -51,22 +36,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import type { PageState as UiPageState } from '../api/types';
-import Card from '../components/Card.vue';
 import PageState from '../components/PageState.vue';
 import Panel from '../components/Panel.vue';
-import StateTools from '../components/StateTools.vue';
 import StepLine from '../components/StepLine.vue';
 import { useRunStore } from '../stores/run';
 
 const run = useRunStore();
-const state = ref<UiPageState>('populated');
-const focuses = ['风险扩散', '群体分化', '官方回应', '平台外溢'];
-
-function toggleFocus(focus: string) {
-  run.config.focuses = run.config.focuses.includes(focus)
-    ? run.config.focuses.filter((item) => item !== focus)
-    : [...run.config.focuses, focus];
-}
 </script>

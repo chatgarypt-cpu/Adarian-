@@ -102,6 +102,17 @@ def test_report_job_generates_only_selected_versions(client, tmp_path, monkeypat
     report_file = next(item for item in body["files"] if item.get("version") == "A" and item.get("appendix") == "none")
     assert report_file["format"] == "md"
     assert report_file["previewable"] is True
+    docx_file = next(item for item in body["files"] if item.get("version") == "A" and item.get("format") == "docx")
+    pdf_file = next(item for item in body["files"] if item.get("version") == "A" and item.get("format") == "pdf")
+    assert docx_file["state"] == "ready"
+    assert pdf_file["state"] == "ready"
+
+    docx_download = client.get(docx_file["url"])
+    assert docx_download.status_code == 200
+    assert docx_download.data.startswith(b"PK")
+    pdf_download = client.get(pdf_file["url"])
+    assert pdf_download.status_code == 200
+    assert pdf_download.data.startswith(b"%PDF")
 
     view = client.get(f"/api/report/jobs/{body['job_id']}/view/{report_file['id']}")
     assert view.status_code == 200

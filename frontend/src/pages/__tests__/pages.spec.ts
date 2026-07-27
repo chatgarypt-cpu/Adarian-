@@ -53,7 +53,7 @@ vi.mock('../../api/client', () => ({
 describe('workflow page smoke', () => {
   it('mounts the run monitor fallback without real batch data', () => {
     const wrapper = mount(RunPage, {
-      global: { plugins: [createPinia()], stubs: { StateTools: true } },
+      global: { plugins: [createPinia()] },
     });
     expect(wrapper.text()).toContain('尚未启动推演');
     expect(wrapper.text()).toContain('启动真实推演');
@@ -68,7 +68,7 @@ describe('workflow page smoke', () => {
     await router.isReady();
 
     const wrapper = mount(WorldPage, {
-      global: { plugins: [createPinia(), router], stubs: { StateTools: true } },
+      global: { plugins: [createPinia(), router] },
     });
     await flushPromises();
 

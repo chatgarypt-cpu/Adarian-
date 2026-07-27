@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import annotations
 
 import json
@@ -27,7 +28,8 @@ def test_artifact_manifest_hides_internal_data_artifacts(tmp_path) -> None:
     assert "audit" not in ids
     assert "report_view_B" not in ids
     assert {"B_none", "B_html"} <= ids
-    assert any(item["format"] == "pdf" and item["state"] == "planned" for item in manifest)
+    assert all(item["state"] == "ready" for item in manifest)
+    assert all(item["format"] not in {"docx", "pdf"} for item in manifest)
 
 
 def test_status_response_includes_native_view_and_manifest(tmp_path) -> None:

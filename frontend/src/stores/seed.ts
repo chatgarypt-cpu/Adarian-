@@ -7,18 +7,23 @@ export const useSeedStore = defineStore('seed', () => {
   const seedText = ref('');
   const seedPath = ref('seeds/test8.txt');
   const taskName = ref('校园食品安全争议推演');
-  const source = ref<'manual' | 'file' | 'history'>('manual');
+  const source = ref<'manual' | 'file'>('manual');
   const pageState = ref<PageState>('populated');
   const error = ref('');
   const saved = ref(false);
+  const savedSignature = ref('');
   const checks = ref<StepCheck[]>([
-    { label: '事件背景已填写', note: '可以进入下一步', status: 'passed' },
-    { label: '核心主体识别', note: 'v1.5.0b 暂未接入主体抽取，后续版本启用', status: 'pending' },
-    { label: '时间线可补充', note: '建议补充首发时间和官方回应时间', status: 'suggested' },
+    { label: '事件材料待保存', note: '填写后保存以完成检查', status: 'pending' },
   ]);
 
   const isEmpty = computed(() => (source.value === 'file' ? !seedPath.value.trim() : !seedText.value.trim()));
   const canStart = computed(() => source.value === 'file' ? Boolean(seedPath.value.trim()) : Boolean(seedText.value.trim()));
+  const currentSignature = computed(() => JSON.stringify([
+    source.value,
+    source.value === 'file' ? seedPath.value.trim() : seedText.value.trim(),
+    taskName.value.trim(),
+  ]));
+  const isCurrentSaved = computed(() => !isEmpty.value && savedSignature.value === currentSignature.value);
 
   async function saveSeed() {
     if (isEmpty.value) return;
@@ -34,6 +39,7 @@ export const useSeedStore = defineStore('seed', () => {
       checks.value = result.checks;
       if (result.seed_path) seedPath.value = result.seed_path;
       if (result.content) seedText.value = result.content;  // 回填文件内容
+      savedSignature.value = currentSignature.value;
       saved.value = true;
       pageState.value = 'populated';
       window.setTimeout(() => {
@@ -59,6 +65,7 @@ export const useSeedStore = defineStore('seed', () => {
       checks.value = result.checks;
       if (result.seed_path) seedPath.value = result.seed_path;
       if (result.content) seedText.value = result.content;
+      savedSignature.value = currentSignature.value;
       pageState.value = 'populated';
     } catch (exc) {
       error.value = exc instanceof Error ? exc.message : '读取失败';
@@ -86,5 +93,5 @@ export const useSeedStore = defineStore('seed', () => {
     }
   });
 
-  return { seedText, seedPath, taskName, source, checks, pageState, error, saved, isEmpty, canStart, saveSeed, loadFile, useExample, useLocalTest8 };
+  return { seedText, seedPath, taskName, source, checks, pageState, error, saved, isEmpty, canStart, isCurrentSaved, saveSeed, loadFile, useExample, useLocalTest8 };
 });

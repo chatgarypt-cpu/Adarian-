@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Health endpoint for v1.5.0a frontend-backend connectivity."""
+"""Health endpoint for frontend-backend connectivity."""
 
 from __future__ import annotations
 
@@ -11,4 +11,4 @@ ping_bp = Blueprint("ping", __name__)
 
 @ping_bp.get("/ping")
 def ping():
-    return jsonify({"status": "ok", "version": "1.5.0c"})
+    return jsonify({"status": "ok", "version": "1.5.3"})

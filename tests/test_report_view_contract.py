@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import annotations
 
 from adarian.report.view_builder import build_native_report_view
@@ -30,9 +31,10 @@ def test_build_native_report_view_contract() -> None:
         "## 二、演化分析",
         "- 讨论呈现分化态势。",
         "## 三、风险研判",
+        "### （一）负向叙事聚合风险",
         "存在负向叙事聚合风险。",
         "## 四、对策意见",
-        "事件主体应补充事实说明。",
+        "**责任主体**：事件主体应补充事实说明。",
     ])
     view = build_native_report_view(
         body=body,
@@ -57,5 +59,7 @@ def test_build_native_report_view_contract() -> None:
     assert view["source"]["model"] == "env:qwen"
     assert [section["heading"] for section in view["sections"]] == ["一、舆情概要", "二、演化分析", "三、风险研判", "四、对策意见"]
     assert view["sections"][1]["blocks"][0]["type"] == "list"
+    assert view["sections"][2]["blocks"][0] == {"type": "subheading", "text": "（一）负向叙事聚合风险"}
+    assert view["sections"][3]["blocks"][0]["text"] == "责任主体：事件主体应补充事实说明。"
     assert view["appendix"]["confirmed_risks"] == 1
     assert view["quality"][0]["status"] == "passed"

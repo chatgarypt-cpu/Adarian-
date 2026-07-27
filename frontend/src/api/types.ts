@@ -108,7 +108,7 @@ export interface ReportFile {
   previewable?: boolean;
   downloadable?: boolean;
   internal?: boolean;
-  state?: 'ready' | 'planned' | 'failed';
+  state?: 'ready' | 'failed';
   label?: string;
   note?: string;
   source_view_id?: string;
@@ -180,7 +180,7 @@ export interface ReportSkill {
 }
 
 export interface ReportViewBlock {
-  type: 'paragraph' | 'list' | 'preformatted' | 'callout';
+  type: 'paragraph' | 'list' | 'preformatted' | 'callout' | 'subheading';
   text?: string;
   items?: string[];
   title?: string;
@@ -244,7 +244,7 @@ export interface ReportArtifact {
   id: string;
   label: string;
   format: 'md' | 'html' | 'docx' | 'pdf' | 'json' | 'unknown';
-  state: 'ready' | 'planned' | 'failed';
+  state: 'ready' | 'failed';
   previewable: boolean;
   downloadable: boolean;
   url?: string;

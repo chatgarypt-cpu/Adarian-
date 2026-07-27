@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "adarian"
-version = "1.5.2"
+version = "1.5.3"
 description = "Adarian — 平行世界舆情推演系统（面向公共突发事件的多智能体舆情研判）"
 requires-python = ">=3.10"
 dependencies = [
@@ -15,6 +15,8 @@ dependencies = [
     "rich>=13.0.0",
     "python-dotenv>=1.0.0",
     "pyyaml>=6.0",
+    "python-docx>=1.1.2",
+    "reportlab>=4.2.0",
 ]
 
 [project.scripts]

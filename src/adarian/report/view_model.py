@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Convert report artifacts into frontend-safe view models."""
 
 from __future__ import annotations
@@ -37,7 +38,6 @@ def build_artifact_manifest(files: list[dict[str, Any]], output_dir: str | Path 
 
     root = Path(output_dir) if output_dir else None
     manifest: list[dict[str, Any]] = []
-    ready_formats: set[str] = set()
     for file in files:
         meta = artifact_metadata(file)
         fmt = str(meta.get("format") or "unknown")
@@ -60,21 +60,6 @@ def build_artifact_manifest(files: list[dict[str, Any]], output_dir: str | Path 
             "source_view_id": meta.get("source_view_id") or "",
             "note": meta.get("note") or "",
         })
-        ready_formats.add(fmt)
-    for fmt in ("docx", "pdf"):
-        if fmt not in ready_formats:
-            manifest.append({
-                "id": f"planned_{fmt}",
-                "label": _artifact_label(fmt, ""),
-                "format": fmt,
-                "state": "planned",
-                "previewable": False,
-                "downloadable": False,
-                "url": "",
-                "size_bytes": None,
-                "source_view_id": "",
-                "note": "计划中",
-            })
     return manifest
 
 

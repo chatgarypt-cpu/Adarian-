@@ -5,7 +5,7 @@ from __future__ import annotations
 
 
 def test_ping_and_basic_reads(client):
-    assert client.get("/api/ping").get_json()["version"] == "1.5.0c"
+    assert client.get("/api/ping").get_json()["version"] == "1.5.3"
     assert client.get("/api/config").status_code == 200
     assert isinstance(client.get("/api/models").get_json(), list)
     assert isinstance(client.get("/api/model-gateways").get_json(), list)

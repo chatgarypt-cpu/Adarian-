@@ -1,10 +1,9 @@
 <template>
   <section class="workspace">
-    <StateTools v-model="seed.pageState" />
     <PageState :state="effectiveState" :message="seed.error">
       <div class="hero-grid">
         <Panel title="事件材料" note="必填">
-          <div class="status-note">当前真实可用：手动录入文本、本地 seed 路径。历史事件复用为后续接入能力。</div>
+          <div class="status-note">支持手动录入文本和读取本地 seed 文件。</div>
           <div class="form-row">
             <label>舆情事件描述</label>
             <textarea v-model="seed.seedText" :disabled="seed.source === 'file'" placeholder="请输入舆情事件描述" />
@@ -19,7 +18,6 @@
               <select v-model="seed.source">
                 <option value="manual">手动录入</option>
                 <option value="file">本地 seed 路径</option>
-                <option value="history" disabled>历史事件复用（待接入）</option>
               </select>
             </div>
           </div>
@@ -48,8 +46,7 @@
           </div>
         </Panel>
 
-        <Panel title="录入检查" note="自动判断">
-          <div class="status-note">当前“事件背景已填写”由后端校验；主体识别和时间线建议仍为 pending/suggested。</div>
+        <Panel title="录入检查" note="内容完整性">
           <div class="steps">
             <StepLine
               v-for="check in checks"
@@ -67,7 +64,7 @@
         <div class="grid-3">
           <Card title="说清楚事件" description="让系统知道本次围绕什么争议展开推演。" />
           <Card title="明确关键主体" description="识别参与讨论的群体、机构和潜在利益方。" />
-          <Card title="保留材料入口" description="后续可从本地文件或历史任务复用事件材料。" />
+          <Card title="确认材料来源" description="可直接录入文本，也可读取项目内的 seed 文件。" />
         </div>
       </Panel>
     </PageState>
@@ -80,7 +77,6 @@ import { computed } from 'vue';
 import Card from '../components/Card.vue';
 import PageState from '../components/PageState.vue';
 import Panel from '../components/Panel.vue';
-import StateTools from '../components/StateTools.vue';
 import StepLine from '../components/StepLine.vue';
 import { useSeedStore } from '../stores/seed';
 
@@ -93,7 +89,14 @@ const examples = [
 ];
 
 const effectiveState = computed(() => seed.pageState);
-const checks = computed(() => (seed.isEmpty ? seed.checks.map((check) => ({ ...check, status: 'pending' as const })) : seed.checks));
+const checks = computed(() => {
+  if (seed.isCurrentSaved) return seed.checks;
+  return [{
+    label: '事件材料待保存',
+    note: seed.isEmpty ? '请先填写事件材料' : '保存后完成录入检查',
+    status: 'pending' as const,
+  }];
+});
 const chipFor = (status: 'passed' | 'suggested' | 'pending') => {
   if (status === 'passed') return { label: '通过', variant: 'ok' as const };
   if (status === 'suggested') return { label: '建议', variant: 'warn' as const };

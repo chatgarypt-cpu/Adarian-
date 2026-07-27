@@ -16,7 +16,7 @@ def test_seed_manual_returns_checks(client):
     data = response.get_json()
     assert data["seed_id"].startswith("seed_")
     assert data["checks"][0]["status"] == "passed"
-    assert any(check["status"] == "pending" for check in data["checks"])
+    assert all(check["status"] != "pending" for check in data["checks"])
 
 
 def test_seed_file_source_accepts_project_seed_path(client):

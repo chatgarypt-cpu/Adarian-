@@ -18,7 +18,7 @@ _src = str(Path(__file__).resolve().parent.parent)
 if _src not in sys.path:
     sys.path.insert(0, _src)
 
-__version__ = "1.2.6"
+__version__ = "1.5.3"
 
 # 导入主要模块方便使用
 from .schemas import (

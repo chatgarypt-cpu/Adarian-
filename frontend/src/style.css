@@ -133,7 +133,7 @@ button:disabled { cursor: not-allowed; opacity: .54; }
 .topbar { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; margin-bottom: 18px; }
 .title-wrap h2 { font-size: 34px; line-height: 1.05; margin: 3px 0 6px; font-weight: 760; }
 .title-wrap p { margin: 0; color: #adc9dc; font-size: 15px; max-width: 780px; }
-.status-strip { display: grid; grid-template-columns: repeat(3, 128px); gap: 10px; }
+.status-strip { display: grid; grid-template-columns: repeat(3, 144px); gap: 10px; }
 
 .workspace { display: grid; gap: 16px; }
 .hero-grid { display: grid; grid-template-columns: 1.25fr .75fr; gap: 16px; }
@@ -277,7 +277,7 @@ textarea { min-height: 150px; resize: vertical; }
 }
 
 .mini span { display: block; color: var(--muted); font-size: 12px; }
-.mini strong { display: block; font-size: 18px; margin-top: 2px; }
+.mini strong { display: block; font-size: 18px; line-height: 1.25; margin-top: 2px; }
 
 .world {
   position: relative;

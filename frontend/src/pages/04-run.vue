@@ -1,6 +1,5 @@
 <template>
   <section class="workspace">
-    <StateTools v-model="run.runState" />
     <PageState :state="run.runState" :message="run.runError || '运行状态读取失败'">
       <div class="grid-4">
         <Card :title="String(run.activeBatch.worlds.length)" label="推演轮数" metric />
@@ -9,7 +8,6 @@
         <Card :title="String(run.failedCount)" label="失败" metric />
       </div>
       <Panel title="运行监控" note="每轮推演状态">
-        <div class="status-note">运行状态来自 /api/run；cancel/retry 属后续版本，当前不提供假操作。</div>
         <div class="actions">
           <button
             class="primary"
@@ -137,10 +135,8 @@
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import Card from '../components/Card.vue';
 import Chip from '../components/Chip.vue';
-import LogBox from '../components/LogBox.vue';
 import PageState from '../components/PageState.vue';
 import Panel from '../components/Panel.vue';
-import StateTools from '../components/StateTools.vue';
 import { useRunStore } from '../stores/run';
 import { useSeedStore } from '../stores/seed';
 import type { RunEvent } from '../api/types';
