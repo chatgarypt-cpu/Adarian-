@@ -2,9 +2,9 @@
   <section class="report-workbench" :class="`theme-${theme}`">
     <header class="report-topbar">
       <div>
-        <span class="mini-label">REPORT WORKBENCH · REPORT_VIEW</span>
+        <span class="mini-label">REPORT WORKBENCH</span>
         <h3>报告生成与阅读</h3>
-        <p>正文读取后端原生 report_view.json；同一份数据可导出 DOCX、PDF、HTML 或 Markdown。</p>
+        <p>在浏览器中阅读交互报告，并从同一份正文导出 DOCX、PDF、HTML 或 Markdown。</p>
       </div>
       <div class="topbar-actions">
         <div class="job-pill">
@@ -24,7 +24,7 @@
       <div class="setup-copy">
         <span class="mini-label">PRE-GENERATION</span>
         <h4>生成前确认</h4>
-        <p>这里读取真实 batch / worlds 状态。完成后，阅读界面只保留报告正文、版本切换、附录开关和一个文件出口。</p>
+        <p>选择真实推演任务、报告版本和写作风格；生成后可直接阅读正文或下载正式文件。</p>
       </div>
 
       <div class="setup-grid">
@@ -37,21 +37,21 @@
           </select>
           <dl>
             <div>
-              <dt>completed worlds</dt>
+              <dt>有效样本</dt>
               <dd>{{ completedCount }}</dd>
             </div>
             <div>
-              <dt>failed worlds</dt>
+              <dt>失败样本</dt>
               <dd>{{ failedCount }}</dd>
             </div>
             <div>
-              <dt>dataset</dt>
-              <dd>{{ datasetReady ? 'ready' : 'missing' }}</dd>
+              <dt>数据状态</dt>
+              <dd>{{ datasetReady ? '可用' : '缺失' }}</dd>
             </div>
           </dl>
           <label v-if="failedCount" class="check-row">
             <input v-model="allowPartial" type="checkbox" />
-            <span>仅基于 completed worlds 生成</span>
+            <span>仅基于已完成样本生成</span>
           </label>
         </section>
 
@@ -72,18 +72,58 @@
         </section>
 
         <section class="setup-card">
-          <span>报告选项</span>
+          <span>写作与附录</span>
+          <div class="form-row setup-field">
+            <label>本次写作 Skill</label>
+            <select v-model="selectedSkillId">
+              <optgroup label="系统内置">
+                <option v-for="skill in builtinSkills" :key="skill.id" :value="skill.id">{{ skill.label }}</option>
+              </optgroup>
+              <optgroup v-if="userSkills.length" label="用户导入">
+                <option v-for="skill in userSkills" :key="skill.id" :value="skill.id">{{ skill.label }}</option>
+              </optgroup>
+            </select>
+          </div>
+          <div v-if="selectedSkill" class="selected-skill-note">
+            <strong>{{ selectedSkill.label }} · v{{ selectedSkill.version }}</strong>
+            <small>{{ selectedSkill.source === 'builtin' ? '系统内置' : '用户导入' }} · {{ selectedSkill.directory }}</small>
+          </div>
           <div class="setup-options compact-options">
             <button type="button" :class="{ active: appendixMode === 'hidden' }" @click="appendixMode = 'hidden'">不含附录</button>
             <button type="button" :class="{ active: appendixMode === 'references' }" @click="appendixMode = 'references'">包含附录</button>
           </div>
-          <p>模型：{{ modelLabel }} · 风格：{{ skillLabel }}</p>
+          <RouterLink class="manage-skill-link" to="/settings">管理写作 Skill</RouterLink>
         </section>
       </div>
 
+      <details class="generation-parameters">
+        <summary>生成参数</summary>
+        <div class="parameter-grid">
+          <div class="form-row">
+            <label>模型网关</label>
+            <select v-model="selectedGatewayId">
+              <option value="">使用环境默认</option>
+              <option v-for="gateway in settings.modelGateways" :key="gateway.id" :value="gateway.id">{{ gateway.name }}</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>模型</label>
+            <input v-model="selectedModelId" placeholder="使用网关默认模型" />
+          </div>
+          <div class="form-row">
+            <label>温度</label>
+            <input v-model.number="selectedTemperature" type="number" min="0" max="2" step="0.1" />
+          </div>
+          <div class="form-row">
+            <label>最大 Token</label>
+            <input v-model.number="selectedMaxTokens" type="number" min="512" max="65536" step="512" />
+          </div>
+        </div>
+      </details>
+
       <div class="generate-actions">
         <button class="generate-button" type="button" :disabled="!canGenerate" @click="startReport">生成报告</button>
-        <small>{{ disableReason || '将创建真实 report job；若模型未配置，会进入阻断态。' }}</small>
+        <small>{{ disableReason || `将使用 ${skillLabel} · ${modelLabel}` }}</small>
       </div>
     </section>
 
@@ -154,16 +194,16 @@
             <div>
               <span>{{ reportView?.version || selectedVersion }} 版 · {{ versionIntent }}</span>
               <h1>{{ reportView?.title }}</h1>
-              <p>{{ reportView?.subtitle }}</p>
+              <p>{{ productText(reportView?.subtitle) }}</p>
             </div>
-            <div class="report-stamp">REPORT_VIEW</div>
+            <div class="report-stamp">INTERACTIVE</div>
           </header>
 
           <section class="kpi-strip" aria-label="关键指标">
             <div v-for="kpi in reportView?.kpis || []" :key="kpi.label" :class="['kpi-item', kpi.tone || 'info']">
-              <span>{{ kpi.label }}</span>
+              <span>{{ productText(kpi.label) }}</span>
               <strong>{{ kpi.value }}</strong>
-              <small>{{ kpi.note }}</small>
+              <small>{{ productText(kpi.note) }}</small>
             </div>
           </section>
 
@@ -182,6 +222,19 @@
               <ul v-else-if="block.type === 'list'" class="report-list">
                 <li v-for="item in block.items" :key="item">{{ cleanReportText(item) }}</li>
               </ul>
+              <pre v-else-if="block.type === 'preformatted'" class="report-preformatted">{{ block.text }}</pre>
+              <div v-else-if="block.type === 'table'" class="report-table-scroll">
+                <table class="report-table">
+                  <thead>
+                    <tr><th v-for="header in block.headers" :key="header">{{ cleanReportText(header) }}</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(row, rowIndex) in block.rows" :key="rowIndex">
+                      <td v-for="(cell, cellIndex) in row" :key="cellIndex">{{ cleanReportText(cell) }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
               <div v-else :class="['report-callout', block.tone || 'info']">
                 <strong>{{ cleanReportText(block.title) }}</strong>
                 <p>{{ cleanReportText(block.text) }}</p>
@@ -189,33 +242,32 @@
             </template>
           </section>
 
-          <section v-if="appendixMode !== 'hidden'" id="report-appendix" class="report-section appendix-section">
+          <section v-if="appendixMode !== 'hidden' && reportView?.appendix.sections?.length" id="report-appendix" class="report-section appendix-section">
             <div class="section-kicker">Appendix</div>
-            <h2>五、附录引用</h2>
-            <p class="report-paragraph">
-              附录当前以结构化摘要方式展示；完整 appendix_b 属于内部数据，不直接暴露为用户下载入口。
-            </p>
-            <div class="appendix-grid">
-              <div>
-                <span>事件</span>
-                <strong>{{ reportView?.appendix.event_name }}</strong>
-              </div>
-              <div>
-                <span>worlds</span>
-                <strong>{{ reportView?.appendix.worlds_count }}</strong>
-              </div>
-              <div>
-                <span>confirmed risks</span>
-                <strong>{{ reportView?.appendix.confirmed_risks }}</strong>
-              </div>
-              <div>
-                <span>等级分布</span>
-                <strong>{{ reportView?.appendix.risk_distribution || '暂无' }}</strong>
-              </div>
-            </div>
-            <ul v-if="appendixMode === 'references'" class="report-list appendix-list">
-              <li v-for="reference in reportView?.appendix.references || []" :key="reference">{{ reference }}</li>
-            </ul>
+            <h2>{{ reportView.appendix.title || '附录' }}</h2>
+            <template v-for="section in reportView.appendix.sections" :key="section.heading">
+              <h3 class="report-subheading">{{ section.heading }}</h3>
+              <template v-for="(block, index) in section.blocks" :key="`${section.heading}-${index}`">
+                <h4 v-if="block.type === 'subheading'" class="report-subheading">{{ cleanReportText(block.text) }}</h4>
+                <p v-else-if="block.type === 'paragraph'" class="report-paragraph">{{ cleanReportText(block.text) }}</p>
+                <ul v-else-if="block.type === 'list'" class="report-list">
+                  <li v-for="item in block.items" :key="item">{{ cleanReportText(item) }}</li>
+                </ul>
+                <pre v-else-if="block.type === 'preformatted'" class="report-preformatted">{{ block.text }}</pre>
+                <div v-else-if="block.type === 'table'" class="report-table-scroll">
+                  <table class="report-table">
+                    <thead>
+                      <tr><th v-for="header in block.headers" :key="header">{{ cleanReportText(header) }}</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(row, rowIndex) in block.rows" :key="rowIndex">
+                        <td v-for="(cell, cellIndex) in row" :key="cellIndex">{{ cleanReportText(cell) }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </template>
+            </template>
           </section>
         </article>
       </main>
@@ -227,10 +279,12 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import { api } from '../api/client';
 import type { AppendixMode, BatchSummary, NativeReportView, ReportArtifact, ReportEvent, ReportJobResponse, ReportUiState, ReportVersion, WorldStatus } from '../api/types';
+import { useSettingsStore } from '../stores/settings';
 
 type AppendixDisplayMode = 'hidden' | 'references';
 
 const theme = ref<'dark' | 'light'>('dark');
+const settings = useSettingsStore();
 const viewState = ref<ReportUiState>('setup');
 const selectedVersion = ref<ReportVersion>('B');
 const appendixMode = ref<AppendixDisplayMode>('hidden');
@@ -239,6 +293,11 @@ const activeBatchId = ref('');
 const history = ref<BatchSummary[]>([]);
 const worlds = ref<WorldStatus[]>([]);
 const allowPartial = ref(false);
+const selectedSkillId = ref('default_government');
+const selectedGatewayId = ref('');
+const selectedModelId = ref('');
+const selectedTemperature = ref(0.3);
+const selectedMaxTokens = ref(8192);
 const reportJob = ref<ReportJobResponse | null>(null);
 const reportView = ref<NativeReportView | null>(null);
 const errorMessage = ref('');
@@ -254,8 +313,11 @@ const versionOptions: Array<{ id: ReportVersion; intent: string }> = [
 const completedCount = computed(() => worlds.value.filter((world) => world.status === 'completed').length);
 const failedCount = computed(() => worlds.value.filter((world) => world.status === 'failed').length);
 const datasetReady = computed(() => worlds.value.some((world) => world.rows.some((row) => row.label === '数据集' && row.value)));
-const modelLabel = computed(() => reportView.value?.source.model || reportJob.value?.model.resolved_from || 'report slot');
-const skillLabel = computed(() => reportView.value?.source.skill_id || reportJob.value?.skill_id || 'default');
+const builtinSkills = computed(() => settings.reportSkills.filter((skill) => skill.source === 'builtin'));
+const userSkills = computed(() => settings.reportSkills.filter((skill) => skill.source === 'user'));
+const selectedSkill = computed(() => settings.reportSkills.find((skill) => skill.id === selectedSkillId.value));
+const modelLabel = computed(() => reportJob.value?.model.model_id || selectedModelId.value || reportView.value?.source.model || '环境默认模型');
+const skillLabel = computed(() => reportJob.value?.skill?.label || selectedSkill.value?.label || reportView.value?.source.skill_label || selectedSkillId.value);
 const generatedVersions = computed(() => reportJob.value?.selected_versions?.length ? reportJob.value.selected_versions : [selectedVersion.value]);
 const exportArtifacts = computed<ReportArtifact[]>(() => {
   const sourceViewId = `report_view_${selectedVersion.value}`;
@@ -270,8 +332,8 @@ const versionIntent = computed(() => versionOptions.find((item) => item.id === (
 const canGenerate = computed(() => !disableReason.value && viewState.value !== 'generating');
 const disableReason = computed(() => {
   if (!selectedBatchId.value) return '请选择一个 batch。';
-  if (!completedCount.value) return '没有 completed world，不能生成报告。';
-  if (failedCount.value > 0 && !allowPartial.value) return '存在 failed world，请确认仅基于 completed worlds 生成。';
+  if (!completedCount.value) return '没有已完成样本，不能生成报告。';
+  if (failedCount.value > 0 && !allowPartial.value) return '存在失败样本，请确认仅基于已完成样本生成。';
   return '';
 });
 const statusLabel = computed(() => {
@@ -289,11 +351,19 @@ const statusNote = computed(() => {
 });
 const visibleSections = computed(() => reportView.value?.sections.filter((section) => section.kind !== 'appendix') || []);
 
-onMounted(async () => {
-  await Promise.all([loadSources(), restoreActiveReport()]);
-});
+onMounted(initialize);
 
 onBeforeUnmount(stopPolling);
+
+async function initialize() {
+  await settings.loadSettings();
+  selectedSkillId.value = settings.reportSkillId;
+  selectedGatewayId.value = settings.reportGatewayId;
+  selectedModelId.value = settings.reportModelId;
+  selectedTemperature.value = settings.reportTemperature;
+  selectedMaxTokens.value = settings.reportMaxTokens;
+  await Promise.all([loadSources(), restoreActiveReport()]);
+}
 
 async function loadSources() {
   try {
@@ -352,6 +422,11 @@ async function startReport() {
       versions: [selectedVersion.value],
       appendix_mode: appendixMode.value === 'references' ? 'included' : 'none',
       allow_partial: allowPartial.value,
+      skill_id: selectedSkillId.value,
+      gateway_id: selectedGatewayId.value,
+      model_id: selectedModelId.value.trim(),
+      temperature: Number(selectedTemperature.value),
+      max_tokens: Number(selectedMaxTokens.value),
     });
     await applyJob(job);
     startPolling();
@@ -383,6 +458,11 @@ function stopPolling() {
 
 async function applyJob(job: ReportJobResponse) {
   reportJob.value = job;
+  selectedSkillId.value = job.skill?.id || job.skill_id || selectedSkillId.value;
+  selectedGatewayId.value = job.model.gateway_id || selectedGatewayId.value;
+  selectedModelId.value = job.model.model_id || selectedModelId.value;
+  selectedTemperature.value = job.model.temperature ?? selectedTemperature.value;
+  selectedMaxTokens.value = job.model.max_tokens ?? selectedMaxTokens.value;
   selectedVersion.value = job.version || job.selected_versions?.[0] || selectedVersion.value;
   if (job.report_view) {
     reportView.value = job.report_view;
@@ -408,7 +488,7 @@ async function applyJob(job: ReportJobResponse) {
       reportView.value = await api.getNativeReportView(job.job_id, selectedVersion.value);
       viewState.value = 'report';
     } catch (error) {
-      errorMessage.value = error instanceof Error ? error.message : 'report_view 读取失败';
+      errorMessage.value = error instanceof Error ? error.message : '交互报告读取失败';
       viewState.value = 'failed';
     }
     stopPolling();
@@ -459,6 +539,14 @@ function cleanReportText(value?: string) {
     .replace(/\*\*(.+?)\*\*/g, '$1')
     .replace(/__(.+?)__/g, '$1')
     .replace(/`([^`]+)`/g, '$1');
+}
+
+function productText(value?: string) {
+  return (value || '')
+    .replace(/completed worlds?/gi, '已完成样本')
+    .replace(/simulation_dataset(?:\.json)?/gi, '结构化数据')
+    .replace(/appendix_b/gi, '风险依据')
+    .replace(/world 覆盖/gi, '有效样本');
 }
 </script>
 
@@ -794,11 +882,60 @@ function cleanReportText(value?: string) {
 }
 
 .compact-options {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .compact-options button {
   text-align: center;
+}
+
+.setup-field {
+  margin: 0;
+}
+
+.selected-skill-note {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  padding: 10px;
+  border: 1px solid var(--rw-line);
+  border-radius: 8px;
+}
+
+.selected-skill-note small {
+  overflow: hidden;
+  color: var(--rw-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.manage-skill-link {
+  color: var(--rw-accent);
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.generation-parameters {
+  border-top: 1px solid var(--rw-line);
+  border-bottom: 1px solid var(--rw-line);
+  padding: 12px 0;
+}
+
+.generation-parameters summary {
+  color: var(--rw-muted);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.parameter-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr .65fr .75fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.parameter-grid .form-row {
+  margin: 0;
 }
 
 .generate-actions {
@@ -1164,6 +1301,47 @@ function cleanReportText(value?: string) {
   font-size: 15px;
 }
 
+.report-preformatted {
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 0 0 14px;
+  border: 1px solid var(--rw-paper-line);
+  border-radius: 6px;
+  padding: 12px 14px;
+  color: var(--rw-paper-text);
+  background: rgba(127, 151, 170, .08);
+  font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.report-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 0 0 16px;
+}
+
+.report-table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  color: var(--rw-paper-text);
+  font-size: 14px;
+}
+
+.report-table th,
+.report-table td {
+  border: 1px solid var(--rw-paper-line);
+  padding: 9px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.report-table th {
+  color: var(--rw-blue);
+  background: rgba(31, 140, 255, .06);
+}
+
 .report-callout {
   margin: 14px 0;
   border: 1px solid var(--rw-paper-line);
@@ -1188,33 +1366,6 @@ function cleanReportText(value?: string) {
   color: var(--rw-paper-muted);
 }
 
-.appendix-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  margin: 12px 0;
-}
-
-.appendix-grid div {
-  border: 1px solid var(--rw-paper-line);
-  border-radius: 8px;
-  padding: 11px;
-}
-
-.appendix-grid span,
-.appendix-grid strong {
-  display: block;
-}
-
-.appendix-grid span {
-  color: var(--rw-paper-muted);
-  font-size: 12px;
-}
-
-.appendix-list {
-  margin-top: 14px;
-}
-
 @media (max-width: 1280px) {
   .workbench-grid {
     grid-template-columns: minmax(0, 1fr);
@@ -1230,10 +1381,10 @@ function cleanReportText(value?: string) {
 
   .workbench-grid,
   .kpi-strip,
-  .appendix-grid,
   .setup-grid,
   .setup-card dl,
-  .compact-options {
+  .compact-options,
+  .parameter-grid {
     grid-template-columns: 1fr;
   }
 

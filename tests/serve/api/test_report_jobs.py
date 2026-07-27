@@ -93,6 +93,10 @@ def test_report_job_generates_only_selected_versions(client, tmp_path, monkeypat
     })
     assert response.status_code == 200
     body = response.get_json()
+    assert body["skill"]["id"] == "default_government"
+    assert body["skill"]["version"] == "2"
+    assert body["model"]["model_id"] == "m"
+    assert body["model"]["temperature"] == 0.3
     names = [item["name"] for item in body["files"]]
     assert any(item["version"] == "A" and item["appendix"] == "none" for item in body["files"])
     assert any(item["version"] == "A" and item["appendix"] == "included" for item in body["files"])
@@ -182,3 +186,13 @@ def test_report_skills_and_settings_slots(client):
     assert settings["report_gateway_id"] == "env-default"
     assert settings["report_model_id"] == "qwen36-35b"
     assert settings["report_skill_id"] == "enterprise_brief"
+
+
+def test_report_job_rejects_unknown_skill(client, tmp_path):
+    _insert_batch(tmp_path)
+    response = client.post("/api/report/jobs", json={
+        "batch_id": "report_batch",
+        "skill_id": "missing_skill",
+    })
+    assert response.status_code == 400
+    assert response.get_json()["code"] == "REPORT_SKILL_INVALID"

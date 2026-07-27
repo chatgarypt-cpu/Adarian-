@@ -12,6 +12,7 @@ import type {
   ReportJobResponse,
   ReportResponse,
   ReportSkill,
+  ReportSkillLocations,
   ReportVersion,
   ReportViewResponse,
   NativeReportView,
@@ -59,9 +60,10 @@ async function jsonRequest<T>(url: string, options: RequestInit = {}, timeoutMs 
   const controller = new AbortController();
   const timer = window.setTimeout(() => controller.abort(), timeoutMs);
   try {
+    const isFormData = options.body instanceof FormData;
     const response = await fetch(url, {
       headers: {
-        'Content-Type': 'application/json',
+        ...(!isFormData ? { 'Content-Type': 'application/json' } : {}),
         'X-Adarian-Client-Session': clientSessionId(),
         ...(options.headers ?? {}),
       },
@@ -176,6 +178,18 @@ export const api = {
   },
   getReportSkills(): Promise<ReportSkill[]> {
     return jsonRequest('/api/report/skills');
+  },
+  getReportSkillLocations(): Promise<ReportSkillLocations> {
+    return jsonRequest('/api/report/skills/locations');
+  },
+  importReportSkill(file: File, replace = false): Promise<ReportSkill> {
+    const data = new FormData();
+    data.append('file', file);
+    data.append('replace', String(replace));
+    return jsonRequest('/api/report/skills/import', { method: 'POST', body: data });
+  },
+  deleteReportSkill(skillId: string): Promise<void> {
+    return jsonRequest(`/api/report/skills/${encodeURIComponent(skillId)}`, { method: 'DELETE' });
   },
   getReportView(jobId: string, fileId: string): Promise<ReportViewResponse> {
     return jsonRequest(`/api/report/jobs/${encodeURIComponent(jobId)}/view/${encodeURIComponent(fileId)}`);

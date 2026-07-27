@@ -1,5 +1,27 @@
 version: 1
+title_max_chars: 30
+required_headings:
+  - "## 一、舆情概要"
+  - "## 二、演化分析"
+  - "## 三、风险研判"
+  - "## 四、对策意见"
+forbidden_terms:
+  - world_0
+  - world_1
+  - tick
+  - stance_score
+  - polarization_index
+  - appendix_b
+  - simulation_dataset
+  - completed world
+overview_forbidden_terms:
+  - 模拟
+  - 仿真
+  - 推演
+  - AI
+  - 模型
 blocking:
+  - title_length
   - missing_required_headings
   - internal_simulation_fields_in_body
   - system_mechanism_terms_in_overview

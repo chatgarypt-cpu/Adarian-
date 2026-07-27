@@ -57,7 +57,11 @@ def generate_report():
     if not db.get_batch(payload.batch_id):
         body, status = error_response("BATCH_NOT_FOUND", "Batch not found", {"batch_id": payload.batch_id})
         return jsonify(body), status
-    job = create_job(_payload_dict(payload), _request_session_id(payload))
+    try:
+        job = create_job(_payload_dict(payload), _request_session_id(payload))
+    except (FileNotFoundError, ValueError) as exc:
+        body, status = error_response("REPORT_SKILL_INVALID", str(exc))
+        return jsonify(body), status
     final = run_job(job["id"])
     response = status_response(final)
     if response["status"] in {"blocked", "failed"}:
@@ -77,7 +81,11 @@ def create_report_job():
     if not db.get_batch(payload.batch_id):
         body, status = error_response("BATCH_NOT_FOUND", "Batch not found", {"batch_id": payload.batch_id})
         return jsonify(body), status
-    job = create_job(_payload_dict(payload), _request_session_id(payload))
+    try:
+        job = create_job(_payload_dict(payload), _request_session_id(payload))
+    except (FileNotFoundError, ValueError) as exc:
+        body, status = error_response("REPORT_SKILL_INVALID", str(exc))
+        return jsonify(body), status
     _EXECUTOR.submit(run_job, job["id"])
     return jsonify(status_response(db.get_report_job(job["id"]) or job)), 202
 

@@ -38,6 +38,13 @@ def _report_view() -> dict:
         ],
         "appendix": {
             "mode": "references",
+            "title": "附录：方法说明",
+            "sections": [
+                {
+                    "heading": "一、数据说明",
+                    "blocks": [{"type": "paragraph", "text": "本报告依据结构化样本进行综合研判。"}],
+                }
+            ],
             "event_name": "测试事件",
             "worlds_count": 2,
             "confirmed_risks": 1,
@@ -55,6 +62,10 @@ def test_docx_export_is_editable_ooxml(tmp_path) -> None:
         document_xml = archive.read("word/document.xml").decode("utf-8")
     assert "测试事件舆情风险研判" in document_xml
     assert "负向叙事聚合风险" in document_xml
+    assert "附录：方法说明" in document_xml
+    assert "completed worlds" not in document_xml
+    assert "simulation_dataset" not in document_xml
+    assert "world 覆盖" not in document_xml
 
 
 def test_pdf_export_is_readable(tmp_path) -> None:

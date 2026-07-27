@@ -40,11 +40,10 @@ INK = "17324D"
 HEADING = "2E74B5"
 HEADING_DARK = "1F4D78"
 MUTED = "607586"
-LIGHT_FILL = "F2F4F7"
 
 
 def write_report_docx(view: dict[str, Any], path: Path) -> Path:
-    """Write an editable Word report using the standard business brief preset."""
+    """Write a formal editable report without workbench diagnostics."""
 
     path.parent.mkdir(parents=True, exist_ok=True)
     document = Document()
@@ -56,23 +55,6 @@ def write_report_docx(view: dict[str, Any], path: Path) -> Path:
     title_run = title.add_run(_display_text(view.get("title") or "舆情风险研判报告"))
     _format_docx_run(title_run, size=22, bold=True, color=INK)
 
-    subtitle = document.add_paragraph()
-    subtitle.paragraph_format.space_after = Pt(6)
-    subtitle_run = subtitle.add_run(_display_text(view.get("subtitle") or ""))
-    _format_docx_run(subtitle_run, size=11, color=MUTED)
-
-    metadata = document.add_paragraph()
-    metadata.paragraph_format.space_after = Pt(14)
-    source = view.get("source") or {}
-    metadata_text = "生成时间：{}    Batch：{}    版本：{} 版".format(
-        view.get("generated_at") or "",
-        source.get("batch_id") or view.get("batch_id") or "",
-        view.get("version") or "",
-    )
-    metadata_run = metadata.add_run(metadata_text)
-    _format_docx_run(metadata_run, size=9, color=MUTED)
-
-    _add_docx_kpis(document, view.get("kpis") or [])
     for section in view.get("sections") or []:
         _add_docx_section(document, section)
     _add_docx_appendix(document, view.get("appendix") or {})
@@ -82,7 +64,7 @@ def write_report_docx(view: dict[str, Any], path: Path) -> Path:
 
 
 def write_report_pdf(view: dict[str, Any], path: Path) -> Path:
-    """Write a fixed-layout PDF report directly from the native report view."""
+    """Write a formal fixed-layout report without workbench diagnostics."""
 
     path.parent.mkdir(parents=True, exist_ok=True)
     _register_pdf_font()
@@ -90,16 +72,8 @@ def write_report_pdf(view: dict[str, Any], path: Path) -> Path:
     styles = _pdf_styles()
     story: list[Any] = [
         Paragraph(_pdf_text(view.get("title") or "舆情风险研判报告"), styles["Title"]),
-        Paragraph(_pdf_text(view.get("subtitle") or ""), styles["Subtitle"]),
+        Spacer(1, 10),
     ]
-    source = view.get("source") or {}
-    metadata = "生成时间：{}　Batch：{}　版本：{} 版".format(
-        view.get("generated_at") or "",
-        source.get("batch_id") or view.get("batch_id") or "",
-        view.get("version") or "",
-    )
-    story.extend([Paragraph(_pdf_text(metadata), styles["Meta"]), Spacer(1, 10)])
-    _add_pdf_kpis(story, view.get("kpis") or [], styles)
     for section in view.get("sections") or []:
         _add_pdf_section(story, section, styles)
     _add_pdf_appendix(story, view.get("appendix") or {}, styles)
@@ -167,29 +141,6 @@ def _format_docx_run(run: Any, *, size: float = 11, bold: bool = False, color: s
     run._element.get_or_add_rPr().get_or_add_rFonts().set(qn("w:eastAsia"), DOCX_BODY_FONT)
 
 
-def _add_docx_kpis(document: Document, kpis: list[dict[str, Any]]) -> None:
-    if not kpis:
-        return
-    table = document.add_table(rows=1, cols=len(kpis))
-    table.alignment = WD_TABLE_ALIGNMENT.CENTER
-    table.autofit = False
-    width_dxa = 9360 // len(kpis)
-    _set_table_geometry(table, [width_dxa] * len(kpis))
-    for cell, kpi in zip(table.rows[0].cells, kpis):
-        cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
-        _set_cell_shading(cell, LIGHT_FILL)
-        _set_cell_margins(cell, top=120, bottom=120, start=120, end=120)
-        paragraph = cell.paragraphs[0]
-        paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        label = paragraph.add_run(_display_text(kpi.get("label") or ""))
-        _format_docx_run(label, size=8.5, color=MUTED)
-        value = paragraph.add_run(f"\n{_display_text(kpi.get('value') or '')}\n")
-        _format_docx_run(value, size=15, bold=True, color=INK)
-        note = paragraph.add_run(_display_text(kpi.get("note") or ""))
-        _format_docx_run(note, size=8, color=MUTED)
-    document.add_paragraph().paragraph_format.space_after = Pt(2)
-
-
 def _add_docx_section(document: Document, section: dict[str, Any]) -> None:
     document.add_heading(_display_text(section.get("heading") or ""), level=1)
     for block in section.get("blocks") or []:
@@ -200,6 +151,17 @@ def _add_docx_section(document: Document, section: dict[str, Any]) -> None:
             for item in block.get("items") or []:
                 paragraph = document.add_paragraph(style="List Bullet")
                 paragraph.add_run(_display_text(item))
+        elif kind == "preformatted":
+            paragraph = document.add_paragraph()
+            _set_paragraph_shading(paragraph, "F3F7FA")
+            run = paragraph.add_run(str(block.get("text") or ""))
+            _format_docx_run(run, size=9.5, color=INK)
+            run.font.name = "Courier New"
+            fonts = run._element.get_or_add_rPr().get_or_add_rFonts()
+            fonts.set(qn("w:ascii"), "Courier New")
+            fonts.set(qn("w:hAnsi"), "Courier New")
+        elif kind == "table":
+            _add_docx_table(document, block)
         elif kind == "callout":
             paragraph = document.add_paragraph()
             _set_paragraph_shading(paragraph, "EEF8FC")
@@ -217,66 +179,52 @@ def _add_docx_section(document: Document, section: dict[str, Any]) -> None:
 def _add_docx_appendix(document: Document, appendix: dict[str, Any]) -> None:
     if appendix.get("mode") == "hidden":
         return
-    document.add_heading("五、附录引用", level=1)
-    document.add_paragraph(
-        "事件：{}；completed worlds：{}；确认风险：{}；等级分布：{}".format(
-            appendix.get("event_name") or "",
-            appendix.get("worlds_count") or 0,
-            appendix.get("confirmed_risks") or 0,
-            appendix.get("risk_distribution") or "暂无",
-        )
-    )
-    if appendix.get("mode") == "references":
-        for reference in appendix.get("references") or []:
-            paragraph = document.add_paragraph(style="List Bullet")
-            paragraph.add_run(_display_text(reference))
+    document.add_heading(_display_text(appendix.get("title") or "附录"), level=1)
+    for section in appendix.get("sections") or []:
+        _add_docx_section(document, section)
 
 
-def _set_table_geometry(table: Any, widths: list[int]) -> None:
-    table_xml = table._tbl
-    properties = table_xml.tblPr
-    width = properties.first_child_found_in("w:tblW")
-    if width is None:
-        width = OxmlElement("w:tblW")
-        properties.append(width)
-    width.set(qn("w:type"), "dxa")
-    width.set(qn("w:w"), str(sum(widths)))
-    indent = OxmlElement("w:tblInd")
-    indent.set(qn("w:type"), "dxa")
-    indent.set(qn("w:w"), "120")
-    properties.append(indent)
-    for grid_col, value in zip(table_xml.tblGrid.gridCol_lst, widths):
-        grid_col.set(qn("w:w"), str(value))
-    for row in table.rows:
-        for cell, value in zip(row.cells, widths):
-            cell.width = Inches(value / 1440)
-            cell._tc.tcPr.tcW.set(qn("w:type"), "dxa")
-            cell._tc.tcPr.tcW.set(qn("w:w"), str(value))
+def _add_docx_table(document: Document, block: dict[str, Any]) -> None:
+    headers = [str(value) for value in block.get("headers") or []]
+    rows = [[str(value) for value in row] for row in block.get("rows") or []]
+    column_count = len(headers) or max((len(row) for row in rows), default=0)
+    if not column_count:
+        return
 
+    widths = [6.5 / column_count] * column_count
+    if column_count == 2:
+        widths = [2.05, 4.45]
+    table = document.add_table(rows=1, cols=column_count)
+    table.style = "Table Grid"
+    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    table.autofit = False
 
-def _set_cell_shading(cell: Any, fill: str) -> None:
-    shading = OxmlElement("w:shd")
-    shading.set(qn("w:fill"), fill)
-    cell._tc.get_or_add_tcPr().append(shading)
+    for index, cell in enumerate(table.rows[0].cells):
+        cell.width = Inches(widths[index])
+        cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
+        _set_cell_shading(cell, "EAF2F7")
+        run = cell.paragraphs[0].add_run(_display_text(headers[index] if index < len(headers) else ""))
+        _format_docx_run(run, size=9.5, bold=True, color=HEADING_DARK)
 
-
-def _set_cell_margins(cell: Any, **margins: int) -> None:
-    tc_pr = cell._tc.get_or_add_tcPr()
-    tc_mar = tc_pr.first_child_found_in("w:tcMar")
-    if tc_mar is None:
-        tc_mar = OxmlElement("w:tcMar")
-        tc_pr.append(tc_mar)
-    for edge, value in margins.items():
-        node = tc_mar.find(qn(f"w:{edge}"))
-        if node is None:
-            node = OxmlElement(f"w:{edge}")
-            tc_mar.append(node)
-        node.set(qn("w:w"), str(value))
-        node.set(qn("w:type"), "dxa")
+    for row in rows:
+        cells = table.add_row().cells
+        for index, cell in enumerate(cells):
+            cell.width = Inches(widths[index])
+            cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
+            run = cell.paragraphs[0].add_run(_display_text(row[index] if index < len(row) else ""))
+            _format_docx_run(run, size=9.5, color=INK)
+    document.add_paragraph().paragraph_format.space_after = Pt(2)
 
 
 def _set_paragraph_shading(paragraph: Any, fill: str) -> None:
     properties = paragraph._p.get_or_add_pPr()
+    shading = OxmlElement("w:shd")
+    shading.set(qn("w:fill"), fill)
+    properties.append(shading)
+
+
+def _set_cell_shading(cell: Any, fill: str) -> None:
+    properties = cell._tc.get_or_add_tcPr()
     shading = OxmlElement("w:shd")
     shading.set(qn("w:fill"), fill)
     properties.append(shading)
@@ -371,44 +319,22 @@ def _pdf_styles() -> dict[str, ParagraphStyle]:
             spaceAfter=4,
             wordWrap="CJK",
         ),
-        "Kpi": ParagraphStyle(
-            "AdarianKpi",
-            parent=base["Normal"],
+        "Code": ParagraphStyle(
+            "AdarianCode",
+            parent=base["Code"],
             fontName=PDF_CJK_FONT,
-            fontSize=8,
-            leading=12,
-            alignment=TA_CENTER,
-            textColor=colors.HexColor(f"#{MUTED}"),
+            fontSize=8.8,
+            leading=13.5,
+            textColor=colors.HexColor(f"#{INK}"),
+            backColor=colors.HexColor("#F3F7FA"),
+            borderColor=colors.HexColor("#DCE8EF"),
+            borderWidth=0.7,
+            borderPadding=9,
+            spaceBefore=2,
+            spaceAfter=9,
             wordWrap="CJK",
         ),
     }
-
-
-def _add_pdf_kpis(story: list[Any], kpis: list[dict[str, Any]], styles: dict[str, ParagraphStyle]) -> None:
-    if not kpis:
-        return
-    cells = []
-    for kpi in kpis:
-        content = "{}<br/><font size=\"15\" color=\"#{}\">{}</font><br/><font size=\"7\">{}</font>".format(
-            _pdf_text(kpi.get("label") or ""),
-            INK,
-            _pdf_text(kpi.get("value") or ""),
-            _pdf_text(kpi.get("note") or ""),
-        )
-        cells.append(Paragraph(content, styles["Kpi"]))
-    width = 6.5 * inch / len(cells)
-    table = Table([cells], colWidths=[width] * len(cells), hAlign="CENTER")
-    table.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor(f"#{LIGHT_FILL}")),
-        ("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor("#DCE8EF")),
-        ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#DCE8EF")),
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("LEFTPADDING", (0, 0), (-1, -1), 8),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 8),
-        ("TOPPADDING", (0, 0), (-1, -1), 9),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 9),
-    ]))
-    story.extend([table, Spacer(1, 8)])
 
 
 def _add_pdf_section(story: list[Any], section: dict[str, Any], styles: dict[str, ParagraphStyle]) -> None:
@@ -424,6 +350,12 @@ def _add_pdf_section(story: list[Any], section: dict[str, Any], styles: dict[str
             ]
             story.append(ListFlowable(items, bulletType="bullet", bulletFontName=PDF_CJK_FONT, leftIndent=20, bulletOffsetY=1))
             story.append(Spacer(1, 4))
+        elif kind == "preformatted":
+            story.append(Paragraph(_pdf_text(block.get("text") or ""), styles["Code"]))
+        elif kind == "table":
+            table = _build_pdf_table(block, styles)
+            if table is not None:
+                story.extend([table, Spacer(1, 8)])
         elif kind == "callout":
             title = _pdf_text(block.get("title") or "")
             text = _pdf_text(block.get("text") or "")
@@ -446,23 +378,55 @@ def _add_pdf_section(story: list[Any], section: dict[str, Any], styles: dict[str
             story.append(Paragraph(_pdf_text(text), style))
 
 
+def _build_pdf_table(block: dict[str, Any], styles: dict[str, ParagraphStyle]) -> Table | None:
+    headers = [str(value) for value in block.get("headers") or []]
+    rows = [[str(value) for value in row] for row in block.get("rows") or []]
+    column_count = len(headers) or max((len(row) for row in rows), default=0)
+    if not column_count:
+        return None
+
+    header_style = ParagraphStyle(
+        "AdarianTableHeader",
+        parent=styles["Body"],
+        fontSize=9,
+        leading=13,
+        textColor=colors.HexColor(f"#{HEADING_DARK}"),
+    )
+    cell_style = ParagraphStyle(
+        "AdarianTableCell",
+        parent=styles["Body"],
+        fontSize=8.6,
+        leading=12.5,
+        spaceAfter=0,
+    )
+    normalized_headers = headers + [""] * (column_count - len(headers))
+    normalized_rows = [row + [""] * (column_count - len(row)) for row in rows]
+    data = [
+        [Paragraph(f"<b>{_pdf_text(value)}</b>", header_style) for value in normalized_headers],
+        *[[Paragraph(_pdf_text(value), cell_style) for value in row] for row in normalized_rows],
+    ]
+    widths = [6.35 * inch / column_count] * column_count
+    if column_count == 2:
+        widths = [2.0 * inch, 4.35 * inch]
+    table = Table(data, colWidths=widths, repeatRows=1, hAlign="LEFT")
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#EAF2F7")),
+        ("GRID", (0, 0), (-1, -1), 0.55, colors.HexColor("#C8D8E3")),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 7),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 7),
+        ("TOPPADDING", (0, 0), (-1, -1), 6),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+    ]))
+    return table
+
+
 def _add_pdf_appendix(story: list[Any], appendix: dict[str, Any], styles: dict[str, ParagraphStyle]) -> None:
     if appendix.get("mode") == "hidden":
         return
-    story.append(Paragraph("五、附录引用", styles["H1"]))
-    summary = "事件：{}；completed worlds：{}；确认风险：{}；等级分布：{}".format(
-        appendix.get("event_name") or "",
-        appendix.get("worlds_count") or 0,
-        appendix.get("confirmed_risks") or 0,
-        appendix.get("risk_distribution") or "暂无",
-    )
-    story.append(Paragraph(_pdf_text(summary), styles["Body"]))
-    if appendix.get("mode") == "references":
-        items = [
-            ListItem(Paragraph(_pdf_text(item), styles["List"]), leftIndent=12)
-            for item in appendix.get("references") or []
-        ]
-        story.append(ListFlowable(items, bulletType="bullet", bulletFontName=PDF_CJK_FONT, leftIndent=20, bulletOffsetY=1))
+    story.append(Paragraph(_pdf_text(appendix.get("title") or "附录"), styles["H1"]))
+    for section in appendix.get("sections") or []:
+        _add_pdf_section(story, section, styles)
 
 
 def _draw_pdf_footer(canvas: Any, document: Any) -> None:

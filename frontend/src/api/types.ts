@@ -144,7 +144,21 @@ export interface ReportJobResponse {
   completed_worlds_count: number;
   failed_worlds_count: number;
   skill_id: string;
-  model: { resolved_from: 'payload' | 'settings' | 'env' | 'missing'; gateway_id?: string; model_id?: string };
+  skill?: {
+    id: string;
+    label: string;
+    version: string;
+    source: 'builtin' | 'user';
+    directory: string;
+    checksum: string;
+  };
+  model: {
+    resolved_from: 'payload' | 'settings' | 'env' | 'missing';
+    gateway_id?: string;
+    model_id?: string;
+    temperature?: number;
+    max_tokens?: number;
+  };
   files: ReportFile[];
   artifacts?: ReportArtifact[];
   report_view?: NativeReportView | null;
@@ -177,12 +191,25 @@ export interface ReportSkill {
   label: string;
   description: string;
   dir: string;
+  version: string;
+  source: 'builtin' | 'user';
+  directory: string;
+  checksum: string;
+  files: string[];
+  deletable: boolean;
+}
+
+export interface ReportSkillLocations {
+  builtin: string;
+  user: string;
 }
 
 export interface ReportViewBlock {
-  type: 'paragraph' | 'list' | 'preformatted' | 'callout' | 'subheading';
+  type: 'paragraph' | 'list' | 'preformatted' | 'table' | 'callout' | 'subheading';
   text?: string;
   items?: string[];
+  headers?: string[];
+  rows?: string[][];
   title?: string;
   tone?: 'info' | 'warn' | 'good' | 'bad';
 }
@@ -205,6 +232,8 @@ export interface ReportKpi {
 
 export interface ReportAppendixView {
   mode: 'hidden' | 'summary' | 'references';
+  title?: string;
+  sections?: ReportViewSection[];
   event_name: string;
   worlds_count: number;
   confirmed_risks: number;
@@ -233,6 +262,9 @@ export interface NativeReportView {
     dataset_ready: boolean;
     model: string;
     skill_id: string;
+    skill_label?: string;
+    skill_version?: string;
+    skill_checksum?: string;
   };
   kpis: ReportKpi[];
   sections: ReportViewSection[];

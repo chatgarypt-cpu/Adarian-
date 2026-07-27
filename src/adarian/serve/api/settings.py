@@ -10,6 +10,7 @@ from pathlib import Path
 from flask import Blueprint, jsonify, request
 from pydantic import ValidationError
 
+from adarian.report.skills_registry import resolve_report_skill
 from adarian.serve import db
 from adarian.serve.paths import OUTPUTS_DIR
 from adarian.serve.schemas import SettingsPayload, error_response
@@ -71,5 +72,10 @@ def put_settings():
         body, status = error_response("VALIDATION_ERROR", "Invalid settings payload", {"errors": exc.errors()})
         return jsonify(body), status
     settings = payload.model_dump()
+    try:
+        resolve_report_skill(settings["report_skill_id"])
+    except (FileNotFoundError, ValueError) as exc:
+        body, status = error_response("REPORT_SKILL_INVALID", str(exc))
+        return jsonify(body), status
     db.set_setting("settings", settings)
     return jsonify({**settings, "systemChecks": _system_checks(settings)})

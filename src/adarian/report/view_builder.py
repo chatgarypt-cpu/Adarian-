@@ -35,6 +35,8 @@ def build_native_report_view(
     version: str,
     appendix_mode: str,
     model_label: str = "",
+    public_appendix: str = "",
+    skill_snapshot: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Convert the in-memory report body into the frontend reading contract."""
 
@@ -44,13 +46,15 @@ def build_native_report_view(
     risks = appendix_b.get("risk_assessment", {}).get("risks") or []
     evolution = appendix_b.get("evolution_analysis") or {}
     risk_distribution = _format_distribution(evolution.get("risk_level_distribution"))
+    appendix_parsed = _parse_body_sections(public_appendix) if public_appendix.strip() else {"title": "", "sections": []}
+    skill = skill_snapshot or {}
     return {
         "id": f"{job['id']}:{version}",
         "job_id": job["id"],
         "batch_id": job.get("batch_id") or "",
         "version": version,
         "title": title,
-        "subtitle": f"{VERSION_INTENTS.get(version, '研判报告')}，基于 completed worlds 的 simulation_dataset 生成。",
+        "subtitle": f"{VERSION_INTENTS.get(version, '研判报告')}，基于本次推演的有效结构化数据生成。",
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "source": {
             "batch_id": job.get("batch_id") or "",
@@ -59,24 +63,27 @@ def build_native_report_view(
             "dataset_ready": True,
             "model": model_label or job.get("model_config_resolved_from") or "unknown",
             "skill_id": job.get("skill_id") or "default_government",
+            "skill_label": skill.get("label") or job.get("skill_id") or "default_government",
+            "skill_version": skill.get("version") or "1",
+            "skill_checksum": skill.get("checksum") or "",
         },
         "kpis": [
             {
                 "label": "综合风险",
                 "value": str(evolution.get("worst_reasonable_level_label") or evolution.get("worst_reasonable_level") or "待定"),
-                "note": "completed worlds 聚合",
+                "note": "有效样本综合研判",
                 "tone": _risk_tone(str(evolution.get("worst_reasonable_level") or "")),
             },
             {
-                "label": "world 覆盖",
+                "label": "有效样本",
                 "value": str(appendix_b.get("meta", {}).get("worlds_count") or 0),
-                "note": "completed worlds",
+                "note": "已完成推演结果",
                 "tone": "good",
             },
             {
                 "label": "确认风险",
                 "value": str(len(risks)),
-                "note": "appendix_b 摘要",
+                "note": "结构化风险依据",
                 "tone": "warn" if risks else "info",
             },
             {
@@ -88,12 +95,14 @@ def build_native_report_view(
         ],
         "sections": parsed["sections"],
         "appendix": {
-            "mode": _appendix_display_mode(appendix_mode),
+            "mode": _appendix_display_mode(appendix_mode) if appendix_parsed["sections"] else "hidden",
+            "title": appendix_parsed["title"] or "附录",
+            "sections": appendix_parsed["sections"],
             "event_name": event_name,
             "worlds_count": int(appendix_b.get("meta", {}).get("worlds_count") or 0),
             "confirmed_risks": len(risks),
             "risk_distribution": risk_distribution,
-            "references": _references(appendix_b),
+            "references": [],
         },
         "quality": _quality_items(audit),
     }
@@ -133,6 +142,11 @@ def render_report_html(view: dict[str, Any]) -> str:
     h2 {{ margin-top: 34px; border-top: 1px solid #dce8ef; padding-top: 24px; }}
     h3 {{ margin: 24px 0 10px; color: #1f4d78; }}
     p {{ margin: 0 0 12px; }}
+    pre {{ overflow-x: auto; margin: 0 0 14px; padding: 12px 14px; border: 1px solid #dce8ef; border-radius: 8px; background: #f7fafc; white-space: pre-wrap; overflow-wrap: anywhere; }}
+    .table-scroll {{ overflow-x: auto; margin: 0 0 16px; }}
+    table {{ width: 100%; border-collapse: collapse; font-size: 14px; }}
+    th, td {{ border: 1px solid #dce8ef; padding: 9px 10px; text-align: left; vertical-align: top; }}
+    th {{ color: #1f4d78; background: #eef5f9; }}
     ul.kpis {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; list-style: none; padding: 0; margin: 24px 0; }}
     ul.kpis li {{ border: 1px solid #dce8ef; border-radius: 10px; padding: 12px; }}
     ul.kpis span, ul.kpis small {{ display: block; color: #607586; }}
@@ -159,6 +173,9 @@ def _parse_body_sections(body: str) -> dict[str, Any]:
     current: dict[str, Any] | None = None
     paragraph: list[str] = []
     list_items: list[str] = []
+    table_rows: list[list[str]] = []
+    code_lines: list[str] = []
+    in_code = False
 
     def flush_paragraph() -> None:
         nonlocal paragraph
@@ -172,12 +189,42 @@ def _parse_body_sections(body: str) -> dict[str, Any]:
             current["blocks"].append({"type": "list", "items": list_items})
         list_items = []
 
+    def flush_table() -> None:
+        nonlocal table_rows
+        if table_rows and current is not None:
+            if len(table_rows) >= 2 and _is_table_separator(table_rows[1]):
+                current["blocks"].append({
+                    "type": "table",
+                    "headers": table_rows[0],
+                    "rows": table_rows[2:],
+                })
+            else:
+                current["blocks"].append({
+                    "type": "paragraph",
+                    "text": " ".join(" | ".join(row) for row in table_rows),
+                })
+        table_rows = []
+
     def flush_all() -> None:
         flush_paragraph()
         flush_list()
+        flush_table()
 
     for raw in body.splitlines():
         line = raw.strip()
+        if line.startswith("```"):
+            flush_all()
+            if in_code:
+                if current is not None:
+                    current["blocks"].append({"type": "preformatted", "text": "\n".join(code_lines).strip()})
+                code_lines = []
+                in_code = False
+            else:
+                in_code = True
+            continue
+        if in_code:
+            code_lines.append(raw.rstrip())
+            continue
         if not line:
             flush_all()
             continue
@@ -206,16 +253,26 @@ def _parse_body_sections(body: str) -> dict[str, Any]:
             continue
         if line.startswith(("- ", "* ")):
             flush_paragraph()
+            flush_table()
             list_items.append(_clean_inline_markdown(line[2:].strip()))
             continue
         number_prefix = line.split(" ", 1)[0]
         if number_prefix.endswith(".") and number_prefix[:-1].isdigit() and " " in line:
             flush_paragraph()
+            flush_table()
             list_items.append(_clean_inline_markdown(line.split(" ", 1)[1].strip()))
             continue
+        if line.startswith("|") and line.endswith("|") and line.count("|") >= 2:
+            flush_paragraph()
+            flush_list()
+            table_rows.append(_parse_table_row(line))
+            continue
         flush_list()
+        flush_table()
         paragraph.append(_clean_inline_markdown(line))
 
+    if in_code and current is not None:
+        current["blocks"].append({"type": "preformatted", "text": "\n".join(code_lines).strip()})
     flush_all()
     return {"title": title, "sections": sections}
 
@@ -230,6 +287,15 @@ def _render_section(section: dict[str, Any]) -> str:
             blocks.append(f"<ul>{items}</ul>")
         elif kind == "subheading":
             blocks.append(f"<h3>{html.escape(str(block.get('text') or ''))}</h3>")
+        elif kind == "preformatted":
+            blocks.append(f"<pre><code>{html.escape(str(block.get('text') or ''))}</code></pre>")
+        elif kind == "table":
+            headers = "".join(f"<th>{html.escape(str(cell))}</th>" for cell in block.get("headers") or [])
+            rows = "".join(
+                f"<tr>{''.join(f'<td>{html.escape(str(cell))}</td>' for cell in row)}</tr>"
+                for row in block.get("rows") or []
+            )
+            blocks.append(f"<div class=\"table-scroll\"><table><thead><tr>{headers}</tr></thead><tbody>{rows}</tbody></table></div>")
         elif kind == "callout":
             blocks.append(f"<div class=\"callout\"><strong>{html.escape(str(block.get('title') or ''))}</strong><p>{html.escape(str(block.get('text') or ''))}</p></div>")
         else:
@@ -240,18 +306,9 @@ def _render_section(section: dict[str, Any]) -> str:
 def _render_appendix_html(appendix: dict[str, Any]) -> str:
     if appendix.get("mode") == "hidden":
         return ""
-    references = ""
-    if appendix.get("mode") == "references":
-        references = "<ul>{}</ul>".format(
-            "".join(f"<li>{html.escape(str(item))}</li>" for item in appendix.get("references") or [])
-        )
-    summary = "事件：{}；completed worlds：{}；确认风险：{}；等级分布：{}".format(
-        appendix.get("event_name") or "",
-        appendix.get("worlds_count") or 0,
-        appendix.get("confirmed_risks") or 0,
-        appendix.get("risk_distribution") or "暂无",
-    )
-    return f"<section><h2>五、附录引用</h2><p>{html.escape(summary)}</p>{references}</section>"
+    title = html.escape(str(appendix.get("title") or "附录"))
+    sections = "".join(_render_section(section) for section in appendix.get("sections") or [])
+    return f"<section class=\"appendix\"><h2>{title}</h2>{sections}</section>"
 
 
 def _clean_inline_markdown(value: str) -> str:
@@ -259,6 +316,14 @@ def _clean_inline_markdown(value: str) -> str:
     text = re.sub(r"__(.+?)__", r"\1", text)
     text = re.sub(r"`([^`]+)`", r"\1", text)
     return text.strip()
+
+
+def _parse_table_row(value: str) -> list[str]:
+    return [_clean_inline_markdown(cell.strip()) for cell in value.strip().strip("|").split("|")]
+
+
+def _is_table_separator(row: list[str]) -> bool:
+    return bool(row) and all(re.fullmatch(r":?-{3,}:?", cell) for cell in row)
 
 
 def _section_id(heading: str) -> str:
@@ -303,14 +368,6 @@ def _format_distribution(value: Any) -> str:
     if not isinstance(value, dict) or not value:
         return "暂无"
     return " / ".join(f"{key}:{count}" for key, count in value.items())
-
-
-def _references(appendix_b: dict[str, Any]) -> list[str]:
-    risks = appendix_b.get("risk_assessment", {}).get("risks") or []
-    refs = [str(risk.get("trigger_reason") or risk.get("type_label") or "") for risk in risks if risk]
-    if refs:
-        return refs[:6]
-    return ["completed worlds simulation_dataset.json"]
 
 
 def _quality_items(audit: dict[str, Any]) -> list[dict[str, str]]:

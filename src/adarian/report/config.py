@@ -5,7 +5,6 @@ from __future__ import annotations
 import os
 import re
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any
 
 from adarian import config as adarian_config
@@ -60,8 +59,18 @@ def resolve_model_config(payload: dict[str, Any]) -> ReportModelConfig | None:
     settings = db.get_setting("settings", {}) or {}
     gateway_id = str(payload.get("gateway_id") or settings.get("report_gateway_id") or "").strip()
     model = str(payload.get("model_id") or settings.get("report_model_id") or "").strip()
-    temperature = float(payload.get("temperature") or settings.get("report_temperature") or os.getenv("ADARIAN_REPORT_TEMPERATURE") or 0.3)
-    max_tokens = int(payload.get("max_tokens") or settings.get("report_max_tokens") or os.getenv("ADARIAN_REPORT_MAX_TOKENS") or 8192)
+    temperature_value = payload.get("temperature")
+    if temperature_value is None:
+        temperature_value = settings.get("report_temperature")
+    if temperature_value is None:
+        temperature_value = os.getenv("ADARIAN_REPORT_TEMPERATURE") or 0.3
+    max_tokens_value = payload.get("max_tokens")
+    if max_tokens_value is None:
+        max_tokens_value = settings.get("report_max_tokens")
+    if max_tokens_value is None:
+        max_tokens_value = os.getenv("ADARIAN_REPORT_MAX_TOKENS") or 8192
+    temperature = float(temperature_value)
+    max_tokens = int(max_tokens_value)
 
     if gateway_id:
         gateway = _get_gateway_or_env(gateway_id)
@@ -85,11 +94,3 @@ def resolve_model_config(payload: dict[str, Any]) -> ReportModelConfig | None:
     if adarian_config.LLM_BASE_URL and adarian_config.LLM_API_KEY and default_model:
         return ReportModelConfig(default_model, adarian_config.LLM_BASE_URL, adarian_config.LLM_API_KEY, temperature, max_tokens, "env", "env-default")
     return None
-
-
-def skill_path(skill_id: str) -> Path:
-    return Path(__file__).resolve().parent / "skills" / skill_id / "skill.md"
-
-
-def appendix_a_path() -> Path:
-    return adarian_config.PROJECT_ROOT / "docs/product/adarian-report-agent/references/appendix_a.md"

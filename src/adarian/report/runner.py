@@ -16,16 +16,21 @@ from .appendix_builder import build_appendix_b, load_dataset, write_appendix_b
 from .config import parse_appendix_mode, parse_versions, resolve_model_config, resolve_skill_id, safe_slug
 from .document_export import write_report_docx, write_report_pdf
 from .quality import assemble_report, audit_body, is_blocked, write_audit
+from .skills_registry import resolve_report_skill
 from .view_builder import build_native_report_view, write_report_html, write_report_view
 from .view_model import artifact_metadata, build_artifact_manifest, load_native_report_view
 from .writer import write_body, write_debug_body
 
 
 def create_job(payload: dict[str, Any], client_session_id: str = "") -> dict[str, Any]:
+    payload = dict(payload)
     now = db.now()
     versions = parse_versions(payload.get("versions") or (["B"] if not payload.get("version") else [payload.get("version")]))
     appendix_mode = parse_appendix_mode(payload.get("appendix_mode"))
     skill_id = resolve_skill_id(payload)
+    skill = resolve_report_skill(skill_id)
+    payload["skill_id"] = skill.id
+    payload["skill_snapshot"] = skill.snapshot()
     job = {
         "id": f"report_{uuid.uuid4().hex[:12]}",
         "client_session_id": client_session_id or str(payload.get("client_session_id") or ""),
@@ -76,21 +81,26 @@ def run_job(job_id: str) -> dict[str, Any]:
         partial = bool(failed)
         _update(job, completed_worlds_count=len(completed), failed_worlds_count=len(failed), partial=1 if partial else 0)
         if not completed:
-            return _block(job, "NO_COMPLETED_WORLDS", "没有 completed world 可用于报告生成")
+            return _block(job, "NO_COMPLETED_WORLDS", "没有已完成样本可用于报告生成")
         if failed and not job.get("allow_partial"):
-            return _block(job, "PARTIAL_COMPLETED_WORLDS", "存在 failed world，请确认仅基于 completed worlds 生成")
+            return _block(job, "PARTIAL_COMPLETED_WORLDS", "存在失败样本，请确认仅基于已完成样本生成")
 
-        _update(job, progress=18, current_step="读取 simulation_dataset")
+        _update(job, progress=18, current_step="读取结构化数据")
         dataset_paths = [_dataset_path(w) for w in completed]
         missing = [str(p) for p in dataset_paths if not p.exists()]
         if missing:
-            return _block(job, "DATASET_MISSING", "completed world 缺 simulation_dataset", {"missing": missing})
+            return _block(job, "DATASET_MISSING", "已完成样本缺少结构化数据", {"missing": missing})
         datasets = [load_dataset(path) for path in dataset_paths]
 
         event_name = _event_name(datasets, batch)
         output_dir = Path(batch.get("batch_dir") or "") / "reports" / job["id"]
         output_dir.mkdir(parents=True, exist_ok=True)
-        _update(job, output_dir=str(output_dir), progress=30, current_step="生成 appendix_b.json")
+        skill_snapshot = payload.get("skill_snapshot") or resolve_report_skill(job["skill_id"]).snapshot()
+        (output_dir / "skill_snapshot.json").write_text(
+            json.dumps(skill_snapshot, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        _update(job, output_dir=str(output_dir), progress=30, current_step="聚合报告依据")
         appendix_b = build_appendix_b(datasets, event_name)
         appendix_path = write_appendix_b(appendix_b, output_dir / "appendix_b.json")
         appendix_file = artifact_metadata({"id": "appendix_b", "version": "data", "appendix": "data", "name": "appendix_b.json", "url": f"/api/report/jobs/{job['id']}/files/appendix_b.json", "previewable": False})
@@ -105,7 +115,20 @@ def run_job(job_id: str) -> dict[str, Any]:
             _update(job, appendix_json=json.dumps(_appendix_summary(appendix_b, appendix_path), ensure_ascii=False))
             return _block(job, "REPORT_MODEL_NOT_CONFIGURED", "未配置报告模型，请在 03-models 或 .env 中配置")
         model_label = f"{model_config.resolved_from}:{model_config.model}"
-        _update(job, model_config_resolved_from=model_config.resolved_from, progress=42, current_step="调用报告模型")
+        payload["resolved_model"] = {
+            "resolved_from": model_config.resolved_from,
+            "gateway_id": model_config.gateway_id,
+            "model_id": model_config.model,
+            "temperature": model_config.temperature,
+            "max_tokens": model_config.max_tokens,
+        }
+        _update(
+            job,
+            request_json=json.dumps(payload, ensure_ascii=False),
+            model_config_resolved_from=model_config.resolved_from,
+            progress=42,
+            current_step="调用报告模型",
+        )
 
         versions = json.loads(job.get("versions") or '["B"]')
         appendix_mode = job.get("appendix_mode") or "none"
@@ -114,8 +137,14 @@ def run_job(job_id: str) -> dict[str, Any]:
 
         for index, version in enumerate(versions):
             _update(job, progress=45 + int(index * 40 / max(len(versions), 1)), current_step=f"生成 {version} 版正文")
-            body = write_body(appendix_b=appendix_b, version=version, skill_id=job["skill_id"], model_config=model_config)
-            audit = audit_body(body)
+            body = write_body(
+                appendix_b=appendix_b,
+                version=version,
+                skill_id=job["skill_id"],
+                model_config=model_config,
+                skill_snapshot=skill_snapshot,
+            )
+            audit = audit_body(body, skill_snapshot.get("checklist") or {})
             combined_audit = _merge_audit(combined_audit, audit)
             if is_blocked(audit):
                 write_debug_body(body, output_dir, version)
@@ -138,6 +167,8 @@ def run_job(job_id: str) -> dict[str, Any]:
                 version=version,
                 appendix_mode=display_mode,
                 model_label=model_label,
+                public_appendix=str(skill_snapshot.get("appendix") or ""),
+                skill_snapshot=skill_snapshot,
             )
             view_name = f"report_view_{version}.json"
             view_path = write_report_view(report_view, version_dir / view_name)
@@ -204,7 +235,7 @@ def run_job(job_id: str) -> dict[str, Any]:
             }))
             modes = ["none", "included"] if appendix_mode == "both" else [appendix_mode]
             for mode in modes:
-                content = assemble_report(body, mode, appendix_b)
+                content = assemble_report(body, mode, str(skill_snapshot.get("appendix") or ""))
                 suffix = "含附录" if mode == "included" else "无附录"
                 name = f"{safe_slug(event_name)}_舆情风险研判_{datetime.now().strftime('%Y%m%d')}_v1_{suffix}.md"
                 path = version_dir / name
@@ -244,6 +275,12 @@ def status_response(job: dict[str, Any]) -> dict[str, Any]:
     except json.JSONDecodeError:
         audit = {}
     versions = json.loads(job.get("versions") or '["B"]')
+    try:
+        request_payload = json.loads(job.get("request_json") or "{}")
+    except json.JSONDecodeError:
+        request_payload = {}
+    skill_snapshot = request_payload.get("skill_snapshot") or {}
+    resolved_model = request_payload.get("resolved_model") or {}
     version = (versions or ["B"])[0]
     report_view = load_native_report_view(job, version) if job.get("status") == "completed" else None
     artifacts = build_artifact_manifest(files, job.get("output_dir") or "")
@@ -264,14 +301,28 @@ def status_response(job: dict[str, Any]) -> dict[str, Any]:
         "completed_worlds_count": int(job.get("completed_worlds_count") or 0),
         "failed_worlds_count": int(job.get("failed_worlds_count") or 0),
         "skill_id": job.get("skill_id") or "default_government",
-        "model": {"resolved_from": job.get("model_config_resolved_from") or "missing"},
+        "skill": {
+            "id": job.get("skill_id") or "default_government",
+            "label": skill_snapshot.get("label") or job.get("skill_id") or "default_government",
+            "version": skill_snapshot.get("version") or "1",
+            "source": skill_snapshot.get("source") or "builtin",
+            "directory": skill_snapshot.get("directory") or "",
+            "checksum": skill_snapshot.get("checksum") or "",
+        },
+        "model": {
+            "resolved_from": resolved_model.get("resolved_from") or job.get("model_config_resolved_from") or "missing",
+            "gateway_id": resolved_model.get("gateway_id") or request_payload.get("gateway_id") or "",
+            "model_id": resolved_model.get("model_id") or request_payload.get("model_id") or "",
+            "temperature": resolved_model.get("temperature", request_payload.get("temperature")),
+            "max_tokens": resolved_model.get("max_tokens", request_payload.get("max_tokens")),
+        },
         "files": files,
         "artifacts": artifacts,
         "report_view": report_view,
         "appendix_b": appendix or {"available": False, "worlds_count": 0, "confirmed_risks": 0, "preview": {}},
         "audit_summary": audit or {"fatal": 0, "high": 0, "medium": 0, "passed": 0, "blocked_reasons": []},
         "error_code": job.get("error_code") or ("REPORT_VIEW_NOT_FOUND" if legacy_view_missing else ""),
-        "error_message": job.get("error_message") or ("历史报告缺少 report_view.json，请重新生成报告。" if legacy_view_missing else ""),
+        "error_message": job.get("error_message") or ("历史报告缺少交互阅读数据，请重新生成报告。" if legacy_view_missing else ""),
     }
 
 
@@ -295,10 +346,10 @@ def _status_events(job: dict[str, Any]) -> list[dict[str, str]]:
     current = job.get("current_step") or ""
     stages = [
         (5, "读取 batch", "定位报告来源 batch。"),
-        (18, "读取 simulation_dataset", "读取 completed worlds 的结构化数据。"),
-        (30, "生成 appendix_b", "聚合风险、主体、对策和演化摘要。"),
+        (18, "读取结构化数据", "读取已完成样本的报告数据。"),
+        (30, "聚合报告依据", "聚合风险、主体、对策和演化摘要。"),
         (42, "调用报告模型", "生成报告正文。"),
-        (70, "构建 report_view", "写入原生 report_view.json。"),
+        (70, "构建交互报告", "准备浏览器阅读所需的结构化内容。"),
         (82, "生成可下载文件", "生成 HTML、Markdown、DOCX 和 PDF。"),
         (100, "报告生成完成", "报告正文和导出入口已就绪。"),
     ]

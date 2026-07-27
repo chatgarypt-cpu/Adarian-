@@ -154,6 +154,11 @@ def error_response(code: str, message: str, details: dict[str, Any] | None = Non
         "REPORT_WRITE_FAILED": 500,
         "REPORT_QUALITY_BLOCKED": 409,
         "REPORT_SOURCE_NOT_FOUND": 409,
+        "REPORT_SKILL_INVALID": 400,
+        "REPORT_SKILL_FILE_REQUIRED": 400,
+        "REPORT_SKILL_EXISTS": 409,
+        "REPORT_SKILL_READ_ONLY": 403,
+        "REPORT_SKILL_NOT_FOUND": 404,
         "MODEL_DISCOVERY_FAILED": 502,
         "RUN_START_FAILED": 500,
     }.get(code, 500)

@@ -2,9 +2,12 @@
 id: enterprise_brief
 label: 企业简报
 description: 面向企业管理层的舆情处置简报。简明直接、强调处置优先级。
+version: 1
 ---
 
 # Enterprise Brief Report Skill
+
+标题采用“核心主体 + 核心争议”的简短事件名称，完整标题不超过 30 字。
 
 将 `appendix_b.json` 转化为面向企业管理层的舆情处置简报。
 

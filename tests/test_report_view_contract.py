@@ -51,15 +51,41 @@ def test_build_native_report_view_contract() -> None:
         version="B",
         appendix_mode="none",
         model_label="env:qwen",
+        public_appendix="\n".join([
+            "# 附录：方法说明",
+            "## 一、数据说明",
+            "### （一）计算方法",
+            "```python",
+            "# 优先级判定",
+            "risk = max(levels)",
+            "```",
+            "| 风险类型 | 典型场景 |",
+            "|----------|----------|",
+            "| 监管信任风险 | 处置过程受到质疑 |",
+        ]),
+        skill_snapshot={"label": "政府研判", "version": "2", "checksum": "abc"},
     )
 
     assert view["id"] == "report_test:B"
     assert view["title"] == "测试事件舆情风险研判"
     assert view["source"]["batch_id"] == "batch_test"
     assert view["source"]["model"] == "env:qwen"
+    assert view["source"]["skill_label"] == "政府研判"
+    assert "completed worlds" not in view["subtitle"]
     assert [section["heading"] for section in view["sections"]] == ["一、舆情概要", "二、演化分析", "三、风险研判", "四、对策意见"]
     assert view["sections"][1]["blocks"][0]["type"] == "list"
     assert view["sections"][2]["blocks"][0] == {"type": "subheading", "text": "（一）负向叙事聚合风险"}
     assert view["sections"][3]["blocks"][0]["text"] == "责任主体：事件主体应补充事实说明。"
-    assert view["appendix"]["confirmed_risks"] == 1
+    assert view["appendix"]["mode"] == "hidden"
+    assert view["appendix"]["title"] == "附录：方法说明"
+    assert view["appendix"]["sections"][0]["heading"] == "一、数据说明"
+    assert view["appendix"]["sections"][0]["blocks"][1] == {
+        "type": "preformatted",
+        "text": "# 优先级判定\nrisk = max(levels)",
+    }
+    assert view["appendix"]["sections"][0]["blocks"][2] == {
+        "type": "table",
+        "headers": ["风险类型", "典型场景"],
+        "rows": [["监管信任风险", "处置过程受到质疑"]],
+    }
     assert view["quality"][0]["status"] == "passed"

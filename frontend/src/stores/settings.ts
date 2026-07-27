@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { api } from '../api/client';
-import type { ModelGateway, PageState, ReportSkill, SystemCheck } from '../api/types';
+import type { ModelGateway, PageState, ReportSkill, ReportSkillLocations, SystemCheck } from '../api/types';
 
 export const useSettingsStore = defineStore('settings', () => {
   const maxConcurrent = ref(3);
@@ -14,19 +14,23 @@ export const useSettingsStore = defineStore('settings', () => {
   const reportMaxTokens = ref(8192);
   const reportSkillId = ref('default_government');
   const reportSkills = ref<ReportSkill[]>([]);
+  const reportSkillLocations = ref<ReportSkillLocations>({ builtin: '', user: '' });
   const modelGateways = ref<ModelGateway[]>([]);
   const systemChecks = ref<SystemCheck[]>([]);
   const pageState = ref<PageState>('populated');
   const error = ref('');
   const saving = ref(false);
+  const skillBusy = ref(false);
+  const skillError = ref('');
 
   async function loadSettings() {
     pageState.value = 'loading';
     error.value = '';
     try {
-      const [data, skills, gateways] = await Promise.all([
+      const [data, skills, locations, gateways] = await Promise.all([
         api.getSettings(),
         api.getReportSkills(),
+        api.getReportSkillLocations(),
         api.getModelGateways(),
       ]);
       maxConcurrent.value = data.maxConcurrent;
@@ -39,12 +43,50 @@ export const useSettingsStore = defineStore('settings', () => {
       reportMaxTokens.value = data.report_max_tokens ?? 8192;
       reportSkillId.value = data.report_skill_id || 'default_government';
       reportSkills.value = skills;
+      reportSkillLocations.value = locations;
       modelGateways.value = gateways;
       systemChecks.value = data.systemChecks ?? [];
       pageState.value = 'populated';
     } catch (exc) {
       error.value = exc instanceof Error ? exc.message : '系统设置加载失败';
       pageState.value = 'error';
+    }
+  }
+
+  async function refreshReportSkills() {
+    const [skills, locations] = await Promise.all([api.getReportSkills(), api.getReportSkillLocations()]);
+    reportSkills.value = skills;
+    reportSkillLocations.value = locations;
+  }
+
+  async function importReportSkill(file: File, replace = false) {
+    skillBusy.value = true;
+    skillError.value = '';
+    try {
+      const skill = await api.importReportSkill(file, replace);
+      await refreshReportSkills();
+      reportSkillId.value = skill.id;
+      return skill;
+    } catch (exc) {
+      skillError.value = exc instanceof Error ? exc.message : 'Skill 导入失败';
+      throw exc;
+    } finally {
+      skillBusy.value = false;
+    }
+  }
+
+  async function deleteReportSkill(skillId: string) {
+    skillBusy.value = true;
+    skillError.value = '';
+    try {
+      await api.deleteReportSkill(skillId);
+      if (reportSkillId.value === skillId) reportSkillId.value = 'default_government';
+      await refreshReportSkills();
+    } catch (exc) {
+      skillError.value = exc instanceof Error ? exc.message : 'Skill 删除失败';
+      throw exc;
+    } finally {
+      skillBusy.value = false;
     }
   }
 
@@ -94,12 +136,18 @@ export const useSettingsStore = defineStore('settings', () => {
     reportMaxTokens,
     reportSkillId,
     reportSkills,
+    reportSkillLocations,
     modelGateways,
     systemChecks,
     pageState,
     error,
     saving,
+    skillBusy,
+    skillError,
     loadSettings,
     saveSettings,
+    refreshReportSkills,
+    importReportSkill,
+    deleteReportSkill,
   };
 });
